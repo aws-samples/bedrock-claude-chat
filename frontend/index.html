@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://fonts.googleapis.com/css?family=M+PLUS+Rounded+1c"
+      rel="stylesheet" />
+    <title>Bedrock Claude Chat</title>
+  </head>
+  <body class="font-body">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <!-- Vite＋AmplifyUIの際は以下の設定が必要 -->
+    <script>
+      window.global = window;
+      window.process = {
+        env: { DEBUG: undefined },
+      }
+      var exports = {};
+    </script>
+  </body>
+</html>

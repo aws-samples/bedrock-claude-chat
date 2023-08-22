@@ -1,0 +1,7 @@
+bedrock-python-sdk
+bedrock-python-sdk.zip
+verification
+
+__pycache__/
+.venv
+.DS_Store
