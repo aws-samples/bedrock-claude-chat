@@ -9,7 +9,7 @@
 
 AWS のマネージドサービスで構成した、インフラストラクチャ管理の不要なアーキテクチャとなっています。Amazon Bedrock の活用により、 AWS 外部の API と通信する必要がありません。スケーラブルで信頼性が高く、安全なアプリケーションをデプロイすることが可能です。
 
-- [Amazon DynamoDB](https://aws.amazon.com/jp/dynamodb/): 会話履歴保存用の NoSQ データベース
+- [Amazon DynamoDB](https://aws.amazon.com/jp/dynamodb/): 会話履歴保存用の NoSQL データベース
 - [Amazon API Gateway](https://aws.amazon.com/jp/api-gateway/) + [AWS Lambda](https://aws.amazon.com/jp/lambda/): バックエンド API エンドポイント ([AWS Lambda Web Adapter](https://github.com/awslabs/aws-lambda-web-adapter), [FastAPI](https://fastapi.tiangolo.com/))
 - [Amazon CloudFront](https://aws.amazon.com/jp/cloudfront/) + [S3](https://aws.amazon.com/jp/s3/): フロントエンドアプリケーションの配信 ([React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/))
 - [Amazon Cognito](https://aws.amazon.com/jp/cognito/): ユーザ認証
@@ -32,7 +32,7 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 
 - **2023/8 月現在、Bedrock はプレビュー中です。ご利用の際は申請が必要です。**
 
-### 🚀Easy Deployment
+### 🚀 Easy Deployment
 
 - [CloudShell](https://console.aws.amazon.com/cloudshell/home)を開きます
 - 下記のコマンドでリポジトリをクローンします
@@ -92,8 +92,8 @@ cdk bootstrap ap-northeast-1
 
 - 必要に応じて[cdk.json](./cdk/cdk.json)の下記項目を編集します
 
-- `bedrockRegion`: Bedrock が利用できるリージョン
-- `bedrockEndpointUrl`: Bedrock エンドポイントの URL
+  - `bedrockRegion`: Bedrock が利用できるリージョン
+  - `bedrockEndpointUrl`: Bedrock エンドポイントの URL
 
 - プロジェクトをデプロイします
 
@@ -109,9 +109,9 @@ cdk deploy --require-approval never
 ✨  Deployment time: 78.57s
 
 Outputs:
-BedrockChatStack.AuthUserPoolClientId8216BF9A = xxxxxxx
-BedrockChatStack.AuthUserPoolIdC0605E59 = ap-northeast-1_XXXX
-BedrockChatStack.BackendApiBackendApiUrl4A0A7879 = https://xxxxx.execute-api.ap-northeast-1.amazonaws.com
+BedrockChatStack.AuthUserPoolClientIdXXXXX = xxxxxxx
+BedrockChatStack.AuthUserPoolIdXXXXXX = ap-northeast-1_XXXX
+BedrockChatStack.BackendApiBackendApiUrlXXXXX = https://xxxxx.execute-api.ap-northeast-1.amazonaws.com
 BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 ```
 
