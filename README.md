@@ -45,6 +45,7 @@ git clone https://github.com/aws-samples/bedrock-claude-chat.git
 
 ```sh
 cd bedrock-claude-chat
+chmod +x bin.sh
 ./bin.sh
 ```
 
