@@ -82,9 +82,9 @@ export class Frontend extends Construct {
       buildCommands: ["npm run build"],
       buildEnvironment: {
         VITE_APP_API_ENDPOINT: props.backendApi.apiEndpoint,
-        VITE_USER_POOL_ID: props.auth.userPool.userPoolId,
-        VITE_USER_POOL_CLIENT_ID: props.auth.client.userPoolClientId,
-        VITE_AWS_REGION: Stack.of(props.auth.userPool).region,
+        VITE_APP_USER_POOL_ID: props.auth.userPool.userPoolId,
+        VITE_APP_USER_POOL_CLIENT_ID: props.auth.client.userPoolClientId,
+        VITE_APP_REGION: Stack.of(props.auth.userPool).region,
       },
       destinationBucket: assetBucket,
       distribution,
