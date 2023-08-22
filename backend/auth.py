@@ -7,8 +7,8 @@ from jose import JWTError, jwt
 from schema import User
 
 REGION = os.environ.get("REGION", "ap-northeast-1")
-USER_POOL_ID = os.environ.get("USER_POOL_ID", "ap-northeast-1_XXXXXXXXX")
-CLIENT_ID = os.environ.get("CLIENT_ID", "nrfu1odukmtn8k2nm3mmk1f9i")
+USER_POOL_ID = os.environ.get("USER_POOL_ID", "")
+CLIENT_ID = os.environ.get("CLIENT_ID", "")
 
 security = HTTPBearer()
 
