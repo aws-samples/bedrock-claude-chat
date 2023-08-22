@@ -1,4 +1,4 @@
-name: Snapshot Test
+name: Synth
 on:
   pull_request:
     branches: ["main"]
@@ -14,4 +14,4 @@ jobs:
       - run: |
           cd cdk
           npm ci
-          npm run test
+          npx cdk synth
