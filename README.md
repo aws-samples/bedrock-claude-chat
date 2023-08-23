@@ -1,47 +1,51 @@
 # Bedrock Claude Chat
 
-このリポジトリは、生成系 AI を提供する[Amazon Bedrock](https://aws.amazon.com/jp/bedrock/)の基盤モデルの一つである、Anthropic 社製 LLM [Claude 2](https://www.anthropic.com/index/claude-2)を利用したチャットボットのサンプルです。**2023/8 月現在、Bedrock はプレビュー中です。ご利用の際は申請が必要です。**
+日本語は[こちら](./docs/README_ja.md)
 
-![](./docs/imgs/demo1.gif)
+This repository is a sample chatbot using the Anthropic company's LLM [Claude 2](https://www.anthropic.com/index/claude-2), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI. **As of August 2023, Bedrock is under preview, and applications are required for usage.** This sample is currently developed for use by Japanese speakers, but it is also possible to speak to the chatbot in English.
+
+![](./docs/imgs/demo_en.png)
 ![](./docs/imgs/demo2.gif)
 
-## アーキテクチャ
+## Architecture
 
-AWS のマネージドサービスで構成した、インフラストラクチャ管理の不要なアーキテクチャとなっています。Amazon Bedrock の活用により、 AWS 外部の API と通信する必要がありません。スケーラブルで信頼性が高く、安全なアプリケーションをデプロイすることが可能です。
+It's an architecture built on AWS managed services, eliminating the need for infrastructure management. Utilizing Amazon Bedrock, there's no need to communicate with APIs outside of AWS. This enables deploying scalable, reliable, and secure applications.
 
-- [Amazon DynamoDB](https://aws.amazon.com/jp/dynamodb/): 会話履歴保存用の NoSQL データベース
-- [Amazon API Gateway](https://aws.amazon.com/jp/api-gateway/) + [AWS Lambda](https://aws.amazon.com/jp/lambda/): バックエンド API エンドポイント ([AWS Lambda Web Adapter](https://github.com/awslabs/aws-lambda-web-adapter), [FastAPI](https://fastapi.tiangolo.com/))
-- [Amazon CloudFront](https://aws.amazon.com/jp/cloudfront/) + [S3](https://aws.amazon.com/jp/s3/): フロントエンドアプリケーションの配信 ([React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/))
-- [Amazon Cognito](https://aws.amazon.com/jp/cognito/): ユーザ認証
-- [Amazon Bedrock](https://aws.amazon.com/jp/bedrock/): 基盤モデルを API 経由で利用できるマネージドサービス
+- [Amazon DynamoDB](https://aws.amazon.com/dynamodb/): NoSQL database for conversation history storage
+- [Amazon API Gateway](https://aws.amazon.com/api-gateway/) + [AWS Lambda](https://aws.amazon.com/lambda/): Backend API endpoint ([AWS Lambda Web Adapter](https://github.com/awslabs/aws-lambda-web-adapter), [FastAPI](https://fastapi.tiangolo.com/))
+- [Amazon CloudFront](https://aws.amazon.com/cloudfront/) + [S3](https://aws.amazon.com/s3/): Frontend application delivery ([React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/))
+- [Amazon Cognito](https://aws.amazon.com/cognito/): User authentication
+- [Amazon Bedrock](https://aws.amazon.com/bedrock/): Managed service to utilize foundational models via APIs
 
 ![](docs/imgs/arch.png)
 
-## 機能
+## Features
 
-- 認証 (サインアップ・サインイン)
-- 会話の新規作成・保存・削除
-- チャットボットの返信内容のコピー
-- 会話の件名自動提案
-- コードのシンタックスハイライト
-- マークダウンのレンダリング
+- Authentication (Sign-up, Sign-in)
+- Creation, storage, and deletion of conversations
+- Copying of chatbot replies
+- Automatic subject suggestion for conversations
+- Syntax highlighting for code
+- Rendering of Markdown
 
-## プロジェクトのデプロイ
+## Deployment
 
-### 前提条件
+### Prerequisites
 
-- **2023/8 月現在、Bedrock はプレビュー中です。ご利用の際は申請が必要です。**
+- **As of August 2023, Bedrock is under preview, and applications are required for usage.**
 
 ### 🚀 Easy Deployment
 
-- [CloudShell](https://console.aws.amazon.com/cloudshell/home)を開きます
-- 下記のコマンドでリポジトリをクローンします
+NOTE: If the following procedure is used for deployment, the deployment will take place in the Tokyo Region. If you want to specify a region, see the subsequent section `Deploy using CDK`.
+
+- Open [CloudShell](https://console.aws.amazon.com/cloudshell/home)
+- Clone this repository
 
 ```sh
 git clone https://github.com/aws-samples/bedrock-claude-chat.git
 ```
 
-- 下記のコマンドでデプロイ実行します
+- Run deployment via following commands
 
 ```sh
 cd bedrock-claude-chat
@@ -49,7 +53,7 @@ chmod +x bin.sh
 ./bin.sh
 ```
 
-- 10 分ほど経過後、下記の出力が得られるのでブラウザからアクセスします
+- After about 10 minutes, you will get the following output, which you can access from your browser
 
 ```
 Frontend URL: https://xxxxxxxxx.cloudfront.net
@@ -57,52 +61,51 @@ Frontend URL: https://xxxxxxxxx.cloudfront.net
 
 ![](./docs/imgs/signin.png)
 
-上記のようなサインアップ画面が現れますので、E メールを登録・ログインしご利用ください。
+The sign-up screen will appear as shown above, where you can register your email and log in.
 
 ### Deploy using CDK
 
-上記 Easy Deployment は[AWS CodeBuild](https://aws.amazon.com/jp/codebuild/)を利用し、内部で CDK によるデプロイを実行しています。ここでは直接 CDK によりデプロイする手順を記載します。
+Easy Deployment uses [AWS CodeBuild](https://aws.amazon.com/codebuild/) to perform deployment by CDK internally. This section describes the procedure for deploying directly with CDK.
 
-- お手元に UNIX コマンドおよび Node.js 実行環境を用意してください。もし無い場合、[Cloud9](https://github.com/aws-samples/cloud9-setup-for-prototyping)をご利用いただくことも可能です
-
-- このリポジトリをクローンします
+- Please have UNIX commands and a Node.js runtime environment. If not, you can also use [Cloud9](https://github.com/aws-samples/cloud9-setup-for-prototyping)
+- Clone this repository
 
 ```
 git clone https://github.com/aws-samples/bedrock-claude-chat
 ```
 
-- npm パッケージをインストールします
+- Install npm packages
 
 ```
 cd bedrock-claude-chat
 npm ci
 ```
 
-- [AWS CDK](https://aws.amazon.com/jp/cdk/)をインストールします
+- Install [AWS CDK](https://aws.amazon.com/cdk/)
 
 ```
 npm i -g aws-cdk
 ```
 
-- CDK デプロイ前に、デプロイ先リージョンに対して 1 度だけ Bootstrap の作業が必要となります。ここでは東京リージョンへデプロイするものとします
+- Before deploying the CDK, you will need to work with Bootstrap once for the region you are deploying to. In this example, we will deploy to the us-east-1 region
 
 ```
 cd cdk
-cdk bootstrap ap-northeast-1
+cdk bootstrap us-east-1
 ```
 
-- 必要に応じて[cdk.json](./cdk/cdk.json)の下記項目を編集します
+- If necessary, edit the following entries in [cdk.json](. /cdk/cdk.json) if necessary.
 
-  - `bedrockRegion`: Bedrock が利用できるリージョン
-  - `bedrockEndpointUrl`: Bedrock エンドポイントの URL
+  - `bedrockRegion`: Region where Bedrock is available.
+  - `bedrockEndpointUrl`: URL of the Bedrock endpoint.
 
-- プロジェクトをデプロイします
+- Deploy this sample project
 
 ```
 cdk deploy --require-approval never
 ```
 
-- 下記のような出力が得られれば成功です。`BedrockChatStack.FrontendURL`に WEB アプリの URL が出力されますので、ブラウザからアクセスしてください。
+- You will get output similar to the following. The URL of the web app will be output in `BedrockChatStack.FrontendURL`, so please access it from your browser.
 
 ```sh
  ✅  BedrockChatStack
@@ -116,11 +119,11 @@ BedrockChatStack.BackendApiBackendApiUrlXXXXX = https://xxxxx.execute-api.ap-nor
 BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 ```
 
-## その他
+## Others
 
-### テキスト生成パラメータの設定
+### Configure text generation parameters
 
-[config.py](./backend/config.py)を編集後、`cdk deploy`を実行してください。
+Edit [config.py](./backend/config.py) and run `cdk deploy`.
 
 ```py
 GENERATION_CONFIG = {
@@ -131,3 +134,8 @@ GENERATION_CONFIG = {
     "stop_sequences": ["Human: ", "Assistant: "],
 }
 ```
+
+## Authors
+
+- [Takehiro Suzuki](https://github.com/statefb)
+- [Yusuke Wada](https://github.com/wadabee)
