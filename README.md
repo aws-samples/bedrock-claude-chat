@@ -36,8 +36,6 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 
 ### 🚀 Easy Deployment
 
-NOTE: If the following procedure is used for deployment, the deployment will take place in the Tokyo Region. If you want to specify a region, see the subsequent section `Deploy using CDK`.
-
 - Open [CloudShell](https://console.aws.amazon.com/cloudshell/home)
 - Clone this repository
 
