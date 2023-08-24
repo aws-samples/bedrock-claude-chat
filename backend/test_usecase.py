@@ -7,7 +7,7 @@ from repositories.conversation import (
     store_conversation,
 )
 from repositories.model import ContentModel, ConversationModel, MessageModel
-from schema import ChatInput, ChatOutput, Content, MessageInput, MessageOutput
+from route_schema import ChatInput, ChatOutput, Content, MessageInput, MessageOutput
 from usecase import chat, propose_conversation_title
 
 MODEL = "claude"
@@ -34,18 +34,20 @@ class TestStartChat(unittest.TestCase):
 
         self.assertNotEqual(output.conversation_id, "")
 
-        conv = find_conversation_by_id(output.conversation_id)
+        conv = find_conversation_by_id(
+            user_id="user1", conversation_id=output.conversation_id
+        )
         # Message length will be 2 (user input + assistant reply)
         self.assertEqual(len(conv.messages), 2)
 
     def tearDown(self) -> None:
-        delete_conversation_by_id(self.output.conversation_id)
+        delete_conversation_by_id("user1", self.output.conversation_id)
 
 
 class TestContinueChat(unittest.TestCase):
     def setUp(self) -> None:
-        self.conversation_id = "conversation1"
         self.user_id = "user2"
+        self.conversation_id = "user2_conversation1"
 
         store_conversation(
             user_id=self.user_id,
@@ -98,11 +100,12 @@ class TestContinueChat(unittest.TestCase):
 
         self.assertNotEqual(output.conversation_id, "")
 
-        conv = find_conversation_by_id(output.conversation_id)
+        conv = find_conversation_by_id(self.user_id, output.conversation_id)
         self.assertEqual(len(conv.messages), 4)
 
     def tearDown(self) -> None:
-        delete_conversation_by_id(self.conversation_id)
+        delete_conversation_by_id(self.user_id, self.conversation_id)
+
 
 class TestProposeTitle(unittest.TestCase):
     def setUp(self) -> None:
@@ -122,12 +125,11 @@ class TestProposeTitle(unittest.TestCase):
         self.output = output
 
     def test_propose_title(self):
-        title = propose_conversation_title(self.output.conversation_id)
+        title = propose_conversation_title("user1", self.output.conversation_id)
         print(f"[title]: {title}")
 
-
     def tearDown(self) -> None:
-        delete_conversation_by_id(self.output.conversation_id)
+        delete_conversation_by_id("user1", self.output.conversation_id)
 
 
 if __name__ == "__main__":

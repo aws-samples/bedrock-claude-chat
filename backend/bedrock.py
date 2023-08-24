@@ -9,7 +9,28 @@ ENDPOINT_URL = os.environ.get(
     "ENDPOINT_URL", f"https://bedrock.{BEDROCK_REGION}.amazonaws.com"
 )
 
-client = boto3.client("bedrock", BEDROCK_REGION, endpoint_url=ENDPOINT_URL)
+# client = boto3.client("bedrock", BEDROCK_REGION, endpoint_url=ENDPOINT_URL)
+
+ROLEARN_FOR_BEDROCK = "arn:aws:iam::936931980683:role/BedrockRole4RP"
+
+sts_client = boto3.client("sts")
+
+assumed_role_object = sts_client.assume_role(
+    RoleArn=ROLEARN_FOR_BEDROCK,
+    RoleSessionName="bedrock-session",
+)
+
+credentials = assumed_role_object["Credentials"]
+
+aws_session = boto3.Session(
+    aws_access_key_id=credentials["AccessKeyId"],
+    aws_secret_access_key=credentials["SecretAccessKey"],
+    aws_session_token=credentials["SessionToken"],
+)
+
+REGION = "us-east-1"
+endpoint_url = f"https://bedrock.{REGION}.amazonaws.com"
+client = aws_session.client("bedrock", REGION, endpoint_url=endpoint_url)
 
 
 def _create_body(model: str, prompt: str):

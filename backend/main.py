@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials
 from route import router
-from schema import User
+from route_schema import User
 from starlette.types import ASGIApp
 from utils import is_running_on_lambda
 

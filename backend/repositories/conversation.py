@@ -44,7 +44,7 @@ def _get_table_client(user_id: str):
                 ],
                 "Condition": {
                     # Allow access to items with the same partition key as the user id
-                    "ForAllValues:StringLike": {"dynamodb:LeadingKeys": [f"{user_id}"]}
+                    "ForAllValues:StringLike": {"dynamodb:LeadingKeys": [f"{user_id}*"]}
                 },
             }
         ]
@@ -109,8 +109,8 @@ def find_conversation_by_user_id(user_id: str) -> list[ConversationModel]:
     ]
 
 
-def find_conversation_by_id(conversation_id: str) -> ConversationModel:
-    table = dynamodb.Table(TABLE_NAME)
+def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationModel:
+    table = _get_table_client(user_id)
     response = table.query(
         IndexName="ConversationIdIndex",
         KeyConditionExpression=Key("ConversationId").eq(conversation_id),
@@ -140,8 +140,8 @@ def find_conversation_by_id(conversation_id: str) -> ConversationModel:
     )
 
 
-def delete_conversation_by_id(conversation_id: str):
-    table = dynamodb.Table(TABLE_NAME)
+def delete_conversation_by_id(user_id: str, conversation_id: str):
+    table = _get_table_client(user_id)
 
     # Query the index
     response = table.query(
@@ -175,8 +175,8 @@ def delete_conversation_by_user_id(user_id: str):
         raise ValueError(f"No conversations found for user id: {user_id}")
 
 
-def change_conversation_title(conversation_id: str, new_title: str):
-    table = dynamodb.Table(TABLE_NAME)
+def change_conversation_title(user_id: str, conversation_id: str, new_title: str):
+    table = _get_table_client(user_id)
 
     # First, we need to find the item using the GSI
     response = table.query(
