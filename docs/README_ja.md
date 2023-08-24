@@ -15,7 +15,7 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 - [Amazon Cognito](https://aws.amazon.com/jp/cognito/): ユーザ認証
 - [Amazon Bedrock](https://aws.amazon.com/jp/bedrock/): 基盤モデルを API 経由で利用できるマネージドサービス
 
-![](docs/imgs/arch.png)
+![](imgs/arch.png)
 
 ## 機能
 
