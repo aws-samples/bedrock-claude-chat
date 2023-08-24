@@ -16,9 +16,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     else:
         # Create new conversation
         conversation = ConversationModel(
-            # Add user_id as prefix for row-level security.
-            # See also: repositories/conversation.py
-            id=f"{user_id}_{str(ULID())}",
+            id=str(ULID()),
             title="New conversation",
             create_time=datetime.now().timestamp(),
             messages=[],
@@ -147,7 +145,7 @@ def propose_conversation_title(
     user_id: str, conversation_id: str, model="claude"
 ) -> str:
     assert model == "claude", "Only claude model is supported for now."
-    PROMPT = """この会話に件名を一言でつけてください。出力は件名だけにしてください。その他の文字は一切出力しないでください"""
+    PROMPT = """この会話に件名を一言でつけてください。出力は件名だけにしてください。その他の文字は一切出力しないでください。言語は推測してください（英語なら英語で出力）。"""
 
     # Fetch existing conversation
     conversation = find_conversation_by_id(user_id, conversation_id)

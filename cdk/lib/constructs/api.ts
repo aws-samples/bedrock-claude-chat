@@ -38,6 +38,7 @@ export class Api extends Construct {
       assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
     });
     handlerRole.addToPolicy(
+      // Assume the table access role for row-level access control.
       new iam.PolicyStatement({
         actions: ["sts:AssumeRole"],
         resources: [tableAccessRole.roleArn],

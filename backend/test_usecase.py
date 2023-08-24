@@ -47,7 +47,7 @@ class TestStartChat(unittest.TestCase):
 class TestContinueChat(unittest.TestCase):
     def setUp(self) -> None:
         self.user_id = "user2"
-        self.conversation_id = "user2_conversation1"
+        self.conversation_id = "conversation1"
 
         store_conversation(
             user_id=self.user_id,
@@ -116,7 +116,8 @@ class TestProposeTitle(unittest.TestCase):
                 role="user",
                 content=Content(
                     content_type="text",
-                    body="日本の料理で有名なやつ",
+                    # body="日本の料理で有名なやつ",
+                    body="Famous japanese Dishes",
                 ),
                 model=MODEL,
             ),
