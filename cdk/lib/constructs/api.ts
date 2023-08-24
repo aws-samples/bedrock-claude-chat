@@ -51,13 +51,6 @@ export class Api extends Construct {
       })
     );
 
-    handlerRole.addToPolicy(
-      new iam.PolicyStatement({
-        actions: ["sts:AssumeRole"],
-        resources: ["arn:aws:iam::936931980683:role/BedrockRole4RP"],
-      })
-    );
-
     const handler = new DockerImageFunction(this, "Handler", {
       code: DockerImageCode.fromImageAsset("../backend", {
         platform: Platform.LINUX_AMD64,
