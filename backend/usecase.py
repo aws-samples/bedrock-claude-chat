@@ -4,7 +4,7 @@ from datetime import datetime
 from bedrock import invoke, invoke_with_stream
 from repositories.conversation import find_conversation_by_id, store_conversation
 from repositories.model import ContentModel, ConversationModel, MessageModel
-from schema import ChatInput, ChatOutput, Content, MessageOutput
+from route_schema import ChatInput, ChatOutput, Content, MessageOutput
 from ulid import ULID
 from utils import get_buffer_string
 
@@ -12,7 +12,7 @@ from utils import get_buffer_string
 def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     if chat_input.conversation_id:
         # Fetch existing conversation
-        conversation = find_conversation_by_id(chat_input.conversation_id)
+        conversation = find_conversation_by_id(user_id, chat_input.conversation_id)
     else:
         # Create new conversation
         conversation = ConversationModel(
@@ -141,12 +141,14 @@ def chat_stream(user_id: str, chat_input: ChatInput):
     store_conversation(user_id, conversation)
 
 
-def propose_conversation_title(conversation_id: str, model="claude") -> str:
+def propose_conversation_title(
+    user_id: str, conversation_id: str, model="claude"
+) -> str:
     assert model == "claude", "Only claude model is supported for now."
-    PROMPT = """この会話に件名を一言でつけてください。出力は件名だけにしてください。その他の文字は一切出力しないでください"""
+    PROMPT = """この会話に件名を一言でつけてください。出力は件名だけにしてください。その他の文字は一切出力しないでください。言語は推測してください（英語なら英語で出力）。"""
 
     # Fetch existing conversation
-    conversation = find_conversation_by_id(conversation_id)
+    conversation = find_conversation_by_id(user_id, conversation_id)
     # Append message to generate title
     new_message = MessageModel(
         id=str(ULID()),

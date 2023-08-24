@@ -4,7 +4,7 @@ import requests
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
-from schema import User
+from route_schema import User
 
 REGION = os.environ.get("REGION", "ap-northeast-1")
 USER_POOL_ID = os.environ.get("USER_POOL_ID", "")

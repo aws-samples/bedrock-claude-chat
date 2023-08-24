@@ -9,17 +9,78 @@ from boto3.dynamodb.conditions import Key
 from .model import ContentModel, ConversationModel, MessageModel
 
 TABLE_NAME = os.environ.get("TABLE_NAME", "")
+ACCOUNT = os.environ.get("ACCOUNT", "")
 REGION = os.environ.get("REGION", "ap-northeast-1")
+TABLE_ACCESS_ROLE_ARN = os.environ.get("TABLE_ACCESS_ROLE_ARN", "")
 
 dynamodb = boto3.resource("dynamodb", region_name=REGION)
+sts_client = boto3.client("sts")
 
 
-def store_conversation(user_id, conversation: ConversationModel):
+def _compose_conv_id(user_id: str, conversation_id: str):
+    # Add user_id prefix for row level security to match with `LeadingKeys` condition
+    return f"{user_id}_{conversation_id}"
+
+
+def _decompose_conv_id(conv_id: str):
+    return conv_id.split("_")[1]
+
+
+def _get_table_client(user_id: str):
+    """Get a DynamoDB table client with row level access
+    Ref: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_dynamodb_items.html
+    """
+    policy_document = {
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "dynamodb:BatchGetItem",
+                    "dynamodb:BatchWriteItem",
+                    "dynamodb:ConditionCheckItem",
+                    "dynamodb:DeleteItem",
+                    "dynamodb:DescribeTable",
+                    "dynamodb:GetItem",
+                    "dynamodb:GetRecords",
+                    "dynamodb:PutItem",
+                    "dynamodb:Query",
+                    "dynamodb:Scan",
+                    "dynamodb:UpdateItem",
+                ],
+                "Resource": [
+                    f"arn:aws:dynamodb:{REGION}:{ACCOUNT}:table/{TABLE_NAME}",
+                    f"arn:aws:dynamodb:{REGION}:{ACCOUNT}:table/{TABLE_NAME}/index/*",
+                ],
+                "Condition": {
+                    # Allow access to items with the same partition key as the user id
+                    "ForAllValues:StringLike": {"dynamodb:LeadingKeys": [f"{user_id}*"]}
+                },
+            }
+        ]
+    }
+    assumed_role_object = sts_client.assume_role(
+        RoleArn=TABLE_ACCESS_ROLE_ARN,
+        RoleSessionName="DynamoDBSession",
+        Policy=json.dumps(policy_document),
+    )
+    credentials = assumed_role_object["Credentials"]
+    dynamodb = boto3.resource(
+        "dynamodb",
+        region_name=REGION,
+        aws_access_key_id=credentials["AccessKeyId"],
+        aws_secret_access_key=credentials["SecretAccessKey"],
+        aws_session_token=credentials["SessionToken"],
+    )
     table = dynamodb.Table(TABLE_NAME)
+    return table
+
+
+def store_conversation(user_id: str, conversation: ConversationModel):
+    table = _get_table_client(user_id)
     response = table.put_item(
         Item={
             "UserId": user_id,
-            "ConversationId": conversation.id,
+            "ConversationId": _compose_conv_id(user_id, conversation.id),
             "Title": conversation.title,
             "CreateTime": decimal(conversation.create_time),
             "Messages": json.dumps(
@@ -31,12 +92,12 @@ def store_conversation(user_id, conversation: ConversationModel):
 
 
 def find_conversation_by_user_id(user_id: str) -> list[ConversationModel]:
-    table = dynamodb.Table(TABLE_NAME)
+    table = _get_table_client(user_id)
     response = table.query(KeyConditionExpression=Key("UserId").eq(user_id))
 
     return [
         ConversationModel(
-            id=item["ConversationId"],
+            id=_decompose_conv_id(item["ConversationId"]),
             create_time=float(item["CreateTime"]),
             title=item["Title"],
             messages=[
@@ -57,11 +118,13 @@ def find_conversation_by_user_id(user_id: str) -> list[ConversationModel]:
     ]
 
 
-def find_conversation_by_id(conversation_id: str) -> ConversationModel:
-    table = dynamodb.Table(TABLE_NAME)
+def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationModel:
+    table = _get_table_client(user_id)
     response = table.query(
         IndexName="ConversationIdIndex",
-        KeyConditionExpression=Key("ConversationId").eq(conversation_id),
+        KeyConditionExpression=Key("ConversationId").eq(
+            _compose_conv_id(user_id, conversation_id)
+        ),
     )
     if len(response["Items"]) == 0:
         raise ValueError(f"No conversation found with id: {conversation_id}")
@@ -69,7 +132,7 @@ def find_conversation_by_id(conversation_id: str) -> ConversationModel:
     # NOTE: conversation is unique
     item = response["Items"][0]
     return ConversationModel(
-        id=item["ConversationId"],
+        id=_decompose_conv_id(item["ConversationId"]),
         create_time=float(item["CreateTime"]),
         title=item["Title"],
         messages=[
@@ -88,19 +151,24 @@ def find_conversation_by_id(conversation_id: str) -> ConversationModel:
     )
 
 
-def delete_conversation_by_id(conversation_id: str):
-    table = dynamodb.Table(TABLE_NAME)
+def delete_conversation_by_id(user_id: str, conversation_id: str):
+    table = _get_table_client(user_id)
 
     # Query the index
     response = table.query(
         IndexName="ConversationIdIndex",
-        KeyConditionExpression=Key("ConversationId").eq(conversation_id),
+        KeyConditionExpression=Key("ConversationId").eq(
+            _compose_conv_id(user_id, conversation_id)
+        ),
     )
 
     # Check if conversation exists
     if response["Items"]:
         user_id = response["Items"][0]["UserId"]
-        key = {"UserId": user_id, "ConversationId": conversation_id}
+        key = {
+            "UserId": user_id,
+            "ConversationId": _compose_conv_id(user_id, conversation_id),
+        }
         delete_response = table.delete_item(Key=key)
         return delete_response
     else:
@@ -111,11 +179,14 @@ def delete_conversation_by_user_id(user_id: str):
     # First, find all conversations for the user
     conversations = find_conversation_by_user_id(user_id)
     if conversations:
-        table = dynamodb.Table(TABLE_NAME)
+        table = _get_table_client(user_id)
         responses = []
         for conversation in conversations:
             # Construct key to delete
-            key = {"UserId": user_id, "ConversationId": conversation.id}
+            key = {
+                "UserId": user_id,
+                "ConversationId": _compose_conv_id(user_id, conversation.id),
+            }
             response = table.delete_item(Key=key)
             responses.append(response)
         return responses
@@ -123,13 +194,15 @@ def delete_conversation_by_user_id(user_id: str):
         raise ValueError(f"No conversations found for user id: {user_id}")
 
 
-def change_conversation_title(conversation_id: str, new_title: str):
-    table = dynamodb.Table(TABLE_NAME)
+def change_conversation_title(user_id: str, conversation_id: str, new_title: str):
+    table = _get_table_client(user_id)
 
     # First, we need to find the item using the GSI
     response = table.query(
         IndexName="ConversationIdIndex",
-        KeyConditionExpression=Key("ConversationId").eq(conversation_id),
+        KeyConditionExpression=Key("ConversationId").eq(
+            _compose_conv_id(user_id, conversation_id)
+        ),
     )
 
     items = response["Items"]
@@ -142,7 +215,10 @@ def change_conversation_title(conversation_id: str, new_title: str):
 
     # Then, we update the item using its primary key
     response = table.update_item(
-        Key={"UserId": user_id, "ConversationId": conversation_id},
+        Key={
+            "UserId": user_id,
+            "ConversationId": _compose_conv_id(user_id, conversation_id),
+        },
         UpdateExpression="set Title=:t",
         ExpressionAttributeValues={":t": new_title},
         ReturnValues="UPDATED_NEW",
