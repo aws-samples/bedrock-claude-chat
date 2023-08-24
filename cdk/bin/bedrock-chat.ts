@@ -8,7 +8,7 @@ const app = new cdk.App();
 const BEDROCK_REGION = app.node.tryGetContext("bedrockRegion");
 const BEDROCK_ENDPOINT_URL = app.node.tryGetContext("bedrockEndpointUrl");
 
-new BedrockChatStack(app, `BedrockChatStackDev`, {
+new BedrockChatStack(app, `BedrockChatStack`, {
   bedrockRegion: BEDROCK_REGION,
   bedrockEndpointUrl: BEDROCK_ENDPOINT_URL,
 });
