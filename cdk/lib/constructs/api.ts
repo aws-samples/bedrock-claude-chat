@@ -29,6 +29,34 @@ export class Api extends Construct {
 
     const { database, corsAllowOrigins: allowOrigins = ["*"] } = props;
 
+    const tableAccessRole = new iam.Role(this, "TableAccessRole", {
+      assumedBy: new iam.AccountPrincipal(Stack.of(this).account),
+    });
+    database.grantReadWriteData(tableAccessRole);
+
+    const handlerRole = new iam.Role(this, "HandlerRole", {
+      assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
+    });
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: ["sts:AssumeRole"],
+        resources: [tableAccessRole.roleArn],
+      })
+    );
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: ["bedrock:*"],
+        resources: ["*"],
+      })
+    );
+
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: ["sts:AssumeRole"],
+        resources: ["arn:aws:iam::936931980683:role/BedrockRole4RP"],
+      })
+    );
+
     const handler = new DockerImageFunction(this, "Handler", {
       code: DockerImageCode.fromImageAsset("../backend", {
         platform: Platform.LINUX_AMD64,
@@ -40,26 +68,14 @@ export class Api extends Construct {
         CORS_ALLOW_ORIGINS: allowOrigins.join(","),
         USER_POOL_ID: props.auth.userPool.userPoolId,
         CLIENT_ID: props.auth.client.userPoolClientId,
+        ACCOUNT: Stack.of(this).account,
         REGION: Stack.of(this).region,
         BEDROCK_REGION: props.bedrockRegion,
         ENDPOINT_URL: props.bedrockEndpointUrl,
+        TABLE_ACCESS_ROLE_ARN: tableAccessRole.roleArn,
       },
+      role: handlerRole,
     });
-    handler.role?.attachInlinePolicy(
-      new iam.Policy(this, "BedrockPolicy", {
-        statements: [
-          new iam.PolicyStatement({
-            actions: ["bedrock:*"],
-            resources: ["*"],
-          }),
-        ],
-      })
-    );
-    handler.role?.grantAssumeRole(
-      new iam.ServicePrincipal("bedrock.amazonaws.com")
-    );
-
-    database.grantReadWriteData(handler);
 
     const api = new HttpApi(this, "Default", {
       corsPreflight: {

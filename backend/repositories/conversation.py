@@ -9,13 +9,65 @@ from boto3.dynamodb.conditions import Key
 from .model import ContentModel, ConversationModel, MessageModel
 
 TABLE_NAME = os.environ.get("TABLE_NAME", "")
+ACCOUNT = os.environ.get("ACCOUNT", "")
 REGION = os.environ.get("REGION", "ap-northeast-1")
+TABLE_ACCESS_ROLE_ARN = os.environ.get("TABLE_ACCESS_ROLE_ARN", "")
 
 dynamodb = boto3.resource("dynamodb", region_name=REGION)
+sts_client = boto3.client("sts")
 
 
-def store_conversation(user_id, conversation: ConversationModel):
+def _get_table_client(user_id: str):
+    """Get a DynamoDB table client with row level access
+    Ref: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_dynamodb_items.html
+    """
+    policy_document = {
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "dynamodb:BatchGetItem",
+                    "dynamodb:BatchWriteItem",
+                    "dynamodb:ConditionCheckItem",
+                    "dynamodb:DeleteItem",
+                    "dynamodb:DescribeTable",
+                    "dynamodb:GetItem",
+                    "dynamodb:GetRecords",
+                    "dynamodb:PutItem",
+                    "dynamodb:Query",
+                    "dynamodb:Scan",
+                    "dynamodb:UpdateItem",
+                ],
+                "Resource": [
+                    f"arn:aws:dynamodb:{REGION}:{ACCOUNT}:table/{TABLE_NAME}",
+                    f"arn:aws:dynamodb:{REGION}:{ACCOUNT}:table/{TABLE_NAME}/index/*",
+                ],
+                "Condition": {
+                    # Allow access to items with the same partition key as the user id
+                    "ForAllValues:StringLike": {"dynamodb:LeadingKeys": [f"{user_id}"]}
+                },
+            }
+        ]
+    }
+    assumed_role_object = sts_client.assume_role(
+        RoleArn=TABLE_ACCESS_ROLE_ARN,
+        RoleSessionName="DynamoDBSession",
+        Policy=json.dumps(policy_document),
+    )
+    credentials = assumed_role_object["Credentials"]
+    dynamodb = boto3.resource(
+        "dynamodb",
+        region_name=REGION,
+        aws_access_key_id=credentials["AccessKeyId"],
+        aws_secret_access_key=credentials["SecretAccessKey"],
+        aws_session_token=credentials["SessionToken"],
+    )
     table = dynamodb.Table(TABLE_NAME)
+    return table
+
+
+def store_conversation(user_id: str, conversation: ConversationModel):
+    table = _get_table_client(user_id)
     response = table.put_item(
         Item={
             "UserId": user_id,
@@ -31,7 +83,7 @@ def store_conversation(user_id, conversation: ConversationModel):
 
 
 def find_conversation_by_user_id(user_id: str) -> list[ConversationModel]:
-    table = dynamodb.Table(TABLE_NAME)
+    table = _get_table_client(user_id)
     response = table.query(KeyConditionExpression=Key("UserId").eq(user_id))
 
     return [
@@ -111,7 +163,7 @@ def delete_conversation_by_user_id(user_id: str):
     # First, find all conversations for the user
     conversations = find_conversation_by_user_id(user_id)
     if conversations:
-        table = dynamodb.Table(TABLE_NAME)
+        table = _get_table_client(user_id)
         responses = []
         for conversation in conversations:
             # Construct key to delete
