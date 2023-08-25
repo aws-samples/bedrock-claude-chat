@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Request
-from fastapi.responses import StreamingResponse
 from repositories.conversation import (
     change_conversation_title,
     delete_conversation_by_id,
@@ -18,7 +17,7 @@ from route_schema import (
     ProposedTitle,
     User,
 )
-from usecase import chat, chat_stream, propose_conversation_title
+from usecase import chat, get_invoke_payload, propose_conversation_title
 
 router = APIRouter()
 
@@ -34,12 +33,8 @@ def post_message(request: Request, chat_input: ChatInput):
     """チャットメッセージを送信する"""
     current_user: User = request.state.current_user
 
-    if chat_input.stream:
-        stream = chat_stream(user_id=current_user.id, chat_input=chat_input)
-        return StreamingResponse(stream, media_type="text/event-stream")
-    else:
-        output = chat(user_id=current_user.id, chat_input=chat_input)
-        return output
+    output = chat(user_id=current_user.id, chat_input=chat_input)
+    return output
 
 
 @router.get("/conversation/{conversation_id}", response_model=Conversation)

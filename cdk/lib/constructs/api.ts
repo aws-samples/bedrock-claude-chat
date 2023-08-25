@@ -13,6 +13,7 @@ import { Auth } from "./auth";
 import { Platform } from "aws-cdk-lib/aws-ecr-assets";
 import { Stack } from "aws-cdk-lib";
 import * as iam from "aws-cdk-lib/aws-iam";
+import * as path from "path";
 
 export interface ApiProps {
   readonly database: ITable;
@@ -20,6 +21,7 @@ export interface ApiProps {
   readonly auth: Auth;
   readonly bedrockRegion: string;
   readonly bedrockEndpointUrl: string;
+  readonly tableAccessRole: iam.IRole;
 }
 
 export class Api extends Construct {
@@ -27,12 +29,11 @@ export class Api extends Construct {
   constructor(scope: Construct, id: string, props: ApiProps) {
     super(scope, id);
 
-    const { database, corsAllowOrigins: allowOrigins = ["*"] } = props;
-
-    const tableAccessRole = new iam.Role(this, "TableAccessRole", {
-      assumedBy: new iam.AccountPrincipal(Stack.of(this).account),
-    });
-    database.grantReadWriteData(tableAccessRole);
+    const {
+      database,
+      tableAccessRole,
+      corsAllowOrigins: allowOrigins = ["*"],
+    } = props;
 
     const handlerRole = new iam.Role(this, "HandlerRole", {
       assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
@@ -50,11 +51,20 @@ export class Api extends Construct {
         resources: ["*"],
       })
     );
+    handlerRole.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        "service-role/AWSLambdaBasicExecutionRole"
+      )
+    );
 
     const handler = new DockerImageFunction(this, "Handler", {
-      code: DockerImageCode.fromImageAsset("../backend", {
-        platform: Platform.LINUX_AMD64,
-      }),
+      code: DockerImageCode.fromImageAsset(
+        path.join(__dirname, "../../../backend"),
+        {
+          platform: Platform.LINUX_AMD64,
+          file: "api/Dockerfile",
+        }
+      ),
       memorySize: 256,
       timeout: Duration.seconds(30),
       environment: {

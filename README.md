@@ -76,6 +76,7 @@ git clone https://github.com/aws-samples/bedrock-claude-chat
 
 ```
 cd bedrock-claude-chat
+cd cdk
 npm ci
 ```
 
@@ -88,7 +89,6 @@ npm i -g aws-cdk
 - Before deploying the CDK, you will need to work with Bootstrap once for the region you are deploying to. In this example, we will deploy to the us-east-1 region
 
 ```
-cd cdk
 cdk bootstrap us-east-1
 ```
 

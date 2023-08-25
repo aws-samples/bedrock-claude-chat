@@ -31,7 +31,6 @@ class MessageOutput(BaseSchema):
 class ChatInput(BaseSchema):
     conversation_id: str | None = Field(None, description="会話ID (nullの場合は会話を新規作成)")
     message: MessageInput = Field(..., description="メッセージの内容")
-    stream: bool = Field(False, description="ストリーミングレスポンスを行うかどうか")
 
 
 class ChatOutput(BaseSchema):
@@ -55,6 +54,7 @@ class Conversation(BaseSchema):
 
 class NewTitleInput(BaseSchema):
     new_title: str
+
 
 class ProposedTitle(BaseSchema):
     title: str

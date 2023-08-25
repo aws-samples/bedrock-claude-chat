@@ -3,6 +3,7 @@ from typing import Callable
 
 from auth import get_current_user
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials
@@ -36,6 +37,10 @@ def error_handler_factory(status_code: int) -> Callable[[Exception], JSONRespons
 
 app.add_exception_handler(ValueError, error_handler_factory(400))
 app.add_exception_handler(TypeError, error_handler_factory(400))
+app.add_exception_handler(
+    RequestValidationError,
+    lambda request, exc: (print(exc), {"content": {}, "status_code": 422})[1],
+)
 app.add_exception_handler(Exception, error_handler_factory(500))
 
 
