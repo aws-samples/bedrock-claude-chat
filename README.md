@@ -21,12 +21,14 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 
 ## Features
 
-- Authentication (Sign-up, Sign-in)
-- Creation, storage, and deletion of conversations
-- Copying of chatbot replies
-- Automatic subject suggestion for conversations
-- Syntax highlighting for code
-- Rendering of Markdown
+- [x] Authentication (Sign-up, Sign-in)
+- [x] Creation, storage, and deletion of conversations
+- [x] Copying of chatbot replies
+- [x] Automatic subject suggestion for conversations
+- [x] Syntax highlighting for code
+- [x] Rendering of Markdown'
+- [ ] Streaming Response
+- [ ] RAG (Retrieval Augmented Generation)
 
 ## Deployment
 
