@@ -3,7 +3,9 @@ FROM python:3.11.4-slim-bullseye
 RUN apt update && apt install -y curl unzip
 
 WORKDIR /app
-COPY . .
+COPY ./common .
+COPY ./api .
+
 
 # Install lambda web adapter
 COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.7.0 /lambda-adapter /opt/extensions/lambda-adapter

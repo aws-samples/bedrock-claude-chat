@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 
-from bedrock import invoke, invoke_with_stream
+from bedrock import _create_body, get_model_id, invoke, invoke_with_stream
 from repositories.conversation import find_conversation_by_id, store_conversation
 from repositories.model import ContentModel, ConversationModel, MessageModel
 from route_schema import ChatInput, ChatOutput, Content, MessageOutput
@@ -9,7 +9,7 @@ from ulid import ULID
 from utils import get_buffer_string
 
 
-def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
+def prepare_conversation(user_id: str, chat_input: ChatInput) -> ConversationModel:
     if chat_input.conversation_id:
         # Fetch existing conversation
         conversation = find_conversation_by_id(user_id, chat_input.conversation_id)
@@ -34,6 +34,26 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         create_time=datetime.now().timestamp(),
     )
     conversation.messages.append(new_message)
+
+    return conversation
+
+
+def get_invoke_payload(conversation: ConversationModel, chat_input: ChatInput):
+    prompt = get_buffer_string(conversation.messages)
+    body = _create_body(chat_input.message.model, prompt)
+    model_id = get_model_id(chat_input.message.model)
+    accept = "application/json"
+    content_type = "application/json"
+    return {
+        "body": body,
+        "model_id": model_id,
+        "accept": accept,
+        "content_type": content_type,
+    }
+
+
+def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
+    conversation = prepare_conversation(user_id, chat_input)
 
     # Invoke Bedrock
     prompt = get_buffer_string(conversation.messages)
@@ -67,78 +87,6 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     )
 
     return output
-
-
-def chat_stream(user_id: str, chat_input: ChatInput):
-    raise NotImplementedError("Not supported yet")
-
-    if chat_input.conversation_id:
-        # Fetch existing conversation
-        conversation = find_conversation_by_id(chat_input.conversation_id)
-    else:
-        # Create new conversation
-        conversation = ConversationModel(
-            id=str(ULID()),
-            title="New conversation",
-            create_time=datetime.now().timestamp(),
-            messages=[],
-        )
-
-    # Append user chat input to the conversation
-    new_message = MessageModel(
-        id=str(ULID()),
-        role=chat_input.message.role,
-        content=ContentModel(
-            content_type=chat_input.message.content.content_type,
-            body=chat_input.message.content.body,
-        ),
-        model=chat_input.message.model,
-        create_time=datetime.now().timestamp(),
-    )
-    conversation.messages.append(new_message)
-
-    # Invoke Bedrock
-    prompt = get_buffer_string(conversation.messages)
-    reply = []
-    for chunk in invoke_with_stream(prompt=prompt, model=chat_input.message.model):
-        message = MessageModel(
-            id=str(ULID()),
-            role="assistant",
-            content=ContentModel(content_type="text", body=chunk),
-            model=chat_input.message.model,
-            create_time=datetime.now().timestamp(),
-        )
-        output = ChatOutput(
-            conversation_id=conversation.id,
-            create_time=conversation.create_time,
-            message=MessageOutput(
-                id=message.id,
-                role=message.role,
-                content=Content(
-                    content_type=message.content.content_type,
-                    body=message.content.body,
-                ),
-                model=message.model,
-            ),
-        )
-        reply.append(chunk)
-        yield f"data: {output.model_dump()}\n\n"
-
-    reply_txt = "".join(reply)
-
-    # Append bedrock output
-    conversation.messages.append(
-        MessageModel(
-            id=str(ULID()),
-            role="assistant",
-            content=ContentModel(content_type="text", body=reply_txt),
-            model=chat_input.message.model,
-            create_time=datetime.now().timestamp(),
-        )
-    )
-
-    # Store updated conversation
-    store_conversation(user_id, conversation)
 
 
 def propose_conversation_title(

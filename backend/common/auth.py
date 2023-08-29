@@ -24,7 +24,6 @@ def get_current_user(token: HTTPAuthorizationCredentials = Depends(security)):
         decoded = jwt.decode(
             token.credentials, key, algorithms=["RS256"], audience=CLIENT_ID
         )
-        print(decoded)
 
         # Return user information
         return User(

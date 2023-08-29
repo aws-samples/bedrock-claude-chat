@@ -75,6 +75,7 @@ git clone https://github.com/aws-samples/bedrock-claude-chat
 
 ```
 cd bedrock-claude-chat
+cd cdk
 npm ci
 ```
 
@@ -87,7 +88,6 @@ npm i -g aws-cdk
 - CDK デプロイ前に、デプロイ先リージョンに対して 1 度だけ Bootstrap の作業が必要となります。ここでは東京リージョンへデプロイするものとします
 
 ```
-cd cdk
 cdk bootstrap ap-northeast-1
 ```
 

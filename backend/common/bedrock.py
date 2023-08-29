@@ -3,13 +3,9 @@ import os
 
 import boto3
 from config import GENERATION_CONFIG
+from utils import get_bedrock_client
 
-BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
-ENDPOINT_URL = os.environ.get(
-    "ENDPOINT_URL", f"https://bedrock.{BEDROCK_REGION}.amazonaws.com"
-)
-
-client = boto3.client("bedrock", BEDROCK_REGION, endpoint_url=ENDPOINT_URL)
+client = get_bedrock_client()
 
 
 def _create_body(model: str, prompt: str):
