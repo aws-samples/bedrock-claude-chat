@@ -3,14 +3,13 @@ import os
 from datetime import datetime
 
 import boto3
+from auth import verify_token
 from repositories.conversation import store_conversation
 from repositories.model import ContentModel, MessageModel
-from route_schema import ChatInput
+from route_schema import ChatInputWithToken
 from ulid import ULID
 from usecase import get_invoke_payload, prepare_conversation
 from utils import get_bedrock_client
-
-API_ENDPOINT = os.environ.get("API_ENDPOINT", "")
 
 client = get_bedrock_client()
 
@@ -31,7 +30,6 @@ def handler(event, context):
     route_key = event["requestContext"]["routeKey"]
 
     if route_key == "$connect":
-        # Authentication already done by API Gateway
         return {"statusCode": 200, "body": "Connected."}
 
     connection_id = event["requestContext"]["connectionId"]
@@ -41,9 +39,13 @@ def handler(event, context):
     endpoint_url = f"https://{domain_name}/{stage}"
     gatewayapi = boto3.client("apigatewaymanagementapi", endpoint_url=endpoint_url)
 
-    user_id = event["requestContext"]["authorizer"]["user_id"]
+    chat_input = ChatInputWithToken(**json.loads(message))
+    try:
+        decoded = verify_token(chat_input.token)
+    except Exception as e:
+        return {"statusCode": 403, "body": "Forbidden."}
 
-    chat_input = ChatInput(**json.loads(message))
+    user_id = decoded["sub"]
     conversation = prepare_conversation(user_id, chat_input)
     payload = get_invoke_payload(conversation, chat_input)
 

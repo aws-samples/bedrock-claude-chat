@@ -28,17 +28,6 @@ export class WebSocket extends Construct {
 
     const { database, tableAccessRole } = props;
 
-    const authHandler = new python.PythonFunction(this, "AuthHandler", {
-      entry: path.join(__dirname, "../../../backend/websocket/auth"),
-      runtime: Runtime.PYTHON_3_11,
-      environment: {
-        USER_POOL_ID: props.auth.userPool.userPoolId,
-        CLIENT_ID: props.auth.client.userPoolClientId,
-        REGION: Stack.of(this).region,
-      },
-      timeout: Duration.seconds(10),
-    });
-
     const handlerRole = new iam.Role(this, "HandlerRole", {
       assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
     });
@@ -74,23 +63,13 @@ export class WebSocket extends Construct {
         ACCOUNT: Stack.of(this).account,
         REGION: Stack.of(this).region,
         TABLE_NAME: database.tableName,
-        API_ENDPOINT: props.backendApiEndpoint,
         TABLE_ACCESS_ROLE_ARN: tableAccessRole.roleArn,
       },
       role: handlerRole,
     });
 
-    const authorizer = new agwa.WebSocketLambdaAuthorizer(
-      "Authorizer",
-      authHandler,
-      {
-        identitySource: ["route.request.querystring.token"],
-      }
-    );
-
     const webSocketApi = new apigwv2.WebSocketApi(this, "WebSocketApi", {
       connectRouteOptions: {
-        authorizer,
         integration: new WebSocketLambdaIntegration(
           "ConnectIntegration",
           handler
@@ -109,12 +88,6 @@ export class WebSocket extends Construct {
       autoDeploy: true,
     });
     webSocketApi.grantManageConnections(handler);
-    // webSocketApi.addRoute("Stream", {
-    //   integration: new WebSocketLambdaIntegration(
-    //     "StreamIntegration",
-    //     handler
-    //   ),
-    // });
 
     this.webSocketApi = webSocketApi;
 
