@@ -11,11 +11,14 @@ import { Platform } from "aws-cdk-lib/aws-ecr-assets";
 import * as agwa from "@aws-cdk/aws-apigatewayv2-authorizers-alpha";
 import { Auth } from "./auth";
 import { ITable } from "aws-cdk-lib/aws-dynamodb";
+import { CfnRouteResponse } from "aws-cdk-lib/aws-apigatewayv2";
 
 export interface WebSocketProps {
   readonly database: ITable;
   readonly backendApiEndpoint: string;
   readonly auth: Auth;
+  readonly bedrockRegion: string;
+  readonly bedrockEndpointUrl: string;
   readonly tableAccessRole: iam.IRole;
 }
 
@@ -62,6 +65,10 @@ export class WebSocket extends Construct {
       environment: {
         ACCOUNT: Stack.of(this).account,
         REGION: Stack.of(this).region,
+        USER_POOL_ID: props.auth.userPool.userPoolId,
+        CLIENT_ID: props.auth.client.userPoolClientId,
+        BEDROCK_REGION: props.bedrockRegion,
+        ENDPOINT_URL: props.bedrockEndpointUrl,
         TABLE_NAME: database.tableName,
         TABLE_ACCESS_ROLE_ARN: tableAccessRole.roleArn,
       },
@@ -75,12 +82,12 @@ export class WebSocket extends Construct {
           handler
         ),
       },
-      defaultRouteOptions: {
-        integration: new WebSocketLambdaIntegration(
-          "DefaultIntegration",
-          handler
-        ),
-      },
+    });
+    const route = webSocketApi.addRoute("$default", {
+      integration: new WebSocketLambdaIntegration(
+        "DefaultIntegration",
+        handler
+      ),
     });
     new apigwv2.WebSocketStage(this, "WebSocketStage", {
       webSocketApi,
@@ -88,6 +95,12 @@ export class WebSocket extends Construct {
       autoDeploy: true,
     });
     webSocketApi.grantManageConnections(handler);
+
+    new CfnRouteResponse(this, "RouteResponse", {
+      apiId: webSocketApi.apiId,
+      routeId: route.routeId,
+      routeResponseKey: "$default",
+    });
 
     this.webSocketApi = webSocketApi;
 

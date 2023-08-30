@@ -14,22 +14,20 @@ from utils import get_bedrock_client
 client = get_bedrock_client()
 
 
-def generate_completion(stream):
+def generate_chunk(stream) -> bytes:
     if stream:
         for event in stream:
             chunk = event.get("chunk")
             if chunk:
                 chunk_bytes = chunk.get("bytes")
-                chunk_data = json.loads(chunk_bytes.decode("utf-8"))
-                completion = chunk_data.get("completion")
-                if completion:
-                    yield completion
+                yield chunk_bytes
 
 
 def handler(event, context):
     route_key = event["requestContext"]["routeKey"]
 
     if route_key == "$connect":
+        # NOTE: Authentication is done at each message
         return {"statusCode": 200, "body": "Connected."}
 
     connection_id = event["requestContext"]["connectionId"]
@@ -40,10 +38,13 @@ def handler(event, context):
     gatewayapi = boto3.client("apigatewaymanagementapi", endpoint_url=endpoint_url)
 
     chat_input = ChatInputWithToken(**json.loads(message))
+
     try:
+        # Verify JWT token
         decoded = verify_token(chat_input.token)
     except Exception as e:
-        return {"statusCode": 403, "body": "Forbidden."}
+        print(f"Invalid token: {e}")
+        return {"statusCode": 403, "body": "Invalid token."}
 
     user_id = decoded["sub"]
     conversation = prepare_conversation(user_id, chat_input)
@@ -63,17 +64,19 @@ def handler(event, context):
 
     stream = response.get("body")
     completions = []
-    for completion in generate_completion(stream):
+    for chunk in generate_chunk(stream):
         try:
-            completions.append(completion)
-            gatewayapi.post_to_connection(ConnectionId=connection_id, Data=completion)
+            # Send completion
+            gatewayapi.post_to_connection(ConnectionId=connection_id, Data=chunk)
+            chunk_data = json.loads(chunk.decode("utf-8"))
+            completions.append(chunk_data["completion"])
         except Exception as e:
             print(f"Failed to post message: {str(e)}")
-            return {"statusCode": 500, "body": "Failed to send message."}
+            return {"statusCode": 500, "body": "Failed to send message to connection."}
 
     concatenated = "".join(completions)
 
-    # Append bedrock output
+    # Append entire completion as the last message
     message = MessageModel(
         id=str(ULID()),
         role="assistant",
@@ -83,6 +86,7 @@ def handler(event, context):
     )
     conversation.messages.append(message)
 
+    # Persist conversation
     store_conversation(user_id, conversation)
 
     return {"statusCode": 200, "body": "Message sent."}

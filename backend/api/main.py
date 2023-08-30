@@ -1,12 +1,13 @@
 import os
 from typing import Callable
 
-from auth import get_current_user
-from fastapi import FastAPI, Request
+from auth import verify_token
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fastapi.security import HTTPAuthorizationCredentials
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from jose import JWTError
 from route import router
 from route_schema import User
 from starlette.types import ASGIApp
@@ -42,6 +43,24 @@ app.add_exception_handler(
     lambda request, exc: (print(exc), {"content": {}, "status_code": 422})[1],
 )
 app.add_exception_handler(Exception, error_handler_factory(500))
+
+security = HTTPBearer()
+
+
+def get_current_user(token: HTTPAuthorizationCredentials = Depends(security)):
+    try:
+        decoded = verify_token(token.credentials)
+        # Return user information
+        return User(
+            id=decoded["sub"],
+            name=decoded["cognito:username"],
+        )
+    except (IndexError, JWTError):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 
 @app.middleware("http")
