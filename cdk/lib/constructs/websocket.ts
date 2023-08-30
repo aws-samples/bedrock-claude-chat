@@ -11,11 +11,14 @@ import { Platform } from "aws-cdk-lib/aws-ecr-assets";
 import * as agwa from "@aws-cdk/aws-apigatewayv2-authorizers-alpha";
 import { Auth } from "./auth";
 import { ITable } from "aws-cdk-lib/aws-dynamodb";
+import { CfnRouteResponse } from "aws-cdk-lib/aws-apigatewayv2";
 
 export interface WebSocketProps {
   readonly database: ITable;
   readonly backendApiEndpoint: string;
   readonly auth: Auth;
+  readonly bedrockRegion: string;
+  readonly bedrockEndpointUrl: string;
   readonly tableAccessRole: iam.IRole;
 }
 
@@ -27,17 +30,6 @@ export class WebSocket extends Construct {
     super(scope, id);
 
     const { database, tableAccessRole } = props;
-
-    const authHandler = new python.PythonFunction(this, "AuthHandler", {
-      entry: path.join(__dirname, "../../../backend/websocket/auth"),
-      runtime: Runtime.PYTHON_3_11,
-      environment: {
-        USER_POOL_ID: props.auth.userPool.userPoolId,
-        CLIENT_ID: props.auth.client.userPoolClientId,
-        REGION: Stack.of(this).region,
-      },
-      timeout: Duration.seconds(10),
-    });
 
     const handlerRole = new iam.Role(this, "HandlerRole", {
       assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
@@ -73,35 +65,29 @@ export class WebSocket extends Construct {
       environment: {
         ACCOUNT: Stack.of(this).account,
         REGION: Stack.of(this).region,
+        USER_POOL_ID: props.auth.userPool.userPoolId,
+        CLIENT_ID: props.auth.client.userPoolClientId,
+        BEDROCK_REGION: props.bedrockRegion,
+        ENDPOINT_URL: props.bedrockEndpointUrl,
         TABLE_NAME: database.tableName,
-        API_ENDPOINT: props.backendApiEndpoint,
         TABLE_ACCESS_ROLE_ARN: tableAccessRole.roleArn,
       },
       role: handlerRole,
     });
 
-    const authorizer = new agwa.WebSocketLambdaAuthorizer(
-      "Authorizer",
-      authHandler,
-      {
-        identitySource: ["route.request.querystring.token"],
-      }
-    );
-
     const webSocketApi = new apigwv2.WebSocketApi(this, "WebSocketApi", {
       connectRouteOptions: {
-        authorizer,
         integration: new WebSocketLambdaIntegration(
           "ConnectIntegration",
           handler
         ),
       },
-      defaultRouteOptions: {
-        integration: new WebSocketLambdaIntegration(
-          "DefaultIntegration",
-          handler
-        ),
-      },
+    });
+    const route = webSocketApi.addRoute("$default", {
+      integration: new WebSocketLambdaIntegration(
+        "DefaultIntegration",
+        handler
+      ),
     });
     new apigwv2.WebSocketStage(this, "WebSocketStage", {
       webSocketApi,
@@ -109,12 +95,12 @@ export class WebSocket extends Construct {
       autoDeploy: true,
     });
     webSocketApi.grantManageConnections(handler);
-    // webSocketApi.addRoute("Stream", {
-    //   integration: new WebSocketLambdaIntegration(
-    //     "StreamIntegration",
-    //     handler
-    //   ),
-    // });
+
+    new CfnRouteResponse(this, "RouteResponse", {
+      apiId: webSocketApi.apiId,
+      routeId: route.routeId,
+      routeResponseKey: "$default",
+    });
 
     this.webSocketApi = webSocketApi;
 

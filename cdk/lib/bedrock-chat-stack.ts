@@ -47,6 +47,8 @@ export class BedrockChatStack extends cdk.Stack {
       backendApiEndpoint: backendApi.api.apiEndpoint,
       tableAccessRole: database.tableAccessRole,
       auth,
+      bedrockRegion: props.bedrockRegion,
+      bedrockEndpointUrl: props.bedrockEndpointUrl,
     });
 
     const frontend = new Frontend(this, "Frontend", {

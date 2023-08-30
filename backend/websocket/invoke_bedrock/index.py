@@ -3,35 +3,31 @@ import os
 from datetime import datetime
 
 import boto3
+from auth import verify_token
 from repositories.conversation import store_conversation
 from repositories.model import ContentModel, MessageModel
-from route_schema import ChatInput
+from route_schema import ChatInputWithToken
 from ulid import ULID
 from usecase import get_invoke_payload, prepare_conversation
 from utils import get_bedrock_client
 
-API_ENDPOINT = os.environ.get("API_ENDPOINT", "")
-
 client = get_bedrock_client()
 
 
-def generate_completion(stream):
+def generate_chunk(stream) -> bytes:
     if stream:
         for event in stream:
             chunk = event.get("chunk")
             if chunk:
                 chunk_bytes = chunk.get("bytes")
-                chunk_data = json.loads(chunk_bytes.decode("utf-8"))
-                completion = chunk_data.get("completion")
-                if completion:
-                    yield completion
+                yield chunk_bytes
 
 
 def handler(event, context):
     route_key = event["requestContext"]["routeKey"]
 
     if route_key == "$connect":
-        # Authentication already done by API Gateway
+        # NOTE: Authentication is done at each message
         return {"statusCode": 200, "body": "Connected."}
 
     connection_id = event["requestContext"]["connectionId"]
@@ -41,9 +37,16 @@ def handler(event, context):
     endpoint_url = f"https://{domain_name}/{stage}"
     gatewayapi = boto3.client("apigatewaymanagementapi", endpoint_url=endpoint_url)
 
-    user_id = event["requestContext"]["authorizer"]["user_id"]
+    chat_input = ChatInputWithToken(**json.loads(message))
 
-    chat_input = ChatInput(**json.loads(message))
+    try:
+        # Verify JWT token
+        decoded = verify_token(chat_input.token)
+    except Exception as e:
+        print(f"Invalid token: {e}")
+        return {"statusCode": 403, "body": "Invalid token."}
+
+    user_id = decoded["sub"]
     conversation = prepare_conversation(user_id, chat_input)
     payload = get_invoke_payload(conversation, chat_input)
 
@@ -61,17 +64,19 @@ def handler(event, context):
 
     stream = response.get("body")
     completions = []
-    for completion in generate_completion(stream):
+    for chunk in generate_chunk(stream):
         try:
-            completions.append(completion)
-            gatewayapi.post_to_connection(ConnectionId=connection_id, Data=completion)
+            # Send completion
+            gatewayapi.post_to_connection(ConnectionId=connection_id, Data=chunk)
+            chunk_data = json.loads(chunk.decode("utf-8"))
+            completions.append(chunk_data["completion"])
         except Exception as e:
             print(f"Failed to post message: {str(e)}")
-            return {"statusCode": 500, "body": "Failed to send message."}
+            return {"statusCode": 500, "body": "Failed to send message to connection."}
 
     concatenated = "".join(completions)
 
-    # Append bedrock output
+    # Append entire completion as the last message
     message = MessageModel(
         id=str(ULID()),
         role="assistant",
@@ -81,6 +86,7 @@ def handler(event, context):
     )
     conversation.messages.append(message)
 
+    # Persist conversation
     store_conversation(user_id, conversation)
 
     return {"statusCode": 200, "body": "Message sent."}

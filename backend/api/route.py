@@ -67,6 +67,7 @@ def get_conversation(request: Request, conversation_id: str):
 def delete_conversation(request: Request, conversation_id: str):
     """会話履歴を削除する"""
     current_user: User = request.state.current_user
+
     delete_conversation_by_id(current_user.id, conversation_id)
 
 
@@ -103,6 +104,7 @@ def update_conversation_title(
 ):
     """会話のタイトルを更新する"""
     current_user: User = request.state.current_user
+
     change_conversation_title(
         current_user.id, conversation_id, new_title_input.new_title
     )

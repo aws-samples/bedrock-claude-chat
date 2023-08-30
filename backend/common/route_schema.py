@@ -33,6 +33,10 @@ class ChatInput(BaseSchema):
     message: MessageInput = Field(..., description="メッセージの内容")
 
 
+class ChatInputWithToken(ChatInput):
+    token: str
+
+
 class ChatOutput(BaseSchema):
     conversation_id: str | None = Field(...)
     message: MessageOutput = Field(..., description="メッセージの内容")
