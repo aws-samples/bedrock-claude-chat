@@ -2,7 +2,7 @@
 
 日本語は[こちら](./docs/README_ja.md)
 
-This repository is a sample chatbot using the Anthropic company's LLM [Claude 2](https://www.anthropic.com/index/claude-2), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI. **As of August 2023, Bedrock is under preview, and applications are required for usage.** This sample is currently developed for use by Japanese speakers, but it is also possible to speak to the chatbot in English.
+This repository is a sample chatbot using the Anthropic company's LLM [Claude 2](https://www.anthropic.com/index/claude-2), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI. **As of September 2023, Bedrock is under preview, and applications are required for usage.** This sample is currently developed for use by Japanese speakers, but it is also possible to speak to the chatbot in English.
 
 ![](./docs/imgs/demo_en.png)
 ![](./docs/imgs/demo2.gif)

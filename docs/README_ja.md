@@ -1,6 +1,6 @@
 # Bedrock Claude Chat
 
-このリポジトリは、生成系 AI を提供する[Amazon Bedrock](https://aws.amazon.com/jp/bedrock/)の基盤モデルの一つである、Anthropic 社製 LLM [Claude 2](https://www.anthropic.com/index/claude-2)を利用したチャットボットのサンプルです。**2023/8 月現在、Bedrock はプレビュー中です。ご利用の際は申請が必要です。**
+このリポジトリは、生成系 AI を提供する[Amazon Bedrock](https://aws.amazon.com/jp/bedrock/)の基盤モデルの一つである、Anthropic 社製 LLM [Claude 2](https://www.anthropic.com/index/claude-2)を利用したチャットボットのサンプルです。**2023/9 月現在、Bedrock はプレビュー中です。ご利用の際は申請が必要です。**
 
 ![](./imgs/demo1.gif)
 ![](./imgs/demo2.gif)
