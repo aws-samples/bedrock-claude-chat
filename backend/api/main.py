@@ -12,7 +12,8 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
 from route import router
 from route_schema import User
-from starlette.types import ASGIApp
+from starlette.routing import Match
+from starlette.types import ASGIApp, Message
 from utils import is_running_on_lambda
 
 CORS_ALLOW_ORIGINS = os.environ.get("CORS_ALLOW_ORIGINS", "*")
@@ -89,9 +90,17 @@ async def add_log_requests(request: Request, call_next: ASGIApp):
     logger.debug(f"Request path: {request.url.path}")
     logger.debug(f"Request method: {request.method}")
     logger.debug(f"Request headers: {request.headers}")
+
     body = await request.body()
-    if body:
-        logger.debug(f"Request body: {body}")
+    logger.debug(f"Request body: {body}")
+
+    # Avoid application blocking
+    # See: https://github.com/tiangolo/fastapi/issues/394
+    async def receive() -> Message:
+        return {"type": "http.request", "body": body}
+
+    request._receive = receive
 
     response = await call_next(request)
+
     return response
