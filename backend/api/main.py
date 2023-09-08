@@ -1,4 +1,6 @@
+import logging
 import os
+import traceback
 from typing import Callable
 
 from auth import verify_token
@@ -15,6 +17,7 @@ from utils import is_running_on_lambda
 
 CORS_ALLOW_ORIGINS = os.environ.get("CORS_ALLOW_ORIGINS", "*")
 
+logger = logging.getLogger(__name__)
 app = FastAPI()
 
 app.include_router(router)
@@ -31,6 +34,8 @@ app.add_middleware(
 
 def error_handler_factory(status_code: int) -> Callable[[Exception], JSONResponse]:
     def error_handler(_: Request, exc: Exception) -> JSONResponse:
+        logger.error(exc)
+        logger.error(traceback.format_exc())
         return JSONResponse({"errors": [str(exc)]}, status_code=status_code)
 
     return error_handler
@@ -73,6 +78,15 @@ def add_current_user_to_request(request: Request, call_next: ASGIApp):
             request.state.current_user = get_current_user(token)
     else:
         request.state.current_user = User(id="test_user", name="test_user")
+
+    response = call_next(request)
+    return response
+
+
+@app.middleware("http")
+def add_log_requests(request: Request, call_next: ASGIApp):
+    logger.info(f"Request path: {request.url.path}")
+    logger.info(f"Request method: {request.method}")
 
     response = call_next(request)
     return response
