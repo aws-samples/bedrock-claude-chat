@@ -87,10 +87,10 @@ npm ci
 npm i -g aws-cdk
 ```
 
-- CDK デプロイ前に、デプロイ先リージョンに対して 1 度だけ Bootstrap の作業が必要となります。ここでは東京リージョンへデプロイするものとします
+- CDK デプロイ前に、デプロイ先リージョンに対して 1 度だけ Bootstrap の作業が必要となります。ここでは東京リージョンへデプロイするものとします。なお`<account id>`はアカウント ID に置換してください。
 
 ```
-cdk bootstrap ap-northeast-1
+cdk bootstrap aws://<account id>/ap-northeast-1
 ```
 
 - 必要に応じて[cdk.json](../cdk/cdk.json)の下記項目を編集します

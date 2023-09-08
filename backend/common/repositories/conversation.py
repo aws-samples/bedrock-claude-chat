@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from datetime import datetime
 from decimal import Decimal as decimal
@@ -13,6 +14,7 @@ ACCOUNT = os.environ.get("ACCOUNT", "")
 REGION = os.environ.get("REGION", "ap-northeast-1")
 TABLE_ACCESS_ROLE_ARN = os.environ.get("TABLE_ACCESS_ROLE_ARN", "")
 
+logger = logging.getLogger(__name__)
 dynamodb = boto3.resource("dynamodb", region_name=REGION)
 sts_client = boto3.client("sts")
 
@@ -76,6 +78,7 @@ def _get_table_client(user_id: str):
 
 
 def store_conversation(user_id: str, conversation: ConversationModel):
+    logger.debug(f"Storing conversation: {conversation.model_dump_json()}")
     table = _get_table_client(user_id)
     response = table.put_item(
         Item={
@@ -92,10 +95,11 @@ def store_conversation(user_id: str, conversation: ConversationModel):
 
 
 def find_conversation_by_user_id(user_id: str) -> list[ConversationModel]:
+    logger.debug(f"Finding conversations for user: {user_id}")
     table = _get_table_client(user_id)
     response = table.query(KeyConditionExpression=Key("UserId").eq(user_id))
 
-    return [
+    conversations = [
         ConversationModel(
             id=_decompose_conv_id(item["ConversationId"]),
             create_time=float(item["CreateTime"]),
@@ -116,9 +120,12 @@ def find_conversation_by_user_id(user_id: str) -> list[ConversationModel]:
         )
         for item in response["Items"]
     ]
+    logger.debug(f"Found conversations: {conversations}")
+    return conversations
 
 
 def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationModel:
+    logger.debug(f"Finding conversation: {conversation_id}")
     table = _get_table_client(user_id)
     response = table.query(
         IndexName="ConversationIdIndex",
@@ -131,7 +138,7 @@ def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationM
 
     # NOTE: conversation is unique
     item = response["Items"][0]
-    return ConversationModel(
+    conv = ConversationModel(
         id=_decompose_conv_id(item["ConversationId"]),
         create_time=float(item["CreateTime"]),
         title=item["Title"],
@@ -149,9 +156,12 @@ def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationM
             for message in json.loads(item["Messages"])
         ],
     )
+    logger.debug(f"Found conversation: {conv}")
+    return conv
 
 
 def delete_conversation_by_id(user_id: str, conversation_id: str):
+    logger.debug(f"Deleting conversation: {conversation_id}")
     table = _get_table_client(user_id)
 
     # Query the index
@@ -176,6 +186,7 @@ def delete_conversation_by_id(user_id: str, conversation_id: str):
 
 
 def delete_conversation_by_user_id(user_id: str):
+    logger.debug(f"Deleting conversations for user: {user_id}")
     # First, find all conversations for the user
     conversations = find_conversation_by_user_id(user_id)
     if conversations:
@@ -195,6 +206,8 @@ def delete_conversation_by_user_id(user_id: str):
 
 
 def change_conversation_title(user_id: str, conversation_id: str, new_title: str):
+    logger.debug(f"Changing conversation title: {conversation_id}")
+    logger.debug(f"New title: {new_title}")
     table = _get_table_client(user_id)
 
     # First, we need to find the item using the GSI
@@ -223,5 +236,6 @@ def change_conversation_title(user_id: str, conversation_id: str, new_title: str
         ExpressionAttributeValues={":t": new_title},
         ReturnValues="UPDATED_NEW",
     )
+    logger.debug(f"Updated conversation title response: {response}")
 
     return response
