@@ -88,10 +88,10 @@ npm ci
 npm i -g aws-cdk
 ```
 
-- Before deploying the CDK, you will need to work with Bootstrap once for the region you are deploying to. In this example, we will deploy to the us-east-1 region
+- Before deploying the CDK, you will need to work with Bootstrap once for the region you are deploying to. In this example, we will deploy to the us-east-1 region. Please replace your account id into `<account id>`.
 
 ```
-cdk bootstrap us-east-1
+cdk bootstrap aws://<account id>/us-east-1
 ```
 
 - If necessary, edit the following entries in [cdk.json](. /cdk/cdk.json) if necessary.
