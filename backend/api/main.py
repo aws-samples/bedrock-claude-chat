@@ -37,7 +37,7 @@ app.add_middleware(
 def error_handler_factory(status_code: int) -> Callable[[Exception], JSONResponse]:
     def error_handler(_: Request, exc: Exception) -> JSONResponse:
         logger.error(exc)
-        logger.error(traceback.format_exc())
+        logger.error("".join(traceback.format_tb(exc.__traceback__)))
         return JSONResponse({"errors": [str(exc)]}, status_code=status_code)
 
     return error_handler
