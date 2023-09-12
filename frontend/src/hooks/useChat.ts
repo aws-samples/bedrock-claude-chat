@@ -10,11 +10,29 @@ import useConversation from "./useConversation";
 import { useNavigate } from "react-router-dom";
 import { create } from "zustand";
 
+type ChatStateType = {
+  [id: string]: MessageContent[];
+};
+
 const useChatState = create<{
+  chats: ChatStateType;
+  setMessages: (id: string, messages: MessageContent[]) => void;
+  getMessages: (id: string) => MessageContent[];
   isGeneratedTitle: boolean;
   setIsGeneratedTitle: (b: boolean) => void;
-}>((set) => {
+}>((set, get) => {
   return {
+    chats: {},
+    setMessages: (id: string, messages: MessageContent[]) => {
+      set((state) => ({
+        chats: produce(state.chats, (draft) => {
+          draft[id] = messages;
+        }),
+      }));
+    },
+    getMessages: (id: string) => {
+      return get().chats[id] ? get().chats[id] : [];
+    },
     isGeneratedTitle: false,
     setIsGeneratedTitle: (b: boolean) => {
       set(() => ({
@@ -25,20 +43,29 @@ const useChatState = create<{
 });
 
 const useChat = (id?: string) => {
-  const [isGeneratedTitle, setIsGeneratedTitle] = useChatState((state) => [
-    state.isGeneratedTitle,
-    state.setIsGeneratedTitle,
-  ]);
+  const { setMessages, getMessages, isGeneratedTitle, setIsGeneratedTitle } =
+    useChatState();
 
   const navigate = useNavigate();
   const [conversationId, setConversationId] = useState(id);
   const [loading, setLoading] = useState(false);
 
   const conversationApi = useConversationApi();
-  const { data, mutate } = conversationApi.getConversation(conversationId);
+  const {
+    data,
+    mutate,
+    isLoading: loadingConversation,
+  } = conversationApi.getConversation(conversationId);
   const { syncConversations } = useConversation();
 
   const [initialContent, setInitialContent] = useState<Conversation>();
+
+  useEffect(() => {
+    if (!loadingConversation && data) {
+      setMessages(data.id, data.messages);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, loadingConversation]);
 
   useEffect(() => {
     setConversationId(id);
@@ -81,6 +108,7 @@ const useChat = (id?: string) => {
     isGeneratedTitle,
     setIsGeneratedTitle,
     chats,
+    messages: conversationId ? getMessages(conversationId) : [],
     postChat: (content: string) => {
       const messageContent: MessageContent = {
         content: {

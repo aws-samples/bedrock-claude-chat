@@ -8,7 +8,7 @@ import { useParams } from "react-router-dom";
 const ChatPage: React.FC = () => {
   const [content, setContent] = useState("");
   const { conversationId } = useParams();
-  const { loading, chats, postChat } = useChat(conversationId);
+  const { loading, postChat, messages } = useChat(conversationId);
   const { scrollToBottom, scrollToTop } = useScroll();
 
   const onSend = useCallback(() => {
@@ -19,7 +19,7 @@ const ChatPage: React.FC = () => {
   }, [content]);
 
   useEffect(() => {
-    if (chats.length > 0) {
+    if (messages.length > 0) {
       scrollToBottom();
     } else {
       scrollToTop();
@@ -31,16 +31,16 @@ const ChatPage: React.FC = () => {
   return (
     <>
       <div className="pb-24">
-        {chats.length === 0 && (
+        {messages.length === 0 && (
           <>
             <div className="mx-3 my-32 flex items-center justify-center text-4xl font-bold text-gray-500/20">
               Bedrock Claude Chat
             </div>
           </>
         )}
-        {chats.map((chat, idx) => (
+        {messages.map((message, idx) => (
           <div key={idx}>
-            <ChatMessage chatContent={chat} />
+            <ChatMessage chatContent={message} />
             <div className="w-full border"></div>
           </div>
         ))}
