@@ -1,13 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect } from "react";
 import useConversationApi from "./useConversationApi";
 import { produce } from "immer";
-import {
-  Conversation,
-  MessageContent,
-  PostMessageRequest,
-} from "../@types/conversation";
+import { MessageContent, PostMessageRequest } from "../@types/conversation";
 import useConversation from "./useConversation";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { create } from "zustand";
 
 type ChatStateType = {
@@ -15,18 +11,34 @@ type ChatStateType = {
 };
 
 const useChatState = create<{
+  postingMessage: boolean;
+  setPostingMessage: (b: boolean) => void;
   chats: ChatStateType;
   setMessages: (id: string, messages: MessageContent[]) => void;
+  pushMessage: (id: string, message: MessageContent) => void;
   getMessages: (id: string) => MessageContent[];
   isGeneratedTitle: boolean;
   setIsGeneratedTitle: (b: boolean) => void;
 }>((set, get) => {
   return {
+    postingMessage: false,
+    setPostingMessage: (b) => {
+      set(() => ({
+        postingMessage: b,
+      }));
+    },
     chats: {},
     setMessages: (id: string, messages: MessageContent[]) => {
       set((state) => ({
         chats: produce(state.chats, (draft) => {
           draft[id] = messages;
+        }),
+      }));
+    },
+    pushMessage: (id: string, message: MessageContent) => {
+      set((state) => ({
+        chats: produce(state.chats, (draft) => {
+          draft[id].push(message);
         }),
       }));
     },
@@ -42,13 +54,19 @@ const useChatState = create<{
   };
 });
 
-const useChat = (id?: string) => {
-  const { setMessages, getMessages, isGeneratedTitle, setIsGeneratedTitle } =
-    useChatState();
+const useChat = () => {
+  const {
+    postingMessage,
+    setPostingMessage,
+    setMessages,
+    pushMessage,
+    getMessages,
+    isGeneratedTitle,
+    setIsGeneratedTitle,
+  } = useChatState();
 
   const navigate = useNavigate();
-  const [conversationId, setConversationId] = useState(id);
-  const [loading, setLoading] = useState(false);
+  const { conversationId } = useParams();
 
   const conversationApi = useConversationApi();
   const {
@@ -58,57 +76,26 @@ const useChat = (id?: string) => {
   } = conversationApi.getConversation(conversationId);
   const { syncConversations } = useConversation();
 
-  const [initialContent, setInitialContent] = useState<Conversation>();
-
   useEffect(() => {
-    if (!loadingConversation && data) {
-      setMessages(data.id, data.messages);
+    if (conversationId) {
+      setMessages(conversationId ?? "", data ? data.messages : []);
+    } else {
+      setMessages("", []);
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, loadingConversation]);
-
-  useEffect(() => {
-    setConversationId(id);
-
-    if (!id) {
-      const INIT_CONTENT = {
-        id: "",
-        createTime: 0,
-        messages: [],
-        title: "",
-      };
-
-      mutate(INIT_CONTENT, {
-        revalidate: false,
-      });
-      setInitialContent(INIT_CONTENT);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [data, loadingConversation, conversationId]);
 
   useEffect(() => {
     setIsGeneratedTitle(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId]);
 
-  const isEmpty = useMemo(() => {
-    return (data?.messages.length ?? 0) === 0;
-  }, [data]);
-
-  const chats = useMemo<MessageContent[]>(() => {
-    if (isEmpty && initialContent) {
-      return initialContent.messages;
-    }
-
-    return data?.messages.filter((chat) => chat.role !== "system") ?? [];
-  }, [data, initialContent, isEmpty]);
-
   return {
-    loading,
+    postingMessage,
     isGeneratedTitle,
     setIsGeneratedTitle,
-    chats,
-    messages: conversationId ? getMessages(conversationId) : [],
+    messages: getMessages(conversationId ?? ""),
     postChat: (content: string) => {
       const messageContent: MessageContent = {
         content: {
@@ -124,33 +111,16 @@ const useChat = (id?: string) => {
         stream: false,
       };
 
-      setLoading(true);
+      setPostingMessage(true);
 
-      if (!isEmpty) {
-        mutate(
-          produce(data, (draft) => {
-            draft?.messages.push({
-              ...input.message,
-            });
-          }),
-          {
-            revalidate: false,
-          }
-        );
-      } else {
-        setInitialContent({
-          id: "",
-          createTime: 0,
-          title: "",
-          messages: [messageContent],
-        });
-      }
+      pushMessage(conversationId ?? "", messageContent);
 
       conversationApi
         .postMessage(input)
         .then((res) => {
+          pushMessage(conversationId ?? "", res.data.message);
           // 新規チャットの場合の処理
-          if (isEmpty) {
+          if (!conversationId) {
             conversationApi
               .updateTitleWithGeneratedTitle(res.data.conversationId)
               .finally(() => {
@@ -159,22 +129,12 @@ const useChat = (id?: string) => {
                   setIsGeneratedTitle(true);
                 });
               });
-            setConversationId(res.data.conversationId);
           } else {
-            mutate(
-              produce(data, (draft) => {
-                draft?.messages.push({
-                  ...input.message,
-                });
-                draft?.messages.push({
-                  ...res.data.message,
-                });
-              })
-            );
+            mutate();
           }
         })
         .finally(() => {
-          setLoading(false);
+          setPostingMessage(false);
         });
     },
   };

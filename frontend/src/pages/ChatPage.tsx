@@ -3,12 +3,10 @@ import InputChatContent from "../components/InputChatContent";
 import useChat from "../hooks/useChat";
 import ChatMessage from "../components/ChatMessage";
 import useScroll from "../hooks/useScroll";
-import { useParams } from "react-router-dom";
 
 const ChatPage: React.FC = () => {
   const [content, setContent] = useState("");
-  const { conversationId } = useParams();
-  const { loading, postChat, messages } = useChat(conversationId);
+  const { postingMessage, postChat, messages } = useChat();
   const { scrollToBottom, scrollToTop } = useScroll();
 
   const onSend = useCallback(() => {
@@ -26,7 +24,7 @@ const ChatPage: React.FC = () => {
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading]);
+  }, [postingMessage]);
 
   return (
     <>
@@ -44,13 +42,13 @@ const ChatPage: React.FC = () => {
             <div className="w-full border"></div>
           </div>
         ))}
-        {loading && <ChatMessage loading />}
+        {postingMessage && <ChatMessage loading />}
       </div>
 
       <div className="absolute bottom-0 z-0 flex w-full justify-center">
         <InputChatContent
           content={content}
-          disabled={loading}
+          disabled={postingMessage}
           onChangeContent={setContent}
           onSend={() => {
             onSend();

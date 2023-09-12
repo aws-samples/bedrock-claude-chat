@@ -12,7 +12,7 @@ type Props = {
 };
 
 const InputChatContent: React.FC<Props> = (props) => {
-  const { loading } = useChat();
+  const { postingMessage } = useChat();
 
   const disabledSend = useMemo(() => {
     return props.content === "" || props.disabled;
@@ -54,7 +54,7 @@ const InputChatContent: React.FC<Props> = (props) => {
       <ButtonSend
         className="m-2 align-bottom"
         disabled={disabledSend}
-        loading={loading}
+        loading={postingMessage}
         onClick={props.onSend}
       />
     </div>
