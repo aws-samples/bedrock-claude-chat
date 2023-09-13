@@ -24,7 +24,7 @@ const ChatPage: React.FC = () => {
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [postingMessage]);
+  }, [messages]);
 
   return (
     <>
