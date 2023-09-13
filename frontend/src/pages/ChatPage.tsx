@@ -3,18 +3,24 @@ import InputChatContent from "../components/InputChatContent";
 import useChat from "../hooks/useChat";
 import ChatMessage from "../components/ChatMessage";
 import useScroll from "../hooks/useScroll";
+import { useParams } from "react-router-dom";
 
 const ChatPage: React.FC = () => {
   const [content, setContent] = useState("");
-  const { postingMessage, postChat, messages } = useChat();
+  const { postingMessage, postChat, messages, setConversationId } = useChat();
   const { scrollToBottom, scrollToTop } = useScroll();
+
+  const { conversationId: paramConversationId } = useParams();
+
+  useEffect(() => {
+    setConversationId(paramConversationId ?? "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paramConversationId]);
 
   const onSend = useCallback(() => {
     postChat(content);
     setContent("");
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [content]);
+  }, [content, postChat]);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -22,9 +28,7 @@ const ChatPage: React.FC = () => {
     } else {
       scrollToTop();
     }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messages]);
+  }, [messages, scrollToBottom, scrollToTop]);
 
   return (
     <>

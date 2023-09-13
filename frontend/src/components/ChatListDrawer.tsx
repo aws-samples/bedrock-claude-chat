@@ -217,6 +217,7 @@ const ChatListDrawer: React.FC<Props> = (props) => {
   const deleteChat = useCallback(
     (conversationId: string) => {
       deleteConversation(conversationId).then(() => {
+        newChat();
         navigate("");
         setIsOpenDeleteModal(false);
         setDeleteTarget(undefined);

@@ -3,7 +3,7 @@ import useConversationApi from "./useConversationApi";
 import { produce } from "immer";
 import { MessageContent, PostMessageRequest } from "../@types/conversation";
 import useConversation from "./useConversation";
-import { useParams } from "react-router-dom";
+
 import { create } from "zustand";
 import usePostMessageStreaming from "./usePostMessageStreaming";
 
@@ -99,13 +99,6 @@ const useChat = () => {
 
   const { post: postStreaming } = usePostMessageStreaming();
 
-  const { conversationId: paramConversationId } = useParams();
-
-  useEffect(() => {
-    setConversationId(paramConversationId ?? "");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paramConversationId]);
-
   const conversationApi = useConversationApi();
   const {
     data,
@@ -122,8 +115,7 @@ const useChat = () => {
     if (conversationId && data?.id === conversationId) {
       setMessages(conversationId, data ? data.messages : []);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversationId, data]);
+  }, [conversationId, data, setMessages]);
 
   useEffect(() => {
     setIsGeneratedTitle(false);
@@ -131,6 +123,7 @@ const useChat = () => {
   }, [conversationId]);
 
   return {
+    setConversationId,
     conversationId,
     loadingConversation,
     postingMessage,
@@ -153,7 +146,7 @@ const useChat = () => {
       const input: PostMessageRequest = {
         conversationId: conversationId ?? undefined,
         message: messageContent,
-        stream: false,
+        stream: true,
       };
 
       setPostingMessage(true);
@@ -174,12 +167,13 @@ const useChat = () => {
         .then((newConversationId) => {
           // 新規チャットの場合の処理
           if (!conversationId) {
+            setConversationId(newConversationId);
+            setMessages(newConversationId, getMessages(""));
+
             conversationApi
               .updateTitleWithGeneratedTitle(newConversationId)
               .finally(() => {
                 syncConversations().then(() => {
-                  setConversationId(newConversationId);
-                  setMessages(newConversationId, getMessages(""));
                   setIsGeneratedTitle(true);
                 });
               });
