@@ -7,7 +7,7 @@ import React, {
   useState,
 } from "react";
 import { BaseProps } from "../@types/common";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import useDrawer from "../hooks/useDrawer";
 import ButtonIcon from "./ButtonIcon";
 import {
@@ -26,6 +26,7 @@ import LazyOutputText from "./LazyOutputText";
 import DialogConfirmDelete from "./DialogConfirmDeleteChat";
 import { ConversationMeta } from "../@types/conversation";
 import { isMobile } from "react-device-detect";
+import useChat from "../hooks/useChat";
 
 type Props = BaseProps & {
   onSignOut: () => void;
@@ -40,7 +41,7 @@ type ItemProps = BaseProps & {
 };
 
 const Item: React.FC<ItemProps> = (props) => {
-  const { conversationId } = useParams();
+  const { conversationId } = useChat();
   const [tempLabel, setTempLabel] = useState("");
   const [editing, setEditing] = useState(false);
   const { updateTitle } = useConversation();
@@ -103,8 +104,8 @@ const Item: React.FC<ItemProps> = (props) => {
 
   return (
     <Link
-      className={`m-2 flex h-10 items-center justify-between rounded p-2 hover:bg-aws-sea-blue/40  ${
-        active && "bg-aws-sea-blue "
+      className={`m-2 flex h-10 items-center justify-between rounded p-2  ${
+        active ? "bg-aws-sea-blue" : "hover:bg-aws-sea-blue/40"
       } ${props.className}`}
       to={props.to}
       onClick={props.onClick}
@@ -171,6 +172,7 @@ const ChatListDrawer: React.FC<Props> = (props) => {
   const [generateTitleIndex, setGenerateTitleIndex] = useState(-1);
 
   const { deleteConversation } = useConversation();
+  const { newChat } = useChat();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -193,6 +195,7 @@ const ChatListDrawer: React.FC<Props> = (props) => {
   }, [conversations, prevConversations]);
 
   const onClickNewChat = useCallback(() => {
+    newChat();
     navigate("");
     closeSamllDrawer();
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -29,19 +29,20 @@ const ChatPage: React.FC = () => {
   return (
     <>
       <div className="pb-24">
-        {messages.length === 0 && (
+        {messages.length === 0 ? (
           <>
             <div className="mx-3 my-32 flex items-center justify-center text-4xl font-bold text-gray-500/20">
               Bedrock Claude Chat
             </div>
           </>
+        ) : (
+          messages.map((message, idx) => (
+            <div key={idx}>
+              <ChatMessage chatContent={message} />
+              <div className="w-full border"></div>
+            </div>
+          ))
         )}
-        {messages.map((message, idx) => (
-          <div key={idx}>
-            <ChatMessage chatContent={message} />
-            <div className="w-full border"></div>
-          </div>
-        ))}
         {postingMessage && <ChatMessage loading />}
       </div>
 

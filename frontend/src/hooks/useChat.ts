@@ -1,9 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import useConversationApi from "./useConversationApi";
 import { produce } from "immer";
 import { MessageContent, PostMessageRequest } from "../@types/conversation";
 import useConversation from "./useConversation";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { create } from "zustand";
 
 type ChatStateType = {
@@ -11,6 +11,8 @@ type ChatStateType = {
 };
 
 const useChatState = create<{
+  conversationId: string;
+  setConversationId: (s: string) => void;
   postingMessage: boolean;
   setPostingMessage: (b: boolean) => void;
   chats: ChatStateType;
@@ -21,6 +23,12 @@ const useChatState = create<{
   setIsGeneratedTitle: (b: boolean) => void;
 }>((set, get) => {
   return {
+    conversationId: "",
+    setConversationId: (s) => {
+      set(() => ({
+        conversationId: s,
+      }));
+    },
     postingMessage: false,
     setPostingMessage: (b) => {
       set(() => ({
@@ -31,14 +39,22 @@ const useChatState = create<{
     setMessages: (id: string, messages: MessageContent[]) => {
       set((state) => ({
         chats: produce(state.chats, (draft) => {
-          draft[id] = messages;
+          if (draft[id]) {
+            draft[id].splice(0, draft[id].length, ...messages);
+          } else {
+            draft[id] = [...messages];
+          }
         }),
       }));
     },
     pushMessage: (id: string, message: MessageContent) => {
       set((state) => ({
         chats: produce(state.chats, (draft) => {
-          draft[id].push(message);
+          if (draft[id]) {
+            draft[id].push(message);
+          } else {
+            draft[id] = [message];
+          }
         }),
       }));
     },
@@ -56,6 +72,9 @@ const useChatState = create<{
 
 const useChat = () => {
   const {
+    chats,
+    conversationId,
+    setConversationId,
     postingMessage,
     setPostingMessage,
     setMessages,
@@ -65,8 +84,12 @@ const useChat = () => {
     setIsGeneratedTitle,
   } = useChatState();
 
-  const navigate = useNavigate();
-  const { conversationId } = useParams();
+  const { conversationId: paramConversationId } = useParams();
+
+  useEffect(() => {
+    setConversationId(paramConversationId ?? "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paramConversationId]);
 
   const conversationApi = useConversationApi();
   const {
@@ -76,15 +99,16 @@ const useChat = () => {
   } = conversationApi.getConversation(conversationId);
   const { syncConversations } = useConversation();
 
-  useEffect(() => {
-    if (conversationId) {
-      setMessages(conversationId ?? "", data ? data.messages : []);
-    } else {
-      setMessages("", []);
-    }
+  const messages = useMemo(() => {
+    return chats[conversationId] ?? [];
+  }, [conversationId, chats]);
 
+  useEffect(() => {
+    if (conversationId && data?.id === conversationId) {
+      setMessages(conversationId, data ? data.messages : []);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, loadingConversation, conversationId]);
+  }, [conversationId, data]);
 
   useEffect(() => {
     setIsGeneratedTitle(false);
@@ -92,10 +116,16 @@ const useChat = () => {
   }, [conversationId]);
 
   return {
+    conversationId,
+    loadingConversation,
     postingMessage,
     isGeneratedTitle,
     setIsGeneratedTitle,
-    messages: getMessages(conversationId ?? ""),
+    newChat: () => {
+      setConversationId("");
+      setMessages("", []);
+    },
+    messages,
     postChat: (content: string) => {
       const messageContent: MessageContent = {
         content: {
@@ -125,7 +155,8 @@ const useChat = () => {
               .updateTitleWithGeneratedTitle(res.data.conversationId)
               .finally(() => {
                 syncConversations().then(() => {
-                  navigate("/" + res.data.conversationId);
+                  setConversationId(res.data.conversationId);
+                  setMessages(res.data.conversationId, getMessages(""));
                   setIsGeneratedTitle(true);
                 });
               });
