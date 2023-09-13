@@ -5,6 +5,7 @@ import { MessageContent, PostMessageRequest } from "../@types/conversation";
 import useConversation from "./useConversation";
 import { useParams } from "react-router-dom";
 import { create } from "zustand";
+import usePostMessageStreaming from "./usePostMessageStreaming";
 
 type ChatStateType = {
   [id: string]: MessageContent[];
@@ -18,6 +19,7 @@ const useChatState = create<{
   chats: ChatStateType;
   setMessages: (id: string, messages: MessageContent[]) => void;
   pushMessage: (id: string, message: MessageContent) => void;
+  editLastMessage: (id: string, content: string) => void;
   getMessages: (id: string) => MessageContent[];
   isGeneratedTitle: boolean;
   setIsGeneratedTitle: (b: boolean) => void;
@@ -58,6 +60,16 @@ const useChatState = create<{
         }),
       }));
     },
+    editLastMessage: (id: string, content: string) => {
+      set((state) => ({
+        chats: produce(state.chats, (draft) => {
+          const idx = draft[id].length - 1;
+          if (idx >= 0) {
+            draft[id][idx].content.body = content;
+          }
+        }),
+      }));
+    },
     getMessages: (id: string) => {
       return get().chats[id] ? get().chats[id] : [];
     },
@@ -79,10 +91,13 @@ const useChat = () => {
     setPostingMessage,
     setMessages,
     pushMessage,
+    editLastMessage,
     getMessages,
     isGeneratedTitle,
     setIsGeneratedTitle,
   } = useChatState();
+
+  const { post: postStreaming } = usePostMessageStreaming();
 
   const { conversationId: paramConversationId } = useParams();
 
@@ -144,19 +159,27 @@ const useChat = () => {
       setPostingMessage(true);
 
       pushMessage(conversationId ?? "", messageContent);
+      pushMessage(conversationId ?? "", {
+        role: "assistant",
+        content: {
+          contentType: "text",
+          body: "",
+        },
+        model: "claude",
+      });
 
-      conversationApi
-        .postMessage(input)
-        .then((res) => {
-          pushMessage(conversationId ?? "", res.data.message);
+      postStreaming(input, (c: string) => {
+        editLastMessage(conversationId ?? "", c);
+      })
+        .then((newConversationId) => {
           // 新規チャットの場合の処理
           if (!conversationId) {
             conversationApi
-              .updateTitleWithGeneratedTitle(res.data.conversationId)
+              .updateTitleWithGeneratedTitle(newConversationId)
               .finally(() => {
                 syncConversations().then(() => {
-                  setConversationId(res.data.conversationId);
-                  setMessages(res.data.conversationId, getMessages(""));
+                  setConversationId(newConversationId);
+                  setMessages(newConversationId, getMessages(""));
                   setIsGeneratedTitle(true);
                 });
               });

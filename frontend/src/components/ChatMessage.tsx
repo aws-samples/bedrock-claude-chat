@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import Markdown from "./Markdown";
 import ButtonCopy from "./ButtonCopy";
-import { PiChatCircleDotsFill, PiUserFill } from "react-icons/pi";
+import { PiUserFill } from "react-icons/pi";
 import { BaseProps } from "../@types/common";
 import MLIcon from "../assets/ML-icon.svg";
 import { MessageContent } from "../@types/conversation";
@@ -57,9 +57,7 @@ const ChatMessage: React.FC<Props> = (props) => {
               <Markdown>{chatContent.content.body}</Markdown>
             )}
             {props.loading && (
-              <div className="animate-pulse text-2xl text-gray-400">
-                <PiChatCircleDotsFill />
-              </div>
+              <div className="animate-pulse text-gray-400">▍</div>
             )}
           </div>
         </div>

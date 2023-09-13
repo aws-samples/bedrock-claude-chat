@@ -36,14 +36,17 @@ const ChatPage: React.FC = () => {
             </div>
           </>
         ) : (
-          messages.map((message, idx) => (
-            <div key={idx}>
-              <ChatMessage chatContent={message} />
-              <div className="w-full border"></div>
-            </div>
-          ))
+          messages.map((message, idx) =>
+            message.content.body !== "" ? (
+              <div key={idx}>
+                <ChatMessage chatContent={message} />
+                <div className="w-full border"></div>
+              </div>
+            ) : (
+              <ChatMessage key={idx} loading />
+            )
+          )
         )}
-        {postingMessage && <ChatMessage loading />}
       </div>
 
       <div className="absolute bottom-0 z-0 flex w-full justify-center">
