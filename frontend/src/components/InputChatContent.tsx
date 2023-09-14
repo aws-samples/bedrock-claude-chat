@@ -12,11 +12,11 @@ type Props = {
 };
 
 const InputChatContent: React.FC<Props> = (props) => {
-  const { loading } = useChat();
+  const { postingMessage, hasError } = useChat();
 
   const disabledSend = useMemo(() => {
-    return props.content === "" || props.disabled;
-  }, [props.content, props.disabled]);
+    return props.content === "" || props.disabled || hasError;
+  }, [hasError, props.content, props.disabled]);
 
   useEffect(() => {
     const listener = (e: DocumentEventMap["keypress"]) => {
@@ -54,7 +54,7 @@ const InputChatContent: React.FC<Props> = (props) => {
       <ButtonSend
         className="m-2 align-bottom"
         disabled={disabledSend}
-        loading={loading}
+        loading={postingMessage}
         onClick={props.onSend}
       />
     </div>

@@ -89,4 +89,4 @@ def handler(event, context):
     # Persist conversation
     store_conversation(user_id, conversation)
 
-    return {"statusCode": 200, "body": "Message sent."}
+    return {"statusCode": 200, "body":json.dumps({"conversationId": conversation.id})}
