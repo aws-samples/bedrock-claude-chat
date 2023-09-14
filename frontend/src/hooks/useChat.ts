@@ -19,17 +19,26 @@ const useChatState = create<{
   chats: ChatStateType;
   setMessages: (id: string, messages: MessageContent[]) => void;
   pushMessage: (id: string, message: MessageContent) => void;
+  removeLatestMessage: (id: string) => void;
   editLastMessage: (id: string, content: string) => void;
   getMessages: (id: string) => MessageContent[];
   isGeneratedTitle: boolean;
   setIsGeneratedTitle: (b: boolean) => void;
+  hasError: boolean;
+  setHasError: (b: boolean) => void;
 }>((set, get) => {
   return {
     conversationId: "",
     setConversationId: (s) => {
-      set(() => ({
-        conversationId: s,
-      }));
+      set((state) => {
+        // 会話IDが変わったらエラー状態を初期化
+        const hasError = state.conversationId !== s ? false : state.hasError;
+
+        return {
+          conversationId: s,
+          hasError,
+        };
+      });
     },
     postingMessage: false,
     setPostingMessage: (b) => {
@@ -70,6 +79,15 @@ const useChatState = create<{
         }),
       }));
     },
+    removeLatestMessage: (id: string) => {
+      set((state) => ({
+        chats: produce(state.chats, (draft) => {
+          if (draft[id]) {
+            draft[id].pop();
+          }
+        }),
+      }));
+    },
     getMessages: (id: string) => {
       return get().chats[id] ? get().chats[id] : [];
     },
@@ -77,6 +95,12 @@ const useChatState = create<{
     setIsGeneratedTitle: (b: boolean) => {
       set(() => ({
         isGeneratedTitle: b,
+      }));
+    },
+    hasError: false,
+    setHasError: (b: boolean) => {
+      set(() => ({
+        hasError: b,
       }));
     },
   };
@@ -92,9 +116,12 @@ const useChat = () => {
     setMessages,
     pushMessage,
     editLastMessage,
+    removeLatestMessage,
     getMessages,
     isGeneratedTitle,
     setIsGeneratedTitle,
+    hasError,
+    setHasError,
   } = useChatState();
 
   const { post: postStreaming } = usePostMessageStreaming();
@@ -122,7 +149,66 @@ const useChat = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId]);
 
+  const postChat = (content: string) => {
+    const messageContent: MessageContent = {
+      content: {
+        body: content,
+        contentType: "text",
+      },
+      model: "claude",
+      role: "user",
+    };
+    const input: PostMessageRequest = {
+      conversationId: conversationId ?? undefined,
+      message: messageContent,
+      stream: true,
+    };
+
+    setPostingMessage(true);
+    setHasError(false);
+
+    pushMessage(conversationId ?? "", messageContent);
+    pushMessage(conversationId ?? "", {
+      role: "assistant",
+      content: {
+        contentType: "text",
+        body: "",
+      },
+      model: "claude",
+    });
+
+    postStreaming(input, (c: string) => {
+      editLastMessage(conversationId ?? "", c);
+    })
+      .then((newConversationId) => {
+        // 新規チャットの場合の処理
+        if (!conversationId) {
+          setConversationId(newConversationId);
+          setMessages(newConversationId, getMessages(""));
+
+          conversationApi
+            .updateTitleWithGeneratedTitle(newConversationId)
+            .finally(() => {
+              syncConversations().then(() => {
+                setIsGeneratedTitle(true);
+              });
+            });
+        } else {
+          mutate();
+        }
+      })
+      .catch((e) => {
+        console.error(e);
+        setHasError(true);
+        removeLatestMessage(conversationId);
+      })
+      .finally(() => {
+        setPostingMessage(false);
+      });
+  };
+
   return {
+    hasError,
     setConversationId,
     conversationId,
     loadingConversation,
@@ -132,58 +218,21 @@ const useChat = () => {
     newChat: () => {
       setConversationId("");
       setMessages("", []);
+      setHasError(false);
     },
     messages,
-    postChat: (content: string) => {
-      const messageContent: MessageContent = {
-        content: {
-          body: content,
-          contentType: "text",
-        },
-        model: "claude",
-        role: "user",
-      };
-      const input: PostMessageRequest = {
-        conversationId: conversationId ?? undefined,
-        message: messageContent,
-        stream: true,
-      };
+    postChat,
 
-      setPostingMessage(true);
+    // エラーのリトライ
+    retryPostChat: () => {
+      if (messages.length === 0) {
+        return;
+      }
+      // エラー発生時の最新のメッセージはユーザ入力
+      const content = messages[messages.length - 1].content.body;
+      removeLatestMessage(conversationId);
 
-      pushMessage(conversationId ?? "", messageContent);
-      pushMessage(conversationId ?? "", {
-        role: "assistant",
-        content: {
-          contentType: "text",
-          body: "",
-        },
-        model: "claude",
-      });
-
-      postStreaming(input, (c: string) => {
-        editLastMessage(conversationId ?? "", c);
-      })
-        .then((newConversationId) => {
-          // 新規チャットの場合の処理
-          if (!conversationId) {
-            setConversationId(newConversationId);
-            setMessages(newConversationId, getMessages(""));
-
-            conversationApi
-              .updateTitleWithGeneratedTitle(newConversationId)
-              .finally(() => {
-                syncConversations().then(() => {
-                  setIsGeneratedTitle(true);
-                });
-              });
-          } else {
-            mutate();
-          }
-        })
-        .finally(() => {
-          setPostingMessage(false);
-        });
+      postChat(content);
     },
   };
 };

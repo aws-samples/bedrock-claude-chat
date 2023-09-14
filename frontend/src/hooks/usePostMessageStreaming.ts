@@ -16,7 +16,7 @@ const usePostMessageStreaming = create<{
   ) => {
     const token = (await Auth.currentSession()).getIdToken().getJwtToken();
 
-    return new Promise<string>((resolve) => {
+    return new Promise<string>((resolve, reject) => {
       const ws = new WebSocket(WS_ENDPOINT);
       let completion = "";
       let conversationId = "";
@@ -43,14 +43,16 @@ const usePostMessageStreaming = create<{
           } else {
             ws.close();
           }
-        } catch {
-          ws.close();
+        } catch (e) {
+          console.error(e);
+          reject("推論中にエラーが発生しました。");
         }
       };
 
       ws.onerror = (e) => {
-        console.error(e);
         ws.close();
+        console.error(e);
+        reject("推論中にエラーが発生しました。");
       };
       ws.onclose = () => {
         resolve(conversationId);
