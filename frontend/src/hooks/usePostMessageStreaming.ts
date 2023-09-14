@@ -35,7 +35,6 @@ const usePostMessageStreaming = create<{
             }
 
             completion += data.completion + (data.stop_reason ? "" : "▍");
-            // completion += data.completion;
             dispatch(completion);
           } else if (data.conversationId) {
             conversationId = data.conversationId;
