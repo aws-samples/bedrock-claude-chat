@@ -12,10 +12,10 @@ import {
 } from "aws-cdk-lib/aws-cloudfront";
 import { NodejsBuild } from "deploy-time-build";
 import { Auth } from "./auth";
-import { IHttpApi } from "@aws-cdk/aws-apigatewayv2-alpha";
 
 export interface FrontendProps {
-  readonly backendApi: IHttpApi;
+  readonly backendApiEndpoint: string;
+  readonly webSocketApiEndpoint: string;
   readonly auth: Auth;
   readonly accessLogBucket: IBucket;
 }
@@ -81,7 +81,8 @@ export class Frontend extends Construct {
       ],
       buildCommands: ["npm run build"],
       buildEnvironment: {
-        VITE_APP_API_ENDPOINT: props.backendApi.apiEndpoint,
+        VITE_APP_API_ENDPOINT: props.backendApiEndpoint,
+        VITE_APP_WS_ENDPOINT: props.webSocketApiEndpoint,
         VITE_APP_USER_POOL_ID: props.auth.userPool.userPoolId,
         VITE_APP_USER_POOL_CLIENT_ID: props.auth.client.userPoolClientId,
         VITE_APP_REGION: Stack.of(props.auth.userPool).region,
