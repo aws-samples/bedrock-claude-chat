@@ -15,7 +15,6 @@ import { CfnRouteResponse } from "aws-cdk-lib/aws-apigatewayv2";
 
 export interface WebSocketProps {
   readonly database: ITable;
-  readonly backendApiEndpoint: string;
   readonly auth: Auth;
   readonly bedrockRegion: string;
   readonly bedrockEndpointUrl: string;
@@ -105,7 +104,7 @@ export class WebSocket extends Construct {
     this.webSocketApi = webSocketApi;
 
     new CfnOutput(this, "WebSocketEndpoint", {
-      value: webSocketApi.apiEndpoint,
+      value: this.apiEndpoint,
     });
   }
 
