@@ -2,7 +2,6 @@
 
 このリポジトリは、生成系 AI を提供する[Amazon Bedrock](https://aws.amazon.com/jp/bedrock/)の基盤モデルの一つである、Anthropic 社製 LLM [Claude 2](https://www.anthropic.com/index/claude-2)を利用したチャットボットのサンプルです。**2023/9 月現在、Bedrock はプレビュー中です。ご利用の際は申請が必要です。**
 
-![](./imgs/demo1.gif)
 ![](./imgs/demo2.gif)
 
 ## アーキテクチャ
@@ -25,8 +24,7 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 - [x] 会話の件名自動提案
 - [x] コードのシンタックスハイライト
 - [x] マークダウンのレンダリング
-- [ ] ストリーミングレスポンス
-- [ ] RAG (Retrieval Augmented Generation)
+- [x] ストリーミングレスポンス
 
 ## プロジェクトのデプロイ
 
@@ -133,3 +131,7 @@ GENERATION_CONFIG = {
     "stop_sequences": ["Human: ", "Assistant: "],
 }
 ```
+
+### Kendra を利用した RAG について
+
+本サンプルでは Kendra を利用した RAG は実装しておりません。実導入する場合、アクセスコントロールポリシーやデータコネクタの有無、接続先データソースの認証・認可方法は組織により多様なため、シンプルに一般化することが難しいためです。実用するにはレイテンシーの低下やトークン消費量の増加などのデメリットや、検索精度を検証するための PoC が必須であることを考慮する必要があるため、[jp-rag-sample](https://github.com/aws-samples/jp-rag-sample)等のアセットを活用した PoC をおすすめします。
