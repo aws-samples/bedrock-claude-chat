@@ -4,6 +4,7 @@ import App from "./App.tsx";
 import "./index.css";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import ChatPage from "./pages/ChatPage.tsx";
+import NotFound from "./pages/NotFound.tsx";
 
 const router = createBrowserRouter([
   {
@@ -17,6 +18,10 @@ const router = createBrowserRouter([
       {
         path: "/:conversationId",
         element: <ChatPage />,
+      },
+      {
+        path: "*",
+        element: <NotFound />,
       },
     ],
   },
