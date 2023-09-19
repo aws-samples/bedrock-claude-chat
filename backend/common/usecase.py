@@ -2,7 +2,11 @@ import json
 from datetime import datetime
 
 from bedrock import _create_body, get_model_id, invoke, invoke_with_stream
-from repositories.conversation import find_conversation_by_id, store_conversation
+from repositories.conversation import (
+    RecordNotFoundError,
+    find_conversation_by_id,
+    store_conversation,
+)
 from repositories.model import ContentModel, ConversationModel, MessageModel
 from route_schema import ChatInput, ChatOutput, Content, MessageOutput
 from ulid import ULID
@@ -10,10 +14,10 @@ from utils import get_buffer_string
 
 
 def prepare_conversation(user_id: str, chat_input: ChatInput) -> ConversationModel:
-    if chat_input.conversation_id:
+    try:
         # Fetch existing conversation
         conversation = find_conversation_by_id(user_id, chat_input.conversation_id)
-    else:
+    except RecordNotFoundError:
         # Create new conversation
         conversation = ConversationModel(
             id=str(ULID()),

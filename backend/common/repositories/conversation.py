@@ -15,7 +15,6 @@ REGION = os.environ.get("REGION", "ap-northeast-1")
 TABLE_ACCESS_ROLE_ARN = os.environ.get("TABLE_ACCESS_ROLE_ARN", "")
 
 logger = logging.getLogger(__name__)
-dynamodb = boto3.resource("dynamodb", region_name=REGION)
 sts_client = boto3.client("sts")
 
 
@@ -36,6 +35,11 @@ def _get_table_client(user_id: str):
     """Get a DynamoDB table client with row level access
     Ref: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_dynamodb_items.html
     """
+    if not "AWS_EXECUTION_ENV" in os.environ:
+        # NOTE: This is for local development
+        dynamodb = boto3.resource("dynamodb", region_name=REGION)
+        return dynamodb.Table(TABLE_NAME)
+
     policy_document = {
         "Statement": [
             {
