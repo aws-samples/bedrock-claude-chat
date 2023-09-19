@@ -19,6 +19,10 @@ dynamodb = boto3.resource("dynamodb", region_name=REGION)
 sts_client = boto3.client("sts")
 
 
+class RecordNotFoundError(Exception):
+    pass
+
+
 def _compose_conv_id(user_id: str, conversation_id: str):
     # Add user_id prefix for row level security to match with `LeadingKeys` condition
     return f"{user_id}_{conversation_id}"
@@ -134,7 +138,7 @@ def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationM
         ),
     )
     if len(response["Items"]) == 0:
-        raise ValueError(f"No conversation found with id: {conversation_id}")
+        raise RecordNotFoundError(f"No conversation found with id: {conversation_id}")
 
     # NOTE: conversation is unique
     item = response["Items"][0]
@@ -182,7 +186,7 @@ def delete_conversation_by_id(user_id: str, conversation_id: str):
         delete_response = table.delete_item(Key=key)
         return delete_response
     else:
-        raise ValueError(f"No conversation found with id: {conversation_id}")
+        raise RecordNotFoundError(f"No conversation found with id: {conversation_id}")
 
 
 def delete_conversation_by_user_id(user_id: str):
@@ -202,7 +206,7 @@ def delete_conversation_by_user_id(user_id: str):
             responses.append(response)
         return responses
     else:
-        raise ValueError(f"No conversations found for user id: {user_id}")
+        raise RecordNotFoundError(f"No conversations found for user id: {user_id}")
 
 
 def change_conversation_title(user_id: str, conversation_id: str, new_title: str):
@@ -220,7 +224,7 @@ def change_conversation_title(user_id: str, conversation_id: str, new_title: str
 
     items = response["Items"]
     if not items:
-        raise ValueError(f"No conversation found with id {conversation_id}")
+        raise RecordNotFoundError(f"No conversation found with id {conversation_id}")
 
     # We'll just update the first item in case there are multiple matches
     item = items[0]

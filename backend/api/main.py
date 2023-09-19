@@ -10,6 +10,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
+from repositories.conversation import RecordNotFoundError
 from route import router
 from route_schema import User
 from starlette.routing import Match
@@ -43,6 +44,7 @@ def error_handler_factory(status_code: int) -> Callable[[Exception], JSONRespons
     return error_handler
 
 
+app.add_exception_handler(RecordNotFoundError, error_handler_factory(404))
 app.add_exception_handler(ValueError, error_handler_factory(400))
 app.add_exception_handler(TypeError, error_handler_factory(400))
 app.add_exception_handler(
