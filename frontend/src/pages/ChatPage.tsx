@@ -51,9 +51,13 @@ const ChatPage: React.FC = () => {
         ) : (
           messages.map((message, idx) =>
             message.content.body !== '' ? (
-              <div key={idx}>
+              <div
+                key={idx}
+                className={`${
+                  message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
+                }`}>
                 <ChatMessage chatContent={message} />
-                <div className="w-full border"></div>
+                <div className="w-full border-b border-aws-squid-ink/10"></div>
               </div>
             ) : (
               <ChatMessage key={idx} loading />
