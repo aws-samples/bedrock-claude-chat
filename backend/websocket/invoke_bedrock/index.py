@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from datetime import datetime
 
@@ -12,6 +13,9 @@ from usecase import get_invoke_payload, prepare_conversation
 from utils import get_bedrock_client
 
 client = get_bedrock_client()
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 def generate_chunk(stream) -> bytes:
@@ -38,6 +42,7 @@ def handler(event, context):
     gatewayapi = boto3.client("apigatewaymanagementapi", endpoint_url=endpoint_url)
 
     chat_input = ChatInputWithToken(**json.loads(message))
+    logger.debug(f"Received chat input: {chat_input}")
 
     try:
         # Verify JWT token
@@ -89,4 +94,4 @@ def handler(event, context):
     # Persist conversation
     store_conversation(user_id, conversation)
 
-    return {"statusCode": 200, "body":json.dumps({"conversationId": conversation.id})}
+    return {"statusCode": 200, "body": json.dumps({"conversationId": conversation.id})}

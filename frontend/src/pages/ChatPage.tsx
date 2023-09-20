@@ -1,14 +1,14 @@
-import React, { useCallback, useEffect, useState } from "react";
-import InputChatContent from "../components/InputChatContent";
-import useChat from "../hooks/useChat";
-import ChatMessage from "../components/ChatMessage";
-import useScroll from "../hooks/useScroll";
-import { useParams } from "react-router-dom";
-import { PiArrowsCounterClockwise, PiWarningCircleFill } from "react-icons/pi";
-import Button from "../components/Button";
+import React, { useCallback, useEffect, useState } from 'react';
+import InputChatContent from '../components/InputChatContent';
+import useChat from '../hooks/useChat';
+import ChatMessage from '../components/ChatMessage';
+import useScroll from '../hooks/useScroll';
+import { useParams } from 'react-router-dom';
+import { PiArrowsCounterClockwise, PiWarningCircleFill } from 'react-icons/pi';
+import Button from '../components/Button';
 
 const ChatPage: React.FC = () => {
-  const [content, setContent] = useState("");
+  const [content, setContent] = useState('');
   const {
     postingMessage,
     postChat,
@@ -22,13 +22,13 @@ const ChatPage: React.FC = () => {
   const { conversationId: paramConversationId } = useParams();
 
   useEffect(() => {
-    setConversationId(paramConversationId ?? "");
+    setConversationId(paramConversationId ?? '');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paramConversationId]);
 
   const onSend = useCallback(() => {
     postChat(content);
-    setContent("");
+    setContent('');
   }, [content, postChat]);
 
   useEffect(() => {
@@ -50,7 +50,7 @@ const ChatPage: React.FC = () => {
           </>
         ) : (
           messages.map((message, idx) =>
-            message.content.body !== "" ? (
+            message.content.body !== '' ? (
               <div key={idx}>
                 <ChatMessage chatContent={message} />
                 <div className="w-full border"></div>
@@ -61,17 +61,16 @@ const ChatPage: React.FC = () => {
           )
         )}
         {hasError && (
-          <div className="flex items-center flex-col mt-2 mb-12">
-            <div className="text-red-500 font-bold flex items-center">
-              <PiWarningCircleFill className="text-2xl mr-1" />
+          <div className="mb-12 mt-2 flex flex-col items-center">
+            <div className="flex items-center font-bold text-red-500">
+              <PiWarningCircleFill className="mr-1 text-2xl" />
               回答中にエラーが発生しました。
             </div>
 
             <Button
               className="mt-2 border-gray-400 bg-white shadow "
               icon={<PiArrowsCounterClockwise />}
-              onClick={retryPostChat}
-            >
+              onClick={retryPostChat}>
               再実行
             </Button>
           </div>

@@ -16,7 +16,7 @@ MODEL = "claude"
 class TestStartChat(unittest.TestCase):
     def test_chat(self):
         chat_input = ChatInput(
-            conversation_id=None,
+            conversation_id="test_conversation_id",
             message=MessageInput(
                 id="1",
                 role="user",
@@ -110,7 +110,7 @@ class TestContinueChat(unittest.TestCase):
 class TestProposeTitle(unittest.TestCase):
     def setUp(self) -> None:
         chat_input = ChatInput(
-            conversation_id=None,
+            conversation_id="test_conversation_id_propose_title",
             message=MessageInput(
                 id="1",
                 role="user",

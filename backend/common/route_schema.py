@@ -29,7 +29,7 @@ class MessageOutput(BaseSchema):
 
 
 class ChatInput(BaseSchema):
-    conversation_id: str | None = Field(None, description="会話ID (nullの場合は会話を新規作成)")
+    conversation_id: str = Field("", description="会話ID")
     message: MessageInput = Field(..., description="メッセージの内容")
 
 

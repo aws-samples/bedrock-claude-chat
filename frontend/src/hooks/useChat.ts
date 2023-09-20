@@ -1,11 +1,14 @@
-import { useEffect, useMemo } from "react";
-import useConversationApi from "./useConversationApi";
-import { produce } from "immer";
-import { MessageContent, PostMessageRequest } from "../@types/conversation";
-import useConversation from "./useConversation";
+import { useCallback, useEffect, useMemo } from 'react';
+import useConversationApi from './useConversationApi';
+import { produce } from 'immer';
+import { MessageContent, PostMessageRequest } from '../@types/conversation';
+import useConversation from './useConversation';
 
-import { create } from "zustand";
-import usePostMessageStreaming from "./usePostMessageStreaming";
+import { create } from 'zustand';
+import usePostMessageStreaming from './usePostMessageStreaming';
+import useSnackbar from './useSnackbar';
+import { useNavigate } from 'react-router-dom';
+import { ulid } from 'ulid';
 
 type ChatStateType = {
   [id: string]: MessageContent[];
@@ -28,7 +31,7 @@ const useChatState = create<{
   setHasError: (b: boolean) => void;
 }>((set, get) => {
   return {
-    conversationId: "",
+    conversationId: '',
     setConversationId: (s) => {
       set((state) => {
         // 会話IDが変わったらエラー状態を初期化
@@ -124,6 +127,9 @@ const useChat = () => {
     setHasError,
   } = useChatState();
 
+  const { open: openSnackbar } = useSnackbar();
+  const navigate = useNavigate();
+
   const { post: postStreaming } = usePostMessageStreaming();
 
   const conversationApi = useConversationApi();
@@ -131,12 +137,32 @@ const useChat = () => {
     data,
     mutate,
     isLoading: loadingConversation,
+    error,
   } = conversationApi.getConversation(conversationId);
   const { syncConversations } = useConversation();
 
   const messages = useMemo(() => {
     return chats[conversationId] ?? [];
   }, [conversationId, chats]);
+
+  const newChat = useCallback(() => {
+    setConversationId('');
+    setMessages('', []);
+    setHasError(false);
+  }, [setConversationId, setHasError, setMessages]);
+
+  // エラー処理
+  useEffect(() => {
+    if (error?.response?.status === 404) {
+      openSnackbar(
+        '指定のチャットは存在しないため、新規チャット画面を表示しました。'
+      );
+      navigate('');
+      newChat();
+    } else if (error) {
+      openSnackbar(error?.message ?? '');
+    }
+  }, [error, navigate, newChat, openSnackbar]);
 
   useEffect(() => {
     if (conversationId && data?.id === conversationId) {
@@ -150,16 +176,19 @@ const useChat = () => {
   }, [conversationId]);
 
   const postChat = (content: string) => {
+    const isNewChat = conversationId ? false : true;
+    const newConversationId = ulid();
+
     const messageContent: MessageContent = {
       content: {
         body: content,
-        contentType: "text",
+        contentType: 'text',
       },
-      model: "claude",
-      role: "user",
+      model: 'claude',
+      role: 'user',
     };
     const input: PostMessageRequest = {
-      conversationId: conversationId ?? undefined,
+      conversationId: isNewChat ? newConversationId : conversationId,
       message: messageContent,
       stream: true,
     };
@@ -167,24 +196,24 @@ const useChat = () => {
     setPostingMessage(true);
     setHasError(false);
 
-    pushMessage(conversationId ?? "", messageContent);
-    pushMessage(conversationId ?? "", {
-      role: "assistant",
+    pushMessage(conversationId ?? '', messageContent);
+    pushMessage(conversationId ?? '', {
+      role: 'assistant',
       content: {
-        contentType: "text",
-        body: "",
+        contentType: 'text',
+        body: '',
       },
-      model: "claude",
+      model: 'claude',
     });
 
     postStreaming(input, (c: string) => {
-      editLastMessage(conversationId ?? "", c);
+      editLastMessage(conversationId ?? '', c);
     })
-      .then((newConversationId) => {
+      .then(() => {
         // 新規チャットの場合の処理
-        if (!conversationId) {
+        if (isNewChat) {
           setConversationId(newConversationId);
-          setMessages(newConversationId, getMessages(""));
+          setMessages(newConversationId, getMessages(''));
 
           conversationApi
             .updateTitleWithGeneratedTitle(newConversationId)
@@ -200,7 +229,7 @@ const useChat = () => {
       .catch((e) => {
         console.error(e);
         setHasError(true);
-        removeLatestMessage(conversationId);
+        removeLatestMessage(isNewChat ? newConversationId : conversationId);
       })
       .finally(() => {
         setPostingMessage(false);
@@ -215,11 +244,7 @@ const useChat = () => {
     postingMessage,
     isGeneratedTitle,
     setIsGeneratedTitle,
-    newChat: () => {
-      setConversationId("");
-      setMessages("", []);
-      setHasError(false);
-    },
+    newChat,
     messages,
     postChat,
 
