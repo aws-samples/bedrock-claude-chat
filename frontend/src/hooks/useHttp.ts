@@ -1,7 +1,7 @@
 // import { Auth } from "aws-amplify";
-import { Auth } from "aws-amplify";
-import axios, { AxiosResponse } from "axios";
-import useSWR, { SWRConfiguration } from "swr";
+import { Auth } from 'aws-amplify';
+import axios, { AxiosError, AxiosResponse } from 'axios';
+import useSWR, { SWRConfiguration } from 'swr';
 // import useAlertSnackbar from "./useAlertSnackbar";
 
 const api = axios.create({
@@ -14,9 +14,9 @@ api.interceptors.request.use(async (config) => {
   const user = await Auth.currentAuthenticatedUser();
   if (user) {
     const token = (await Auth.currentSession()).getIdToken().getJwtToken();
-    config.headers["Authorization"] = "Bearer " + token;
+    config.headers['Authorization'] = 'Bearer ' + token;
   }
-  config.headers["Content-Type"] = "application/json";
+  config.headers['Content-Type'] = 'application/json';
 
   return config;
 });
@@ -52,7 +52,7 @@ const useHttp = () => {
       config?: SWRConfiguration
     ) => {
       // eslint-disable-next-line react-hooks/rules-of-hooks
-      return useSWR<Data, Error>(url, fetcher, {
+      return useSWR<Data, AxiosError<Error>>(url, fetcher, {
         ...config,
       });
     },
