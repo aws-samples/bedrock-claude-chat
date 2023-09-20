@@ -28,7 +28,7 @@ def prepare_conversation(user_id: str, chat_input: ChatInput) -> ConversationMod
         )
         # Create new conversation
         conversation = ConversationModel(
-            id=str(ULID()),
+            id=chat_input.conversation_id,
             title="New conversation",
             create_time=datetime.now().timestamp(),
             messages=[],

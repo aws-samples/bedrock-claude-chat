@@ -7,7 +7,7 @@ const useSnackbarState = create<{
   close: () => void;
 }>((set) => {
   return {
-    isOpen: true,
+    isOpen: false,
     message: '',
     open: (message) => {
       set(() => ({

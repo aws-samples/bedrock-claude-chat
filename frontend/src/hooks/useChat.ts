@@ -8,6 +8,7 @@ import { create } from 'zustand';
 import usePostMessageStreaming from './usePostMessageStreaming';
 import useSnackbar from './useSnackbar';
 import { useNavigate } from 'react-router-dom';
+import { ulid } from 'ulid';
 
 type ChatStateType = {
   [id: string]: MessageContent[];
@@ -175,6 +176,9 @@ const useChat = () => {
   }, [conversationId]);
 
   const postChat = (content: string) => {
+    const isNewChat = conversationId ? false : true;
+    const newConversationId = ulid();
+
     const messageContent: MessageContent = {
       content: {
         body: content,
@@ -184,7 +188,7 @@ const useChat = () => {
       role: 'user',
     };
     const input: PostMessageRequest = {
-      conversationId: conversationId ?? undefined,
+      conversationId: isNewChat ? newConversationId : conversationId,
       message: messageContent,
       stream: true,
     };
@@ -205,9 +209,9 @@ const useChat = () => {
     postStreaming(input, (c: string) => {
       editLastMessage(conversationId ?? '', c);
     })
-      .then((newConversationId) => {
+      .then(() => {
         // 新規チャットの場合の処理
-        if (!conversationId) {
+        if (isNewChat) {
           setConversationId(newConversationId);
           setMessages(newConversationId, getMessages(''));
 
@@ -225,7 +229,7 @@ const useChat = () => {
       .catch((e) => {
         console.error(e);
         setHasError(true);
-        removeLatestMessage(conversationId);
+        removeLatestMessage(isNewChat ? newConversationId : conversationId);
       })
       .finally(() => {
         setPostingMessage(false);
