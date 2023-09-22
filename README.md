@@ -14,12 +14,13 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 - [Amazon DynamoDB](https://aws.amazon.com/dynamodb/): NoSQL database for conversation history storage
 - [Amazon API Gateway](https://aws.amazon.com/api-gateway/) + [AWS Lambda](https://aws.amazon.com/lambda/): Backend API endpoint ([AWS Lambda Web Adapter](https://github.com/awslabs/aws-lambda-web-adapter), [FastAPI](https://fastapi.tiangolo.com/))
 - [Amazon CloudFront](https://aws.amazon.com/cloudfront/) + [S3](https://aws.amazon.com/s3/): Frontend application delivery ([React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/))
+- [AWS WAF](https://aws.amazon.com/waf/): IP address restriction
 - [Amazon Cognito](https://aws.amazon.com/cognito/): User authentication
 - [Amazon Bedrock](https://aws.amazon.com/bedrock/): Managed service to utilize foundational models via APIs
 
 ![](docs/imgs/arch.png)
 
-## Features
+## Features and Roadmap
 
 - [x] Authentication (Sign-up, Sign-in)
 - [x] Creation, storage, and deletion of conversations
@@ -28,12 +29,15 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 - [x] Syntax highlighting for code
 - [x] Rendering of Markdown'
 - [x] Streaming Response
+- [x] IP address restriction
+- [ ] Edit message & re-send
+- [ ] I18n (English / Japanese)
 
 ## Deployment
 
 ### Prerequisites
 
-- **As of August 2023, Bedrock is under preview, and applications are required for usage.**
+- **As of Sep 2023, Bedrock is under preview, and applications are required for usage.**
 
 ### 🚀 Easy Deployment
 
@@ -97,6 +101,7 @@ cdk bootstrap aws://<account id>/us-east-1
 
   - `bedrockRegion`: Region where Bedrock is available.
   - `bedrockEndpointUrl`: URL of the Bedrock endpoint.
+  - `allowedIpV4AddressRanges`, `allowedIpV6AddressRanges`: Allowed IP Address range.
 
 - Deploy this sample project
 

@@ -16,6 +16,7 @@ import * as cdk from "aws-cdk-lib";
 export interface BedrockChatStackProps extends StackProps {
   readonly bedrockRegion: string;
   readonly bedrockEndpointUrl: string;
+  readonly webAclId: string;
 }
 
 export class BedrockChatStack extends cdk.Stack {
@@ -33,6 +34,7 @@ export class BedrockChatStack extends cdk.Stack {
 
     const auth = new Auth(this, "Auth");
     const database = new Database(this, "Database");
+
     const backendApi = new Api(this, "BackendApi", {
       database: database.table,
       auth,
@@ -55,6 +57,7 @@ export class BedrockChatStack extends cdk.Stack {
       webSocketApiEndpoint: websocket.apiEndpoint,
       auth,
       accessLogBucket,
+      webAclId: props.webAclId,
     });
 
     new CfnOutput(this, "FrontendURL", {
