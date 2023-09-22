@@ -18,6 +18,7 @@ export interface FrontendProps {
   readonly webSocketApiEndpoint: string;
   readonly auth: Auth;
   readonly accessLogBucket: IBucket;
+  readonly webAclId: string;
 }
 
 export class Frontend extends Construct {
@@ -69,6 +70,7 @@ export class Frontend extends Construct {
         bucket: props.accessLogBucket,
         prefix: "Frontend/",
       },
+      webACLId: props.webAclId,
     });
 
     new NodejsBuild(this, "ReactBuild", {

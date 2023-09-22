@@ -11,12 +11,13 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 - [Amazon DynamoDB](https://aws.amazon.com/jp/dynamodb/): 会話履歴保存用の NoSQL データベース
 - [Amazon API Gateway](https://aws.amazon.com/jp/api-gateway/) + [AWS Lambda](https://aws.amazon.com/jp/lambda/): バックエンド API エンドポイント ([AWS Lambda Web Adapter](https://github.com/awslabs/aws-lambda-web-adapter), [FastAPI](https://fastapi.tiangolo.com/))
 - [Amazon CloudFront](https://aws.amazon.com/jp/cloudfront/) + [S3](https://aws.amazon.com/jp/s3/): フロントエンドアプリケーションの配信 ([React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/))
+- [AWS WAF](https://aws.amazon.com/jp/waf/): IP アドレス制限
 - [Amazon Cognito](https://aws.amazon.com/jp/cognito/): ユーザ認証
 - [Amazon Bedrock](https://aws.amazon.com/jp/bedrock/): 基盤モデルを API 経由で利用できるマネージドサービス
 
 ![](imgs/arch.png)
 
-## 機能
+## 機能・ロードマップ
 
 - [x] 認証 (サインアップ・サインイン)
 - [x] 会話の新規作成・保存・削除
@@ -25,12 +26,15 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 - [x] コードのシンタックスハイライト
 - [x] マークダウンのレンダリング
 - [x] ストリーミングレスポンス
+- [x] IP アドレス制限
+- [ ] メッセージの編集と再送
+- [ ] I18n 対応 (日/英)
 
 ## プロジェクトのデプロイ
 
 ### 前提条件
 
-- **2023/8 月現在、Bedrock はプレビュー中です。ご利用の際は申請が必要です。**
+- **2023/ 月現在、Bedrock はプレビュー中です。ご利用の際は申請が必要です。**
 
 ### 🚀 Easy Deployment
 
@@ -95,11 +99,12 @@ cdk bootstrap aws://<account id>/ap-northeast-1
 
   - `bedrockRegion`: Bedrock が利用できるリージョン
   - `bedrockEndpointUrl`: Bedrock エンドポイントの URL
+  - `allowedIpV4AddressRanges`, `allowedIpV6AddressRanges`: 許可する IP アドレス範囲の指定
 
 - プロジェクトをデプロイします
 
 ```
-cdk deploy --require-approval never
+cdk deploy --require-approval never --all
 ```
 
 - 下記のような出力が得られれば成功です。`BedrockChatStack.FrontendURL`に WEB アプリの URL が出力されますので、ブラウザからアクセスしてください。

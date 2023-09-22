@@ -1,5 +1,5 @@
 import { Construct } from "constructs";
-import { CfnOutput, Duration } from "aws-cdk-lib";
+import { ArnFormat, CfnOutput, Duration } from "aws-cdk-lib";
 import { ITable } from "aws-cdk-lib/aws-dynamodb";
 import { HttpLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
 import { HttpUserPoolAuthorizer } from "@aws-cdk/aws-apigatewayv2-authorizers-alpha";
