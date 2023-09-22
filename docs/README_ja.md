@@ -104,7 +104,7 @@ cdk bootstrap aws://<account id>/ap-northeast-1
 - プロジェクトをデプロイします
 
 ```
-cdk deploy --require-approval never
+cdk deploy --require-approval never --all
 ```
 
 - 下記のような出力が得られれば成功です。`BedrockChatStack.FrontendURL`に WEB アプリの URL が出力されますので、ブラウザからアクセスしてください。

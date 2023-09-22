@@ -106,7 +106,7 @@ cdk bootstrap aws://<account id>/us-east-1
 - Deploy this sample project
 
 ```
-cdk deploy --require-approval never
+cdk deploy --require-approval never --all
 ```
 
 - You will get output similar to the following. The URL of the web app will be output in `BedrockChatStack.FrontendURL`, so please access it from your browser.

@@ -108,7 +108,7 @@ Resources:
                   "cd bedrock-claude-chat/cdk",
                   "npm ci",
                   "cdk bootstrap",
-                  "cdk deploy BedrockChatStack --require-approval never"
+                  "cdk deploy --require-approval never --all"
                 ]
               }
             }
