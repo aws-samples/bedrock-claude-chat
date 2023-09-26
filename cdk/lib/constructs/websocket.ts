@@ -46,6 +46,7 @@ export class WebSocket extends Construct {
         resources: ["*"],
       })
     );
+
     handlerRole.addManagedPolicy(
       iam.ManagedPolicy.fromAwsManagedPolicyName(
         "service-role/AWSLambdaBasicExecutionRole"
@@ -60,7 +61,7 @@ export class WebSocket extends Construct {
         }
       ),
       memorySize: 256,
-      timeout: Duration.seconds(60),
+      timeout: Duration.minutes(15),
       environment: {
         ACCOUNT: Stack.of(this).account,
         REGION: Stack.of(this).region,
