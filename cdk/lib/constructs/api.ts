@@ -20,7 +20,6 @@ export interface ApiProps {
   readonly corsAllowOrigins?: string[];
   readonly auth: Auth;
   readonly bedrockRegion: string;
-  readonly bedrockEndpointUrl: string;
   readonly tableAccessRole: iam.IRole;
 }
 
@@ -75,7 +74,6 @@ export class Api extends Construct {
         ACCOUNT: Stack.of(this).account,
         REGION: Stack.of(this).region,
         BEDROCK_REGION: props.bedrockRegion,
-        ENDPOINT_URL: props.bedrockEndpointUrl,
         TABLE_ACCESS_ROLE_ARN: tableAccessRole.roleArn,
       },
       role: handlerRole,

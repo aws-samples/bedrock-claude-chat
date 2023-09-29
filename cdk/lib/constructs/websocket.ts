@@ -17,7 +17,6 @@ export interface WebSocketProps {
   readonly database: ITable;
   readonly auth: Auth;
   readonly bedrockRegion: string;
-  readonly bedrockEndpointUrl: string;
   readonly tableAccessRole: iam.IRole;
 }
 
@@ -68,7 +67,6 @@ export class WebSocket extends Construct {
         USER_POOL_ID: props.auth.userPool.userPoolId,
         CLIENT_ID: props.auth.client.userPoolClientId,
         BEDROCK_REGION: props.bedrockRegion,
-        ENDPOINT_URL: props.bedrockEndpointUrl,
         TABLE_NAME: database.tableName,
         TABLE_ACCESS_ROLE_ARN: tableAccessRole.roleArn,
       },

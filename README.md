@@ -2,7 +2,7 @@
 
 日本語は[こちら](./docs/README_ja.md)
 
-This repository is a sample chatbot using the Anthropic company's LLM [Claude 2](https://www.anthropic.com/index/claude-2), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI. **As of September 2023, Bedrock is under preview, and applications are required for usage.** This sample is currently developed for use by Japanese speakers, but it is also possible to speak to the chatbot in English.
+This repository is a sample chatbot using the Anthropic company's LLM [Claude 2](https://www.anthropic.com/index/claude-2), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI. This sample is currently developed for use by Japanese speakers, but it is also possible to speak to the chatbot in English.
 
 ![](./docs/imgs/demo_en.png)
 ![](./docs/imgs/demo2.gif)
@@ -34,10 +34,6 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 - [ ] I18n (English / Japanese)
 
 ## Deployment
-
-### Prerequisites
-
-- **As of Sep 2023, Bedrock is under preview, and applications are required for usage.**
 
 ### 🚀 Easy Deployment
 
@@ -100,7 +96,6 @@ cdk bootstrap aws://<account id>/us-east-1
 - If necessary, edit the following entries in [cdk.json](. /cdk/cdk.json) if necessary.
 
   - `bedrockRegion`: Region where Bedrock is available.
-  - `bedrockEndpointUrl`: URL of the Bedrock endpoint.
   - `allowedIpV4AddressRanges`, `allowedIpV6AddressRanges`: Allowed IP Address range.
 
 - Deploy this sample project

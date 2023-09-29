@@ -1,6 +1,6 @@
 # Bedrock Claude Chat
 
-このリポジトリは、生成系 AI を提供する[Amazon Bedrock](https://aws.amazon.com/jp/bedrock/)の基盤モデルの一つである、Anthropic 社製 LLM [Claude 2](https://www.anthropic.com/index/claude-2)を利用したチャットボットのサンプルです。**2023/9 月現在、Bedrock はプレビュー中です。ご利用の際は申請が必要です。**
+このリポジトリは、生成系 AI を提供する[Amazon Bedrock](https://aws.amazon.com/jp/bedrock/)の基盤モデルの一つである、Anthropic 社製 LLM [Claude 2](https://www.anthropic.com/index/claude-2)を利用したチャットボットのサンプルです。
 
 ![](./imgs/demo2.gif)
 
@@ -31,10 +31,6 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 - [ ] I18n 対応 (日/英)
 
 ## プロジェクトのデプロイ
-
-### 前提条件
-
-- **2023/ 月現在、Bedrock はプレビュー中です。ご利用の際は申請が必要です。**
 
 ### 🚀 Easy Deployment
 
@@ -98,7 +94,6 @@ cdk bootstrap aws://<account id>/ap-northeast-1
 - 必要に応じて[cdk.json](../cdk/cdk.json)の下記項目を編集します
 
   - `bedrockRegion`: Bedrock が利用できるリージョン
-  - `bedrockEndpointUrl`: Bedrock エンドポイントの URL
   - `allowedIpV4AddressRanges`, `allowedIpV6AddressRanges`: 許可する IP アドレス範囲の指定
 
 - プロジェクトをデプロイします

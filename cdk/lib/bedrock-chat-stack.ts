@@ -15,7 +15,6 @@ import * as cdk from "aws-cdk-lib";
 
 export interface BedrockChatStackProps extends StackProps {
   readonly bedrockRegion: string;
-  readonly bedrockEndpointUrl: string;
   readonly webAclId: string;
 }
 
@@ -39,7 +38,6 @@ export class BedrockChatStack extends cdk.Stack {
       database: database.table,
       auth,
       bedrockRegion: props.bedrockRegion,
-      bedrockEndpointUrl: props.bedrockEndpointUrl,
       tableAccessRole: database.tableAccessRole,
     });
 
@@ -49,7 +47,6 @@ export class BedrockChatStack extends cdk.Stack {
       tableAccessRole: database.tableAccessRole,
       auth,
       bedrockRegion: props.bedrockRegion,
-      bedrockEndpointUrl: props.bedrockEndpointUrl,
     });
 
     const frontend = new Frontend(this, "Frontend", {

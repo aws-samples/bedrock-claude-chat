@@ -50,24 +50,3 @@ def invoke(prompt: str, model: str) -> str:
     output_txt = _extract_output_text(model, response)
 
     return output_txt
-
-
-def invoke_with_stream(prompt: str, model: str):
-    raise NotImplementedError("Not supported yet")
-
-    payload = _create_body(model, prompt)
-
-    model_id = get_model_id(model)
-    accept = "application/json"
-    content_type = "application/json"
-
-    response = client.invoke_model_with_response_stream(body=payload, modelId=model_id)
-    stream = response.get("body")
-
-    if stream:
-        for event in stream:
-            chunk = event.get("chunk")
-            if chunk:
-                output_txt = chunk.get("bytes").decode()
-                output_txt = json.loads(output_txt).get("outputText")
-                yield output_txt

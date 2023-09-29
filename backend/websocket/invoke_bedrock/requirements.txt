@@ -3,3 +3,4 @@ pyhumps==3.8.0
 python-ulid==1.1.0
 requests==2.31.0
 python-jose==3.3.0
+boto3==1.28.57
