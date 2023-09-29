@@ -7,7 +7,6 @@ import { FrontendWafStack } from "../lib/frontend-waf-stack";
 const app = new cdk.App();
 
 const BEDROCK_REGION = app.node.tryGetContext("bedrockRegion");
-const BEDROCK_ENDPOINT_URL = app.node.tryGetContext("bedrockEndpointUrl");
 const ALLOWED_IP_V4_ADDRESS_RANGES: string[] = app.node.tryGetContext(
   "allowedIpV4AddressRanges"
 );
@@ -32,6 +31,5 @@ new BedrockChatStack(app, `BedrockChatStack`, {
   },
   crossRegionReferences: true,
   bedrockRegion: BEDROCK_REGION,
-  bedrockEndpointUrl: BEDROCK_ENDPOINT_URL,
   webAclId: waf.webAclArn.value,
 });

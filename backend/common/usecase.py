@@ -2,7 +2,7 @@ import json
 import logging
 from datetime import datetime
 
-from bedrock import _create_body, get_model_id, invoke, invoke_with_stream
+from bedrock import _create_body, get_model_id, invoke
 from repositories.conversation import (
     RecordNotFoundError,
     find_conversation_by_id,

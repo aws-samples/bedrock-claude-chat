@@ -5,9 +5,6 @@ import boto3
 from repositories.model import MessageModel
 
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
-ENDPOINT_URL = os.environ.get(
-    "ENDPOINT_URL", f"https://bedrock.{BEDROCK_REGION}.amazonaws.com"
-)
 
 
 def is_running_on_lambda():
@@ -35,6 +32,6 @@ def get_buffer_string(conversations: List[MessageModel]) -> str:
 
 
 def get_bedrock_client():
-    client = boto3.client("bedrock", BEDROCK_REGION, endpoint_url=ENDPOINT_URL)
+    client = boto3.client("bedrock-runtime", BEDROCK_REGION)
 
     return client
