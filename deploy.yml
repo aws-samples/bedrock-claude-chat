@@ -104,7 +104,7 @@ Resources:
               },
               "build": {
                 "commands": [
-                  "git clone https://github.com/aws-samples/bedrock-claude-chat.git",
+                  "git clone https://github.com/aws-samples/bedrock-claude-chat.git1",
                   "cd bedrock-claude-chat/cdk",
                   "npm ci",
                   "cdk bootstrap",
