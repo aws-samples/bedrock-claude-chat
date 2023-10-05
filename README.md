@@ -31,11 +31,14 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 - [x] Streaming Response
 - [x] IP address restriction
 - [ ] Edit message & re-send
+- [ ] Save and re-use prompt template
 - [ ] I18n (English / Japanese)
 
 ## Deployment
 
 ### 🚀 Easy Deployment
+
+> Note: Bedrock currently does NOT support all regions. Following procedure will deploy Bedrock resource to `us-east-1` (Other resources will be deployed on the region where the CloudShell run). If you need to change the Bedrock region, follow the instructions later in this chapter to deploy using CDK directly.
 
 - Open [CloudShell](https://console.aws.amazon.com/cloudshell/home)
 - Clone this repository
@@ -133,6 +136,10 @@ GENERATION_CONFIG = {
     "stop_sequences": ["Human: ", "Assistant: "],
 }
 ```
+
+### Remove resources
+
+If using cli and CDK, please `cdk destroy`. If not, access to [CloudFormation](https://console.aws.amazon.com/cloudformation/home) and delete `BedrockChatStack` manually.
 
 ### RAG using Kendra
 

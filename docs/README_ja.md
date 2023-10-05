@@ -28,11 +28,14 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 - [x] ストリーミングレスポンス
 - [x] IP アドレス制限
 - [ ] メッセージの編集と再送
+- [ ] プロンプトテンプレートの保存と再利用
 - [ ] I18n 対応 (日/英)
 
 ## プロジェクトのデプロイ
 
 ### 🚀 Easy Deployment
+
+> Note: 2023/10 現在、Bedrock はすべてのリージョンをサポートしていません。以下の手順では Bedrock リソースを`us-east-1`にデプロイします（他のリソースは CloudShell が実行されたリージョンにデプロイされます）。Bedrock のリージョンを変更する必要がある場合は、この章の後の指示に従って CDK を直接使用してデプロイしてください。
 
 - [CloudShell](https://console.aws.amazon.com/cloudshell/home)を開きます
 - 下記のコマンドでリポジトリをクローンします
@@ -131,6 +134,10 @@ GENERATION_CONFIG = {
     "stop_sequences": ["Human: ", "Assistant: "],
 }
 ```
+
+### リソースの削除
+
+cli および CDK を利用されている場合、`cdk deploy`を実行してください。そうでない場合は[CloudFormation](https://console.aws.amazon.com/cloudformation/home)へアクセスし、手動で`BedrockChatStack`を削除してください。
 
 ### Kendra を利用した RAG について
 
