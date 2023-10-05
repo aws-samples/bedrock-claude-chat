@@ -47,18 +47,19 @@ def get_conversation(request: Request, conversation_id: str):
         id=conversation_id,
         title=conversation.title,
         create_time=conversation.create_time,
-        messages=[
-            MessageOutput(
-                id=message.id,
+        message_map={
+            message_id: MessageOutput(
                 role=message.role,
                 content=Content(
                     content_type=message.content.content_type,
                     body=message.content.body,
                 ),
                 model=message.model,
+                children=message.children,
+                parent=message.parent,
             )
-            for message in conversation.messages
-        ],
+            for message_id, message in conversation.message_map.items()
+        },
     )
     return output
 

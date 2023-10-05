@@ -7,10 +7,11 @@ class ContentModel(BaseModel):
 
 
 class MessageModel(BaseModel):
-    id: str
     role: str
     content: ContentModel
     model: str
+    children: list[str]
+    parent: str | None
     create_time: float
 
 
@@ -18,4 +19,5 @@ class ConversationModel(BaseModel):
     id: str
     create_time: float
     title: str
-    messages: list[MessageModel]
+    message_map: dict[str, MessageModel]
+    last_message_id: str

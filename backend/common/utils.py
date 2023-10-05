@@ -11,7 +11,7 @@ def is_running_on_lambda():
     return "AWS_EXECUTION_ENV" in os.environ
 
 
-def get_buffer_string(conversations: List[MessageModel]) -> str:
+def get_buffer_string(conversations: dict[str, MessageModel]) -> str:
     string_messages = []
     for conversation in conversations:
         if conversation.role == "assistant":
