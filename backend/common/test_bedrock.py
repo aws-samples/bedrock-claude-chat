@@ -11,13 +11,6 @@ MODEL = "claude"
 
 class TestBedrock(unittest.TestCase):
     def test_invoke(self):
-        prompt = "日本のおすすめのアニメを教えて"
-        model = MODEL
-
-        reply_txt = invoke(prompt, model)
-        print(reply_txt)
-
-    def test_invoke_with_multi_messages(self):
         messages = [
             MessageModel(
                 id="2",
@@ -56,32 +49,6 @@ class TestBedrock(unittest.TestCase):
 
         reply_txt = invoke(prompt, model)
         print(reply_txt)
-
-
-class TestBedrockStream(unittest.TestCase):
-    def test_invoke_with_stream(self):
-        payload = {
-            "body": '{"max_tokens_to_sample": 500, "temperature": 0.0, "top_k": 250, "top_p": 0.999, "stop_sequences": ["Human: ", "Assistant: "], "prompt": "Human: 有名なジブリ映画10選\\nAssistant: "}',
-            "modelId": "anthropic.claude-v2",
-            "accept": "application/json",
-            "contentType": "application/json",
-        }
-        # Invoke bedrock endpoint directly
-
-        response = client.invoke_model_with_response_stream(**payload)
-
-        stream = response.get("body")
-
-        if stream:
-            for event in stream:
-                chunk = event.get("chunk")
-                if chunk:
-                    # pprint(chunk)
-                    chunk_bytes = chunk.get("bytes")
-                    chunk_data = json.loads(chunk_bytes.decode("utf-8"))
-                    completion = chunk_data.get("completion")
-                    if completion:
-                        print(completion)
 
 
 if __name__ == "__main__":

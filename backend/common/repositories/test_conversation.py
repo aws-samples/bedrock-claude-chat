@@ -6,6 +6,7 @@ sys.path.append(".")
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from repositories.conversation import (
+    RecordNotFoundError,
     _compose_conv_id,
     _get_table_client,
     change_conversation_title,
@@ -138,7 +139,7 @@ class TestConversationRepository(unittest.TestCase):
 
         # Test deleting conversation by id
         delete_conversation_by_id(user_id="user", conversation_id="1")
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RecordNotFoundError):
             find_conversation_by_id("user", "1")
 
         response = store_conversation(user_id="user", conversation=conversation)
