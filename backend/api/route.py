@@ -47,6 +47,7 @@ def get_conversation(request: Request, conversation_id: str):
         id=conversation_id,
         title=conversation.title,
         create_time=conversation.create_time,
+        last_message_id=conversation.last_message_id,
         message_map={
             message_id: MessageOutput(
                 role=message.role,

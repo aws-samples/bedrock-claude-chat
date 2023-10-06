@@ -47,10 +47,15 @@ def prepare_conversation(
         ),
         model=chat_input.message.model,
         children=[],
-        parent=None,
+        parent=chat_input.message.parent_message_id,
         create_time=datetime.now().timestamp(),
     )
     conversation.message_map[message_id] = new_message
+
+    if conversation.message_map.get(chat_input.message.parent_message_id) is not None:
+        conversation.message_map[chat_input.message.parent_message_id].children.append(
+            message_id
+        )
 
     return (message_id, conversation)
 
@@ -119,7 +124,6 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
 
     # Append children to parent
     conversation.message_map[user_msg_id].children.append(assistant_msg_id)
-
     conversation.last_message_id = assistant_msg_id
 
     # Store updated conversation
