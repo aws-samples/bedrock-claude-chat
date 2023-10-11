@@ -123,7 +123,7 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 
 ### テキスト生成パラメータの設定
 
-[config.py](../backend/config.py)を編集後、`cdk deploy`を実行してください。
+[config.py](../backend/common/config.py)を編集後、`cdk deploy`を実行してください。
 
 ```py
 GENERATION_CONFIG = {
