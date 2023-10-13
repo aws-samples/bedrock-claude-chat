@@ -13,6 +13,7 @@ import { ulid } from 'ulid';
 type ChatStateType = {
   [id: string]: MessageContent[];
 };
+const USE_STREAMING: boolean = import.meta.env.USE_STREAMING === "true"
 
 const useChatState = create<{
   conversationId: string;
@@ -126,7 +127,6 @@ const useChat = () => {
     hasError,
     setHasError,
   } = useChatState();
-
   const { open: openSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
@@ -192,6 +192,18 @@ const useChat = () => {
       message: messageContent,
       stream: true,
     };
+    const addNewConversation = () => {
+        setConversationId(newConversationId);
+        setMessages(newConversationId, getMessages(''));
+
+        conversationApi
+          .updateTitleWithGeneratedTitle(newConversationId)
+          .finally(() => {
+            syncConversations().then(() => {
+              setIsGeneratedTitle(true);
+            });
+          });
+        }
 
     setPostingMessage(true);
     setHasError(false);
@@ -205,23 +217,32 @@ const useChat = () => {
       },
       model: 'claude',
     });
-
-    postStreaming(input, (c: string) => {
-      editLastMessage(conversationId ?? '', c);
-    })
-      .then(() => {
-        // 新規チャットの場合の処理
+    if (USE_STREAMING) {
+      postStreaming(input, (c: string) => {
+        editLastMessage(conversationId ?? '', c);
+      })
+        .then(() => {
+          // 新規チャットの場合の処理
+          if (isNewChat) {
+            addNewConversation();
+          } else {
+            mutate();
+          }
+        })
+        .catch((e) => {
+          console.error(e);
+          setHasError(true);
+          removeLatestMessage(isNewChat ? newConversationId : conversationId);
+        })
+        .finally(() => {
+          setPostingMessage(false);
+        });
+    } else {
+      conversationApi.postMessage(input)
+      .then((res) => {
+        editLastMessage(conversationId ?? '', res.data.message.content.body);
         if (isNewChat) {
-          setConversationId(newConversationId);
-          setMessages(newConversationId, getMessages(''));
-
-          conversationApi
-            .updateTitleWithGeneratedTitle(newConversationId)
-            .finally(() => {
-              syncConversations().then(() => {
-                setIsGeneratedTitle(true);
-              });
-            });
+          addNewConversation();
         } else {
           mutate();
         }
@@ -234,6 +255,7 @@ const useChat = () => {
       .finally(() => {
         setPostingMessage(false);
       });
+    }
   };
 
   return {
