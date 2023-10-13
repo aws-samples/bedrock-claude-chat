@@ -13,7 +13,7 @@ import { ulid } from 'ulid';
 type ChatStateType = {
   [id: string]: MessageContent[];
 };
-const USE_STREAMING: boolean = import.meta.env.USE_STREAMING === "true"
+const USE_STREAMING: boolean = import.meta.env.VITE_APP_USE_STREAMING === "true"
 
 const useChatState = create<{
   conversationId: string;
