@@ -41,7 +41,7 @@ const ChatPage: React.FC = () => {
 
   return (
     <>
-      <div className="pb-24">
+      <div className="pb-52 lg:pb-40">
         {messages.length === 0 ? (
           <>
             <div className="mx-3 my-32 flex items-center justify-center text-4xl font-bold text-gray-500/20">

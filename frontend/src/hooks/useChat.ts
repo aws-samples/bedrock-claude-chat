@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useMemo } from 'react';
 import useConversationApi from './useConversationApi';
 import { produce } from 'immer';
-import { MessageContent, PostMessageRequest } from '../@types/conversation';
+import {
+  MessageContent,
+  MessageContentWithChildren,
+  MessageMap,
+  PostMessageRequest,
+} from '../@types/conversation';
 import useConversation from './useConversation';
 
 import { create } from 'zustand';
@@ -9,9 +14,10 @@ import usePostMessageStreaming from './usePostMessageStreaming';
 import useSnackbar from './useSnackbar';
 import { useNavigate } from 'react-router-dom';
 import { ulid } from 'ulid';
+import { convertMessageMapToArray } from '../utils/MessageUtils';
 
 type ChatStateType = {
-  [id: string]: MessageContent[];
+  [id: string]: MessageMap;
 };
 
 const useChatState = create<{
@@ -20,11 +26,21 @@ const useChatState = create<{
   postingMessage: boolean;
   setPostingMessage: (b: boolean) => void;
   chats: ChatStateType;
-  setMessages: (id: string, messages: MessageContent[]) => void;
-  pushMessage: (id: string, message: MessageContent) => void;
-  removeLatestMessage: (id: string) => void;
-  editLastMessage: (id: string, content: string) => void;
-  getMessages: (id: string) => MessageContent[];
+  setMessages: (id: string, messageMap: MessageMap) => void;
+  copyMessages: (fromId: string, toId: string) => void;
+  pushMessage: (
+    id: string,
+    parentMessageId: string | null,
+    currentMessageId: string,
+    content: MessageContent
+  ) => void;
+  // removeLatestMessage: (id: string) => void;
+  removeMessage: (id: string, messageId: string) => void;
+  editMessage: (id: string, messageId: string, content: string) => void;
+  getMessages: (
+    id: string,
+    currentMessageId: string
+  ) => MessageContentWithChildren[];
   isGeneratedTitle: boolean;
   setIsGeneratedTitle: (b: boolean) => void;
   hasError: boolean;
@@ -50,49 +66,94 @@ const useChatState = create<{
       }));
     },
     chats: {},
-    setMessages: (id: string, messages: MessageContent[]) => {
+    setMessages: (id: string, messageMap: MessageMap) => {
       set((state) => ({
         chats: produce(state.chats, (draft) => {
-          if (draft[id]) {
-            draft[id].splice(0, draft[id].length, ...messages);
+          draft[id] = messageMap;
+        }),
+      }));
+    },
+    copyMessages: (fromId: string, toId: string) => {
+      set((state) => ({
+        chats: produce(state.chats, (draft) => {
+          draft[toId] = JSON.parse(JSON.stringify(draft[fromId]));
+        }),
+      }));
+    },
+    pushMessage: (
+      id: string,
+      parentMessageId: string | null,
+      currentMessageId: string,
+      content: MessageContent
+    ) => {
+      console.log(parentMessageId, currentMessageId);
+      set((state) => ({
+        chats: produce(state.chats, (draft) => {
+          if (draft[id] && parentMessageId) {
+            draft[id][parentMessageId] = {
+              ...draft[id][parentMessageId],
+              children: [
+                ...draft[id][parentMessageId].children,
+                currentMessageId,
+              ],
+            };
+            draft[id][currentMessageId] = {
+              ...content,
+              parent: parentMessageId,
+              children: [],
+            };
           } else {
-            draft[id] = [...messages];
+            draft[id] = {
+              [currentMessageId]: {
+                ...content,
+                children: [],
+                parent: null,
+              },
+            };
           }
         }),
       }));
     },
-    pushMessage: (id: string, message: MessageContent) => {
+    editMessage: (id: string, messageId: string, content: string) => {
       set((state) => ({
         chats: produce(state.chats, (draft) => {
-          if (draft[id]) {
-            draft[id].push(message);
-          } else {
-            draft[id] = [message];
-          }
+          draft[id][messageId].content.body = content;
         }),
       }));
     },
-    editLastMessage: (id: string, content: string) => {
+    // removeLatestMessage: (id: string) => {
+    //   set((state) => ({
+    //     chats: produce(state.chats, (draft) => {
+    //       if (draft[id]) {
+    //         draft[id].pop();
+    //       }
+    //     }),
+    //   }));
+    // },
+    removeMessage: (id: string, messageId: string) => {
       set((state) => ({
         chats: produce(state.chats, (draft) => {
-          const idx = draft[id].length - 1;
-          if (idx >= 0) {
-            draft[id][idx].content.body = content;
+          const childrenIds = [...draft[id][messageId].children];
+          while (childrenIds.length > 0) {
+            const targetId = childrenIds.pop()!;
+            childrenIds.push(...draft[id][targetId].children);
+            delete draft[id][targetId];
           }
+
+          Object.keys(draft[id]).forEach((key) => {
+            const idx = draft[id][key].children.findIndex(
+              (c) => c === messageId
+            );
+            if (idx > -1) {
+              draft[id][key].children.splice(idx, 1);
+            }
+          });
+          delete draft[id][messageId];
         }),
       }));
     },
-    removeLatestMessage: (id: string) => {
-      set((state) => ({
-        chats: produce(state.chats, (draft) => {
-          if (draft[id]) {
-            draft[id].pop();
-          }
-        }),
-      }));
-    },
-    getMessages: (id: string) => {
-      return get().chats[id] ? get().chats[id] : [];
+    getMessages: (id: string, currentMessageId: string) => {
+      return convertMessageMapToArray(get().chats[id] ?? {}, currentMessageId);
     },
     isGeneratedTitle: false,
     setIsGeneratedTitle: (b: boolean) => {
@@ -118,8 +179,11 @@ const useChat = () => {
     setPostingMessage,
     setMessages,
     pushMessage,
-    editLastMessage,
-    removeLatestMessage,
+    editMessage,
+    copyMessages,
+    // editLastMessage,
+    // removeLatestMessage,
+    removeMessage,
     getMessages,
     isGeneratedTitle,
     setIsGeneratedTitle,
@@ -142,12 +206,14 @@ const useChat = () => {
   const { syncConversations } = useConversation();
 
   const messages = useMemo(() => {
-    return chats[conversationId] ?? [];
+    // FIXME: APIで受け取ったIDを指定
+    return getMessages(conversationId, '');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId, chats]);
 
   const newChat = useCallback(() => {
     setConversationId('');
-    setMessages('', []);
+    setMessages('', {});
     setHasError(false);
   }, [setConversationId, setHasError, setMessages]);
 
@@ -166,7 +232,7 @@ const useChat = () => {
 
   useEffect(() => {
     if (conversationId && data?.id === conversationId) {
-      setMessages(conversationId, data ? data.messages : []);
+      setMessages(conversationId, data.messageMap);
     }
   }, [conversationId, data, setMessages]);
 
@@ -179,6 +245,17 @@ const useChat = () => {
     const isNewChat = conversationId ? false : true;
     const newConversationId = ulid();
 
+    // エラーリトライ時に同期が間に合わないため、Stateを直接参照
+    // FIXME: ID指定
+    const tmpMessages = convertMessageMapToArray(
+      useChatState.getState().chats[conversationId],
+      ''
+    );
+
+    // FIXME: ID指定
+    const parentMessageId = isNewChat
+      ? null
+      : tmpMessages[tmpMessages.length - 1].id;
     const messageContent: MessageContent = {
       content: {
         body: content,
@@ -189,15 +266,24 @@ const useChat = () => {
     };
     const input: PostMessageRequest = {
       conversationId: isNewChat ? newConversationId : conversationId,
-      message: messageContent,
+      message: {
+        ...messageContent,
+        parentMessageId: parentMessageId,
+      },
       stream: true,
     };
 
     setPostingMessage(true);
     setHasError(false);
 
-    pushMessage(conversationId ?? '', messageContent);
-    pushMessage(conversationId ?? '', {
+    // 画面に即時反映するために、Stateを更新する
+    pushMessage(
+      conversationId ?? '',
+      parentMessageId,
+      'new-message',
+      messageContent
+    );
+    pushMessage(conversationId ?? '', 'new-message', 'new-message-assistant', {
       role: 'assistant',
       content: {
         contentType: 'text',
@@ -207,13 +293,14 @@ const useChat = () => {
     });
 
     postStreaming(input, (c: string) => {
-      editLastMessage(conversationId ?? '', c);
+      editMessage(conversationId ?? '', 'new-message-assistant', c);
     })
       .then(() => {
         // 新規チャットの場合の処理
         if (isNewChat) {
           setConversationId(newConversationId);
-          setMessages(newConversationId, getMessages(''));
+          // 画面のチラつき防止のために、Stateをコピーする
+          copyMessages('', newConversationId);
 
           conversationApi
             .updateTitleWithGeneratedTitle(newConversationId)
@@ -229,7 +316,10 @@ const useChat = () => {
       .catch((e) => {
         console.error(e);
         setHasError(true);
-        removeLatestMessage(isNewChat ? newConversationId : conversationId);
+        removeMessage(
+          isNewChat ? newConversationId : conversationId,
+          'new-message-assistant'
+        );
       })
       .finally(() => {
         setPostingMessage(false);
@@ -248,16 +338,62 @@ const useChat = () => {
     messages,
     postChat,
 
+    // 最新の回答を再生成
+    regenerate: () => {
+      const parentMessage = messages[messages.length - 2];
+
+      const input: PostMessageRequest = {
+        conversationId: conversationId,
+        message: {
+          ...parentMessage,
+          parentMessageId: parentMessage.id,
+        },
+        stream: true,
+      };
+
+      setPostingMessage(true);
+      setHasError(false);
+
+      // 画面に即時反映するために、Stateを更新する
+      pushMessage(
+        conversationId ?? '',
+        parentMessage.id,
+        'new-message-assistant',
+        {
+          role: 'assistant',
+          content: {
+            contentType: 'text',
+            body: '',
+          },
+          model: 'claude',
+        }
+      );
+
+      postStreaming(input, (c: string) => {
+        editMessage(conversationId, 'new-message-assistant', c);
+      })
+        .then(() => {
+          mutate();
+        })
+        .catch((e) => {
+          console.error(e);
+          setHasError(true);
+          removeMessage(conversationId, 'new-message-assistant');
+        })
+        .finally(() => {
+          setPostingMessage(false);
+        });
+    },
+
     // エラーのリトライ
     retryPostChat: () => {
       if (messages.length === 0) {
         return;
       }
       // エラー発生時の最新のメッセージはユーザ入力
-      const content = messages[messages.length - 1].content.body;
-      removeLatestMessage(conversationId);
-
-      postChat(content);
+      const lastMessage = messages[messages.length - 1];
+      removeMessage(conversationId, lastMessage.id);
+      postChat(lastMessage.content.body);
     },
   };
 };
