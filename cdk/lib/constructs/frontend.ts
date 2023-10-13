@@ -88,6 +88,7 @@ export class Frontend extends Construct {
         VITE_APP_USER_POOL_ID: props.auth.userPool.userPoolId,
         VITE_APP_USER_POOL_CLIENT_ID: props.auth.client.userPoolClientId,
         VITE_APP_REGION: Stack.of(props.auth.userPool).region,
+        USE_STREAMING: "true"
       },
       destinationBucket: assetBucket,
       distribution,
