@@ -137,7 +137,7 @@ GENERATION_CONFIG = {
 
 ### リソースの削除
 
-cli および CDK を利用されている場合、`cdk deploy`を実行してください。そうでない場合は[CloudFormation](https://console.aws.amazon.com/cloudformation/home)へアクセスし、手動で`BedrockChatStack`を削除してください。
+cli および CDK を利用されている場合、`cdk destroy`を実行してください。そうでない場合は[CloudFormation](https://console.aws.amazon.com/cloudformation/home)へアクセスし、手動で`BedrockChatStack`を削除してください。
 
 ### Kendra を利用した RAG について
 
