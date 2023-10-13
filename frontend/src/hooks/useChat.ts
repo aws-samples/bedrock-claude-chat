@@ -192,7 +192,7 @@ const useChat = () => {
       message: messageContent,
       stream: true,
     };
-    const addNewConversation = () => {
+    const createNewConversation = () => {
         setConversationId(newConversationId);
         setMessages(newConversationId, getMessages(''));
 
@@ -224,7 +224,7 @@ const useChat = () => {
         .then(() => {
           // 新規チャットの場合の処理
           if (isNewChat) {
-            addNewConversation();
+            createNewConversation();
           } else {
             mutate();
           }
@@ -242,7 +242,7 @@ const useChat = () => {
       .then((res) => {
         editLastMessage(conversationId ?? '', res.data.message.content.body);
         if (isNewChat) {
-          addNewConversation();
+          createNewConversation();
         } else {
           mutate();
         }
