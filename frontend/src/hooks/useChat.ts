@@ -217,45 +217,37 @@ const useChat = () => {
       },
       model: 'claude',
     });
-    if (USE_STREAMING) {
-      postStreaming(input, (c: string) => {
-        editLastMessage(conversationId ?? '', c);
-      })
-        .then(() => {
-          // 新規チャットの場合の処理
-          if (isNewChat) {
-            createNewConversation();
-          } else {
-            mutate();
-          }
-        })
-        .catch((e) => {
-          console.error(e);
-          setHasError(true);
-          removeLatestMessage(isNewChat ? newConversationId : conversationId);
-        })
-        .finally(() => {
-          setPostingMessage(false);
+    const postPromise: Promise<void> = new Promise((resolve) => {
+      if (USE_STREAMING) {
+        postStreaming(input, (c: string) => {
+          editLastMessage(conversationId ?? '', c);
+        }).then(() => {
+          resolve();
         });
-    } else {
-      conversationApi.postMessage(input)
+      } else {
+        conversationApi.postMessage(input)
       .then((res) => {
         editLastMessage(conversationId ?? '', res.data.message.content.body);
-        if (isNewChat) {
-          createNewConversation();
-        } else {
-          mutate();
-        }
+        resolve();
       })
-      .catch((e) => {
-        console.error(e);
-        setHasError(true);
-        removeLatestMessage(isNewChat ? newConversationId : conversationId);
-      })
-      .finally(() => {
-        setPostingMessage(false);
-      });
-    }
+    }})
+    postPromise
+    .then(() => {
+      // 新規チャットの場合の処理
+      if (isNewChat) {
+        createNewConversation();
+      } else {
+        mutate();
+      }
+    })
+    .catch((e) => {
+      console.error(e);
+      setHasError(true);
+      removeLatestMessage(isNewChat ? newConversationId : conversationId);
+    })
+    .finally(() => {
+      setPostingMessage(false);
+    });
   };
 
   return {
