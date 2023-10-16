@@ -28,7 +28,9 @@ describe('convertMessageMapToArray', () => {
           body: 'message-1',
           contentType: 'text',
         },
+        parent: null,
         children: [],
+        sibling: ['1'],
       },
     ];
     const actual = convertMessageMapToArray(data, '1');
@@ -67,7 +69,9 @@ describe('convertMessageMapToArray', () => {
           body: 'message-1',
           contentType: 'text',
         },
+        parent: null,
         children: ['2'],
+        sibling: ['1'],
       },
       {
         id: '2',
@@ -77,7 +81,9 @@ describe('convertMessageMapToArray', () => {
           body: 'message-2',
           contentType: 'text',
         },
+        parent: '1',
         children: [],
+        sibling: ['2'],
       },
     ];
     const actual = convertMessageMapToArray(data, '2');
@@ -126,7 +132,9 @@ describe('convertMessageMapToArray', () => {
           body: 'message-1',
           contentType: 'text',
         },
+        parent: null,
         children: ['2'],
+        sibling: ['1'],
       },
       {
         id: '2',
@@ -136,7 +144,9 @@ describe('convertMessageMapToArray', () => {
           body: 'message-2',
           contentType: 'text',
         },
+        parent: '1',
         children: ['3'],
+        sibling: ['2'],
       },
       {
         id: '3',
@@ -146,7 +156,9 @@ describe('convertMessageMapToArray', () => {
           body: 'message-3',
           contentType: 'text',
         },
+        parent: '2',
         children: [],
+        sibling: ['3'],
       },
     ];
     const actual = convertMessageMapToArray(data, '3');
@@ -195,7 +207,9 @@ describe('convertMessageMapToArray', () => {
           body: 'message-1',
           contentType: 'text',
         },
+        parent: null,
         children: ['2-1', '2-2'],
+        sibling: ['1'],
       },
       {
         id: '2-1',
@@ -205,7 +219,9 @@ describe('convertMessageMapToArray', () => {
           body: 'message-2-1',
           contentType: 'text',
         },
+        parent: '1',
         children: [],
+        sibling: ['2-1', '2-2'],
       },
     ];
     const actual = convertMessageMapToArray(data, '2-1');
@@ -254,7 +270,9 @@ describe('convertMessageMapToArray', () => {
           body: 'message-1',
           contentType: 'text',
         },
+        parent: null,
         children: ['2-1', '2-2'],
+        sibling: ['1'],
       },
       {
         id: '2-2',
@@ -264,7 +282,9 @@ describe('convertMessageMapToArray', () => {
           body: 'message-2-2',
           contentType: 'text',
         },
+        parent: '1',
         children: [],
+        sibling: ['2-1', '2-2'],
       },
     ];
     const actual = convertMessageMapToArray(data, '2-2');
@@ -323,7 +343,9 @@ describe('convertMessageMapToArray', () => {
           body: 'message-1',
           contentType: 'text',
         },
+        parent: null,
         children: ['2-1', '2-2'],
+        sibling: ['1'],
       },
       {
         id: '2-2',
@@ -333,7 +355,9 @@ describe('convertMessageMapToArray', () => {
           body: 'message-2-2',
           contentType: 'text',
         },
+        parent: '1',
         children: ['2-2-1'],
+        sibling: ['2-1', '2-2'],
       },
       {
         id: '2-2-1',
@@ -343,7 +367,9 @@ describe('convertMessageMapToArray', () => {
           body: 'message-2-2-1',
           contentType: 'text',
         },
+        parent: '2-2',
         children: [],
+        sibling: ['2-2-1'],
       },
     ];
     const actual = convertMessageMapToArray(data, '2-2-1');
@@ -402,7 +428,9 @@ describe('convertMessageMapToArray', () => {
           body: 'message-1',
           contentType: 'text',
         },
+        parent: null,
         children: ['2-1', '2-2'],
+        sibling: ['1'],
       },
       {
         id: '2-2',
@@ -412,7 +440,9 @@ describe('convertMessageMapToArray', () => {
           body: 'message-2-2',
           contentType: 'text',
         },
+        parent: '1',
         children: ['2-2-1'],
+        sibling: ['2-1', '2-2'],
       },
       {
         id: '2-2-1',
@@ -422,7 +452,9 @@ describe('convertMessageMapToArray', () => {
           body: 'message-2-2-1',
           contentType: 'text',
         },
+        parent: '2-2',
         children: [],
+        sibling: ['2-2-1'],
       },
     ];
     const actual = convertMessageMapToArray(data, '2-2');
@@ -511,7 +543,9 @@ describe('convertMessageMapToArray', () => {
           body: 'message-1',
           contentType: 'text',
         },
+        parent: null,
         children: ['2-1', '2-2'],
+        sibling: ['1'],
       },
       {
         id: '2-2',
@@ -521,7 +555,9 @@ describe('convertMessageMapToArray', () => {
           body: 'message-2-2',
           contentType: 'text',
         },
+        parent: '1',
         children: ['2-2-1'],
+        sibling: ['2-1', '2-2'],
       },
       {
         id: '2-2-1',
@@ -531,7 +567,9 @@ describe('convertMessageMapToArray', () => {
           body: 'message-2-2-1',
           contentType: 'text',
         },
+        parent: '2-2',
         children: ['2-2-2'],
+        sibling: ['2-2-1'],
       },
       {
         id: '2-2-2',
@@ -541,7 +579,9 @@ describe('convertMessageMapToArray', () => {
           body: 'message-2-2-2',
           contentType: 'text',
         },
+        parent: '2-2-1',
         children: ['2-2-2-1', '2-2-2-2'],
+        sibling: ['2-2-2'],
       },
       {
         id: '2-2-2-1',
@@ -551,7 +591,9 @@ describe('convertMessageMapToArray', () => {
           body: 'message-2-2-2-1',
           contentType: 'text',
         },
+        parent: '2-2-2',
         children: [],
+        sibling: ['2-2-2-1', '2-2-2-2'],
       },
     ];
     const actual = convertMessageMapToArray(data, '2-2');
@@ -627,7 +669,9 @@ describe('convertMessageMapToArray', () => {
           body: 'message-1',
           contentType: 'text',
         },
+        parent: null,
         children: ['2-1', '2-2'],
+        sibling: ['1'],
       },
       {
         id: '2-1',
@@ -637,7 +681,9 @@ describe('convertMessageMapToArray', () => {
           body: 'message-2-1',
           contentType: 'text',
         },
+        parent: '1',
         children: ['3-1', '3-2'],
+        sibling: ['2-1', '2-2'],
       },
       {
         id: '3-1',
@@ -647,7 +693,9 @@ describe('convertMessageMapToArray', () => {
           body: 'message-3-1',
           contentType: 'text',
         },
+        parent: '2-1',
         children: [],
+        sibling: ['3-1', '3-2'],
       },
     ];
 

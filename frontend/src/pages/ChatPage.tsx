@@ -16,6 +16,8 @@ const ChatPage: React.FC = () => {
     setConversationId,
     hasError,
     retryPostChat,
+    setCurrentMessageId,
+    regenerate,
   } = useChat();
   const { scrollToBottom, scrollToTop } = useScroll();
 
@@ -30,6 +32,24 @@ const ChatPage: React.FC = () => {
     postChat(content);
     setContent('');
   }, [content, postChat]);
+
+  const onChangeCurrentMessageId = useCallback(
+    (messageId: string) => {
+      setCurrentMessageId(messageId);
+    },
+    [setCurrentMessageId]
+  );
+
+  const onSubmitEditedContent = useCallback(
+    (content: string) => {
+      regenerate(content);
+    },
+    [regenerate]
+  );
+
+  const onRegenerate = useCallback(() => {
+    regenerate();
+  }, [regenerate]);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -56,7 +76,11 @@ const ChatPage: React.FC = () => {
                 className={`${
                   message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
                 }`}>
-                <ChatMessage chatContent={message} />
+                <ChatMessage
+                  chatContent={message}
+                  onChangeMessageId={onChangeCurrentMessageId}
+                  onSubmit={onSubmitEditedContent}
+                />
                 <div className="w-full border-b border-aws-squid-ink/10"></div>
               </div>
             ) : (
@@ -86,9 +110,8 @@ const ChatPage: React.FC = () => {
           content={content}
           disabled={postingMessage}
           onChangeContent={setContent}
-          onSend={() => {
-            onSend();
-          }}
+          onSend={onSend}
+          onRegenerate={onRegenerate}
         />
       </div>
     </>

@@ -11,10 +11,11 @@ type Props = {
   placeholder?: string;
   onChangeContent: (content: string) => void;
   onSend: () => void;
+  onRegenerate: () => void;
 };
 
 const InputChatContent: React.FC<Props> = (props) => {
-  const { postingMessage, hasError, regenerate } = useChat();
+  const { postingMessage, hasError } = useChat();
 
   const disabledSend = useMemo(() => {
     return props.content === '' || props.disabled || hasError;
@@ -60,11 +61,8 @@ const InputChatContent: React.FC<Props> = (props) => {
       />
       <Button
         className="absolute -top-14 right-0 border-gray-400 bg-aws-paper p-2 text-sm"
-        // outlined
-        // disabled={loading}
-        onClick={() => {
-          regenerate();
-        }}>
+        disabled={postingMessage}
+        onClick={props.onRegenerate}>
         <PiArrowsCounterClockwise className="mr-2" />
         再生成
       </Button>

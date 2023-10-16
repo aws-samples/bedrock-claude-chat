@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import Markdown from './Markdown';
 import ButtonCopy from './ButtonCopy';
 import { PiCaretLeftBold, PiNotePencil, PiUserFill } from 'react-icons/pi';
@@ -12,6 +12,8 @@ import Button from './Button';
 type Props = BaseProps & {
   chatContent?: MessageContentWithChildren;
   loading?: boolean;
+  onChangeMessageId?: (messageId: string) => void;
+  onSubmit?: (content: string) => void;
 };
 
 const ChatMessage: React.FC<Props> = (props) => {
@@ -28,19 +30,56 @@ const ChatMessage: React.FC<Props> = (props) => {
         },
         role: 'assistant',
         id: '',
+        parent: null,
         children: [],
+        sibling: [],
       };
     }
     return props.chatContent;
   }, [props]);
 
+  const nodeIndex = useMemo(() => {
+    return chatContent?.sibling.findIndex((s) => s === chatContent.id) ?? -1;
+  }, [chatContent]);
+
+  const onClickChange = useCallback(
+    (idx: number) => {
+      props.onChangeMessageId
+        ? props.onChangeMessageId(chatContent?.sibling[idx] ?? '')
+        : null;
+    },
+    [chatContent?.sibling, props]
+  );
+
+  const onSubmit = useCallback(() => {
+    props.onSubmit ? props.onSubmit(changedContent) : null;
+    setIsEdit(false);
+  }, [changedContent, props]);
+
   return (
     <div className={`${props.className ?? ''} grid grid-cols-12 gap-2 p-3 `}>
-      <div className="col-start-1 lg:col-start-2">
-        {(chatContent?.children.length ?? 0) > 1 && (
-          <div className="flex items-center text-sm ">
-            <PiCaretLeftBold />1<div className="mx-1">/</div> 2
-            <PiCaretLeftBold className="rotate-180" />
+      <div className="col-start-1 lg:col-start-2 ">
+        {(chatContent?.sibling.length ?? 0) > 1 && (
+          <div className="flex items-center justify-start text-sm lg:justify-end">
+            <ButtonIcon
+              className="text-xs"
+              disabled={nodeIndex === 0}
+              onClick={() => {
+                onClickChange(nodeIndex - 1);
+              }}>
+              <PiCaretLeftBold />
+            </ButtonIcon>
+            {nodeIndex + 1}
+            <div className="mx-1">/</div>
+            {chatContent?.sibling.length}
+            <ButtonIcon
+              className="text-xs"
+              disabled={nodeIndex >= (chatContent?.sibling.length ?? 0) - 1}
+              onClick={() => {
+                onClickChange(nodeIndex + 1);
+              }}>
+              <PiCaretLeftBold className="rotate-180" />
+            </ButtonIcon>
           </div>
         )}
       </div>
@@ -74,7 +113,7 @@ const ChatMessage: React.FC<Props> = (props) => {
                 onChange={(v) => setChangedContent(v)}
               />
               <div className="flex justify-center gap-3">
-                <Button>変更 & 送信</Button>
+                <Button onClick={onSubmit}>変更 & 送信</Button>
                 <Button
                   className="border-gray-400 bg-aws-paper"
                   onClick={() => {

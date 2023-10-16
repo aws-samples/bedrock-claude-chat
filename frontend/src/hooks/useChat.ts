@@ -8,7 +8,6 @@ import {
   PostMessageRequest,
 } from '../@types/conversation';
 import useConversation from './useConversation';
-
 import { create } from 'zustand';
 import usePostMessageStreaming from './usePostMessageStreaming';
 import useSnackbar from './useSnackbar';
@@ -34,13 +33,14 @@ const useChatState = create<{
     currentMessageId: string,
     content: MessageContent
   ) => void;
-  // removeLatestMessage: (id: string) => void;
   removeMessage: (id: string, messageId: string) => void;
   editMessage: (id: string, messageId: string, content: string) => void;
   getMessages: (
     id: string,
     currentMessageId: string
   ) => MessageContentWithChildren[];
+  currentMessageId: string;
+  setCurrentMessageId: (s: string) => void;
   isGeneratedTitle: boolean;
   setIsGeneratedTitle: (b: boolean) => void;
   hasError: boolean;
@@ -86,7 +86,6 @@ const useChatState = create<{
       currentMessageId: string,
       content: MessageContent
     ) => {
-      console.log(parentMessageId, currentMessageId);
       set((state) => ({
         chats: produce(state.chats, (draft) => {
           if (draft[id] && parentMessageId) {
@@ -121,15 +120,6 @@ const useChatState = create<{
         }),
       }));
     },
-    // removeLatestMessage: (id: string) => {
-    //   set((state) => ({
-    //     chats: produce(state.chats, (draft) => {
-    //       if (draft[id]) {
-    //         draft[id].pop();
-    //       }
-    //     }),
-    //   }));
-    // },
     removeMessage: (id: string, messageId: string) => {
       set((state) => ({
         chats: produce(state.chats, (draft) => {
@@ -154,6 +144,12 @@ const useChatState = create<{
     },
     getMessages: (id: string, currentMessageId: string) => {
       return convertMessageMapToArray(get().chats[id] ?? {}, currentMessageId);
+    },
+    currentMessageId: '',
+    setCurrentMessageId: (s: string) => {
+      set(() => ({
+        currentMessageId: s,
+      }));
     },
     isGeneratedTitle: false,
     setIsGeneratedTitle: (b: boolean) => {
@@ -181,10 +177,10 @@ const useChat = () => {
     pushMessage,
     editMessage,
     copyMessages,
-    // editLastMessage,
-    // removeLatestMessage,
     removeMessage,
     getMessages,
+    currentMessageId,
+    setCurrentMessageId,
     isGeneratedTitle,
     setIsGeneratedTitle,
     hasError,
@@ -206,10 +202,9 @@ const useChat = () => {
   const { syncConversations } = useConversation();
 
   const messages = useMemo(() => {
-    // FIXME: APIで受け取ったIDを指定
-    return getMessages(conversationId, '');
+    return getMessages(conversationId, currentMessageId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversationId, chats]);
+  }, [conversationId, chats, currentMessageId]);
 
   const newChat = useCallback(() => {
     setConversationId('');
@@ -233,8 +228,9 @@ const useChat = () => {
   useEffect(() => {
     if (conversationId && data?.id === conversationId) {
       setMessages(conversationId, data.messageMap);
+      setCurrentMessageId(data.lastMessageId);
     }
-  }, [conversationId, data, setMessages]);
+  }, [conversationId, data, setCurrentMessageId, setMessages]);
 
   useEffect(() => {
     setIsGeneratedTitle(false);
@@ -246,13 +242,11 @@ const useChat = () => {
     const newConversationId = ulid();
 
     // エラーリトライ時に同期が間に合わないため、Stateを直接参照
-    // FIXME: ID指定
     const tmpMessages = convertMessageMapToArray(
       useChatState.getState().chats[conversationId],
-      ''
+      currentMessageId
     );
 
-    // FIXME: ID指定
     const parentMessageId = isNewChat
       ? null
       : tmpMessages[tmpMessages.length - 1].id;
@@ -336,17 +330,22 @@ const useChat = () => {
     setIsGeneratedTitle,
     newChat,
     messages,
+    setCurrentMessageId,
     postChat,
 
     // 最新の回答を再生成
-    regenerate: () => {
-      const parentMessage = messages[messages.length - 2];
+    regenerate: (content?: string) => {
+      const parentMessage = produce(messages[messages.length - 2], (draft) => {
+        if (content) {
+          draft.content.body = content;
+        }
+      });
 
       const input: PostMessageRequest = {
         conversationId: conversationId,
         message: {
           ...parentMessage,
-          parentMessageId: parentMessage.id,
+          parentMessageId: parentMessage.parent,
         },
         stream: true,
       };
@@ -356,18 +355,20 @@ const useChat = () => {
 
       // 画面に即時反映するために、Stateを更新する
       pushMessage(
-        conversationId ?? '',
-        parentMessage.id,
-        'new-message-assistant',
-        {
-          role: 'assistant',
-          content: {
-            contentType: 'text',
-            body: '',
-          },
-          model: 'claude',
-        }
+        conversationId,
+        parentMessage.parent ?? '',
+        'new-message',
+        parentMessage
       );
+      pushMessage(conversationId, 'new-message', 'new-message-assistant', {
+        role: 'assistant',
+        content: {
+          contentType: 'text',
+          body: '',
+        },
+        model: 'claude',
+      });
+      setCurrentMessageId('new-message-assistant');
 
       postStreaming(input, (c: string) => {
         editMessage(conversationId, 'new-message-assistant', c);

@@ -13,7 +13,9 @@ export type MessageContent = {
 
 export type MessageContentWithChildren = MessageContent & {
   id: string;
+  parent: null | string;
   children: string[];
+  sibling: string[];
 };
 
 export type PostMessageRequest = {

@@ -29,7 +29,9 @@ export const convertMessageMapToArray = (
         model: messageContent.model,
         role: messageContent.role,
         content: messageContent.content,
+        parent: messageContent.parent,
         children: messageContent.children,
+        sibling: [],
       });
 
       key = messageContent.parent;
@@ -51,11 +53,20 @@ export const convertMessageMapToArray = (
         model: messageContent.model,
         role: messageContent.role,
         content: messageContent.content,
+        parent: messageContent.parent,
         children: messageContent.children,
+        sibling: [],
       });
       key = messageContent.children[0];
     }
   }
+
+  messageArray[0].sibling = [messageArray[0].id];
+  messageArray.forEach((m, idx) => {
+    if (m.children.length > 0) {
+      messageArray[idx + 1].sibling = [...m.children];
+    }
+  });
 
   return messageArray;
 };
