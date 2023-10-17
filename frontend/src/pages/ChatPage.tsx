@@ -29,6 +29,7 @@ const ChatPage: React.FC = () => {
   }, [paramConversationId]);
 
   const onSend = useCallback(() => {
+    console.log('!!!');
     postChat(content);
     setContent('');
   }, [content, postChat]);

@@ -19,6 +19,11 @@ type ChatStateType = {
   [id: string]: MessageMap;
 };
 
+const NEW_MESSAGE_ID = {
+  USER: 'new-message',
+  ASSISTANT: 'new-message-assistant',
+};
+
 const useChatState = create<{
   conversationId: string;
   setConversationId: (s: string) => void;
@@ -237,13 +242,39 @@ const useChat = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId]);
 
+  // 画面に即時反映させるために、Stateを更新する処理
+  const pushNewMessage = (
+    parentMessageId: string | null,
+    messageContent: MessageContent
+  ) => {
+    pushMessage(
+      conversationId ?? '',
+      parentMessageId,
+      NEW_MESSAGE_ID.USER,
+      messageContent
+    );
+    pushMessage(
+      conversationId ?? '',
+      NEW_MESSAGE_ID.USER,
+      NEW_MESSAGE_ID.ASSISTANT,
+      {
+        role: 'assistant',
+        content: {
+          contentType: 'text',
+          body: '',
+        },
+        model: 'claude',
+      }
+    );
+  };
+
   const postChat = (content: string) => {
     const isNewChat = conversationId ? false : true;
     const newConversationId = ulid();
 
     // エラーリトライ時に同期が間に合わないため、Stateを直接参照
     const tmpMessages = convertMessageMapToArray(
-      useChatState.getState().chats[conversationId],
+      useChatState.getState().chats[conversationId] ?? {},
       currentMessageId
     );
 
@@ -271,23 +302,10 @@ const useChat = () => {
     setHasError(false);
 
     // 画面に即時反映するために、Stateを更新する
-    pushMessage(
-      conversationId ?? '',
-      parentMessageId,
-      'new-message',
-      messageContent
-    );
-    pushMessage(conversationId ?? '', 'new-message', 'new-message-assistant', {
-      role: 'assistant',
-      content: {
-        contentType: 'text',
-        body: '',
-      },
-      model: 'claude',
-    });
+    pushNewMessage(parentMessageId, messageContent);
 
     postStreaming(input, (c: string) => {
-      editMessage(conversationId ?? '', 'new-message-assistant', c);
+      editMessage(conversationId ?? '', NEW_MESSAGE_ID.ASSISTANT, c);
     })
       .then(() => {
         // 新規チャットの場合の処理
@@ -312,7 +330,7 @@ const useChat = () => {
         setHasError(true);
         removeMessage(
           isNewChat ? newConversationId : conversationId,
-          'new-message-assistant'
+          NEW_MESSAGE_ID.ASSISTANT
         );
       })
       .finally(() => {
@@ -325,7 +343,7 @@ const useChat = () => {
     setConversationId,
     conversationId,
     loadingConversation,
-    postingMessage,
+    postingMessage: postingMessage || loadingConversation,
     isGeneratedTitle,
     setIsGeneratedTitle,
     newChat,
@@ -354,24 +372,12 @@ const useChat = () => {
       setHasError(false);
 
       // 画面に即時反映するために、Stateを更新する
-      pushMessage(
-        conversationId,
-        parentMessage.parent ?? '',
-        'new-message',
-        parentMessage
-      );
-      pushMessage(conversationId, 'new-message', 'new-message-assistant', {
-        role: 'assistant',
-        content: {
-          contentType: 'text',
-          body: '',
-        },
-        model: 'claude',
-      });
-      setCurrentMessageId('new-message-assistant');
+      pushNewMessage(parentMessage.parent, parentMessage);
+
+      setCurrentMessageId(NEW_MESSAGE_ID.ASSISTANT);
 
       postStreaming(input, (c: string) => {
-        editMessage(conversationId, 'new-message-assistant', c);
+        editMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT, c);
       })
         .then(() => {
           mutate();
@@ -379,7 +385,8 @@ const useChat = () => {
         .catch((e) => {
           console.error(e);
           setHasError(true);
-          removeMessage(conversationId, 'new-message-assistant');
+          setCurrentMessageId(NEW_MESSAGE_ID.USER);
+          removeMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT);
         })
         .finally(() => {
           setPostingMessage(false);
@@ -391,6 +398,7 @@ const useChat = () => {
       if (messages.length === 0) {
         return;
       }
+      // FIXME: 推論履歴がある場合の処理
       // エラー発生時の最新のメッセージはユーザ入力
       const lastMessage = messages[messages.length - 1];
       removeMessage(conversationId, lastMessage.id);

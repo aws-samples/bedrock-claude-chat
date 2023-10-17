@@ -702,4 +702,260 @@ describe('convertMessageMapToArray', () => {
     const actual = convertMessageMapToArray(data, '999');
     expect(actual).toEqual(expected);
   });
+
+  it('参照が途中で切れた場合は途中までの配列を返す:指定のIDが存在する', () => {
+    const data: MessageMap = {
+      '1': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-1',
+        },
+        parent: null,
+        children: ['2'],
+      },
+      '2': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-2',
+        },
+        parent: 'dummy',
+        children: ['3'],
+      },
+      '3': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-3',
+        },
+        parent: '2',
+        children: [],
+      },
+    };
+    const expected: MessageContentWithChildren[] = [
+      {
+        id: '2',
+        role: 'user',
+        model: 'claude',
+        content: {
+          body: 'message-2',
+          contentType: 'text',
+        },
+        parent: null,
+        children: ['3'],
+        sibling: ['2'],
+      },
+      {
+        id: '3',
+        role: 'user',
+        model: 'claude',
+        content: {
+          body: 'message-3',
+          contentType: 'text',
+        },
+        parent: '2',
+        children: [],
+        sibling: ['3'],
+      },
+    ];
+
+    const actual = convertMessageMapToArray(data, '3');
+    expect(actual).toEqual(expected);
+  });
+
+  it('参照が途中で切れた場合は途中までの配列を返す:指定のIDが存在しない', () => {
+    const data: MessageMap = {
+      '1': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-1',
+        },
+        parent: null,
+        children: ['2'],
+      },
+      '2': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-2',
+        },
+        parent: '1',
+        children: ['4'],
+      },
+      '3': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-3',
+        },
+        parent: '2',
+        children: [],
+      },
+    };
+    const expected: MessageContentWithChildren[] = [
+      {
+        id: '1',
+        role: 'user',
+        model: 'claude',
+        content: {
+          body: 'message-1',
+          contentType: 'text',
+        },
+        parent: null,
+        children: ['2'],
+        sibling: ['1'],
+      },
+      {
+        id: '2',
+        role: 'user',
+        model: 'claude',
+        content: {
+          body: 'message-2',
+          contentType: 'text',
+        },
+        parent: '1',
+        children: [],
+        sibling: ['2'],
+      },
+    ];
+
+    const actual = convertMessageMapToArray(data, '9');
+    expect(actual).toEqual(expected);
+  });
+
+  it('循環参照している場合中断する:指定のIDが存在する', () => {
+    const data: MessageMap = {
+      '1': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-1',
+        },
+        parent: null,
+        children: ['3'],
+      },
+      '2': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-2',
+        },
+        parent: '3',
+        children: ['3'],
+      },
+      '3': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-3',
+        },
+        parent: '2',
+        children: [],
+      },
+    };
+    const expected: MessageContentWithChildren[] = [
+      {
+        id: '2',
+        role: 'user',
+        model: 'claude',
+        content: {
+          body: 'message-2',
+          contentType: 'text',
+        },
+        parent: null,
+        children: ['3'],
+        sibling: ['2'],
+      },
+      {
+        id: '3',
+        role: 'user',
+        model: 'claude',
+        content: {
+          body: 'message-3',
+          contentType: 'text',
+        },
+        parent: '2',
+        children: [],
+        sibling: ['3'],
+      },
+    ];
+
+    const actual = convertMessageMapToArray(data, '3');
+    expect(actual).toEqual(expected);
+  });
+
+  it('循環参照している場合中断する:指定のIDが存在しない', () => {
+    const data: MessageMap = {
+      '1': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-1',
+        },
+        parent: null,
+        children: ['2'],
+      },
+      '2': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-2',
+        },
+        parent: '1',
+        children: ['1'],
+      },
+      '3': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-3',
+        },
+        parent: '2',
+        children: [],
+      },
+    };
+    const expected: MessageContentWithChildren[] = [
+      {
+        id: '1',
+        role: 'user',
+        model: 'claude',
+        content: {
+          body: 'message-1',
+          contentType: 'text',
+        },
+        parent: null,
+        children: ['2'],
+        sibling: ['1'],
+      },
+      {
+        id: '2',
+        role: 'user',
+        model: 'claude',
+        content: {
+          body: 'message-2',
+          contentType: 'text',
+        },
+        parent: '1',
+        children: [],
+        sibling: ['2'],
+      },
+    ];
+
+    const actual = convertMessageMapToArray(data, '99');
+    expect(actual).toEqual(expected);
+  });
 });

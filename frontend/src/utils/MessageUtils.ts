@@ -23,6 +23,21 @@ export const convertMessageMapToArray = (
     // 末端から順にArrayに設定してく
     while (key) {
       messageContent = messageMap[key];
+      // 参照が途中で切れている場合は処理中断
+      if (!messageContent) {
+        messageArray[0].parent = null;
+        break;
+      }
+
+      // 既に配列上に存在する場合は循環参照状態なので処理中断
+      if (
+        messageArray.some((a) => {
+          return a.id === key || a.children.includes(key ?? '');
+        })
+      ) {
+        messageArray[0].parent = null;
+        break;
+      }
 
       messageArray.unshift({
         id: key,
@@ -47,6 +62,21 @@ export const convertMessageMapToArray = (
     // 上から順にArrayに設定する
     while (key) {
       messageContent = messageMap[key];
+      // 参照が途中で切れている場合は処理中断
+      if (!messageContent) {
+        messageArray[messageArray.length - 1].children = [];
+        break;
+      }
+
+      // 既に配列上に存在する場合は循環参照状態なので処理中断
+      if (
+        messageArray.some((a) => {
+          return a.id === key;
+        })
+      ) {
+        messageArray[messageArray.length - 1].children = [];
+        break;
+      }
 
       messageArray.push({
         id: key,
@@ -61,6 +91,7 @@ export const convertMessageMapToArray = (
     }
   }
 
+  // 兄弟ノードの設定
   messageArray[0].sibling = [messageArray[0].id];
   messageArray.forEach((m, idx) => {
     if (m.children.length > 0) {
