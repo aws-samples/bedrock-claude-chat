@@ -41,11 +41,11 @@ const ChatPage: React.FC = () => {
   );
 
   const onSubmitEditedContent = useCallback(
-    (content: string) => {
+    (messageId: string, content: string) => {
       if (hasError) {
         retryPostChat(content);
       } else {
-        regenerate(content);
+        regenerate({ messageId, content });
       }
     },
     [hasError, regenerate, retryPostChat]

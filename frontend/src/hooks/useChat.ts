@@ -324,18 +324,33 @@ const useChat = () => {
       });
   };
 
-  const regenerate = (content?: string) => {
+  /**
+   * 再生成
+   * @param props content: 内容を上書きしたい場合に設定  messageId: 再生成対象のmessageId
+   */
+  const regenerate = (props?: { content?: string; messageId?: string }) => {
+    let index: number = -1;
+    // messageIdが指定されている場合は、指定されたメッセージをベースにする
+    if (props?.messageId) {
+      index = messages.findIndex((m) => m.id === props.messageId);
+    }
+
+    // 最新のメッセージがUSERの場合は、エラーとして処理する
     const isRetryError = messages[messages.length - 1].role === 'user';
-    const index = isRetryError ? messages.length - 1 : messages.length - 2;
+    // messageIdが指定されていない場合は、最新のメッセージを再生成する
+    if (index === -1) {
+      index = isRetryError ? messages.length - 1 : messages.length - 2;
+    }
 
     const parentMessage = produce(messages[index], (draft) => {
-      if (content) {
-        draft.content.body = content;
+      if (props?.content) {
+        draft.content.body = props.content;
       }
     });
 
-    if (content) {
-      editMessage(conversationId, parentMessage.id, content);
+    // Stateを書き換え後の内容に更新
+    if (props?.content) {
+      editMessage(conversationId, parentMessage.id, props.content);
     }
 
     const input: PostMessageRequest = {
@@ -419,7 +434,9 @@ const useChat = () => {
         postChat(content ?? latestMessage.content.body);
       } else {
         // 再生成時
-        regenerate(content ?? latestMessage.content.body);
+        regenerate({
+          content: content ?? latestMessage.content.body,
+        });
       }
     },
   };

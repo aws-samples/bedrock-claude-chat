@@ -13,7 +13,7 @@ type Props = BaseProps & {
   chatContent?: MessageContentWithChildren;
   loading?: boolean;
   onChangeMessageId?: (messageId: string) => void;
-  onSubmit?: (content: string) => void;
+  onSubmit?: (messageId: string, content: string) => void;
 };
 
 const ChatMessage: React.FC<Props> = (props) => {
@@ -52,9 +52,11 @@ const ChatMessage: React.FC<Props> = (props) => {
   );
 
   const onSubmit = useCallback(() => {
-    props.onSubmit ? props.onSubmit(changedContent) : null;
+    props.onSubmit
+      ? props.onSubmit(chatContent?.sibling[0] ?? '', changedContent)
+      : null;
     setIsEdit(false);
-  }, [changedContent, props]);
+  }, [changedContent, chatContent?.sibling, props]);
 
   return (
     <div className={`${props.className ?? ''} grid grid-cols-12 gap-2 p-3 `}>
