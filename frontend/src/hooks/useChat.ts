@@ -48,19 +48,13 @@ const useChatState = create<{
   setCurrentMessageId: (s: string) => void;
   isGeneratedTitle: boolean;
   setIsGeneratedTitle: (b: boolean) => void;
-  hasError: boolean;
-  setHasError: (b: boolean) => void;
 }>((set, get) => {
   return {
     conversationId: '',
     setConversationId: (s) => {
-      set((state) => {
-        // 会話IDが変わったらエラー状態を初期化
-        const hasError = state.conversationId !== s ? false : state.hasError;
-
+      set(() => {
         return {
           conversationId: s,
-          hasError,
         };
       });
     },
@@ -129,12 +123,15 @@ const useChatState = create<{
       set((state) => ({
         chats: produce(state.chats, (draft) => {
           const childrenIds = [...draft[id][messageId].children];
+
+          // childrenに設定されているノードも全て削除
           while (childrenIds.length > 0) {
             const targetId = childrenIds.pop()!;
             childrenIds.push(...draft[id][targetId].children);
             delete draft[id][targetId];
           }
 
+          // 削除対象のノードを他ノードの参照から削除
           Object.keys(draft[id]).forEach((key) => {
             const idx = draft[id][key].children.findIndex(
               (c) => c === messageId
@@ -162,12 +159,6 @@ const useChatState = create<{
         isGeneratedTitle: b,
       }));
     },
-    hasError: false,
-    setHasError: (b: boolean) => {
-      set(() => ({
-        hasError: b,
-      }));
-    },
   };
 });
 
@@ -188,8 +179,6 @@ const useChat = () => {
     setCurrentMessageId,
     isGeneratedTitle,
     setIsGeneratedTitle,
-    hasError,
-    setHasError,
   } = useChatState();
 
   const { open: openSnackbar } = useSnackbar();
@@ -214,8 +203,7 @@ const useChat = () => {
   const newChat = useCallback(() => {
     setConversationId('');
     setMessages('', {});
-    setHasError(false);
-  }, [setConversationId, setHasError, setMessages]);
+  }, [setConversationId, setMessages]);
 
   // エラー処理
   useEffect(() => {
@@ -299,7 +287,6 @@ const useChat = () => {
     };
 
     setPostingMessage(true);
-    setHasError(false);
 
     // 画面に即時反映するために、Stateを更新する
     pushNewMessage(parentMessageId, messageContent);
@@ -327,7 +314,6 @@ const useChat = () => {
       })
       .catch((e) => {
         console.error(e);
-        setHasError(true);
         removeMessage(
           isNewChat ? newConversationId : conversationId,
           NEW_MESSAGE_ID.ASSISTANT
@@ -337,6 +323,73 @@ const useChat = () => {
         setPostingMessage(false);
       });
   };
+
+  const regenerate = (content?: string) => {
+    const isRetryError = messages[messages.length - 1].role === 'user';
+    const index = isRetryError ? messages.length - 1 : messages.length - 2;
+
+    const parentMessage = produce(messages[index], (draft) => {
+      if (content) {
+        draft.content.body = content;
+      }
+    });
+
+    if (content) {
+      editMessage(conversationId, parentMessage.id, content);
+    }
+
+    const input: PostMessageRequest = {
+      conversationId: conversationId,
+      message: {
+        ...parentMessage,
+        parentMessageId: parentMessage.parent,
+      },
+      stream: true,
+    };
+
+    setPostingMessage(true);
+
+    // 画面に即時反映するために、Stateを更新する
+    if (isRetryError) {
+      pushMessage(
+        conversationId ?? '',
+        parentMessage.id,
+        NEW_MESSAGE_ID.ASSISTANT,
+        {
+          role: 'assistant',
+          content: {
+            contentType: 'text',
+            body: '',
+          },
+          model: 'claude',
+        }
+      );
+    } else {
+      pushNewMessage(parentMessage.parent, parentMessage);
+    }
+
+    setCurrentMessageId(NEW_MESSAGE_ID.ASSISTANT);
+
+    postStreaming(input, (c: string) => {
+      editMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT, c);
+    })
+      .then(() => {
+        mutate();
+      })
+      .catch((e) => {
+        console.error(e);
+        setCurrentMessageId(NEW_MESSAGE_ID.USER);
+        removeMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT);
+      })
+      .finally(() => {
+        setPostingMessage(false);
+      });
+  };
+
+  const hasError = useMemo(() => {
+    const length_ = messages.length;
+    return length_ === 0 ? false : messages[length_ - 1].role === 'user';
+  }, [messages]);
 
   return {
     hasError,
@@ -350,59 +403,24 @@ const useChat = () => {
     messages,
     setCurrentMessageId,
     postChat,
-
-    // 最新の回答を再生成
-    regenerate: (content?: string) => {
-      const parentMessage = produce(messages[messages.length - 2], (draft) => {
-        if (content) {
-          draft.content.body = content;
-        }
-      });
-
-      const input: PostMessageRequest = {
-        conversationId: conversationId,
-        message: {
-          ...parentMessage,
-          parentMessageId: parentMessage.parent,
-        },
-        stream: true,
-      };
-
-      setPostingMessage(true);
-      setHasError(false);
-
-      // 画面に即時反映するために、Stateを更新する
-      pushNewMessage(parentMessage.parent, parentMessage);
-
-      setCurrentMessageId(NEW_MESSAGE_ID.ASSISTANT);
-
-      postStreaming(input, (c: string) => {
-        editMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT, c);
-      })
-        .then(() => {
-          mutate();
-        })
-        .catch((e) => {
-          console.error(e);
-          setHasError(true);
-          setCurrentMessageId(NEW_MESSAGE_ID.USER);
-          removeMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT);
-        })
-        .finally(() => {
-          setPostingMessage(false);
-        });
-    },
+    regenerate,
 
     // エラーのリトライ
-    retryPostChat: () => {
-      if (messages.length === 0) {
+    retryPostChat: (content?: string) => {
+      const length_ = messages.length;
+      if (length_ === 0) {
         return;
       }
-      // FIXME: 推論履歴がある場合の処理
-      // エラー発生時の最新のメッセージはユーザ入力
-      const lastMessage = messages[messages.length - 1];
-      removeMessage(conversationId, lastMessage.id);
-      postChat(lastMessage.content.body);
+      const latestMessage = messages[length_ - 1];
+      if (latestMessage.sibling.length === 1) {
+        // 通常のメッセージ送信時
+        // エラー発生時の最新のメッセージはユーザ入力;
+        removeMessage(conversationId, latestMessage.id);
+        postChat(content ?? latestMessage.content.body);
+      } else {
+        // 再生成時
+        regenerate(content ?? latestMessage.content.body);
+      }
     },
   };
 };

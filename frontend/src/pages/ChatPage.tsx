@@ -29,7 +29,6 @@ const ChatPage: React.FC = () => {
   }, [paramConversationId]);
 
   const onSend = useCallback(() => {
-    console.log('!!!');
     postChat(content);
     setContent('');
   }, [content, postChat]);
@@ -43,9 +42,13 @@ const ChatPage: React.FC = () => {
 
   const onSubmitEditedContent = useCallback(
     (content: string) => {
-      regenerate(content);
+      if (hasError) {
+        retryPostChat(content);
+      } else {
+        regenerate(content);
+      }
     },
-    [regenerate]
+    [hasError, regenerate, retryPostChat]
   );
 
   const onRegenerate = useCallback(() => {

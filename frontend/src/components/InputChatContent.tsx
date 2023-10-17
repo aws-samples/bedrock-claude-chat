@@ -15,11 +15,15 @@ type Props = {
 };
 
 const InputChatContent: React.FC<Props> = (props) => {
-  const { postingMessage, hasError } = useChat();
+  const { postingMessage, hasError, messages } = useChat();
 
   const disabledSend = useMemo(() => {
     return props.content === '' || props.disabled || hasError;
   }, [hasError, props.content, props.disabled]);
+
+  const disabledRegenerate = useMemo(() => {
+    return postingMessage || hasError;
+  }, [hasError, postingMessage]);
 
   useEffect(() => {
     const listener = (e: DocumentEventMap['keypress']) => {
@@ -59,13 +63,15 @@ const InputChatContent: React.FC<Props> = (props) => {
         loading={postingMessage}
         onClick={props.onSend}
       />
-      <Button
-        className="absolute -top-14 right-0 border-gray-400 bg-aws-paper p-2 text-sm"
-        disabled={postingMessage}
-        onClick={props.onRegenerate}>
-        <PiArrowsCounterClockwise className="mr-2" />
-        再生成
-      </Button>
+      {messages.length > 1 && (
+        <Button
+          className="absolute -top-14 right-0 border-gray-400 bg-aws-paper p-2 text-sm"
+          disabled={disabledRegenerate}
+          onClick={props.onRegenerate}>
+          <PiArrowsCounterClockwise className="mr-2" />
+          再生成
+        </Button>
+      )}
     </div>
   );
 };
