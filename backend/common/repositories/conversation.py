@@ -9,7 +9,7 @@ from boto3.dynamodb.conditions import Key
 
 from .model import ContentModel, ConversationModel, MessageModel
 
-DDB_ENDPOINT_URL = os.environ.get("DDB_ENDPOINT_URL", "http://localhost:8000")
+DDB_ENDPOINT_URL = os.environ.get("DDB_ENDPOINT_URL")
 TABLE_NAME = os.environ.get("TABLE_NAME", "")
 ACCOUNT = os.environ.get("ACCOUNT", "")
 REGION = os.environ.get("REGION", "ap-northeast-1")
