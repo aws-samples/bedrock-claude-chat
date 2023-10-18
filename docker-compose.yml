@@ -26,7 +26,7 @@ services:
       DDB_ENDPOINT_URL: http://dynamodb-local:8000
       TABLE_NAME: ConversationTable
       # Bedrock 向けの設定
-      BEDROCK_REGION: us-west-2
+      BEDROCK_REGION: us-east-1
       #AWS_ACCESS_KEY_ID: XXXX
       #AWS_SECRET_ACCESS_KEY: XXXX
     volumes:
