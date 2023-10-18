@@ -139,7 +139,7 @@ GENERATION_CONFIG = {
 
 ### Remove resources
 
-If using cli and CDK, please `cdk destroy`. If not, access to [CloudFormation](https://console.aws.amazon.com/cloudformation/home) and delete `BedrockChatStack` manually.
+If using cli and CDK, please `cdk destroy`. If not, access to [CloudFormation](https://console.aws.amazon.com/cloudformation/home) then delete `BedrockChatStack` and `FrontendWafStack` manually. Please note that `FrontendWafStack` is on `us-east-1` region.
 
 ### RAG using Kendra
 

@@ -24,6 +24,7 @@ def prepare_conversation(
         # Fetch existing conversation
         conversation = find_conversation_by_id(user_id, chat_input.conversation_id)
         logger.debug(f"Found conversation: {conversation}")
+        parent_id = chat_input.message.parent_message_id
     except RecordNotFoundError:
         logger.debug(
             f"No conversation found with id: {chat_input.conversation_id}. Creating new conversation."
@@ -33,9 +34,23 @@ def prepare_conversation(
             id=chat_input.conversation_id,
             title="New conversation",
             create_time=datetime.now().timestamp(),
-            message_map={},
+            message_map={
+                # Dummy system message
+                "system": MessageModel(
+                    role="system",
+                    content=ContentModel(
+                        content_type="text",
+                        body="",
+                    ),
+                    model="claude",
+                    children=[],
+                    parent=None,
+                    create_time=datetime.now().timestamp(),
+                )
+            },
             last_message_id="",
         )
+        parent_id = "system"
 
     # Append user chat input to the conversation
     message_id = str(ULID())
@@ -47,7 +62,7 @@ def prepare_conversation(
         ),
         model=chat_input.message.model,
         children=[],
-        parent=chat_input.message.parent_message_id,
+        parent=parent_id,
         create_time=datetime.now().timestamp(),
     )
     conversation.message_map[message_id] = new_message

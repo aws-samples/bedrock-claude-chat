@@ -18,10 +18,15 @@ def get_buffer_string(conversations: dict[str, MessageModel]) -> str:
             prefix = "Assistant: "
         elif conversation.role == "user":
             prefix = "Human: "
+        elif conversation.role == "system":
+            prefix = "System: "
         else:
             raise ValueError(f"Unsupported role: {conversation.role}")
-        message = f"{prefix}{conversation.content.body}"
-        string_messages.append(message)
+        
+        if conversation.role != "system":
+            # Ignore system messages (currently `system` is dummy)
+            message = f"{prefix}{conversation.content.body}"
+            string_messages.append(message)
 
     # 最後のメッセージがユーザーからのものである場合、prefixを追加します。
     # Ref: https://docs.anthropic.com/claude/docs/introduction-to-prompt-design#human--assistant-formatting
