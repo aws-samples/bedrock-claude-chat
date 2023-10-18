@@ -9,6 +9,7 @@ from boto3.dynamodb.conditions import Key
 
 from .model import ContentModel, ConversationModel, MessageModel
 
+DDB_ENDPOINT_URL = os.environ.get("DDB_ENDPOINT_URL", "http://localhost:8000")
 TABLE_NAME = os.environ.get("TABLE_NAME", "")
 ACCOUNT = os.environ.get("ACCOUNT", "")
 REGION = os.environ.get("REGION", "ap-northeast-1")
@@ -35,9 +36,13 @@ def _get_table_client(user_id: str):
     """Get a DynamoDB table client with row level access
     Ref: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_dynamodb_items.html
     """
-    if not "AWS_EXECUTION_ENV" in os.environ:
-        # NOTE: This is for local development
-        dynamodb = boto3.resource("dynamodb", region_name=REGION)
+    if "AWS_EXECUTION_ENV" not in os.environ:
+        # NOTE: This is for local development using DynamDB Local
+        dynamodb = boto3.resource("dynamodb",
+                                  endpoint_url=DDB_ENDPOINT_URL,
+                                  aws_access_key_id="key",
+                                  aws_secret_access_key="key",
+                                  region_name="us-east-1")
         return dynamodb.Table(TABLE_NAME)
 
     policy_document = {
