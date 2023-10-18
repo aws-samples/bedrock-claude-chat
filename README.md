@@ -156,7 +156,22 @@ cd frontend && npm run dev
 Currently, the environment variable `VITE_APP_USE_STREAMING` is specified on the frontend side. It's recommended to set it to `false` when running the backend locally and `true` when operating on AWS.  
 When streaming is enabled, text is generated in real-time due to the streaming of content generation results.
 
+### Local development using docker compose
 
+[docker-compose.yml](./dockercompose.yml) allows you to run and develop frontend/backend APIs/DynamoDB Local in your local environment.
+
+※ The hot reloading is only supported on the frontend, not on the backend API. It's depends on the directory structure which prevents mount the source code.
+
+```bash
+# Build containers
+docker compose build
+
+# Launch containers
+docker compose up
+
+# Stop containers
+docker compose down
+```
 
 ### Remove resources
 
