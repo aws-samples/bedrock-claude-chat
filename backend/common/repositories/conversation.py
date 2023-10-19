@@ -94,9 +94,10 @@ def store_conversation(user_id: str, conversation: ConversationModel):
             "ConversationId": _compose_conv_id(user_id, conversation.id),
             "Title": conversation.title,
             "CreateTime": decimal(conversation.create_time),
-            "Messages": json.dumps(
-                [message.model_dump() for message in conversation.messages]
+            "MessageMap": json.dumps(
+                {k: v.model_dump() for k, v in conversation.message_map.items()}
             ),
+            "LastMessageId": conversation.last_message_id,
         }
     )
     return response
@@ -112,19 +113,21 @@ def find_conversation_by_user_id(user_id: str) -> list[ConversationModel]:
             id=_decompose_conv_id(item["ConversationId"]),
             create_time=float(item["CreateTime"]),
             title=item["Title"],
-            messages=[
-                MessageModel(
-                    id=message["id"],
-                    role=message["role"],
+            message_map={
+                k: MessageModel(
+                    role=v["role"],
                     content=ContentModel(
-                        content_type=message["content"]["content_type"],
-                        body=message["content"]["body"],
+                        content_type=v["content"]["content_type"],
+                        body=v["content"]["body"],
                     ),
-                    model=message["model"],
-                    create_time=float(message["create_time"]),
+                    model=v["model"],
+                    children=v["children"],
+                    parent=v["parent"],
+                    create_time=float(v["create_time"]),
                 )
-                for message in json.loads(item["Messages"])
-            ],
+                for k, v in json.loads(item["MessageMap"]).items()
+            },
+            last_message_id=item["LastMessageId"],
         )
         for item in response["Items"]
     ]
@@ -150,19 +153,21 @@ def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationM
         id=_decompose_conv_id(item["ConversationId"]),
         create_time=float(item["CreateTime"]),
         title=item["Title"],
-        messages=[
-            MessageModel(
-                id=message["id"],
-                role=message["role"],
+        message_map={
+            k: MessageModel(
+                role=v["role"],
                 content=ContentModel(
-                    content_type=message["content"]["content_type"],
-                    body=message["content"]["body"],
+                    content_type=v["content"]["content_type"],
+                    body=v["content"]["body"],
                 ),
-                model=message["model"],
-                create_time=float(message["create_time"]),
+                model=v["model"],
+                children=v["children"],
+                parent=v["parent"],
+                create_time=float(v["create_time"]),
             )
-            for message in json.loads(item["Messages"])
-        ],
+            for k, v in json.loads(item["MessageMap"]).items()
+        },
+        last_message_id=item["LastMessageId"],
     )
     logger.debug(f"Found conversation: {conv}")
     return conv

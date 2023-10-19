@@ -52,7 +52,7 @@ def handler(event, context):
         return {"statusCode": 403, "body": "Invalid token."}
 
     user_id = decoded["sub"]
-    conversation = prepare_conversation(user_id, chat_input)
+    user_msg_id, conversation = prepare_conversation(user_id, chat_input)
     payload = get_invoke_payload(conversation, chat_input)
 
     try:
@@ -82,14 +82,19 @@ def handler(event, context):
     concatenated = "".join(completions)
 
     # Append entire completion as the last message
+    assistant_msg_id = str(ULID())
     message = MessageModel(
-        id=str(ULID()),
         role="assistant",
         content=ContentModel(content_type="text", body=concatenated),
         model=chat_input.message.model,
+        children=[],
+        parent=user_msg_id,
         create_time=datetime.now().timestamp(),
     )
-    conversation.messages.append(message)
+    conversation.message_map[assistant_msg_id] = message
+    # Append children to parent
+    conversation.message_map[user_msg_id].children.append(assistant_msg_id)
+    conversation.last_message_id = assistant_msg_id
 
     # Persist conversation
     store_conversation(user_id, conversation)

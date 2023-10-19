@@ -19,13 +19,15 @@ class MessageInput(BaseSchema):
     role: str
     content: Content
     model: Literal["titan", "claude"]
+    parent_message_id: str | None
 
 
 class MessageOutput(BaseSchema):
-    id: str
     role: str
     content: Content
     model: Literal["titan", "claude"]
+    children: list[str]
+    parent: str | None
 
 
 class ChatInput(BaseSchema):
@@ -53,7 +55,8 @@ class Conversation(BaseSchema):
     id: str
     title: str
     create_time: float
-    messages: list[MessageOutput] = Field(..., description="メッセージの内容")
+    message_map: dict[str, MessageOutput]
+    last_message_id: str
 
 
 class NewTitleInput(BaseSchema):
