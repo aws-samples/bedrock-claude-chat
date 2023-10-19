@@ -23,6 +23,8 @@ const NEW_MESSAGE_ID = {
   USER: 'new-message',
   ASSISTANT: 'new-message-assistant',
 };
+const USE_STREAMING: boolean =
+  import.meta.env.VITE_APP_USE_STREAMING === 'true';
 
 const useChatState = create<{
   conversationId: string;
@@ -181,7 +183,6 @@ const useChat = () => {
     isGeneratedTitle,
     setIsGeneratedTitle,
   } = useChatState();
-
   const { open: openSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
@@ -286,29 +287,49 @@ const useChat = () => {
       },
       stream: true,
     };
+    const createNewConversation = () => {
+      setConversationId(newConversationId);
+      // 画面のチラつき防止のために、Stateをコピーする
+      copyMessages('', newConversationId);
+
+      conversationApi
+        .updateTitleWithGeneratedTitle(newConversationId)
+        .finally(() => {
+          syncConversations().then(() => {
+            setIsGeneratedTitle(true);
+          });
+        });
+    };
 
     setPostingMessage(true);
 
     // 画面に即時反映するために、Stateを更新する
     pushNewMessage(parentMessageId, messageContent);
 
-    postStreaming(input, (c: string) => {
-      editMessage(conversationId ?? '', NEW_MESSAGE_ID.ASSISTANT, c);
-    })
+    const postPromise: Promise<void> = new Promise((resolve) => {
+      if (USE_STREAMING) {
+        postStreaming(input, (c: string) => {
+          editMessage(conversationId ?? '', NEW_MESSAGE_ID.ASSISTANT, c);
+        }).then(() => {
+          resolve();
+        });
+      } else {
+        conversationApi.postMessage(input).then((res) => {
+          editMessage(
+            conversationId ?? '',
+            NEW_MESSAGE_ID.ASSISTANT,
+            res.data.message.content.body
+          );
+          resolve();
+        });
+      }
+    });
+
+    postPromise
       .then(() => {
         // 新規チャットの場合の処理
         if (isNewChat) {
-          setConversationId(newConversationId);
-          // 画面のチラつき防止のために、Stateをコピーする
-          copyMessages('', newConversationId);
-
-          conversationApi
-            .updateTitleWithGeneratedTitle(newConversationId)
-            .finally(() => {
-              syncConversations().then(() => {
-                setIsGeneratedTitle(true);
-              });
-            });
+          createNewConversation();
         } else {
           mutate();
         }
