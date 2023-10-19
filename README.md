@@ -160,7 +160,7 @@ When streaming is enabled, text is generated in real-time due to the streaming o
 
 [docker-compose.yml](./docker-compose.yml) allows you to run and develop frontend/backend APIs/DynamoDB Local in your local environment.
 
-※ The hot reloading is only supported on the frontend, not on the backend API. It's depends on the directory structure which prevents mount the source code.
+※ Hot reloading is only supported on the frontend, not on the backend API. Because the source code cannot be mounted due to the directory structure.
 
 ```bash
 # Build containers
