@@ -98,6 +98,10 @@ export const convertMessageMapToArray = (
       messageArray[idx + 1].sibling = [...m.children];
     }
   });
+  // 先頭にsystemノードが設定されている場合は、それを除去する
+  if (messageArray[0].id === 'system') {
+    messageArray.shift();
+  }
 
   return messageArray;
 };

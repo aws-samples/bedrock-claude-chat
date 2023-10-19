@@ -87,7 +87,8 @@ const useChatState = create<{
     ) => {
       set((state) => ({
         chats: produce(state.chats, (draft) => {
-          if (draft[id] && parentMessageId) {
+          // 追加対象が子ノードの場合は親ノードに参照情報を追加
+          if (draft[id] && parentMessageId && parentMessageId !== 'system') {
             draft[id][parentMessageId] = {
               ...draft[id][parentMessageId],
               children: [
@@ -267,7 +268,7 @@ const useChat = () => {
     );
 
     const parentMessageId = isNewChat
-      ? null
+      ? 'system'
       : tmpMessages[tmpMessages.length - 1].id;
     const messageContent: MessageContent = {
       content: {

@@ -600,6 +600,318 @@ describe('convertMessageMapToArray', () => {
     expect(actual).toEqual(expected);
   });
 
+  it('systemが除外される', () => {
+    const data: MessageMap = {
+      system: {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-1',
+        },
+        parent: null,
+        children: ['1'],
+      },
+      '1': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-1',
+        },
+        parent: 'system',
+        children: ['2'],
+      },
+      '2': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-2',
+        },
+        parent: '1',
+        children: [],
+      },
+    };
+    const expected: MessageContentWithChildren[] = [
+      {
+        id: '1',
+        role: 'user',
+        model: 'claude',
+        content: {
+          body: 'message-1',
+          contentType: 'text',
+        },
+        parent: 'system',
+        children: ['2'],
+        sibling: ['1'],
+      },
+      {
+        id: '2',
+        role: 'user',
+        model: 'claude',
+        content: {
+          body: 'message-2',
+          contentType: 'text',
+        },
+        parent: '1',
+        children: [],
+        sibling: ['2'],
+      },
+    ];
+    const actual = convertMessageMapToArray(data, '2');
+    expect(actual).toEqual(expected);
+  });
+
+  it('systemが除外される:1件目から分岐:1-1を選択', () => {
+    const data: MessageMap = {
+      system: {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-1',
+        },
+        parent: null,
+        children: ['1-1', '1-2'],
+      },
+      '1-1': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-1-1',
+        },
+        parent: 'system',
+        children: ['1-1-1'],
+      },
+      '1-2': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-1-2',
+        },
+        parent: 'system',
+        children: ['1-2-1'],
+      },
+      '1-1-1': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-1-1-1',
+        },
+        parent: '1-1',
+        children: [],
+      },
+      '1-2-1': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-1-2-1',
+        },
+        parent: '1-2',
+        children: [],
+      },
+    };
+    const expected: MessageContentWithChildren[] = [
+      {
+        id: '1-1',
+        role: 'user',
+        model: 'claude',
+        content: {
+          body: 'message-1-1',
+          contentType: 'text',
+        },
+        parent: 'system',
+        children: ['1-1-1'],
+        sibling: ['1-1', '1-2'],
+      },
+      {
+        id: '1-1-1',
+        role: 'user',
+        model: 'claude',
+        content: {
+          body: 'message-1-1-1',
+          contentType: 'text',
+        },
+        parent: '1-1',
+        children: [],
+        sibling: ['1-1-1'],
+      },
+    ];
+    const actual = convertMessageMapToArray(data, '1-1');
+    expect(actual).toEqual(expected);
+  });
+
+  it('systemが除外される:1件目から分岐:1-2を選択', () => {
+    const data: MessageMap = {
+      system: {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-1',
+        },
+        parent: null,
+        children: ['1-1', '1-2'],
+      },
+      '1-1': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-1-1',
+        },
+        parent: 'system',
+        children: ['1-1-1'],
+      },
+      '1-2': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-1-2',
+        },
+        parent: 'system',
+        children: ['1-2-1'],
+      },
+      '1-1-1': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-1-1-1',
+        },
+        parent: '1-1',
+        children: [],
+      },
+      '1-2-1': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-1-2-1',
+        },
+        parent: '1-2',
+        children: [],
+      },
+    };
+    const expected: MessageContentWithChildren[] = [
+      {
+        id: '1-2',
+        role: 'user',
+        model: 'claude',
+        content: {
+          body: 'message-1-2',
+          contentType: 'text',
+        },
+        parent: 'system',
+        children: ['1-2-1'],
+        sibling: ['1-1', '1-2'],
+      },
+      {
+        id: '1-2-1',
+        role: 'user',
+        model: 'claude',
+        content: {
+          body: 'message-1-2-1',
+          contentType: 'text',
+        },
+        parent: '1-2',
+        children: [],
+        sibling: ['1-2-1'],
+      },
+    ];
+    const actual = convertMessageMapToArray(data, '1-2');
+    expect(actual).toEqual(expected);
+  });
+
+  it('systemが除外される:1件目から分岐:存在しないキーを選択', () => {
+    const data: MessageMap = {
+      system: {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-1',
+        },
+        parent: null,
+        children: ['1-1', '1-2'],
+      },
+      '1-1': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-1-1',
+        },
+        parent: 'system',
+        children: ['1-1-1'],
+      },
+      '1-2': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-1-2',
+        },
+        parent: 'system',
+        children: ['1-2-1'],
+      },
+      '1-1-1': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-1-1-1',
+        },
+        parent: '1-1',
+        children: [],
+      },
+      '1-2-1': {
+        role: 'user',
+        model: 'claude',
+        content: {
+          contentType: 'text',
+          body: 'message-1-2-1',
+        },
+        parent: '1-2',
+        children: [],
+      },
+    };
+    const expected: MessageContentWithChildren[] = [
+      {
+        id: '1-1',
+        role: 'user',
+        model: 'claude',
+        content: {
+          body: 'message-1-1',
+          contentType: 'text',
+        },
+        parent: 'system',
+        children: ['1-1-1'],
+        sibling: ['1-1', '1-2'],
+      },
+      {
+        id: '1-1-1',
+        role: 'user',
+        model: 'claude',
+        content: {
+          body: 'message-1-1-1',
+          contentType: 'text',
+        },
+        parent: '1-1',
+        children: [],
+        sibling: ['1-1-1'],
+      },
+    ];
+    const actual = convertMessageMapToArray(data, '999');
+    expect(actual).toEqual(expected);
+  });
+
   it('messageMapにデータがない場合はから配列を返す', () => {
     const data: MessageMap = {};
 
