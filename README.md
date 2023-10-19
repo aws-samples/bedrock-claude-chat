@@ -3,7 +3,7 @@
 日本語は[こちら](./docs/README_ja.md)
 
 > **Warning**
-> The current version (`v0.2.x`) has no compatibility with ex version (`v0.1.0`) due to change of the conversation schema. Please note that conversations stored in DynamoDB with ex version cannot rendered.
+> The current version (`v0.2.x`) has no compatibility with ex version (`v0.1.0`) due to the change of the conversation schema. Please note that conversations stored in DynamoDB with ex version cannot be rendered.
 
 This repository is a sample chatbot using the Anthropic company's LLM [Claude 2](https://www.anthropic.com/index/claude-2), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI. This sample is currently developed for use by Japanese speakers, but it is also possible to speak to the chatbot in English.
 
