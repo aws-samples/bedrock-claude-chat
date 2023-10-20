@@ -126,7 +126,7 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 
 ### テキスト生成パラメータの設定
 
-[config.py](../backend/common/config.py)を編集後、`cdk deploy`を実行してください。
+[config.py](../backend/app/config.py)を編集後、`cdk deploy`を実行してください。
 
 ```py
 GENERATION_CONFIG = {
@@ -162,9 +162,7 @@ Streaming を有効化すると文章生成結果がストリーミングされ�
 
 ### コンテナを利用したローカルでの開発について
 
-[docker-compose.yml](../docker-compose.yml) を利用することで、フロントエンド/バックエンドAPI/DynamoDB Local をローカル環境で動かし開発を行うことができます。
-
-※ フロントエンドはホットリロードに対応していますが、バックエンドAPI はディレクトリ構造上ソースコードのマウントができないためホットリロードに対応しておりません。
+[docker-compose.yml](../docker-compose.yml) を利用することで、フロントエンド/バックエンド API/DynamoDB Local をローカル環境で動かし開発を行うことができます。
 
 ```bash
 # コンテナのビルド

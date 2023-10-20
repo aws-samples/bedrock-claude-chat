@@ -130,7 +130,7 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 
 ### Configure text generation parameters
 
-Edit [config.py](./backend/common/config.py) and run `cdk deploy`.
+Edit [config.py](./backend/app/config.py) and run `cdk deploy`.
 
 ```py
 GENERATION_CONFIG = {
@@ -163,8 +163,6 @@ When streaming is enabled, text is generated in real-time due to the streaming o
 ### Local development using docker compose
 
 [docker-compose.yml](./docker-compose.yml) allows you to run and develop frontend/backend APIs/DynamoDB Local in your local environment.
-
-※ Hot reloading is only supported on the frontend, not on the backend API. Because the source code cannot be mounted due to the directory structure.
 
 ```bash
 # Build containers
