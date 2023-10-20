@@ -3,13 +3,13 @@ import logging
 from datetime import datetime
 
 import boto3
-from auth import verify_token
-from repositories.conversation import store_conversation
-from repositories.model import ContentModel, MessageModel
-from route_schema import ChatInputWithToken
+from app.auth import verify_token
+from app.repositories.conversation import store_conversation
+from app.repositories.model import ContentModel, MessageModel
+from app.route_schema import ChatInputWithToken
+from app.usecase import get_invoke_payload, prepare_conversation
+from app.utils import get_bedrock_client
 from ulid import ULID
-from usecase import get_invoke_payload, prepare_conversation
-from utils import get_bedrock_client
 
 client = get_bedrock_client()
 
@@ -30,7 +30,7 @@ def handler(event, context):
     route_key = event["requestContext"]["routeKey"]
 
     if route_key == "$connect":
-        # NOTE: Authentication is done at each message
+        # NOTE: Authentication is run at each message
         return {"statusCode": 200, "body": "Connected."}
 
     connection_id = event["requestContext"]["connectionId"]

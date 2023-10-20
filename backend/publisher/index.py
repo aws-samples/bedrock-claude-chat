@@ -4,14 +4,16 @@ import os
 import boto3
 from botocore.exceptions import ClientError
 
-TOPIC_ARN = os.environ["SNS_TOPIC_ARN"]
+TOPIC_ARN = os.environ["WEBSOCKET_TOPIC_ARN"]
 sns_client = boto3.client("sns")
 
 
 def handler(event, context):
-    body = json.loads(event["body"])
-    print(body["payload"])
-    print(event["requestContext"])
+    route_key = event["requestContext"]["routeKey"]
+
+    if route_key == "$connect":
+        # NOTE: Authentication is run at each message
+        return {"statusCode": 200, "body": "Connected."}
 
     message = {
         "requestContext": event["requestContext"],

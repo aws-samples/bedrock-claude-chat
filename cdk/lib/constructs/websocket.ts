@@ -29,9 +29,18 @@ export class WebSocket extends Construct {
 
     const { database, tableAccessRole } = props;
 
-    // const topic = new sns.Topic(this, "SnsTopic", {
-    //   displayName: "WebSocketTopic",
-    // });
+    const topic = new sns.Topic(this, "SnsTopic", {
+      displayName: "WebSocketTopic",
+    });
+
+    const publisher = new python.PythonFunction(this, "Publisher", {
+      entry: path.join(__dirname, "../../../backend/publisher"),
+      runtime: Runtime.PYTHON_3_11,
+      environment: {
+        WEBSOCKET_TOPIC_ARN: topic.topicArn,
+      },
+    });
+    topic.grantPublish(publisher);
 
     const handlerRole = new iam.Role(this, "HandlerRole", {
       assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),

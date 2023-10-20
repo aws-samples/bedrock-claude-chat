@@ -61,7 +61,7 @@ export class Api extends Construct {
         path.join(__dirname, "../../../backend"),
         {
           platform: Platform.LINUX_AMD64,
-          file: "api/Dockerfile",
+          file: "Dockerfile",
         }
       ),
       memorySize: 256,
