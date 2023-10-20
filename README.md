@@ -158,6 +158,24 @@ cd frontend && npm run dev
 Currently, the environment variable `VITE_APP_USE_STREAMING` is specified on the frontend side. It's recommended to set it to `false` when running the backend locally and `true` when operating on AWS.  
 When streaming is enabled, text is generated in real-time due to the streaming of content generation results.
 
+
+### Local development using docker compose
+
+[docker-compose.yml](./docker-compose.yml) allows you to run and develop frontend/backend APIs/DynamoDB Local in your local environment.
+
+※ Hot reloading is only supported on the frontend, not on the backend API. Because the source code cannot be mounted due to the directory structure.
+
+```bash
+# Build containers
+docker compose build
+
+# Launch containers
+docker compose up
+
+# Stop containers
+docker compose down
+```
+
 ### Remove resources
 
 If using cli and CDK, please `cdk destroy`. If not, access to [CloudFormation](https://console.aws.amazon.com/cloudformation/home) then delete `BedrockChatStack` and `FrontendWafStack` manually. Please note that `FrontendWafStack` is on `us-east-1` region.
