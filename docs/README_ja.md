@@ -1,5 +1,8 @@
 # Bedrock Claude Chat
 
+> **Warning**
+> 現在のバージョン(`v0.2.x`)は会話スキーマの変更により以前のバージョン(`v0.1.0`)との互換性がありません。以前のバージョンで DynamoDB に保存された会話はレンダリングできませんのでご注意ください。
+
 このリポジトリは、生成系 AI を提供する[Amazon Bedrock](https://aws.amazon.com/jp/bedrock/)の基盤モデルの一つである、Anthropic 社製 LLM [Claude 2](https://www.anthropic.com/index/claude-2)を利用したチャットボットのサンプルです。
 
 ![](./imgs/demo2.gif)
@@ -27,7 +30,7 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 - [x] マークダウンのレンダリング
 - [x] ストリーミングレスポンス
 - [x] IP アドレス制限
-- [ ] メッセージの編集と再送
+- [x] メッセージの編集と再送
 - [ ] プロンプトテンプレートの保存と再利用
 - [ ] I18n 対応 (日/英)
 
@@ -137,11 +140,11 @@ GENERATION_CONFIG = {
 
 ### リソースの削除
 
-cli および CDK を利用されている場合、`cdk destroy`を実行してください。そうでない場合は[CloudFormation](https://console.aws.amazon.com/cloudformation/home)へアクセスし、手動で`BedrockChatStack`を削除してください。
+cli および CDK を利用されている場合、`cdk destroy`を実行してください。そうでない場合は[CloudFormation](https://console.aws.amazon.com/cloudformation/home)へアクセスし、手動で`BedrockChatStack`および`FrontendWafStack`を削除してください。なお`FrontendWafStack`は `us-east-1` リージョンにあります。
 
 ### フロントエンドのローカルでの開発について
 
-現在このサンプルでは、`cdk deploy` された AWS リソース（API Gateway、Cognito など）を使用してローカルでフロントを立ち上げながら改変作業を加えることができます。  
+現在このサンプルでは、`cdk deploy` された AWS リソース（API Gateway、Cognito など）を使用してローカルでフロントを立ち上げながら改変作業を加えることができます。
 
 1. [Deploy using CDK](#deploy-using-cdk) を参考に AWS 環境上にデプロイを行う
 2. `frontend/.env.template` 複製し `frontend/.env.local` という名前で保存する。

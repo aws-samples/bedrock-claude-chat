@@ -6,6 +6,7 @@ sys.path.append(".")
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 from repositories.conversation import (
+    RecordNotFoundError,
     _compose_conv_id,
     _get_table_client,
     change_conversation_title,
@@ -100,15 +101,17 @@ class TestConversationRepository(unittest.TestCase):
             id="1",
             create_time=1627984879.9,
             title="Test Conversation",
-            messages=[
-                MessageModel(
-                    id="1",
+            message_map={
+                "a": MessageModel(
                     role="user",
                     content=ContentModel(content_type="text", body="Hello"),
                     model="model",
+                    children=["x", "y"],
+                    parent="z",
                     create_time=1627984879.9,
                 )
-            ],
+            },
+            last_message_id="x",
         )
 
         # Test storing conversation
@@ -124,6 +127,16 @@ class TestConversationRepository(unittest.TestCase):
             user_id="user", conversation_id="1"
         )
         self.assertEqual(found_conversation.id, "1")
+        message_map = found_conversation.message_map
+        # Assert whether the message map is correctly reconstructed
+        self.assertEqual(message_map["a"].role, "user")
+        self.assertEqual(message_map["a"].content.content_type, "text")
+        self.assertEqual(message_map["a"].content.body, "Hello")
+        self.assertEqual(message_map["a"].model, "model")
+        self.assertEqual(message_map["a"].children, ["x", "y"])
+        self.assertEqual(message_map["a"].parent, "z")
+        self.assertEqual(message_map["a"].create_time, 1627984879.9)
+        self.assertEqual(found_conversation.last_message_id, "x")
 
         # Test update title
         response = change_conversation_title(
@@ -138,7 +151,7 @@ class TestConversationRepository(unittest.TestCase):
 
         # Test deleting conversation by id
         delete_conversation_by_id(user_id="user", conversation_id="1")
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RecordNotFoundError):
             find_conversation_by_id("user", "1")
 
         response = store_conversation(user_id="user", conversation=conversation)

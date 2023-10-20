@@ -16,6 +16,8 @@ const ChatPage: React.FC = () => {
     setConversationId,
     hasError,
     retryPostChat,
+    setCurrentMessageId,
+    regenerate,
   } = useChat();
   const { scrollToBottom, scrollToTop } = useScroll();
 
@@ -31,6 +33,28 @@ const ChatPage: React.FC = () => {
     setContent('');
   }, [content, postChat]);
 
+  const onChangeCurrentMessageId = useCallback(
+    (messageId: string) => {
+      setCurrentMessageId(messageId);
+    },
+    [setCurrentMessageId]
+  );
+
+  const onSubmitEditedContent = useCallback(
+    (messageId: string, content: string) => {
+      if (hasError) {
+        retryPostChat(content);
+      } else {
+        regenerate({ messageId, content });
+      }
+    },
+    [hasError, regenerate, retryPostChat]
+  );
+
+  const onRegenerate = useCallback(() => {
+    regenerate();
+  }, [regenerate]);
+
   useEffect(() => {
     if (messages.length > 0) {
       scrollToBottom();
@@ -41,7 +65,7 @@ const ChatPage: React.FC = () => {
 
   return (
     <>
-      <div className="pb-24">
+      <div className="pb-52 lg:pb-40">
         {messages.length === 0 ? (
           <>
             <div className="mx-3 my-32 flex items-center justify-center text-4xl font-bold text-gray-500/20">
@@ -56,7 +80,11 @@ const ChatPage: React.FC = () => {
                 className={`${
                   message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
                 }`}>
-                <ChatMessage chatContent={message} />
+                <ChatMessage
+                  chatContent={message}
+                  onChangeMessageId={onChangeCurrentMessageId}
+                  onSubmit={onSubmitEditedContent}
+                />
                 <div className="w-full border-b border-aws-squid-ink/10"></div>
               </div>
             ) : (
@@ -86,9 +114,8 @@ const ChatPage: React.FC = () => {
           content={content}
           disabled={postingMessage}
           onChangeContent={setContent}
-          onSend={() => {
-            onSend();
-          }}
+          onSend={onSend}
+          onRegenerate={onRegenerate}
         />
       </div>
     </>

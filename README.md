@@ -2,6 +2,9 @@
 
 日本語は[こちら](./docs/README_ja.md)
 
+> **Warning**
+> The current version (`v0.2.x`) has no compatibility with ex version (`v0.1.0`) due to the change of the conversation schema. Please note that conversations stored in DynamoDB with ex version cannot be rendered.
+
 This repository is a sample chatbot using the Anthropic company's LLM [Claude 2](https://www.anthropic.com/index/claude-2), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI. This sample is currently developed for use by Japanese speakers, but it is also possible to speak to the chatbot in English.
 
 ![](./docs/imgs/demo_en.png)
@@ -30,7 +33,7 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 - [x] Rendering of Markdown'
 - [x] Streaming Response
 - [x] IP address restriction
-- [ ] Edit message & re-send
+- [x] Edit message & re-send
 - [ ] Save and re-use prompt template
 - [ ] I18n (English / Japanese)
 
@@ -137,7 +140,6 @@ GENERATION_CONFIG = {
 }
 ```
 
-
 ### Local Frontend Development
 
 In this sample, you can locally modify and launch the frontend using AWS resources (`API Gateway`, `Cognito`, etc.) that have been deployed with `cdk deploy`.
@@ -155,6 +157,7 @@ cd frontend && npm run dev
 
 Currently, the environment variable `VITE_APP_USE_STREAMING` is specified on the frontend side. It's recommended to set it to `false` when running the backend locally and `true` when operating on AWS.  
 When streaming is enabled, text is generated in real-time due to the streaming of content generation results.
+
 
 ### Local development using docker compose
 
@@ -175,7 +178,7 @@ docker compose down
 
 ### Remove resources
 
-If using cli and CDK, please `cdk destroy`. If not, access to [CloudFormation](https://console.aws.amazon.com/cloudformation/home) and delete `BedrockChatStack` manually.
+If using cli and CDK, please `cdk destroy`. If not, access to [CloudFormation](https://console.aws.amazon.com/cloudformation/home) then delete `BedrockChatStack` and `FrontendWafStack` manually. Please note that `FrontendWafStack` is on `us-east-1` region.
 
 ### RAG using Kendra
 
