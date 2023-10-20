@@ -31,6 +31,7 @@ services:
       #AWS_SECRET_ACCESS_KEY: XXXX
     volumes:
       - "~/.aws:/root/.aws" # ローカルのクレデンシャルの利用に必要
+      - "./backend/app:/backend/app"
     depends_on:
       - dynamodb-local
 
