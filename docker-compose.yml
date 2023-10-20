@@ -18,8 +18,8 @@ services:
   api:
     build:
       context: backend
-      dockerfile: api/Dockerfile
-    command: uvicorn main:app --reload --host 0.0.0.0 --port 8080
+      dockerfile: Dockerfile
+    command: uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
     ports:
       - 8080:8080
     environment:

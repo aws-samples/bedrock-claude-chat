@@ -8,7 +8,7 @@ import { Runtime } from "aws-cdk-lib/aws-lambda";
 import * as iam from "aws-cdk-lib/aws-iam";
 import { CfnOutput, Duration, Stack } from "aws-cdk-lib";
 import { Platform } from "aws-cdk-lib/aws-ecr-assets";
-import * as agwa from "@aws-cdk/aws-apigatewayv2-authorizers-alpha";
+import * as sns from "aws-cdk-lib/aws-sns";
 import { Auth } from "./auth";
 import { ITable } from "aws-cdk-lib/aws-dynamodb";
 import { CfnRouteResponse } from "aws-cdk-lib/aws-apigatewayv2";
@@ -28,6 +28,10 @@ export class WebSocket extends Construct {
     super(scope, id);
 
     const { database, tableAccessRole } = props;
+
+    // const topic = new sns.Topic(this, "SnsTopic", {
+    //   displayName: "WebSocketTopic",
+    // });
 
     const handlerRole = new iam.Role(this, "HandlerRole", {
       assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),

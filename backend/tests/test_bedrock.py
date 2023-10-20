@@ -1,10 +1,13 @@
-import json
+import sys
+
+sys.path.append(".")
+
 import unittest
 from pprint import pprint
 
-from bedrock import client, invoke
-from repositories.model import ContentModel, MessageModel
-from utils import get_buffer_string
+from app.bedrock import client, invoke
+from app.repositories.model import ContentModel, MessageModel
+from app.utils import get_buffer_string
 
 MODEL = "claude"
 
@@ -13,33 +16,36 @@ class TestBedrock(unittest.TestCase):
     def test_invoke(self):
         messages = [
             MessageModel(
-                id="2",
                 role="user",
                 content=ContentModel(
                     content_type="text",
                     body="こんにちは",
                 ),
                 model=MODEL,
+                children=[],
+                parent=None,
                 create_time=1627984879.9,
             ),
             MessageModel(
-                id="3",
                 role="assistant",
                 content=ContentModel(
                     content_type="text",
                     body="こんにちは！どうされましたか？",
                 ),
                 model=MODEL,
+                children=[],
+                parent=None,
                 create_time=1627984879.9,
             ),
             MessageModel(
-                id="4",
                 role="user",
                 content=ContentModel(
                     content_type="text",
                     body="AWSを学ぶ良い方法について教えて",
                 ),
                 model=MODEL,
+                children=[],
+                parent=None,
                 create_time=1627984879.9,
             ),
         ]

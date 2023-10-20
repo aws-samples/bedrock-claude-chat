@@ -1,9 +1,7 @@
 import json
-import os
 
-import boto3
-from config import GENERATION_CONFIG
-from utils import get_bedrock_client
+from app.config import GENERATION_CONFIG
+from app.utils import get_bedrock_client
 
 client = get_bedrock_client()
 

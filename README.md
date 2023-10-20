@@ -1,5 +1,7 @@
 # Bedrock Claude Chat
 
+![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/test.yml/badge.svg)
+
 日本語は[こちら](./docs/README_ja.md)
 
 > **Warning**
@@ -157,7 +159,6 @@ cd frontend && npm run dev
 
 Currently, the environment variable `VITE_APP_USE_STREAMING` is specified on the frontend side. It's recommended to set it to `false` when running the backend locally and `true` when operating on AWS.  
 When streaming is enabled, text is generated in real-time due to the streaming of content generation results.
-
 
 ### Local development using docker compose
 

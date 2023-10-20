@@ -2,7 +2,7 @@ import os
 from typing import List
 
 import boto3
-from repositories.model import MessageModel
+from app.repositories.model import MessageModel
 
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
 
@@ -22,7 +22,7 @@ def get_buffer_string(conversations: dict[str, MessageModel]) -> str:
             prefix = "System: "
         else:
             raise ValueError(f"Unsupported role: {conversation.role}")
-        
+
         if conversation.role != "system":
             # Ignore system messages (currently `system` is dummy)
             message = f"{prefix}{conversation.content.body}"
