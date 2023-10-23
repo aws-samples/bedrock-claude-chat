@@ -27,16 +27,19 @@ def generate_chunk(stream) -> bytes:
 
 
 def handler(event, context):
-    route_key = event["requestContext"]["routeKey"]
+    print(f"Received event: {event}")
+    # Extracting the SNS message and its details
+    # NOTE: All notification messages will contain a single published message.
+    # See `Reliability` section of: https://aws.amazon.com/sns/faqs/
+    sns_message = event["Records"][0]["Sns"]["Message"]
+    message_content = json.loads(sns_message)
 
-    if route_key == "$connect":
-        # NOTE: Authentication is run at each message
-        return {"statusCode": 200, "body": "Connected."}
+    route_key = message_content["requestContext"]["routeKey"]
 
-    connection_id = event["requestContext"]["connectionId"]
-    domain_name = event["requestContext"]["domainName"]
-    stage = event["requestContext"]["stage"]
-    message = event["body"]
+    connection_id = message_content["requestContext"]["connectionId"]
+    domain_name = message_content["requestContext"]["domainName"]
+    stage = message_content["requestContext"]["stage"]
+    message = message_content["body"]
     endpoint_url = f"https://{domain_name}/{stage}"
     gatewayapi = boto3.client("apigatewaymanagementapi", endpoint_url=endpoint_url)
 

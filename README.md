@@ -18,6 +18,7 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 
 - [Amazon DynamoDB](https://aws.amazon.com/dynamodb/): NoSQL database for conversation history storage
 - [Amazon API Gateway](https://aws.amazon.com/api-gateway/) + [AWS Lambda](https://aws.amazon.com/lambda/): Backend API endpoint ([AWS Lambda Web Adapter](https://github.com/awslabs/aws-lambda-web-adapter), [FastAPI](https://fastapi.tiangolo.com/))
+- [Amazon SNS](https://aws.amazon.com/sns/): Used to decouple bedrock streaming invocation exceeds 30, which is over hard limit of HTTP Integration of API Gateway (See [quota](https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html)).
 - [Amazon CloudFront](https://aws.amazon.com/cloudfront/) + [S3](https://aws.amazon.com/s3/): Frontend application delivery ([React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/))
 - [AWS WAF](https://aws.amazon.com/waf/): IP address restriction
 - [Amazon Cognito](https://aws.amazon.com/cognito/): User authentication

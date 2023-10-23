@@ -9,6 +9,7 @@ sns_client = boto3.client("sns")
 
 
 def handler(event, context):
+    print(f"Received event: {event}")
     route_key = event["requestContext"]["routeKey"]
 
     if route_key == "$connect":
@@ -17,7 +18,7 @@ def handler(event, context):
 
     message = {
         "requestContext": event["requestContext"],
-        "payload": body["payload"],
+        "body": event["body"],
     }
 
     try:

@@ -9,6 +9,7 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import { CfnOutput, Duration, Stack } from "aws-cdk-lib";
 import { Platform } from "aws-cdk-lib/aws-ecr-assets";
 import * as sns from "aws-cdk-lib/aws-sns";
+import { SnsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { Auth } from "./auth";
 import { ITable } from "aws-cdk-lib/aws-dynamodb";
 import { CfnRouteResponse } from "aws-cdk-lib/aws-apigatewayv2";
@@ -69,7 +70,7 @@ export class WebSocket extends Construct {
         path.join(__dirname, "../../../backend"),
         {
           platform: Platform.LINUX_AMD64,
-          file: "websocket/invoke_bedrock/Dockerfile",
+          file: "websocket.Dockerfile",
         }
       ),
       memorySize: 256,
@@ -85,19 +86,24 @@ export class WebSocket extends Construct {
       },
       role: handlerRole,
     });
+    handler.addEventSource(
+      new SnsEventSource(topic, {
+        filterPolicy: {},
+      })
+    );
 
     const webSocketApi = new apigwv2.WebSocketApi(this, "WebSocketApi", {
       connectRouteOptions: {
         integration: new WebSocketLambdaIntegration(
           "ConnectIntegration",
-          handler
+          publisher
         ),
       },
     });
     const route = webSocketApi.addRoute("$default", {
       integration: new WebSocketLambdaIntegration(
         "DefaultIntegration",
-        handler
+        publisher
       ),
     });
     new apigwv2.WebSocketStage(this, "WebSocketStage", {
