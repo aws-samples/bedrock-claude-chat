@@ -13,6 +13,7 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 
 - [Amazon DynamoDB](https://aws.amazon.com/jp/dynamodb/): 会話履歴保存用の NoSQL データベース
 - [Amazon API Gateway](https://aws.amazon.com/jp/api-gateway/) + [AWS Lambda](https://aws.amazon.com/jp/lambda/): バックエンド API エンドポイント ([AWS Lambda Web Adapter](https://github.com/awslabs/aws-lambda-web-adapter), [FastAPI](https://fastapi.tiangolo.com/))
+- [Amazon SNS](https://aws.amazon.com/jp/sns/): API Gateway と Bedrock 間のストリーミング呼び出しを疎結合にするため使用しています。ストリーミングレスポンスにはトータルで 30 秒以上かかることがあり、これは HTTP インテグレーションの制約を超えてしまうためです（[クオータ](https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html)を参照）。
 - [Amazon CloudFront](https://aws.amazon.com/jp/cloudfront/) + [S3](https://aws.amazon.com/jp/s3/): フロントエンドアプリケーションの配信 ([React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/))
 - [AWS WAF](https://aws.amazon.com/jp/waf/): IP アドレス制限
 - [Amazon Cognito](https://aws.amazon.com/jp/cognito/): ユーザ認証
@@ -31,8 +32,8 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 - [x] ストリーミングレスポンス
 - [x] IP アドレス制限
 - [x] メッセージの編集と再送
-- [ ] プロンプトテンプレートの保存と再利用
 - [ ] I18n 対応 (日/英)
+- [ ] プロンプトテンプレートの保存と再利用
 
 ## プロジェクトのデプロイ
 
