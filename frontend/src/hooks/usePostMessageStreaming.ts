@@ -50,14 +50,14 @@ const usePostMessageStreaming = create<{
           }
         } catch (e) {
           console.error(e);
-          reject('推論中にエラーが発生しました1。');
+          reject('推論中にエラーが発生しました。');
         }
       };
 
       ws.onerror = (e) => {
         ws.close();
         console.error(e);
-        reject('推論中にエラーが発生しました2。');
+        reject('推論中にエラーが発生しました。');
       };
       ws.onclose = () => {
         resolve(conversationId);
