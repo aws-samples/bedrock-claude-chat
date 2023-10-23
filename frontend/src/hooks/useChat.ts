@@ -306,22 +306,31 @@ const useChat = () => {
     // 画面に即時反映するために、Stateを更新する
     pushNewMessage(parentMessageId, messageContent);
 
-    const postPromise: Promise<void> = new Promise((resolve) => {
+    const postPromise: Promise<void> = new Promise((resolve, reject) => {
       if (USE_STREAMING) {
         postStreaming(input, (c: string) => {
           editMessage(conversationId ?? '', NEW_MESSAGE_ID.ASSISTANT, c);
-        }).then(() => {
-          resolve();
-        });
+        })
+          .then(() => {
+            resolve();
+          })
+          .catch((e) => {
+            reject(e);
+          });
       } else {
-        conversationApi.postMessage(input).then((res) => {
-          editMessage(
-            conversationId ?? '',
-            NEW_MESSAGE_ID.ASSISTANT,
-            res.data.message.content.body
-          );
-          resolve();
-        });
+        conversationApi
+          .postMessage(input)
+          .then((res) => {
+            editMessage(
+              conversationId ?? '',
+              NEW_MESSAGE_ID.ASSISTANT,
+              res.data.message.content.body
+            );
+            resolve();
+          })
+          .catch((e) => {
+            reject(e);
+          });
       }
     });
 
@@ -336,10 +345,7 @@ const useChat = () => {
       })
       .catch((e) => {
         console.error(e);
-        removeMessage(
-          isNewChat ? newConversationId : conversationId,
-          NEW_MESSAGE_ID.ASSISTANT
-        );
+        removeMessage(conversationId ?? '', NEW_MESSAGE_ID.ASSISTANT);
       })
       .finally(() => {
         setPostingMessage(false);
