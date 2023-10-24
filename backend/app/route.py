@@ -1,12 +1,11 @@
-from fastapi import APIRouter, Request
-from repositories.conversation import (
+from app.repositories.conversation import (
     change_conversation_title,
     delete_conversation_by_id,
     delete_conversation_by_user_id,
     find_conversation_by_id,
     find_conversation_by_user_id,
 )
-from route_schema import (
+from app.route_schema import (
     ChatInput,
     ChatOutput,
     Content,
@@ -17,7 +16,8 @@ from route_schema import (
     ProposedTitle,
     User,
 )
-from usecase import chat, get_invoke_payload, propose_conversation_title
+from app.usecase import chat, get_invoke_payload, propose_conversation_title
+from fastapi import APIRouter, Request
 
 router = APIRouter()
 

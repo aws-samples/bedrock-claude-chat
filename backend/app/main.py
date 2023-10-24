@@ -3,19 +3,19 @@ import os
 import traceback
 from typing import Callable
 
-from auth import verify_token
+from app.auth import verify_token
+from app.repositories.conversation import RecordNotFoundError
+from app.route import router
+from app.route_schema import User
+from app.utils import is_running_on_lambda
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
-from repositories.conversation import RecordNotFoundError
-from route import router
-from route_schema import User
 from starlette.routing import Match
 from starlette.types import ASGIApp, Message
-from utils import is_running_on_lambda
 
 CORS_ALLOW_ORIGINS = os.environ.get("CORS_ALLOW_ORIGINS", "*")
 

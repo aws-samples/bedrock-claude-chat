@@ -5,9 +5,8 @@ from datetime import datetime
 from decimal import Decimal as decimal
 
 import boto3
+from app.repositories.model import ContentModel, ConversationModel, MessageModel
 from boto3.dynamodb.conditions import Key
-
-from .model import ContentModel, ConversationModel, MessageModel
 
 DDB_ENDPOINT_URL = os.environ.get("DDB_ENDPOINT_URL")
 TABLE_NAME = os.environ.get("TABLE_NAME", "")
@@ -37,12 +36,17 @@ def _get_table_client(user_id: str):
     Ref: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_dynamodb_items.html
     """
     if "AWS_EXECUTION_ENV" not in os.environ:
-        # NOTE: This is for local development using DynamDB Local
-        dynamodb = boto3.resource("dynamodb",
-                                  endpoint_url=DDB_ENDPOINT_URL,
-                                  aws_access_key_id="key",
-                                  aws_secret_access_key="key",
-                                  region_name="us-east-1")
+        if DDB_ENDPOINT_URL:
+            # NOTE: This is for local development using DynamDB Local
+            dynamodb = boto3.resource(
+                "dynamodb",
+                endpoint_url=DDB_ENDPOINT_URL,
+                aws_access_key_id="key",
+                aws_secret_access_key="key",
+                region_name="us-east-1",
+            )
+        else:
+            dynamodb = boto3.resource("dynamodb")
         return dynamodb.Table(TABLE_NAME)
 
     policy_document = {

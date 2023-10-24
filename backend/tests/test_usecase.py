@@ -1,14 +1,18 @@
+import sys
+
+sys.path.append(".")
+
 import unittest
 from pprint import pprint
 
-from repositories.conversation import (
+from app.repositories.conversation import (
     delete_conversation_by_id,
     find_conversation_by_id,
     store_conversation,
 )
-from repositories.model import ContentModel, ConversationModel, MessageModel
-from route_schema import ChatInput, ChatOutput, Content, MessageInput, MessageOutput
-from usecase import chat, propose_conversation_title, trace_to_root
+from app.repositories.model import ContentModel, ConversationModel, MessageModel
+from app.route_schema import ChatInput, ChatOutput, Content, MessageInput, MessageOutput
+from app.usecase import chat, propose_conversation_title, trace_to_root
 
 MODEL = "claude"
 
@@ -115,7 +119,7 @@ class TestStartChat(unittest.TestCase):
             elif v.parent:
                 second_key = k
                 second_message = v
-            
+
         self.assertEqual(second_message.parent, first_key)
         self.assertEqual(first_message.children, [second_key])
         self.assertEqual(conv.last_message_id, second_key)
@@ -193,76 +197,6 @@ class TestContinueChat(unittest.TestCase):
 
     def tearDown(self) -> None:
         delete_conversation_by_id(self.user_id, self.output.conversation_id)
-
-# class TestRegenerateFirstChat(unittest.TestCase):
-#     def setUp(self) -> None:
-#         self.user_id = "user"
-#         self.conversation_id = "conversation"
-#         store_conversation(
-#             user_id=self.user_id,
-#             conversation=ConversationModel(
-#                 last_message_id="1-assistant",
-#                 id=self.conversation_id,
-#                 create_time=1627984879.9,
-#                 title="Test Conversation",
-#                 message_map={
-#                     "1-user": MessageModel(
-#                         role="user",
-#                         content=ContentModel(
-#                             content_type="text",
-#                             body="こんにちは",
-#                         ),
-#                         model=MODEL,
-#                         children=["1-assistant"],
-#                         parent=None,
-#                         create_time=1627984879.9,
-#                     ),
-#                     "1-assistant": MessageModel(
-#                         role="assistant",
-#                         content=ContentModel(
-#                             content_type="text",
-#                             body="はい、こんにちは。どうしましたか?",
-#                         ),
-#                         model=MODEL,
-#                         children=[],
-#                         parent="1-user",
-#                         create_time=1627984879.9,
-#                     ),
-#                 },
-#             ),
-#         )
-
-#     def test_chat(self):
-#         chat_input = ChatInput(
-#             conversation_id=self.conversation_id,
-#             message=MessageInput(
-#                 role="user",
-#                 content=Content(
-#                     content_type="text",
-#                     body="こんにちは",
-#                 ),
-#                 model=MODEL,
-#                 parent_message_id=None,
-#             ),
-#         )
-#         output: ChatOutput = chat(user_id=self.user_id, chat_input=chat_input)
-#         self.output = output
-
-#         pprint(output.model_dump())
-
-#         conv = find_conversation_by_id(self.user_id, output.conversation_id)
-
-#         messages = trace_to_root(conv.last_message_id, conv.message_map)
-#         self.assertEqual(len(messages), 2)
-
-#         num_empty_children = 0
-#         for k, v in conv.message_map.items():
-#             if len(v.children) == 0:
-#                 num_empty_children += 1
-#         self.assertEqual(num_empty_children, 1)
-
-#     def tearDown(self) -> None:
-#         delete_conversation_by_id(self.user_id, self.conversation_id)
 
 
 class TestRegenerateChat(unittest.TestCase):

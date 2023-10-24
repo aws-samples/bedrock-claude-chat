@@ -1,11 +1,13 @@
 # Bedrock Claude Chat
 
+![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/test.yml/badge.svg)
+
 日本語は[こちら](./docs/README_ja.md)
 
 > **Warning**
 > The current version (`v0.2.x`) has no compatibility with ex version (`v0.1.0`) due to the change of the conversation schema. Please note that conversations stored in DynamoDB with ex version cannot be rendered.
 
-This repository is a sample chatbot using the Anthropic company's LLM [Claude 2](https://www.anthropic.com/index/claude-2), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI. This sample is currently developed for use by Japanese speakers, but it is also possible to speak to the chatbot in English.
+This repository is a sample chatbot using the Anthropic company's LLM [Claude 2](https://www.anthropic.com/index/claude-2), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI. This sample is currently developed for use by Japanese speakers, but it is also possible to speak to the chatbot in English. **I18n is under development and will be released soon.**
 
 ![](./docs/imgs/demo_en.png)
 ![](./docs/imgs/demo2.gif)
@@ -16,6 +18,7 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 
 - [Amazon DynamoDB](https://aws.amazon.com/dynamodb/): NoSQL database for conversation history storage
 - [Amazon API Gateway](https://aws.amazon.com/api-gateway/) + [AWS Lambda](https://aws.amazon.com/lambda/): Backend API endpoint ([AWS Lambda Web Adapter](https://github.com/awslabs/aws-lambda-web-adapter), [FastAPI](https://fastapi.tiangolo.com/))
+- [Amazon SNS](https://aws.amazon.com/sns/): Used to decouple streaming calls between API Gateway and Bedrock because streaming responses can take over 30 seconds in total, exceeding the limitations of HTTP integration (See [quota](https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html)).
 - [Amazon CloudFront](https://aws.amazon.com/cloudfront/) + [S3](https://aws.amazon.com/s3/): Frontend application delivery ([React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/))
 - [AWS WAF](https://aws.amazon.com/waf/): IP address restriction
 - [Amazon Cognito](https://aws.amazon.com/cognito/): User authentication
@@ -34,8 +37,8 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 - [x] Streaming Response
 - [x] IP address restriction
 - [x] Edit message & re-send
-- [ ] Save and re-use prompt template
 - [ ] I18n (English / Japanese)
+- [ ] Save and re-use prompt template
 
 ## Deployment
 
@@ -128,7 +131,7 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 
 ### Configure text generation parameters
 
-Edit [config.py](./backend/common/config.py) and run `cdk deploy`.
+Edit [config.py](./backend/app/config.py) and run `cdk deploy`.
 
 ```py
 GENERATION_CONFIG = {
@@ -158,12 +161,9 @@ cd frontend && npm run dev
 Currently, the environment variable `VITE_APP_USE_STREAMING` is specified on the frontend side. It's recommended to set it to `false` when running the backend locally and `true` when operating on AWS.  
 When streaming is enabled, text is generated in real-time due to the streaming of content generation results.
 
-
 ### Local development using docker compose
 
 [docker-compose.yml](./docker-compose.yml) allows you to run and develop frontend/backend APIs/DynamoDB Local in your local environment.
-
-※ Hot reloading is only supported on the frontend, not on the backend API. Because the source code cannot be mounted due to the directory structure.
 
 ```bash
 # Build containers
