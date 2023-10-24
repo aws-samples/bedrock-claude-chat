@@ -33,7 +33,7 @@ const usePostMessageStreaming = create<{
 
           const data = JSON.parse(message.data);
 
-          if (data.completion) {
+          if (data.completion || data.completion === '') {
             if (completion.endsWith('▍')) {
               completion = completion.slice(0, -1);
             }
