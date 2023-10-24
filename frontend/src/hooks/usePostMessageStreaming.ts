@@ -8,7 +8,7 @@ const usePostMessageStreaming = create<{
   post: (
     input: PostMessageRequest,
     dispatch: (completion: string) => void
-  ) => Promise<string>;
+  ) => Promise<void>;
 }>(() => {
   const post = async (
     input: PostMessageRequest,
@@ -16,10 +16,9 @@ const usePostMessageStreaming = create<{
   ) => {
     const token = (await Auth.currentSession()).getIdToken().getJwtToken();
 
-    return new Promise<string>((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       const ws = new WebSocket(WS_ENDPOINT);
       let completion = '';
-      let conversationId = '';
 
       ws.onopen = () => {
         ws.send(JSON.stringify({ ...input, token }));
@@ -60,7 +59,7 @@ const usePostMessageStreaming = create<{
         reject('推論中にエラーが発生しました。');
       };
       ws.onclose = () => {
-        resolve(conversationId);
+        resolve();
       };
     });
   };
