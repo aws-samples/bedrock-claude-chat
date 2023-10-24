@@ -320,7 +320,7 @@ const ChatListDrawer: React.FC<Props> = (props) => {
               text
               icon={<PiSignOut />}
               onClick={props.onSignOut}>
-              サインアウト
+              {t('button.signOut')}
             </Button>
           </div>
         </nav>

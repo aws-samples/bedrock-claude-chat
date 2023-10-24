@@ -1,6 +1,7 @@
 import { Auth } from 'aws-amplify';
 import { PostMessageRequest } from '../@types/conversation';
 import { create } from 'zustand';
+import i18next from 'i18next';
 
 const WS_ENDPOINT: string = import.meta.env.VITE_APP_WS_ENDPOINT;
 
@@ -45,18 +46,18 @@ const usePostMessageStreaming = create<{
           } else {
             ws.close();
             console.error(data);
-            throw new Error('通常とは異なるResponseが返ってきました。');
+            throw new Error(i18next.t('error.predict.invalidResponse'));
           }
         } catch (e) {
           console.error(e);
-          reject('推論中にエラーが発生しました。');
+          reject(i18next.t('error.predict.general'));
         }
       };
 
       ws.onerror = (e) => {
         ws.close();
         console.error(e);
-        reject('推論中にエラーが発生しました。');
+        reject(i18next.t('error.predict.general'));
       };
       ws.onclose = () => {
         resolve();

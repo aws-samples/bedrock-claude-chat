@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { PiList, PiPlus } from 'react-icons/pi';
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
 import ChatListDrawer from './components/ChatListDrawer';
@@ -17,6 +17,12 @@ import './i18n';
 
 const App: React.FC = () => {
   const { t, i18n } = useTranslation();
+
+  useEffect(() => {
+    // set header title
+    document.title = t('app.name');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   Amplify.configure({
     Auth: {

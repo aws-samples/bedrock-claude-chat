@@ -8,6 +8,7 @@ import { MessageContentWithChildren } from '../@types/conversation';
 import ButtonIcon from './ButtonIcon';
 import Textarea from './Textarea';
 import Button from './Button';
+import { useTranslation } from 'react-i18next';
 
 type Props = BaseProps & {
   chatContent?: MessageContentWithChildren;
@@ -17,6 +18,7 @@ type Props = BaseProps & {
 };
 
 const ChatMessage: React.FC<Props> = (props) => {
+  const { t } = useTranslation();
   const [isEdit, setIsEdit] = useState(false);
   const [changedContent, setChangedContent] = useState('');
 
@@ -115,13 +117,13 @@ const ChatMessage: React.FC<Props> = (props) => {
                 onChange={(v) => setChangedContent(v)}
               />
               <div className="flex justify-center gap-3">
-                <Button onClick={onSubmit}>変更 & 送信</Button>
+                <Button onClick={onSubmit}>{t('button.SaveAndSubmit')}</Button>
                 <Button
                   className="border-gray-400 bg-aws-paper"
                   onClick={() => {
                     setIsEdit(false);
                   }}>
-                  Cancel
+                  {t('button.cancel')}
                 </Button>
               </div>
             </div>
