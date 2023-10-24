@@ -1,16 +1,15 @@
 import json
 import logging
-import os
 from datetime import datetime
 
 import boto3
-from auth import verify_token
-from repositories.conversation import store_conversation
-from repositories.model import ContentModel, MessageModel
-from route_schema import ChatInputWithToken
+from app.auth import verify_token
+from app.repositories.conversation import store_conversation
+from app.repositories.model import ContentModel, MessageModel
+from app.route_schema import ChatInputWithToken
+from app.usecase import get_invoke_payload, prepare_conversation
+from app.utils import get_bedrock_client
 from ulid import ULID
-from usecase import get_invoke_payload, prepare_conversation
-from utils import get_bedrock_client
 
 client = get_bedrock_client()
 
@@ -28,16 +27,19 @@ def generate_chunk(stream) -> bytes:
 
 
 def handler(event, context):
-    route_key = event["requestContext"]["routeKey"]
+    print(f"Received event: {event}")
+    # Extracting the SNS message and its details
+    # NOTE: All notification messages will contain a single published message.
+    # See `Reliability` section of: https://aws.amazon.com/sns/faqs/
+    sns_message = event["Records"][0]["Sns"]["Message"]
+    message_content = json.loads(sns_message)
 
-    if route_key == "$connect":
-        # NOTE: Authentication is done at each message
-        return {"statusCode": 200, "body": "Connected."}
+    route_key = message_content["requestContext"]["routeKey"]
 
-    connection_id = event["requestContext"]["connectionId"]
-    domain_name = event["requestContext"]["domainName"]
-    stage = event["requestContext"]["stage"]
-    message = event["body"]
+    connection_id = message_content["requestContext"]["connectionId"]
+    domain_name = message_content["requestContext"]["domainName"]
+    stage = message_content["requestContext"]["stage"]
+    message = message_content["body"]
     endpoint_url = f"https://{domain_name}/{stage}"
     gatewayapi = boto3.client("apigatewaymanagementapi", endpoint_url=endpoint_url)
 

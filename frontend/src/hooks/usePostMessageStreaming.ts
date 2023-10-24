@@ -27,6 +27,10 @@ const usePostMessageStreaming = create<{
 
       ws.onmessage = (message) => {
         try {
+          if (message.data === '') {
+            return;
+          }
+
           const data = JSON.parse(message.data);
 
           if (data.completion) {
@@ -36,9 +40,9 @@ const usePostMessageStreaming = create<{
 
             completion += data.completion + (data.stop_reason ? '' : '▍');
             dispatch(completion);
-          } else if (data.conversationId) {
-            conversationId = data.conversationId;
-            ws.close();
+            if (data.stop_reason) {
+              ws.close();
+            }
           } else {
             ws.close();
             console.error(data);

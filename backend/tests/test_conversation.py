@@ -2,10 +2,7 @@ import sys
 import unittest
 
 sys.path.append(".")
-
-from boto3.dynamodb.conditions import Key
-from botocore.exceptions import ClientError
-from repositories.conversation import (
+from app.repositories.conversation import (
     RecordNotFoundError,
     _compose_conv_id,
     _get_table_client,
@@ -16,7 +13,9 @@ from repositories.conversation import (
     find_conversation_by_user_id,
     store_conversation,
 )
-from repositories.model import ContentModel, ConversationModel, MessageModel
+from app.repositories.model import ContentModel, ConversationModel, MessageModel
+from boto3.dynamodb.conditions import Key
+from botocore.exceptions import ClientError
 
 
 class TestRowLevelAccess(unittest.TestCase):

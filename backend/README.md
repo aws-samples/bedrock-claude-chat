@@ -5,10 +5,10 @@ Written in Python with [FastAPI](https://fastapi.tiangolo.com/).
 ## Unit test on local
 
 ```
-cd backend/common
+cd backend
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r ../api/requirements.txt
+pip install -r ./requirements.txt
 ```
 
 ```
@@ -19,7 +19,7 @@ export BEDROCK_REGION=us-east-1
 ```
 
 ```
-python repositories/test_conversation.py TestConversationRepository
-python test_bedrock.py
-python test_usecase.py
+python tests/test_conversation.py TestConversationRepository
+python tests/test_bedrock.py
+python tests/test_usecase.py
 ```
