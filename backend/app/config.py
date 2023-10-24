@@ -3,7 +3,7 @@
 # 参考: https://docs.anthropic.com/claude/reference/complete_post
 GENERATION_CONFIG = {
     "max_tokens_to_sample": 2000,
-    "temperature": 0.0,
+    "temperature": 0.6,
     "top_k": 250,
     "top_p": 0.999,
     "stop_sequences": ["Human: ", "Assistant: "],
