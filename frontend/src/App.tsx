@@ -12,8 +12,12 @@ import useConversation from './hooks/useConversation';
 import LazyOutputText from './components/LazyOutputText';
 import useChat from './hooks/useChat';
 import SnackbarProvider from './providers/SnackbarProvider';
+import { useTranslation } from 'react-i18next';
+import './i18n';
 
 const App: React.FC = () => {
+  const { t, i18n } = useTranslation();
+
   Amplify.configure({
     Auth: {
       userPoolId: import.meta.env.VITE_APP_USER_POOL_ID,
@@ -23,7 +27,7 @@ const App: React.FC = () => {
   });
 
   I18n.putVocabularies(translations);
-  I18n.setLanguage('ja');
+  I18n.setLanguage(i18n.language);
 
   const { switchOpen: switchDrawer } = useDrawer();
   const navigate = useNavigate();
@@ -42,7 +46,7 @@ const App: React.FC = () => {
       components={{
         Header: () => (
           <div className="mb-5 mt-10 flex justify-center text-3xl text-aws-font-color">
-            Bedrock Claude Chat
+            {t('app.name')}
           </div>
         ),
       }}>

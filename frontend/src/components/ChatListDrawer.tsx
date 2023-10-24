@@ -27,6 +27,7 @@ import DialogConfirmDelete from './DialogConfirmDeleteChat';
 import { ConversationMeta } from '../@types/conversation';
 import { isMobile } from 'react-device-detect';
 import useChat from '../hooks/useChat';
+import { useTranslation } from 'react-i18next';
 
 type Props = BaseProps & {
   onSignOut: () => void;
@@ -180,6 +181,7 @@ const Item: React.FC<ItemProps> = (props) => {
 };
 
 const ChatListDrawer: React.FC<Props> = (props) => {
+  const { t } = useTranslation();
   const { opened, switchOpen } = useDrawer();
   const { conversations } = useConversation();
   const [prevConversations, setPrevConversations] =
@@ -291,7 +293,7 @@ const ChatListDrawer: React.FC<Props> = (props) => {
               className="h-full w-full bg-aws-squid-ink"
               onClick={onClickNewChat}
               icon={<PiPlus />}>
-              新規チャット
+              {t('button.newChat')}
             </Button>
           </div>
 

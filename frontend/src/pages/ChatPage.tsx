@@ -6,8 +6,10 @@ import useScroll from '../hooks/useScroll';
 import { useParams } from 'react-router-dom';
 import { PiArrowsCounterClockwise, PiWarningCircleFill } from 'react-icons/pi';
 import Button from '../components/Button';
+import { useTranslation } from 'react-i18next';
 
 const ChatPage: React.FC = () => {
+  const { t } = useTranslation();
   const [content, setContent] = useState('');
   const {
     postingMessage,
@@ -69,7 +71,7 @@ const ChatPage: React.FC = () => {
         {messages.length === 0 ? (
           <>
             <div className="mx-3 my-32 flex items-center justify-center text-4xl font-bold text-gray-500/20">
-              Bedrock Claude Chat
+              {t('app.name')}
             </div>
           </>
         ) : (
@@ -96,14 +98,14 @@ const ChatPage: React.FC = () => {
           <div className="mb-12 mt-2 flex flex-col items-center">
             <div className="flex items-center font-bold text-red-500">
               <PiWarningCircleFill className="mr-1 text-2xl" />
-              回答中にエラーが発生しました。
+              {t('error.answerResponse')}
             </div>
 
             <Button
               className="mt-2 border-gray-400 bg-white shadow "
               icon={<PiArrowsCounterClockwise />}
               onClick={retryPostChat}>
-              再実行
+              {t('button.resend')}
             </Button>
           </div>
         )}

@@ -14,6 +14,7 @@ import useSnackbar from './useSnackbar';
 import { useNavigate } from 'react-router-dom';
 import { ulid } from 'ulid';
 import { convertMessageMapToArray } from '../utils/MessageUtils';
+import { useTranslation } from 'react-i18next';
 
 type ChatStateType = {
   [id: string]: MessageMap;
@@ -166,6 +167,7 @@ const useChatState = create<{
 });
 
 const useChat = () => {
+  const { t } = useTranslation();
   const {
     chats,
     conversationId,
@@ -210,15 +212,13 @@ const useChat = () => {
   // エラー処理
   useEffect(() => {
     if (error?.response?.status === 404) {
-      openSnackbar(
-        '指定のチャットは存在しないため、新規チャット画面を表示しました。'
-      );
+      openSnackbar(t('error.notFoundConversation'));
       navigate('');
       newChat();
     } else if (error) {
       openSnackbar(error?.message ?? '');
     }
-  }, [error, navigate, newChat, openSnackbar]);
+  }, [error, navigate, newChat, openSnackbar, t]);
 
   useEffect(() => {
     if (conversationId && data?.id === conversationId) {
