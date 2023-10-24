@@ -140,6 +140,9 @@ def find_conversation_by_user_id(user_id: str) -> list[ConversationModel]:
         )
         for item in response["Items"]
     ]
+    # Sort as descending order on memory to keep backward schema compatibility
+    conversations.sort(key=lambda x: x.create_time, reverse=True)
+
     logger.debug(f"Found conversations: {conversations}")
     return conversations
 
