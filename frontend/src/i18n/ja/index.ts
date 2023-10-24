@@ -10,13 +10,19 @@ const translation: typeof en = {
       title: '削除確認',
       content: 'チャット「<Bold>{{title}}</Bold>」を削除しますか？',
     },
+    languageDialog: {
+      title: '言語の切替',
+    },
     button: {
       newChat: '新しいチャット',
       SaveAndSubmit: '変更 & 送信',
       resend: '再送信',
       regenerate: '再生成',
       delete: '削除',
+      ok: 'OK',
       cancel: 'キャンセル',
+      menu: 'Menu',
+      language: '言語の切替',
       signOut: 'サインアウト',
     },
     error: {

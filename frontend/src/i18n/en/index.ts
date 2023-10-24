@@ -8,13 +8,19 @@ const translation = {
       title: 'Delete chat?',
       content: 'This will delete <Bold>{{title}}</Bold>.',
     },
+    languageDialog: {
+      title: 'Change language?',
+    },
     button: {
       newChat: 'New Chat',
       SaveAndSubmit: 'Save & Submit',
       resend: 'Resend',
       regenerate: 'Regenerate',
       delete: 'Delete',
+      ok: 'OK',
       cancel: 'Cancel',
+      menu: 'Menu',
+      language: 'Language',
       signOut: 'Sign out',
     },
     error: {

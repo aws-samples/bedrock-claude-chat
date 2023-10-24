@@ -4,7 +4,19 @@ import { initReactI18next } from 'react-i18next';
 import en from './en';
 import ja from './ja';
 
-export const LANGUAGES = ['en', 'ja'] as const;
+export const LANGUAGES: {
+  value: string;
+  label: string;
+}[] = [
+  {
+    value: 'en',
+    label: 'English',
+  },
+  {
+    value: 'ja',
+    label: '日本語',
+  },
+];
 
 const resources = {
   en,
