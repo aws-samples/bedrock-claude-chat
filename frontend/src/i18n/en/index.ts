@@ -6,10 +6,10 @@ const translation = {
     },
     deleteDialog: {
       title: 'Delete chat?',
-      content: 'This will delete <Bold>{{title}}</Bold>.',
+      content: 'Are you sure to delete <Bold>{{title}}</Bold>?',
     },
     languageDialog: {
-      title: 'Change language?',
+      title: 'Switch language',
     },
     button: {
       newChat: 'New Chat',
@@ -26,8 +26,8 @@ const translation = {
     error: {
       answerResponse: 'An error occurred while responding.',
       notFoundConversation:
-        'The specified chat does not exist, so a new chat was displayed.',
-      notFoundPage: 'The page you are looking for is not here.',
+        'Since the specified chat does not exist, a new chat screen is displayed.',
+      notFoundPage: 'The page you are looking for is not found.',
       predict: {
         general: 'An error occurred while predicting.',
         invalidResponse:
