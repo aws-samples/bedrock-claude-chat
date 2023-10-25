@@ -10,6 +10,10 @@ const translation: typeof en = {
       title: '删除确认',
       content: '您确定要删除聊天 "<Bold>title</Bold>" 吗？',
     },
+    clearDialog: {
+      title: '删除确认',
+      content: '是否删除所有聊天记录?',
+    },
     languageDialog: {
       title: '切换语言',
     },
@@ -23,6 +27,7 @@ const translation: typeof en = {
       cancel: '取消',
       menu: '菜单',
       language: '切换语言',
+      clearConversation: '清除所有对话',
       signOut: '退出登录',
     },
     error: {

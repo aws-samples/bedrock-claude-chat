@@ -10,6 +10,10 @@ const translation: typeof en = {
       title: '削除確認',
       content: 'チャット「<Bold>{{title}}</Bold>」を削除しますか？',
     },
+    clearDialog: {
+      title: '削除確認',
+      content: 'すべての会話履歴を削除しますか？',
+    },
     languageDialog: {
       title: '言語の切替',
     },
@@ -23,6 +27,7 @@ const translation: typeof en = {
       cancel: 'キャンセル',
       menu: 'Menu',
       language: '言語の切替',
+      clearConversation: 'すべての会話をクリア',
       signOut: 'サインアウト',
     },
     error: {
