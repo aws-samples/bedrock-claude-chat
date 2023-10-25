@@ -3,6 +3,8 @@ import detector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
 import en from './en';
 import ja from './ja';
+import ko from './ko';
+import zh from './zh';
 
 export const LANGUAGES: {
   value: string;
@@ -16,11 +18,21 @@ export const LANGUAGES: {
     value: 'ja',
     label: '日本語',
   },
+  {
+    value: 'ko',
+    label: '한국어',
+  },
+  {
+    value: 'zh',
+    label: '中文',
+  },
 ];
 
 const resources = {
   en,
   ja,
+  ko,
+  zh,
 };
 
 // Settings i18n
