@@ -39,7 +39,7 @@ Frontend URL: https://xxxxxxxxx.cloudfront.net
 
 The sign-up screen will appear as shown above, where you can register your email and log in.
 
-If want to customize configuration such as IP address restriction, refer [Deploy using CDK](#deployment-using-cdk) section.
+If want to customize configuration such as IP address restriction, refer [Deploy using CDK](#deploy-using-cdk) section.
 
 ## Architecture
 
