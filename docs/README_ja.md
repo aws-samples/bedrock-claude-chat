@@ -7,6 +7,32 @@
 
 ![](./imgs/demo2.gif)
 
+## 🚀 まずはお試し
+
+- [Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess)を開き、`Edit` > `Claude`をチェックし`Save changes`をクリックします
+- [CloudShell](https://console.aws.amazon.com/cloudshell/home)を開きます
+
+- 下記のコマンドでデプロイ実行します
+
+```sh
+git clone https://github.com/aws-samples/bedrock-claude-chat.git
+cd bedrock-claude-chat
+chmod +x bin.sh
+./bin.sh
+```
+
+- 20 分ほど経過後、下記の出力が得られるのでブラウザからアクセスします
+
+```
+Frontend URL: https://xxxxxxxxx.cloudfront.net
+```
+
+![](./imgs/signin.png)
+
+上記のようなサインアップ画面が現れますので、E メールを登録・ログインしご利用ください。
+
+もし IP アドレス制限などカスタマイズを行いたい場合は、[Deploy using CDK](#deploy-using-cdk)をご覧ください。
+
 ## アーキテクチャ
 
 AWS のマネージドサービスで構成した、インフラストラクチャ管理の不要なアーキテクチャとなっています。Amazon Bedrock の活用により、 AWS 外部の API と通信する必要がありません。スケーラブルで信頼性が高く、安全なアプリケーションをデプロイすることが可能です。
@@ -32,39 +58,8 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 - [x] ストリーミングレスポンス
 - [x] IP アドレス制限
 - [x] メッセージの編集と再送
-- [x] I18n 対応 (日/英)
+- [x] I18n
 - [ ] プロンプトテンプレートの保存と再利用
-
-## プロジェクトのデプロイ
-
-### 🚀 Easy Deployment
-
-> Note: 2023/10 現在、Bedrock はすべてのリージョンをサポートしていません。以下の手順では Bedrock リソースを`us-east-1`にデプロイします（他のリソースは CloudShell が実行されたリージョンにデプロイされます）。Bedrock のリージョンを変更する必要がある場合は、この章の後の指示に従って CDK を直接使用してデプロイしてください。
-
-- [CloudShell](https://console.aws.amazon.com/cloudshell/home)を開きます
-- 下記のコマンドでリポジトリをクローンします
-
-```sh
-git clone https://github.com/aws-samples/bedrock-claude-chat.git
-```
-
-- 下記のコマンドでデプロイ実行します
-
-```sh
-cd bedrock-claude-chat
-chmod +x bin.sh
-./bin.sh
-```
-
-- 10 分ほど経過後、下記の出力が得られるのでブラウザからアクセスします
-
-```
-Frontend URL: https://xxxxxxxxx.cloudfront.net
-```
-
-![](./imgs/signin.png)
-
-上記のようなサインアップ画面が現れますので、E メールを登録・ログインしご利用ください。
 
 ### Deploy using CDK
 
@@ -149,38 +144,16 @@ cli および CDK を利用されている場合、`cdk destroy`を実行して�
 
 > `https://example.com?lng=ja`
 
-### フロントエンドのローカルでの開発について
+### ローカルでの開発について
 
-現在このサンプルでは、`cdk deploy` された AWS リソース（API Gateway、Cognito など）を使用してローカルでフロントを立ち上げながら改変作業を加えることができます。
+- [こちら](./LOCAL_DEVELOPMENT_ja.md)を参照ください。
 
-1. [Deploy using CDK](#deploy-using-cdk) を参考に AWS 環境上にデプロイを行う
-2. `frontend/.env.template` 複製し `frontend/.env.local` という名前で保存する。
-3. `.env.local` の中身を `cdk deploy` の出力結果（`BedrockChatStack.AuthUserPoolClientIdXXXXX` など）を見ながら穴埋めしていく
-4. 下記コマンドを実行する
+### Pull Request
 
-```zsh
-cd frontend && npm run dev
-```
+バグ修正や機能追加など、Pull Request は大変ありがたく思っています。下記をご参考にしていただけますと幸いです。
 
-### ストリーミングの利用
-
-現在、環境変数として `VITE_APP_USE_STREAMING` というのをフロントエンド側で指定しています。バックエンドをローカルで動かす場合は `false` に指定してただき、AWS で動かす場合は `true` にすることを推奨します。  
-Streaming を有効化すると文章生成結果がストリーミングされるためリアルタイムで文字列が生成されていきます。
-
-### コンテナを利用したローカルでの開発について
-
-[docker-compose.yml](../docker-compose.yml) を利用することで、フロントエンド/バックエンド API/DynamoDB Local をローカル環境で動かし開発を行うことができます。
-
-```bash
-# コンテナのビルド
-docker compose build
-
-# コンテナの起動
-docker compose up
-
-# コンテナの停止
-docker compose down
-```
+- [ローカル環境での開発](./LOCAL_DEVELOPMENT_ja.md)
+- [CONTRIBUTING](../CONTRIBUTING.md)
 
 ### Kendra を利用した RAG について
 
