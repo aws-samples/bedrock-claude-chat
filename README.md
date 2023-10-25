@@ -149,9 +149,7 @@ If you are using the CLI and CDK, run `cdk destroy`. Otherwise, access [CloudFor
 
 ### Language Settings
 
-The default language is **English**.
-
-This asset uses [i18next-browser-languageDetector](https://github.com/i18next/i18next-browser-languageDetector) to automatically detect the user's language. However, you can also set the language manually using query strings as shown below. You can switch languages from the application menu.
+This asset automatically detects the language using [i18next-browser-languageDetector](https://github.com/i18next/i18next-browser-languageDetector).You can switch languages from the application menu. Alternatively, you can use Query String to set the language as shown below.
 
 > `https://example.com?lng=ja`
 
