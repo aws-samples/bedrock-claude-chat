@@ -32,7 +32,7 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 - [x] ストリーミングレスポンス
 - [x] IP アドレス制限
 - [x] メッセージの編集と再送
-- [ ] I18n 対応 (日/英)
+- [x] I18n 対応 (日/英)
 - [ ] プロンプトテンプレートの保存と再利用
 
 ## プロジェクトのデプロイ
@@ -132,7 +132,7 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 ```py
 GENERATION_CONFIG = {
     "max_tokens_to_sample": 500,
-    "temperature": 0.0,
+    "temperature": 0.6,
     "top_k": 250,
     "top_p": 0.999,
     "stop_sequences": ["Human: ", "Assistant: "],
@@ -142,6 +142,12 @@ GENERATION_CONFIG = {
 ### リソースの削除
 
 cli および CDK を利用されている場合、`cdk destroy`を実行してください。そうでない場合は[CloudFormation](https://console.aws.amazon.com/cloudformation/home)へアクセスし、手動で`BedrockChatStack`および`FrontendWafStack`を削除してください。なお`FrontendWafStack`は `us-east-1` リージョンにあります。
+
+### 言語設定について
+
+このアセットは、[i18next-browser-languageDetector](https://github.com/i18next/i18next-browser-languageDetector) を用いて自動で言語を検出します。もし任意の言語へ変更されたい場合はアプリケーション左下のメニューから切り替えてください。なお以下のように Query String で設定することも可能です。
+
+> `https://example.com?lng=ja`
 
 ### フロントエンドのローカルでの開発について
 
@@ -178,4 +184,8 @@ docker compose down
 
 ### Kendra を利用した RAG について
 
-本サンプルでは Kendra を利用した RAG は実装しておりません。実導入する場合、アクセスコントロールポリシーやデータコネクタの有無、接続先データソースの認証・認可方法は組織により多様なため、シンプルに一般化することが難しいためです。実用するにはレイテンシーの低下やトークン消費量の増加などのデメリットや、検索精度を検証するための PoC が必須であることを考慮する必要があるため、[jp-rag-sample](https://github.com/aws-samples/jp-rag-sample)等のアセットを活用した PoC をおすすめします。
+本サンプルでは Kendra を利用した RAG は実装しておりません。実導入する場合、アクセスコントロールポリシーやデータコネクタの有無、接続先データソースの認証・認可方法は組織により多様なため、シンプルに一般化することが難しいためです。実用するにはレイテンシーの低下やトークン消費量の増加などのデメリットや、検索精度を検証するための PoC が必須であることを考慮する必要があるため、以下のアセットを活用した PoC をおすすめします。
+
+- [generative-ai-use-cases-jp](https://github.com/aws-samples/generative-ai-use-cases-jp) (In Japanese)
+- [simple-lex-kendra-jp](https://github.com/aws-samples/simple-lex-kendra-jp) (In Japanese)
+- [jp-rag-sample](https://github.com/aws-samples/jp-rag-sample) (In Japanese)

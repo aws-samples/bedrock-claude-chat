@@ -7,7 +7,7 @@
 > **Warning**
 > The current version (`v0.2.x`) has no compatibility with ex version (`v0.1.0`) due to the change of the conversation schema. Please note that conversations stored in DynamoDB with ex version cannot be rendered.
 
-This repository is a sample chatbot using the Anthropic company's LLM [Claude 2](https://www.anthropic.com/index/claude-2), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI. This sample is currently developed for use by Japanese speakers, but it is also possible to speak to the chatbot in English. **I18n is under development and will be released soon.**
+This repository is a sample chatbot using the Anthropic company's LLM [Claude 2](https://www.anthropic.com/index/claude-2), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI.
 
 ![](./docs/imgs/demo_en.png)
 ![](./docs/imgs/demo2.gif)
@@ -37,7 +37,7 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 - [x] Streaming Response
 - [x] IP address restriction
 - [x] Edit message & re-send
-- [ ] I18n (English / Japanese)
+- [x] I18n (English / Japanese)
 - [ ] Save and re-use prompt template
 
 ## Deployment
@@ -136,12 +136,22 @@ Edit [config.py](./backend/app/config.py) and run `cdk deploy`.
 ```py
 GENERATION_CONFIG = {
     "max_tokens_to_sample": 500,
-    "temperature": 0.0,
+    "temperature": 0.6,
     "top_k": 250,
     "top_p": 0.999,
     "stop_sequences": ["Human: ", "Assistant: "],
 }
 ```
+
+### Delete Resources
+
+If you are using the CLI and CDK, run `cdk destroy`. Otherwise, access [CloudFormation](https://console.aws.amazon.com/cloudformation/home) and manually delete the `BedrockChatStack` and `FrontendWafStack` stacks. `FrontendWafStack` is in the us-east-1 region.
+
+### Language Settings
+
+This asset automatically detects the language using [i18next-browser-languageDetector](https://github.com/i18next/i18next-browser-languageDetector).You can switch languages from the application menu. Alternatively, you can use Query String to set the language as shown below.
+
+> `https://example.com?lng=ja`
 
 ### Local Frontend Development
 
@@ -182,7 +192,11 @@ If using cli and CDK, please `cdk destroy`. If not, access to [CloudFormation](h
 
 ### RAG using Kendra
 
-In this sample, we have not implemented RAG using Kendra. This is because when it comes to real-world deployments, factors such as access control policies, the presence or absence of data connectors, and the methods for authentication and authorization for the connected data sources can be quite diverse depending on the organization, making it difficult to generalize them in a simple manner. To put this into practice, you should consider downsides like decreased latency and increased token consumption. For these reasons, a proof of concept (PoC) to verify search accuracy is essential. Therefore, we recommend using assets like [jp-rag-sample](https://github.com/aws-samples/jp-rag-sample) (In Japanese) for your PoC.
+In this sample, we have not implemented RAG using Kendra. This is because when it comes to real-world deployments, factors such as access control policies, the presence or absence of data connectors, and the methods for authentication and authorization for the connected data sources can be quite diverse depending on the organization, making it difficult to generalize them in a simple manner. To put this into practice, you should consider downsides like decreased latency and increased token consumption. For these reasons, a proof of concept (PoC) to verify search accuracy is essential.
+
+- [generative-ai-use-cases-jp](https://github.com/aws-samples/generative-ai-use-cases-jp) (In Japanese)
+- [simple-lex-kendra-jp](https://github.com/aws-samples/simple-lex-kendra-jp) (In Japanese)
+- [jp-rag-sample](https://github.com/aws-samples/jp-rag-sample) (In Japanese)
 
 ## Authors
 

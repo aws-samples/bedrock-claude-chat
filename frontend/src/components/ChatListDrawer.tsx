@@ -15,7 +15,6 @@ import {
   PiCheck,
   PiPencilLine,
   PiPlus,
-  PiSignOut,
   PiTrash,
   PiX,
 } from 'react-icons/pi';
@@ -27,6 +26,8 @@ import DialogConfirmDelete from './DialogConfirmDeleteChat';
 import { ConversationMeta } from '../@types/conversation';
 import { isMobile } from 'react-device-detect';
 import useChat from '../hooks/useChat';
+import { useTranslation } from 'react-i18next';
+import Menu from './Menu';
 
 type Props = BaseProps & {
   onSignOut: () => void;
@@ -180,6 +181,7 @@ const Item: React.FC<ItemProps> = (props) => {
 };
 
 const ChatListDrawer: React.FC<Props> = (props) => {
+  const { t } = useTranslation();
   const { opened, switchOpen } = useDrawer();
   const { conversations } = useConversation();
   const [prevConversations, setPrevConversations] =
@@ -291,7 +293,7 @@ const ChatListDrawer: React.FC<Props> = (props) => {
               className="h-full w-full bg-aws-squid-ink"
               onClick={onClickNewChat}
               icon={<PiPlus />}>
-              新規チャット
+              {t('button.newChat')}
             </Button>
           </div>
 
@@ -312,14 +314,8 @@ const ChatListDrawer: React.FC<Props> = (props) => {
           <div
             className={`${
               opened ? 'w-64' : 'w-0'
-            } fixed bottom-0 flex h-12 items-center justify-end border-t bg-aws-squid-ink transition-width lg:w-64`}>
-            <Button
-              className="bg-aws-squid-ink"
-              text
-              icon={<PiSignOut />}
-              onClick={props.onSignOut}>
-              サインアウト
-            </Button>
+            } fixed bottom-0 flex h-12 items-center justify-start border-t bg-aws-squid-ink transition-width lg:w-64`}>
+            <Menu onSignOut={props.onSignOut} />
           </div>
         </nav>
       </div>

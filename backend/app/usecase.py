@@ -166,13 +166,12 @@ def propose_conversation_title(
     user_id: str, conversation_id: str, model="claude"
 ) -> str:
     assert model == "claude", "Only claude model is supported for now."
-    PROMPT = """この会話に以下の条件を守り、件名をつけてください。
-    ### 条件 ####
-    - 出力は件名のみ、その他の文字は一切出力しない
-    - 言語はこれまでのやり取りから推測し、その言語でタイトルをつける
-      - もし推測された言語が日本語であれば、タイトルは日本語であること
-      - もし推測された言語が英語であれば、タイトルは英語であること
-    - タイトルは一言であること
+    PROMPT = """Please output the subject  to this conversation as the following rule
+    <RULES>
+    - Output is subject only.
+    - Use the language used in the chat
+    - Titles must be no more than 10 tokens
+    </RULES>
     """
 
     # Fetch existing conversation
