@@ -23,6 +23,7 @@ const translation: typeof en = {
       resend: '재전송',
       regenerate: '재생성',
       delete: '삭제',
+      deleteAll: '모두 삭제',
       ok: '확인',
       cancel: '취소',
       menu: '메뉴',

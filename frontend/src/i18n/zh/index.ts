@@ -23,6 +23,7 @@ const translation: typeof en = {
       resend: '重新发送',
       regenerate: '重新生成',
       delete: '删除',
+      deleteAll: '全部删除',
       ok: '确定',
       cancel: '取消',
       menu: '菜单',

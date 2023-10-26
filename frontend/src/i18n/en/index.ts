@@ -5,12 +5,12 @@ const translation = {
       inputMessage: 'Send a message',
     },
     deleteDialog: {
-      title: 'Delete confirmation',
+      title: 'Delete?',
       content: 'Are you sure to delete <Bold>{{title}}</Bold>?',
     },
     clearDialog: {
-      title: '削除確認',
-      content: 'Are you sure to delete all conversations?',
+      title: 'Delete ALL?',
+      content: 'Are you sure to delete ALL conversations?',
     },
     languageDialog: {
       title: 'Switch language',
@@ -21,11 +21,12 @@ const translation = {
       resend: 'Resend',
       regenerate: 'Regenerate',
       delete: 'Delete',
+      deleteAll: 'Delete All',
       ok: 'OK',
       cancel: 'Cancel',
       menu: 'Menu',
       language: 'Language',
-      clearConversation: 'Clear all conversations',
+      clearConversation: 'Delete ALL conversations',
       signOut: 'Sign out',
     },
     error: {
