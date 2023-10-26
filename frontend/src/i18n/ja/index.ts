@@ -7,8 +7,12 @@ const translation: typeof en = {
       inputMessage: '入力してください',
     },
     deleteDialog: {
-      title: '削除確認',
+      title: '削除',
       content: 'チャット「<Bold>{{title}}</Bold>」を削除しますか？',
+    },
+    clearDialog: {
+      title: '削除',
+      content: 'すべての会話履歴を削除しますか？',
     },
     languageDialog: {
       title: '言語の切替',
@@ -19,10 +23,12 @@ const translation: typeof en = {
       resend: '再送信',
       regenerate: '再生成',
       delete: '削除',
+      deleteAll: 'すべて削除',
       ok: 'OK',
       cancel: 'キャンセル',
       menu: 'Menu',
       language: '言語の切替',
+      clearConversation: 'すべての会話をクリア',
       signOut: 'サインアウト',
     },
     error: {
