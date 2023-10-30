@@ -102,7 +102,7 @@ const ChatMessage: React.FC<Props> = (props) => {
 
         <div className="ml-5 grow ">
           {chatContent?.role === 'user' && !isEdit && (
-            <div className="break-all">
+            <div>
               {chatContent.content.body.split('\n').map((c, idx) => (
                 <div key={idx}>{c}</div>
               ))}
