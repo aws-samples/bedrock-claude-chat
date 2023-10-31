@@ -21,3 +21,9 @@ class ConversationModel(BaseModel):
     title: str
     message_map: dict[str, MessageModel]
     last_message_id: str
+
+
+class ConversationMetaModel(BaseModel):
+    id: str
+    title: str
+    create_time: float
