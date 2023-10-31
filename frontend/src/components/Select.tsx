@@ -16,9 +16,7 @@ type Props = {
 
 const Select: React.FC<Props> = (props) => {
   const selectedLabel = useMemo(() => {
-    return props.value === ''
-      ? ''
-      : props.options.filter((o) => o.value === props.value)[0].label;
+    return props.options.find((o) => o.value === props.value)?.label ?? '';
   }, [props.options, props.value]);
 
   const onClear = useCallback(() => {
