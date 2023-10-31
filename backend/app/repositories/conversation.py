@@ -5,7 +5,12 @@ from datetime import datetime
 from decimal import Decimal as decimal
 
 import boto3
-from app.repositories.model import ContentModel, ConversationModel, MessageModel
+from app.repositories.model import (
+    ContentModel,
+    ConversationMetaModel,
+    ConversationModel,
+    MessageModel,
+)
 from boto3.dynamodb.conditions import Key
 
 DDB_ENDPOINT_URL = os.environ.get("DDB_ENDPOINT_URL")
@@ -112,36 +117,49 @@ def store_conversation(user_id: str, conversation: ConversationModel):
     return response
 
 
-def find_conversation_by_user_id(user_id: str) -> list[ConversationModel]:
+def find_conversation_by_user_id(user_id: str) -> list[ConversationMetaModel]:
     logger.debug(f"Finding conversations for user: {user_id}")
     table = _get_table_client(user_id)
-    response = table.query(KeyConditionExpression=Key("UserId").eq(user_id))
+    response = table.query(
+        KeyConditionExpression=Key("UserId").eq(user_id),
+        ProjectionExpression="ConversationId, CreateTime, Title",
+        ScanIndexForward=False,
+    )
 
     conversations = [
-        ConversationModel(
+        ConversationMetaModel(
             id=_decompose_conv_id(item["ConversationId"]),
             create_time=float(item["CreateTime"]),
             title=item["Title"],
-            message_map={
-                k: MessageModel(
-                    role=v["role"],
-                    content=ContentModel(
-                        content_type=v["content"]["content_type"],
-                        body=v["content"]["body"],
-                    ),
-                    model=v["model"],
-                    children=v["children"],
-                    parent=v["parent"],
-                    create_time=float(v["create_time"]),
-                )
-                for k, v in json.loads(item["MessageMap"]).items()
-            },
-            last_message_id=item["LastMessageId"],
         )
         for item in response["Items"]
     ]
-    # Sort as descending order on memory to keep backward schema compatibility
-    conversations.sort(key=lambda x: x.create_time, reverse=True)
+
+    query_count = 1
+    MAX_QUERY_COUNT = 5
+    while "LastEvaluatedKey" in response:
+        # NOTE: max page size is 1MB
+        # See: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.Pagination.html
+        response = table.query(
+            KeyConditionExpression=Key("UserId").eq(user_id),
+            ProjectionExpression="ConversationId, CreateTime, Title",
+            ScanIndexForward=False,
+            ExclusiveStartKey=response["LastEvaluatedKey"],
+        )
+        conversations.extend(
+            [
+                ConversationMetaModel(
+                    id=_decompose_conv_id(item["ConversationId"]),
+                    create_time=float(item["CreateTime"]),
+                    title=item["Title"],
+                )
+                for item in response["Items"]
+            ]
+        )
+        query_count += 1
+        if query_count > MAX_QUERY_COUNT:
+            logger.warning(f"Query count exceeded {MAX_QUERY_COUNT}")
+            break
 
     logger.debug(f"Found conversations: {conversations}")
     return conversations
