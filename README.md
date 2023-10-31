@@ -39,7 +39,8 @@ Frontend URL: https://xxxxxxxxx.cloudfront.net
 
 The sign-up screen will appear as shown above, where you can register your email and log in.
 
-If want to customize configuration such as IP address restriction, refer [Deploy using CDK](#deploy-using-cdk) section.
+> **Important**
+> This deployment method allows anyone with the URL to sign up. For production use, we strongly recommend adding IP address restrictions or disabling self-signup to mitigate security risks. To set up, [Deploy using CDK](#deploy-using-cdk) for IP address restrictions or [Disable self sign up](#disable-self-sign-up).
 
 ## Architecture
 
@@ -150,6 +151,27 @@ If using cli and CDK, please `cdk destroy`. If not, access to [CloudFormation](h
 This asset automatically detects the language using [i18next-browser-languageDetector](https://github.com/i18next/i18next-browser-languageDetector).You can switch languages from the application menu. Alternatively, you can use Query String to set the language as shown below.
 
 > `https://example.com?lng=ja`
+
+### Disable self sign up
+
+This sample has self sign up enabled by default. To disable self sign up, open [auth.ts](./cdk/lib/constructs/auth.ts) and switch `selfSignUpEnabled` as `false`, then re-deploy.
+
+```ts
+const userPool = new UserPool(this, "UserPool", {
+  passwordPolicy: {
+    requireUppercase: true,
+    requireSymbols: true,
+    requireDigits: true,
+    minLength: 8,
+  },
+  // true -> false
+  selfSignUpEnabled: false,
+  signInAliases: {
+    username: false,
+    email: true,
+  },
+});
+```
 
 ### Local Development
 
