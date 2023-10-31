@@ -13,7 +13,7 @@ type Props = BaseProps & {
 const Markdown: React.FC<Props> = ({ className, children }) => {
   return (
     <ReactMarkdown
-      className={`${className ?? ''} prose max-w-full break-all`}
+      className={`${className ?? ''} prose max-w-full`}
       children={children}
       remarkPlugins={[remarkGfm, remarkBreaks]}
       components={{
