@@ -166,13 +166,14 @@ def propose_conversation_title(
     user_id: str, conversation_id: str, model="claude"
 ) -> str:
     assert model == "claude", "Only claude model is supported for now."
-    PROMPT = """Please output the subject  to this conversation as the following rule
-    <RULES>
-    - Output is subject only.
-    - Use the language used in the chat
-    - Titles must be no more than 10 tokens
-    </RULES>
-    """
+    PROMPT = """Reading the conversation above, what is the appropriate title for the conversation? When answering the title, please follow the rules below:
+<rules>
+- Title must be in the same language as the conversation.
+- Title length must be from 15 to 20 characters.
+- Prefer more specific title than general. Your title should always be distinct from others.
+- Return the conversation title only. DO NOT include any strings other than the title.
+</rules>
+"""
 
     # Fetch existing conversation
     conversation = find_conversation_by_id(user_id, conversation_id)
