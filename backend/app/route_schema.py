@@ -18,14 +18,14 @@ class Content(BaseSchema):
 class MessageInput(BaseSchema):
     role: str
     content: Content
-    model: Literal["titan", "claude"]
+    model: Literal["claude-instant-v1", "claude-v2"]
     parent_message_id: str | None
 
 
 class MessageOutput(BaseSchema):
     role: str
     content: Content
-    model: Literal["titan", "claude"]
+    model: Literal["claude-instant-v1", "claude-v2"]
     children: list[str]
     parent: str | None
 

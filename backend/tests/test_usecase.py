@@ -14,7 +14,7 @@ from app.repositories.model import ContentModel, ConversationModel, MessageModel
 from app.route_schema import ChatInput, ChatOutput, Content, MessageInput, MessageOutput
 from app.usecase import chat, propose_conversation_title, trace_to_root
 
-MODEL = "claude"
+MODEL = "claude-v2"
 
 
 class TestTraceToRoot(unittest.TestCase):

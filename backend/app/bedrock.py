@@ -7,7 +7,7 @@ client = get_bedrock_client()
 
 
 def _create_body(model: str, prompt: str):
-    if model == "claude":
+    if model in ("claude-instant-v1", "claude-v2"):
         parameter = GENERATION_CONFIG
         parameter["prompt"] = prompt
         return json.dumps(parameter)
@@ -16,7 +16,7 @@ def _create_body(model: str, prompt: str):
 
 
 def _extract_output_text(model: str, response) -> str:
-    if model == "claude":
+    if model in ("claude-instant-v1", "claude-v2"):
         output = json.loads(response.get("body").read())
         output_txt = output["completion"]
         if output_txt[0] == " ":
@@ -28,8 +28,11 @@ def _extract_output_text(model: str, response) -> str:
 
 
 def get_model_id(model: str) -> str:
-    if model == "claude":
+    # Ref: https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
+    if model == "claude-v2":
         return "anthropic.claude-v2"
+    elif model == "claude-instant-v1":
+        return "anthropic.claude-instant-v1"
     else:
         raise NotImplementedError()
 
