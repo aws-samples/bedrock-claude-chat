@@ -37,6 +37,7 @@ export type ConversationMeta = {
   title: string;
   createTime: number;
   lastMessageId: string;
+  model: Model;
 };
 
 export type MessageMap = {

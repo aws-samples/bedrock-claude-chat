@@ -63,11 +63,12 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 - [x] Copying of chatbot replies
 - [x] Automatic subject suggestion for conversations
 - [x] Syntax highlighting for code
-- [x] Rendering of Markdown'
+- [x] Rendering of Markdown
 - [x] Streaming Response
 - [x] IP address restriction
 - [x] Edit message & re-send
 - [x] I18n
+- [x] Model switch (Claude Instant / Claude)
 - [ ] Save and re-use prompt template
 
 ## Deploy using CDK

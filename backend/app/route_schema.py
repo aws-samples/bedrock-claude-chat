@@ -11,7 +11,7 @@ class BaseSchema(BaseModel):
 
 
 class Content(BaseSchema):
-    content_type: Literal["text"] = Field(..., description="現在textのみ")
+    content_type: Literal["text"]
     body: str
 
 
@@ -25,14 +25,15 @@ class MessageInput(BaseSchema):
 class MessageOutput(BaseSchema):
     role: str
     content: Content
-    model: Literal["claude-instant-v1", "claude-v2"]
+    # NOTE: "claude" will be deprecated (same as "claude-v2")
+    model: Literal["claude-instant-v1", "claude-v2", "claude"]
     children: list[str]
     parent: str | None
 
 
 class ChatInput(BaseSchema):
-    conversation_id: str = Field("", description="会話ID")
-    message: MessageInput = Field(..., description="メッセージの内容")
+    conversation_id: str
+    message: MessageInput
 
 
 class ChatInputWithToken(ChatInput):
@@ -41,14 +42,15 @@ class ChatInputWithToken(ChatInput):
 
 class ChatOutput(BaseSchema):
     conversation_id: str | None = Field(...)
-    message: MessageOutput = Field(..., description="メッセージの内容")
-    create_time: float = Field(..., description="作成日時")
+    message: MessageOutput
+    create_time: float
 
 
 class ConversationMeta(BaseSchema):
     id: str
     title: str
     create_time: float
+    model: str
 
 
 class Conversation(BaseSchema):

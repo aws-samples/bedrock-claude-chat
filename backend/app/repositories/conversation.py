@@ -122,7 +122,6 @@ def find_conversation_by_user_id(user_id: str) -> list[ConversationMetaModel]:
     table = _get_table_client(user_id)
     response = table.query(
         KeyConditionExpression=Key("UserId").eq(user_id),
-        ProjectionExpression="ConversationId, CreateTime, Title",
         ScanIndexForward=False,
     )
 
@@ -131,6 +130,8 @@ def find_conversation_by_user_id(user_id: str) -> list[ConversationMetaModel]:
             id=_decompose_conv_id(item["ConversationId"]),
             create_time=float(item["CreateTime"]),
             title=item["Title"],
+            # NOTE: all message has the same model
+            model=json.loads(item["MessageMap"]).popitem()[1]["model"],
         )
         for item in response["Items"]
     ]
@@ -138,6 +139,7 @@ def find_conversation_by_user_id(user_id: str) -> list[ConversationMetaModel]:
     query_count = 1
     MAX_QUERY_COUNT = 5
     while "LastEvaluatedKey" in response:
+        model = json.loads(response["Items"][0]["MessageMap"]).popitem()[1]["model"]
         # NOTE: max page size is 1MB
         # See: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.Pagination.html
         response = table.query(
@@ -152,6 +154,7 @@ def find_conversation_by_user_id(user_id: str) -> list[ConversationMetaModel]:
                     id=_decompose_conv_id(item["ConversationId"]),
                     create_time=float(item["CreateTime"]),
                     title=item["Title"],
+                    model=model,
                 )
                 for item in response["Items"]
             ]

@@ -27,3 +27,4 @@ class ConversationMetaModel(BaseModel):
     id: str
     title: str
     create_time: float
+    model: str

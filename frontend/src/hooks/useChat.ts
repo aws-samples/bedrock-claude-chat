@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import { ulid } from 'ulid';
 import { convertMessageMapToArray } from '../utils/MessageUtils';
 import { useTranslation } from 'react-i18next';
+import useBedrockModel from './useBedrockModel';
 
 type ChatStateType = {
   [id: string]: MessageMap;
@@ -186,6 +187,7 @@ const useChat = () => {
     setIsGeneratedTitle,
   } = useChatState();
   const { open: openSnackbar } = useSnackbar();
+  const { model } = useBedrockModel();
   const navigate = useNavigate();
 
   const { post: postStreaming } = usePostMessageStreaming();
@@ -253,7 +255,7 @@ const useChat = () => {
           contentType: 'text',
           body: '',
         },
-        model: 'claude',
+        model: model,
       }
     );
   };
@@ -271,12 +273,15 @@ const useChat = () => {
     const parentMessageId = isNewChat
       ? 'system'
       : tmpMessages[tmpMessages.length - 1].id;
+    // Choose the model of existing messages or fetch from state
+    const modelToPost =
+      data?.messageMap[Object.keys(data?.messageMap)[0]].model ?? model;
     const messageContent: MessageContent = {
       content: {
         body: content,
         contentType: 'text',
       },
-      model: 'claude',
+      model: modelToPost,
       role: 'user',
     };
     const input: PostMessageRequest = {
@@ -404,7 +409,7 @@ const useChat = () => {
             contentType: 'text',
             body: '',
           },
-          model: 'claude',
+          model: model,
         }
       );
     } else {
