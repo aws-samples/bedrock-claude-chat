@@ -42,7 +42,7 @@ def prepare_conversation(
                         content_type="text",
                         body="",
                     ),
-                    model="claude-v2",
+                    model=chat_input.message.model,
                     children=[],
                     parent=None,
                     create_time=datetime.now().timestamp(),

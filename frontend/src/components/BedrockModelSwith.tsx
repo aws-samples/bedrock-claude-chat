@@ -2,19 +2,19 @@ import useBedrockModel from '../hooks/useBedrockModel';
 import { FaBrain } from 'react-icons/fa';
 import { AiFillThunderbolt } from 'react-icons/ai';
 import { BaseProps } from '../@types/common';
+import { Model } from '../@types/conversation';
 
 type Props = BaseProps & {
-  isConversationStarted: boolean;
+  postedModel: Model | null;
 };
 
 const BedrockModelSwitch: React.FC<Props> = (props) => {
   const { model, setModel } = useBedrockModel();
-
   const buttonClass =
     'flex-1 w-40 flex items-center rounded-lg p-2 justify-center';
 
-  return props.isConversationStarted ? (
-    <div className="text-sm text-gray-500">model: {model}</div>
+  return props.postedModel ? (
+    <div className="text-sm text-gray-500">model: {props.postedModel}</div>
   ) : (
     <div className="flex justify-center gap-2 rounded-lg border p-1">
       <button

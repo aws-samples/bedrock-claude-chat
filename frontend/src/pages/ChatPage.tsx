@@ -21,6 +21,7 @@ const ChatPage: React.FC = () => {
     retryPostChat,
     setCurrentMessageId,
     regenerate,
+    getPostedModel,
   } = useChat();
   const { scrollToBottom, scrollToTop } = useScroll();
 
@@ -70,7 +71,7 @@ const ChatPage: React.FC = () => {
     <>
       <div className="flex flex-col items-center justify-start">
         <div className="m-1 p-1">
-          <BedrockModelSwitch isConversationStarted={messages.length !== 0} />
+          <BedrockModelSwitch postedModel={getPostedModel()} />
         </div>
       </div>
       <div className="pb-52 lg:pb-40">

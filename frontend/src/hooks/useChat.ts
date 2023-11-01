@@ -5,6 +5,7 @@ import {
   MessageContent,
   MessageContentWithChildren,
   MessageMap,
+  Model,
   PostMessageRequest,
 } from '../@types/conversation';
 import useConversation from './useConversation';
@@ -52,6 +53,7 @@ const useChatState = create<{
   setCurrentMessageId: (s: string) => void;
   isGeneratedTitle: boolean;
   setIsGeneratedTitle: (b: boolean) => void;
+  getPostedModel: () => Model;
 }>((set, get) => {
   return {
     conversationId: '',
@@ -164,6 +166,9 @@ const useChatState = create<{
         isGeneratedTitle: b,
       }));
     },
+    getPostedModel: () => {
+      return get().chats[get().conversationId]?.system?.model;
+    },
   };
 });
 
@@ -185,6 +190,7 @@ const useChat = () => {
     setCurrentMessageId,
     isGeneratedTitle,
     setIsGeneratedTitle,
+    getPostedModel,
   } = useChatState();
   const { open: openSnackbar } = useSnackbar();
   const { model } = useBedrockModel();
@@ -255,7 +261,7 @@ const useChat = () => {
           contentType: 'text',
           body: '',
         },
-        model: model,
+        model: messageContent.model,
       }
     );
   };
@@ -273,9 +279,9 @@ const useChat = () => {
     const parentMessageId = isNewChat
       ? 'system'
       : tmpMessages[tmpMessages.length - 1].id;
-    // Choose the model of existing messages or fetch from state
-    const modelToPost =
-      data?.messageMap[Object.keys(data?.messageMap)[0]].model ?? model;
+
+    const modelToPost = isNewChat ? model : getPostedModel();
+
     const messageContent: MessageContent = {
       content: {
         body: content,
@@ -409,7 +415,7 @@ const useChat = () => {
             contentType: 'text',
             body: '',
           },
-          model: model,
+          model: messages[index].model,
         }
       );
     } else {
@@ -452,7 +458,7 @@ const useChat = () => {
     setCurrentMessageId,
     postChat,
     regenerate,
-
+    getPostedModel,
     // エラーのリトライ
     retryPostChat: (content?: string) => {
       const length_ = messages.length;
