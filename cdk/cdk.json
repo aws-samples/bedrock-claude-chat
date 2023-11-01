@@ -1,7 +1,7 @@
 {
   "app": "npx ts-node --prefer-ts-exts bin/bedrock-chat.ts",
   "watch": {
-    "include": ["**"],
+    "include": ["**", "../backend"],
     "exclude": [
       "README.md",
       "cdk*.json",
