@@ -10,12 +10,15 @@ type Props = BaseProps & {
 const BedrockModelSwitch: React.FC<Props> = (props) => {
   const { model, setModel } = useBedrockModel();
 
+  const buttonClass =
+    'flex-1 w-40 flex items-center rounded-lg p-2 justify-center';
+
   return props.isConversationStarted ? (
     <div className="text-sm text-gray-500">model: {model}</div>
   ) : (
-    <div className="flex overflow-hidden rounded-lg border p-1">
+    <div className="flex justify-center gap-2 rounded-lg border p-1">
       <button
-        className={`flex items-center rounded-lg p-2 ${
+        className={`${buttonClass} ${
           model === 'claude-instant-v1'
             ? 'bg-aws-squid-ink/100 text-white'
             : 'text-gray-500'
@@ -25,7 +28,7 @@ const BedrockModelSwitch: React.FC<Props> = (props) => {
         Claude Instant
       </button>
       <button
-        className={`flex items-center rounded-lg p-2 ${
+        className={`${buttonClass} ${
           model === 'claude-v2'
             ? 'bg-aws-squid-ink/100 text-white'
             : 'text-gray-500'

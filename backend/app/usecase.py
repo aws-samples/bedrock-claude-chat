@@ -42,7 +42,7 @@ def prepare_conversation(
                         content_type="text",
                         body="",
                     ),
-                    model="claude",
+                    model="claude-v2",
                     children=[],
                     parent=None,
                     create_time=datetime.now().timestamp(),
@@ -163,7 +163,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
 
 
 def propose_conversation_title(
-    user_id: str, conversation_id: str, model="claude"
+    user_id: str, conversation_id: str, model="claude-instant-v1"
 ) -> str:
     PROMPT = """Reading the conversation above, what is the appropriate title for the conversation? When answering the title, please follow the rules below:
 <rules>
