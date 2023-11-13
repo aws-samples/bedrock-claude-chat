@@ -70,9 +70,10 @@ const ChatPage: React.FC = () => {
   return (
     <>
       <div className="flex flex-col items-center justify-start">
-        <div className="m-1 p-1">
+        <div className="m-1">
           <SwitchBedrockModel postedModel={getPostedModel()} />
         </div>
+        <hr className="w-full border-t border-gray-300" />
       </div>
       <div className="pb-52 lg:pb-40">
         {messages.length === 0 ? (
