@@ -16,7 +16,6 @@ import { useNavigate } from 'react-router-dom';
 import { ulid } from 'ulid';
 import { convertMessageMapToArray } from '../utils/MessageUtils';
 import { useTranslation } from 'react-i18next';
-import useBedrockModel from './useBedrockModel';
 
 type ChatStateType = {
   [id: string]: MessageMap;
@@ -197,7 +196,6 @@ const useChat = () => {
     getPostedModel,
   } = useChatState();
   const { open: openSnackbar } = useSnackbar();
-  const { model } = useBedrockModel();
   const navigate = useNavigate();
 
   const { post: postStreaming } = usePostMessageStreaming();
@@ -270,7 +268,7 @@ const useChat = () => {
     );
   };
 
-  const postChat = (content: string) => {
+  const postChat = (content: string, model: Model) => {
     const isNewChat = conversationId ? false : true;
     const newConversationId = ulid();
 
@@ -474,7 +472,7 @@ const useChat = () => {
         // 通常のメッセージ送信時
         // エラー発生時の最新のメッセージはユーザ入力;
         removeMessage(conversationId, latestMessage.id);
-        postChat(content ?? latestMessage.content.body);
+        postChat(content ?? latestMessage.content.body, getPostedModel());
       } else {
         // 再生成時
         regenerate({
