@@ -10,7 +10,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1',
@@ -23,7 +23,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-1',
           contentType: 'text',
@@ -41,7 +41,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1',
@@ -51,7 +51,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-2',
@@ -64,7 +64,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-1',
           contentType: 'text',
@@ -76,7 +76,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-2',
           contentType: 'text',
@@ -94,7 +94,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1',
@@ -104,7 +104,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-2',
@@ -114,7 +114,7 @@ describe('convertMessageMapToArray', () => {
       },
       '3': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-3',
@@ -127,7 +127,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-1',
           contentType: 'text',
@@ -139,7 +139,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-2',
           contentType: 'text',
@@ -151,7 +151,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '3',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-3',
           contentType: 'text',
@@ -169,7 +169,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1',
@@ -179,7 +179,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-2-1',
@@ -189,7 +189,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-2': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-2-2',
@@ -202,7 +202,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-1',
           contentType: 'text',
@@ -214,7 +214,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2-1',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-2-1',
           contentType: 'text',
@@ -232,7 +232,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1',
@@ -242,7 +242,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-2-1',
@@ -252,7 +252,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-2': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-2-2',
@@ -265,7 +265,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-1',
           contentType: 'text',
@@ -277,7 +277,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2-2',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-2-2',
           contentType: 'text',
@@ -295,7 +295,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1',
@@ -305,7 +305,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-2-1',
@@ -315,7 +315,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-2': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-2-2',
@@ -325,7 +325,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-2-1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-2-2-1',
@@ -338,7 +338,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-1',
           contentType: 'text',
@@ -350,7 +350,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2-2',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-2-2',
           contentType: 'text',
@@ -362,7 +362,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2-2-1',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-2-2-1',
           contentType: 'text',
@@ -380,7 +380,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1',
@@ -390,7 +390,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-2-1',
@@ -400,7 +400,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-2': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-2-2',
@@ -410,7 +410,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-2-1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-2-2-1',
@@ -423,7 +423,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-1',
           contentType: 'text',
@@ -435,7 +435,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2-2',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-2-2',
           contentType: 'text',
@@ -447,7 +447,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2-2-1',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-2-2-1',
           contentType: 'text',
@@ -465,7 +465,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1',
@@ -475,7 +475,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-2-1',
@@ -485,7 +485,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-2': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-2-2',
@@ -495,7 +495,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-2-1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-2-2-1',
@@ -505,7 +505,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-2-2': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-2-2-2',
@@ -515,7 +515,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-2-2-1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-2-2-2-1',
@@ -525,7 +525,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-2-2-2': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-2-2-2-2',
@@ -538,7 +538,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-1',
           contentType: 'text',
@@ -550,7 +550,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2-2',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-2-2',
           contentType: 'text',
@@ -562,7 +562,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2-2-1',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-2-2-1',
           contentType: 'text',
@@ -574,7 +574,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2-2-2',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-2-2-2',
           contentType: 'text',
@@ -586,7 +586,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2-2-2-1',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-2-2-2-1',
           contentType: 'text',
@@ -604,7 +604,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       system: {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1',
@@ -614,7 +614,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1',
@@ -624,7 +624,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-2',
@@ -637,7 +637,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-1',
           contentType: 'text',
@@ -649,7 +649,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-2',
           contentType: 'text',
@@ -667,7 +667,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       system: {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1',
@@ -677,7 +677,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1-1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1-1',
@@ -687,7 +687,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1-2': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1-2',
@@ -697,7 +697,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1-1-1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1-1-1',
@@ -707,7 +707,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1-2-1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1-2-1',
@@ -720,7 +720,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1-1',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-1-1',
           contentType: 'text',
@@ -732,7 +732,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1-1-1',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-1-1-1',
           contentType: 'text',
@@ -750,7 +750,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       system: {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1',
@@ -760,7 +760,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1-1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1-1',
@@ -770,7 +770,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1-2': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1-2',
@@ -780,7 +780,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1-1-1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1-1-1',
@@ -790,7 +790,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1-2-1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1-2-1',
@@ -803,7 +803,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1-2',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-1-2',
           contentType: 'text',
@@ -815,7 +815,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1-2-1',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-1-2-1',
           contentType: 'text',
@@ -833,7 +833,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       system: {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1',
@@ -843,7 +843,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1-1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1-1',
@@ -853,7 +853,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1-2': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1-2',
@@ -863,7 +863,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1-1-1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1-1-1',
@@ -873,7 +873,7 @@ describe('convertMessageMapToArray', () => {
       },
       '1-2-1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1-2-1',
@@ -886,7 +886,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1-1',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-1-1',
           contentType: 'text',
@@ -898,7 +898,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1-1-1',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-1-1-1',
           contentType: 'text',
@@ -923,7 +923,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1',
@@ -933,7 +933,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-2-1',
@@ -943,7 +943,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2-2': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-2-2',
@@ -953,7 +953,7 @@ describe('convertMessageMapToArray', () => {
       },
       '3-1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-3-1',
@@ -963,7 +963,7 @@ describe('convertMessageMapToArray', () => {
       },
       '3-2': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-3-2',
@@ -976,7 +976,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-1',
           contentType: 'text',
@@ -988,7 +988,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2-1',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-2-1',
           contentType: 'text',
@@ -1000,7 +1000,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '3-1',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-3-1',
           contentType: 'text',
@@ -1019,7 +1019,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1',
@@ -1029,7 +1029,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-2',
@@ -1039,7 +1039,7 @@ describe('convertMessageMapToArray', () => {
       },
       '3': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-3',
@@ -1052,7 +1052,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-2',
           contentType: 'text',
@@ -1064,7 +1064,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '3',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-3',
           contentType: 'text',
@@ -1083,7 +1083,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1',
@@ -1093,7 +1093,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-2',
@@ -1103,7 +1103,7 @@ describe('convertMessageMapToArray', () => {
       },
       '3': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-3',
@@ -1116,7 +1116,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-1',
           contentType: 'text',
@@ -1128,7 +1128,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-2',
           contentType: 'text',
@@ -1147,7 +1147,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1',
@@ -1157,7 +1157,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-2',
@@ -1167,7 +1167,7 @@ describe('convertMessageMapToArray', () => {
       },
       '3': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-3',
@@ -1180,7 +1180,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-2',
           contentType: 'text',
@@ -1192,7 +1192,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '3',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-3',
           contentType: 'text',
@@ -1211,7 +1211,7 @@ describe('convertMessageMapToArray', () => {
     const data: MessageMap = {
       '1': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-1',
@@ -1221,7 +1221,7 @@ describe('convertMessageMapToArray', () => {
       },
       '2': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-2',
@@ -1231,7 +1231,7 @@ describe('convertMessageMapToArray', () => {
       },
       '3': {
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           contentType: 'text',
           body: 'message-3',
@@ -1244,7 +1244,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '1',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-1',
           contentType: 'text',
@@ -1256,7 +1256,7 @@ describe('convertMessageMapToArray', () => {
       {
         id: '2',
         role: 'user',
-        model: 'claude',
+        model: 'claude-v2',
         content: {
           body: 'message-2',
           contentType: 'text',

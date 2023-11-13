@@ -42,7 +42,7 @@ def prepare_conversation(
                         content_type="text",
                         body="",
                     ),
-                    model="claude",
+                    model=chat_input.message.model,
                     children=[],
                     parent=None,
                     create_time=datetime.now().timestamp(),
@@ -163,9 +163,8 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
 
 
 def propose_conversation_title(
-    user_id: str, conversation_id: str, model="claude"
+    user_id: str, conversation_id: str, model="claude-instant-v1"
 ) -> str:
-    assert model == "claude", "Only claude model is supported for now."
     PROMPT = """Reading the conversation above, what is the appropriate title for the conversation? When answering the title, please follow the rules below:
 <rules>
 - Title must be in the same language as the conversation.

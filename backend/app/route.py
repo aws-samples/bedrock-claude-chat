@@ -86,6 +86,7 @@ def get_all_conversations(
             id=conversation.id,
             title=conversation.title,
             create_time=conversation.create_time,
+            model=conversation.model,
         )
         for conversation in conversations
     ]

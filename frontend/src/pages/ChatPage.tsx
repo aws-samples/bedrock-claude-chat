@@ -7,10 +7,13 @@ import { useParams } from 'react-router-dom';
 import { PiArrowsCounterClockwise, PiWarningCircleFill } from 'react-icons/pi';
 import Button from '../components/Button';
 import { useTranslation } from 'react-i18next';
+import SwitchBedrockModel from '../components/SwitchBedrockModel';
+import { Model } from '../@types/conversation';
 
 const ChatPage: React.FC = () => {
   const { t } = useTranslation();
   const [content, setContent] = useState('');
+  const [model, setModel] = useState<Model>('claude-instant-v1');
   const {
     postingMessage,
     postChat,
@@ -20,6 +23,7 @@ const ChatPage: React.FC = () => {
     retryPostChat,
     setCurrentMessageId,
     regenerate,
+    getPostedModel,
   } = useChat();
   const { scrollToBottom, scrollToTop } = useScroll();
 
@@ -31,7 +35,7 @@ const ChatPage: React.FC = () => {
   }, [paramConversationId]);
 
   const onSend = useCallback(() => {
-    postChat(content);
+    postChat(content, model);
     setContent('');
   }, [content, postChat]);
 
@@ -67,6 +71,16 @@ const ChatPage: React.FC = () => {
 
   return (
     <>
+      <div className="flex flex-col items-center justify-start">
+        <div className="m-1">
+          <SwitchBedrockModel
+            postedModel={getPostedModel()}
+            model={model}
+            setModel={setModel}
+          />
+        </div>
+        <hr className="w-full border-t border-gray-300" />
+      </div>
       <div className="pb-52 lg:pb-40">
         {messages.length === 0 ? (
           <>

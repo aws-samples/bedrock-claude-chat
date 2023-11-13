@@ -5,6 +5,7 @@ import {
   MessageContent,
   MessageContentWithChildren,
   MessageMap,
+  Model,
   PostMessageRequest,
 } from '../@types/conversation';
 import useConversation from './useConversation';
@@ -51,6 +52,7 @@ const useChatState = create<{
   setCurrentMessageId: (s: string) => void;
   isGeneratedTitle: boolean;
   setIsGeneratedTitle: (b: boolean) => void;
+  getPostedModel: () => Model;
 }>((set, get) => {
   return {
     conversationId: '',
@@ -163,6 +165,13 @@ const useChatState = create<{
         isGeneratedTitle: b,
       }));
     },
+    getPostedModel: () => {
+      return (
+        get().chats[get().conversationId]?.system?.model ??
+        // 画面に即時反映するためNEW_MESSAGEを評価
+        get().chats['']?.[NEW_MESSAGE_ID.ASSISTANT]?.model
+      );
+    },
   };
 });
 
@@ -184,6 +193,7 @@ const useChat = () => {
     setCurrentMessageId,
     isGeneratedTitle,
     setIsGeneratedTitle,
+    getPostedModel,
   } = useChatState();
   const { open: openSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -253,12 +263,12 @@ const useChat = () => {
           contentType: 'text',
           body: '',
         },
-        model: 'claude',
+        model: messageContent.model,
       }
     );
   };
 
-  const postChat = (content: string) => {
+  const postChat = (content: string, model: Model) => {
     const isNewChat = conversationId ? false : true;
     const newConversationId = ulid();
 
@@ -271,12 +281,15 @@ const useChat = () => {
     const parentMessageId = isNewChat
       ? 'system'
       : tmpMessages[tmpMessages.length - 1].id;
+
+    const modelToPost = isNewChat ? model : getPostedModel();
+
     const messageContent: MessageContent = {
       content: {
         body: content,
         contentType: 'text',
       },
-      model: 'claude',
+      model: modelToPost,
       role: 'user',
     };
     const input: PostMessageRequest = {
@@ -404,7 +417,7 @@ const useChat = () => {
             contentType: 'text',
             body: '',
           },
-          model: 'claude',
+          model: messages[index].model,
         }
       );
     } else {
@@ -447,7 +460,7 @@ const useChat = () => {
     setCurrentMessageId,
     postChat,
     regenerate,
-
+    getPostedModel,
     // エラーのリトライ
     retryPostChat: (content?: string) => {
       const length_ = messages.length;
@@ -459,7 +472,7 @@ const useChat = () => {
         // 通常のメッセージ送信時
         // エラー発生時の最新のメッセージはユーザ入力;
         removeMessage(conversationId, latestMessage.id);
-        postChat(content ?? latestMessage.content.body);
+        postChat(content ?? latestMessage.content.body, getPostedModel());
       } else {
         // 再生成時
         regenerate({

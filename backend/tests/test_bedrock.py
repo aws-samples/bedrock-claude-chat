@@ -9,7 +9,8 @@ from app.bedrock import client, invoke
 from app.repositories.model import ContentModel, MessageModel
 from app.utils import get_buffer_string
 
-MODEL = "claude"
+# MODEL = "claude-v2"
+MODEL = "claude-instant-v1"
 
 
 class TestBedrock(unittest.TestCase):
