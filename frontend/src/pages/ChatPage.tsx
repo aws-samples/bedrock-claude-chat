@@ -7,7 +7,7 @@ import { useParams } from 'react-router-dom';
 import { PiArrowsCounterClockwise, PiWarningCircleFill } from 'react-icons/pi';
 import Button from '../components/Button';
 import { useTranslation } from 'react-i18next';
-import BedrockModelSwitch from '../components/BedrockModelSwith';
+import SwitchBedrockModel from '../components/SwitchBedrockModel';
 
 const ChatPage: React.FC = () => {
   const { t } = useTranslation();
@@ -71,7 +71,7 @@ const ChatPage: React.FC = () => {
     <>
       <div className="flex flex-col items-center justify-start">
         <div className="m-1 p-1">
-          <BedrockModelSwitch postedModel={getPostedModel()} />
+          <SwitchBedrockModel postedModel={getPostedModel()} />
         </div>
       </div>
       <div className="pb-52 lg:pb-40">
