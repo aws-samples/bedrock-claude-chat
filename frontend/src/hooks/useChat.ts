@@ -167,7 +167,11 @@ const useChatState = create<{
       }));
     },
     getPostedModel: () => {
-      return get().chats[get().conversationId]?.system?.model;
+      return (
+        get().chats[get().conversationId]?.system?.model ??
+        // 画面に即時反映するためNEW_MESSAGEを評価
+        get().chats['']?.[NEW_MESSAGE_ID.ASSISTANT]?.model
+      );
     },
   };
 });
