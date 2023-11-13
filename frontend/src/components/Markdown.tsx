@@ -27,6 +27,7 @@ const Markdown: React.FC<Props> = ({ className, children }) => {
               style={vscDarkPlus}
               language={match[1]}
               PreTag="div"
+              wrapLongLines={true}
             />
           ) : (
             <code {...props} className={className}>
