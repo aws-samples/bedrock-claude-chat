@@ -10,7 +10,7 @@ from app.repositories.conversation import (
 )
 from app.repositories.model import ContentModel, ConversationModel, MessageModel
 from app.route_schema import ChatInput, ChatOutput, Content, MessageOutput
-from app.utils import get_buffer_string
+from app.utils import get_buffer_string, get_current_time
 from ulid import ULID
 
 logger = logging.getLogger(__name__)
@@ -33,7 +33,7 @@ def prepare_conversation(
         conversation = ConversationModel(
             id=chat_input.conversation_id,
             title="New conversation",
-            create_time=datetime.now().timestamp(),
+            create_time=get_current_time(),
             message_map={
                 # Dummy system message
                 "system": MessageModel(
@@ -45,7 +45,7 @@ def prepare_conversation(
                     model=chat_input.message.model,
                     children=[],
                     parent=None,
-                    create_time=datetime.now().timestamp(),
+                    create_time=get_current_time(),
                 )
             },
             last_message_id="",
@@ -63,7 +63,7 @@ def prepare_conversation(
         model=chat_input.message.model,
         children=[],
         parent=parent_id,
-        create_time=datetime.now().timestamp(),
+        create_time=get_current_time(),
     )
     conversation.message_map[message_id] = new_message
 
@@ -133,7 +133,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         model=chat_input.message.model,
         children=[],
         parent=user_msg_id,
-        create_time=datetime.now().timestamp(),
+        create_time=get_current_time(),
     )
     conversation.message_map[assistant_msg_id] = message
 
@@ -191,7 +191,7 @@ def propose_conversation_title(
         model=model,
         children=[],
         parent=conversation.last_message_id,
-        create_time=datetime.now().timestamp(),
+        create_time=get_current_time(),
     )
     messages.append(new_message)
 

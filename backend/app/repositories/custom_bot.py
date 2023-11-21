@@ -12,6 +12,7 @@ from app.repositories.common import (
     _get_table_client,
 )
 from app.repositories.model import BotMetaModel, BotModel
+from app.utils import get_current_time
 from boto3.dynamodb.conditions import Key
 
 logger = logging.getLogger(__name__)
@@ -41,7 +42,7 @@ def update_last_used_time(user_id: str, bot_id: str):
     response = table.update_item(
         Key={"PK": user_id, "SK": _compose_bot_id(user_id, bot_id)},
         UpdateExpression="SET LastBotUsed = :val",
-        ExpressionAttributeValues={":val": decimal(datetime.now().timestamp())},
+        ExpressionAttributeValues={":val": decimal(get_current_time())},
     )
     return response
 

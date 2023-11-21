@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from typing import List
 
 import boto3
@@ -40,3 +41,8 @@ def get_bedrock_client():
     client = boto3.client("bedrock-runtime", BEDROCK_REGION)
 
     return client
+
+
+def get_current_time():
+    # Get current time as milliseconds epoch time
+    return int(datetime.now().timestamp() * 1000)

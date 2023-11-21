@@ -17,6 +17,7 @@ from app.repositories.custom_bot import (
 from app.repositories.model import BotModel
 from app.route_schema import (
     BotInput,
+    BotMeta,
     BotOutput,
     ChatInput,
     ChatOutput,
@@ -29,6 +30,7 @@ from app.route_schema import (
     User,
 )
 from app.usecase import chat, get_invoke_payload, propose_conversation_title
+from app.utils import get_current_time
 from fastapi import APIRouter, Request
 
 router = APIRouter()
@@ -147,20 +149,20 @@ def post_bot(request: Request, bot_input: BotInput):
             id=bot_input.id,
             title=bot_input.title,
             description=bot_input.description,
-            create_time=datetime.now().timestamp(),
-            last_used_time=datetime.now().timestamp(),
+            create_time=get_current_time(),
+            last_used_time=get_current_time(),
         ),
     )
     return BotOutput(
         id=bot_input.id,
         title=bot_input.title,
         description=bot_input.description,
-        create_time=datetime.now().timestamp(),
+        create_time=get_current_time(),
         last_used_time=None,
     )
 
 
-@router.get("/bot", response_model=list[BotOutput])
+@router.get("/bot", response_model=list[BotMeta])
 def get_all_bots(request: Request, limit: Optional[int] = None):
     """Get all bots. The order is descending by `last_used_time`.
     If limit is specified, only the first n bots will be returned.

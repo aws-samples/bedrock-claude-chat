@@ -21,6 +21,7 @@ from app.repositories.model import (
     ConversationModel,
     MessageModel,
 )
+from app.utils import get_current_time
 from boto3.dynamodb.conditions import Key
 
 logger = logging.getLogger(__name__)
@@ -124,7 +125,7 @@ def store_conversation(user_id: str, conversation: ConversationModel):
                     },
                     "UpdateExpression": "set LastBotUsed = :current_time",
                     "ExpressionAttributeValues": {
-                        ":current_time": decimal(datetime.now().timestamp())
+                        ":current_time": decimal(get_current_time())
                     },
                 }
             },

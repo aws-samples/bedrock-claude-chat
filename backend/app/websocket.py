@@ -8,7 +8,7 @@ from app.repositories.conversation import store_conversation
 from app.repositories.model import ContentModel, MessageModel
 from app.route_schema import ChatInputWithToken
 from app.usecase import get_invoke_payload, prepare_conversation
-from app.utils import get_bedrock_client
+from app.utils import get_bedrock_client, get_current_time
 from ulid import ULID
 
 client = get_bedrock_client()
@@ -91,7 +91,7 @@ def handler(event, context):
         model=chat_input.message.model,
         children=[],
         parent=user_msg_id,
-        create_time=datetime.now().timestamp(),
+        create_time=get_current_time(),
     )
     conversation.message_map[assistant_msg_id] = message
     # Append children to parent

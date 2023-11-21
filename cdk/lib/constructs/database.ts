@@ -18,16 +18,20 @@ export class Database extends Construct {
     super(scope, id);
 
     const table = new Table(this, "ConversationTable", {
+      // PK: UserId
       partitionKey: { name: "PK", type: AttributeType.STRING },
+      // SK: ConversationId | BotId
       sortKey: { name: "SK", type: AttributeType.STRING },
       billingMode: BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY,
     });
     table.addGlobalSecondaryIndex({
+      // Used to fetch conversation or bot by id
       indexName: "SKIndex",
       partitionKey: { name: "SK", type: AttributeType.STRING },
     });
     table.addLocalSecondaryIndex({
+      // Used to fetch all bots for a user. Sorted by bot used time
       indexName: "LastBotUsedIndex",
       sortKey: { name: "LastBotUsed", type: AttributeType.NUMBER },
       projectionType: ProjectionType.INCLUDE,
