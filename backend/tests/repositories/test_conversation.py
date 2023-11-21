@@ -13,7 +13,13 @@ from app.repositories.conversation import (
     find_conversation_by_user_id,
     store_conversation,
 )
-from app.repositories.model import ContentModel, ConversationModel, MessageModel
+from app.repositories.custom_bot import delete_bot_by_id, find_bot_by_user_id, store_bot
+from app.repositories.model import (
+    BotModel,
+    ContentModel,
+    ConversationModel,
+    MessageModel,
+)
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
@@ -57,7 +63,7 @@ class TestRowLevelAccess(unittest.TestCase):
         table = _get_table_client("user1")
 
         table.query(
-            KeyConditionExpression=Key("UserId").eq(
+            KeyConditionExpression=Key("PK").eq(
                 _compose_conv_id("user1", self.conversation_user_1.id)
             )
         )
@@ -65,7 +71,7 @@ class TestRowLevelAccess(unittest.TestCase):
         with self.assertRaises(ClientError):
             # Raise `AccessDeniedException` because user1 cannot access user2's data
             table.query(
-                KeyConditionExpression=Key("UserId").eq(
+                KeyConditionExpression=Key("PK").eq(
                     _compose_conv_id("user2", self.conversation_user_2.id)
                 )
             )
@@ -75,16 +81,16 @@ class TestRowLevelAccess(unittest.TestCase):
         table = _get_table_client("user1")
 
         table.query(
-            IndexName="ConversationIdIndex",
-            KeyConditionExpression=Key("ConversationId").eq(
+            IndexName="SKIndex",
+            KeyConditionExpression=Key("SK").eq(
                 _compose_conv_id("user1", self.conversation_user_1.id)
             ),
         )
         with self.assertRaises(ClientError):
             # Raise `AccessDeniedException` because user1 cannot access user2's data
             table.query(
-                IndexName="ConversationIdIndex",
-                KeyConditionExpression=Key("ConversationId").eq(
+                IndexName="SKIndex",
+                KeyConditionExpression=Key("SK").eq(
                     _compose_conv_id("user2", self.conversation_user_2.id)
                 ),
             )
@@ -111,6 +117,7 @@ class TestConversationRepository(unittest.TestCase):
                 )
             },
             last_message_id="x",
+            bot_id=None,
         )
 
         # Test storing conversation
@@ -136,6 +143,7 @@ class TestConversationRepository(unittest.TestCase):
         self.assertEqual(message_map["a"].parent, "z")
         self.assertEqual(message_map["a"].create_time, 1627984879.9)
         self.assertEqual(found_conversation.last_message_id, "x")
+        self.assertEqual(found_conversation.bot_id, None)
 
         # Test update title
         response = change_conversation_title(
@@ -159,6 +167,54 @@ class TestConversationRepository(unittest.TestCase):
         delete_conversation_by_user_id(user_id="user")
         conversations = find_conversation_by_user_id(user_id="user")
         self.assertEqual(len(conversations), 0)
+
+
+class TestConversationBotRepository(unittest.TestCase):
+    def setUp(self) -> None:
+        conversation = ConversationModel(
+            id="1",
+            create_time=1627984879.9,
+            title="Test Conversation",
+            message_map={
+                "a": MessageModel(
+                    role="user",
+                    content=ContentModel(content_type="text", body="Hello"),
+                    model="model",
+                    children=["x", "y"],
+                    parent="z",
+                    create_time=1627984879.9,
+                )
+            },
+            last_message_id="x",
+            bot_id=None,
+        )
+        bot = BotModel(
+            id="1",
+            title="Test Bot",
+            instruction="Test Bot Prompt",
+            description="Test Bot Description",
+            create_time=1627984879.9,
+            last_used_time=1627984879.9,
+        )
+
+        store_conversation("user", conversation)
+        store_bot("user", bot)
+
+    def test_only_conversation_is_fetched(self):
+        conversations = find_conversation_by_user_id("user")
+        self.assertEqual(len(conversations), 1)
+        self.assertEqual(conversations[0].id, "1")
+        self.assertEqual(conversations[0].title, "Test Conversation")
+
+    def test_only_bot_is_fetched(self):
+        bots = find_bot_by_user_id("user")
+        self.assertEqual(len(bots), 1)
+        self.assertEqual(bots[0].id, "1")
+        self.assertEqual(bots[0].title, "Test Bot")
+
+    def tearDown(self) -> None:
+        delete_conversation_by_id("user", "1")
+        delete_bot_by_id("user", "1")
 
 
 if __name__ == "__main__":

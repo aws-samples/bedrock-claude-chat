@@ -1035,21 +1035,21 @@ exports[`SnapshotTest 1`] = `
       "Properties": {
         "AttributeDefinitions": [
           {
-            "AttributeName": "UserId",
+            "AttributeName": "PK",
             "AttributeType": "S",
           },
           {
-            "AttributeName": "ConversationId",
+            "AttributeName": "SK",
             "AttributeType": "S",
           },
         ],
         "BillingMode": "PAY_PER_REQUEST",
         "GlobalSecondaryIndexes": [
           {
-            "IndexName": "ConversationIdIndex",
+            "IndexName": "SKIndex",
             "KeySchema": [
               {
-                "AttributeName": "ConversationId",
+                "AttributeName": "SK",
                 "KeyType": "HASH",
               },
             ],
@@ -1060,11 +1060,11 @@ exports[`SnapshotTest 1`] = `
         ],
         "KeySchema": [
           {
-            "AttributeName": "UserId",
+            "AttributeName": "PK",
             "KeyType": "HASH",
           },
           {
-            "AttributeName": "ConversationId",
+            "AttributeName": "SK",
             "KeyType": "RANGE",
           },
         ],

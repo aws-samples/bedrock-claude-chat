@@ -3,8 +3,10 @@ import logging
 import os
 from datetime import datetime
 from decimal import Decimal as decimal
+from functools import wraps
 
 import boto3
+from app.repositories.custom_bot import _compose_bot_id
 from app.repositories.model import (
     ContentModel,
     ConversationMetaModel,
@@ -29,11 +31,15 @@ class RecordNotFoundError(Exception):
 
 def _compose_conv_id(user_id: str, conversation_id: str):
     # Add user_id prefix for row level security to match with `LeadingKeys` condition
-    return f"{user_id}_{conversation_id}"
+    return f"{user_id}#CONV#{conversation_id}"
 
 
 def _decompose_conv_id(conv_id: str):
-    return conv_id.split("_")[1]
+    return conv_id.split("#")[-1]
+
+
+def _get_dynamodb_client(user_id: str):
+    ...
 
 
 def _get_table_client(user_id: str):
@@ -104,14 +110,15 @@ def store_conversation(user_id: str, conversation: ConversationModel):
     table = _get_table_client(user_id)
     response = table.put_item(
         Item={
-            "UserId": user_id,
-            "ConversationId": _compose_conv_id(user_id, conversation.id),
+            "PK": user_id,
+            "SK": _compose_conv_id(user_id, conversation.id),
             "Title": conversation.title,
             "CreateTime": decimal(conversation.create_time),
             "MessageMap": json.dumps(
                 {k: v.model_dump() for k, v in conversation.message_map.items()}
             ),
             "LastMessageId": conversation.last_message_id,
+            "BotId": conversation.bot_id,
         }
     )
     return response
@@ -121,17 +128,20 @@ def find_conversation_by_user_id(user_id: str) -> list[ConversationMetaModel]:
     logger.debug(f"Finding conversations for user: {user_id}")
     table = _get_table_client(user_id)
     response = table.query(
-        KeyConditionExpression=Key("UserId").eq(user_id),
+        KeyConditionExpression=Key("PK").eq(user_id)
+        # NOTE: Need SK to fetch only conversations
+        & Key("SK").begins_with(f"{user_id}#CONV#"),
         ScanIndexForward=False,
     )
 
     conversations = [
         ConversationMetaModel(
-            id=_decompose_conv_id(item["ConversationId"]),
+            id=_decompose_conv_id(item["SK"]),
             create_time=float(item["CreateTime"]),
             title=item["Title"],
             # NOTE: all message has the same model
             model=json.loads(item["MessageMap"]).popitem()[1]["model"],
+            bot_id=item["BotId"],
         )
         for item in response["Items"]
     ]
@@ -143,18 +153,21 @@ def find_conversation_by_user_id(user_id: str) -> list[ConversationMetaModel]:
         # NOTE: max page size is 1MB
         # See: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.Pagination.html
         response = table.query(
-            KeyConditionExpression=Key("UserId").eq(user_id),
-            ProjectionExpression="ConversationId, CreateTime, Title",
+            KeyConditionExpression=Key("PK").eq(user_id)
+            # NOTE: Need SK to fetch only conversations
+            & Key("SK").begins_with(f"{user_id}#CONV#"),
+            ProjectionExpression="SK, CreateTime, Title",
             ScanIndexForward=False,
             ExclusiveStartKey=response["LastEvaluatedKey"],
         )
         conversations.extend(
             [
                 ConversationMetaModel(
-                    id=_decompose_conv_id(item["ConversationId"]),
+                    id=_decompose_conv_id(item["SK"]),
                     create_time=float(item["CreateTime"]),
                     title=item["Title"],
                     model=model,
+                    bot_id=item["BotId"],
                 )
                 for item in response["Items"]
             ]
@@ -172,10 +185,8 @@ def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationM
     logger.debug(f"Finding conversation: {conversation_id}")
     table = _get_table_client(user_id)
     response = table.query(
-        IndexName="ConversationIdIndex",
-        KeyConditionExpression=Key("ConversationId").eq(
-            _compose_conv_id(user_id, conversation_id)
-        ),
+        IndexName="SKIndex",
+        KeyConditionExpression=Key("SK").eq(_compose_conv_id(user_id, conversation_id)),
     )
     if len(response["Items"]) == 0:
         raise RecordNotFoundError(f"No conversation found with id: {conversation_id}")
@@ -183,7 +194,7 @@ def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationM
     # NOTE: conversation is unique
     item = response["Items"][0]
     conv = ConversationModel(
-        id=_decompose_conv_id(item["ConversationId"]),
+        id=_decompose_conv_id(item["SK"]),
         create_time=float(item["CreateTime"]),
         title=item["Title"],
         message_map={
@@ -201,6 +212,7 @@ def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationM
             for k, v in json.loads(item["MessageMap"]).items()
         },
         last_message_id=item["LastMessageId"],
+        bot_id=item["BotId"],
     )
     logger.debug(f"Found conversation: {conv}")
     return conv
@@ -212,18 +224,16 @@ def delete_conversation_by_id(user_id: str, conversation_id: str):
 
     # Query the index
     response = table.query(
-        IndexName="ConversationIdIndex",
-        KeyConditionExpression=Key("ConversationId").eq(
-            _compose_conv_id(user_id, conversation_id)
-        ),
+        IndexName="SKIndex",
+        KeyConditionExpression=Key("SK").eq(_compose_conv_id(user_id, conversation_id)),
     )
 
     # Check if conversation exists
     if response["Items"]:
-        user_id = response["Items"][0]["UserId"]
+        user_id = response["Items"][0]["PK"]
         key = {
-            "UserId": user_id,
-            "ConversationId": _compose_conv_id(user_id, conversation_id),
+            "PK": user_id,
+            "SK": _compose_conv_id(user_id, conversation_id),
         }
         delete_response = table.delete_item(Key=key)
         return delete_response
@@ -241,8 +251,8 @@ def delete_conversation_by_user_id(user_id: str):
         for conversation in conversations:
             # Construct key to delete
             key = {
-                "UserId": user_id,
-                "ConversationId": _compose_conv_id(user_id, conversation.id),
+                "PK": user_id,
+                "SK": _compose_conv_id(user_id, conversation.id),
             }
             response = table.delete_item(Key=key)
             responses.append(response)
@@ -258,10 +268,8 @@ def change_conversation_title(user_id: str, conversation_id: str, new_title: str
 
     # First, we need to find the item using the GSI
     response = table.query(
-        IndexName="ConversationIdIndex",
-        KeyConditionExpression=Key("ConversationId").eq(
-            _compose_conv_id(user_id, conversation_id)
-        ),
+        IndexName="SKIndex",
+        KeyConditionExpression=Key("SK").eq(_compose_conv_id(user_id, conversation_id)),
     )
 
     items = response["Items"]
@@ -270,13 +278,13 @@ def change_conversation_title(user_id: str, conversation_id: str, new_title: str
 
     # We'll just update the first item in case there are multiple matches
     item = items[0]
-    user_id = item["UserId"]
+    user_id = item["PK"]
 
     # Then, we update the item using its primary key
     response = table.update_item(
         Key={
-            "UserId": user_id,
-            "ConversationId": _compose_conv_id(user_id, conversation_id),
+            "PK": user_id,
+            "SK": _compose_conv_id(user_id, conversation_id),
         },
         UpdateExpression="set Title=:t",
         ExpressionAttributeValues={":t": new_title},

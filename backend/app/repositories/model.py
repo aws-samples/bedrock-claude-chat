@@ -21,6 +21,7 @@ class ConversationModel(BaseModel):
     title: str
     message_map: dict[str, MessageModel]
     last_message_id: str
+    bot_id: str | None
 
 
 class ConversationMetaModel(BaseModel):
@@ -28,3 +29,20 @@ class ConversationMetaModel(BaseModel):
     title: str
     create_time: float
     model: str
+    bot_id: str | None
+
+
+class BotModel(BaseModel):
+    id: str
+    title: str
+    description: str | None
+    instruction: str
+    create_time: float
+    last_used_time: float
+
+
+class BotMetaModel(BaseModel):
+    id: str
+    title: str
+    create_time: float
+    last_used_time: float

@@ -69,6 +69,29 @@ class ProposedTitle(BaseSchema):
     title: str
 
 
+class BotInput(BaseSchema):
+    id: str
+    title: str
+    instruction: str
+    description: str | None
+
+
+class BotOutput(BaseSchema):
+    id: str
+    create_time: float
+    last_used_time: float
+    title: str
+    instruction: str
+    description: str | None
+
+
+class BotMeta(BaseSchema):
+    id: str
+    title: str
+    create_time: float
+    last_used_time: float
+
+
 class User(BaseSchema):
     id: str
     name: str

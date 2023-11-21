@@ -3,7 +3,7 @@
 ![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/test.yml/badge.svg)
 
 > **Warning**
-> The current version (`v0.2.x`) has no compatibility with ex version (`v0.1.0`) due to the change of the conversation schema. Please note that conversations stored in DynamoDB with ex version cannot be rendered.
+> The current version (`v0.3.x`) has no compatibility with ex version (`v0.1.0`, `v0.2.x`) due to the change of the conversation schema. Please note that conversations stored in DynamoDB with ex version cannot be rendered.
 
 This repository is a sample chatbot using the Anthropic company's LLM [Claude 2](https://www.anthropic.com/index/claude-2), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI.
 
@@ -69,7 +69,8 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 - [x] Edit message & re-send
 - [x] I18n
 - [x] Model switch (Claude Instant / Claude)
-- [ ] Save and re-use prompt template
+- [x] Customized bot creation
+- [ ] File upload / retriever (RAG)
 
 ## Deploy using CDK
 
