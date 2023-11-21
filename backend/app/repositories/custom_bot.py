@@ -5,21 +5,17 @@ from datetime import datetime
 from decimal import Decimal as decimal
 
 import boto3
-from app.repositories.conversation import RecordNotFoundError, _get_table_client
+from app.repositories.common import (
+    RecordNotFoundError,
+    _compose_bot_id,
+    _decompose_bot_id,
+    _get_table_client,
+)
 from app.repositories.model import BotMetaModel, BotModel
 from boto3.dynamodb.conditions import Key
 
 logger = logging.getLogger(__name__)
 sts_client = boto3.client("sts")
-
-
-def _compose_bot_id(user_id: str, conversation_id: str):
-    # Add user_id prefix for row level security to match with `LeadingKeys` condition
-    return f"{user_id}#BOT#{conversation_id}"
-
-
-def _decompose_bot_id(conv_id: str):
-    return conv_id.split("#")[-1]
 
 
 def store_bot(user_id: str, custom_bot: BotModel):
