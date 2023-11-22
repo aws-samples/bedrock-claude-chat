@@ -9,16 +9,19 @@ from app.repositories.conversation import (
     find_conversation_by_user_id,
 )
 from app.repositories.custom_bot import (
+    delete_alias_by_id,
     delete_bot_by_id,
     find_bot_by_id,
     find_bot_by_user_id,
     store_bot,
+    update_bot_visibility,
 )
 from app.repositories.model import BotModel
 from app.route_schema import (
     BotInput,
     BotMetaOutput,
     BotOutput,
+    BotSwitchVisibilityInput,
     ChatInput,
     ChatOutput,
     Content,
@@ -29,7 +32,7 @@ from app.route_schema import (
     ProposedTitle,
     User,
 )
-from app.usecase import chat, propose_conversation_title
+from app.usecases.chat import chat, propose_conversation_title
 from app.utils import get_current_time
 from fastapi import APIRouter, Request
 
@@ -174,7 +177,7 @@ def get_all_bots(request: Request, limit: Optional[int] = None):
     bots = find_bot_by_user_id(current_user.id, limit=limit)
 
     output = [
-        BotMeta(
+        BotMetaOutput(
             id=bot.id,
             title=bot.title,
             create_time=bot.create_time,
@@ -208,30 +211,13 @@ def delete_bot(request: Request, bot_id: str):
     current_user: User = request.state.current_user
 
     delete_bot_by_id(current_user.id, bot_id)
+    # TODO: alias
 
 
 @router.put("/bot/{bot_id}")
-def make_bot_public(request: Request, bot_id: str):
-    """Make bot public"""
+def switch_bot_visibility(
+    request: Request, bot_id: str, visibility_input: BotSwitchVisibilityInput
+):
+    """Switch bot visibility"""
     current_user: User = request.state.current_user
-
-    raise NotImplementedError()
-
-    # TODO: implement update method to repository
-
-    bot = find_bot_by_id(current_user.id, bot_id)
-    # store_bot(
-    #     current_user.id,
-    #     BotModel(
-    #         id=bot.id,
-    #         title=bot.title,
-    #         description=bot.description,
-    #         instruction=bot.instruction,
-    #         create_time=bot.create_time,
-    #         last_used_time=bot.last_used_time,
-    #         public_bot_id=bot.id
-    #     ),
-    # )
-
-
-# TODO: remove alias
+    update_bot_visibility(current_user.id, bot_id, visibility_input.to_public)

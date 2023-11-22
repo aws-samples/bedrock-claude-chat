@@ -41,7 +41,13 @@ export class Database extends Construct {
       indexName: "LastBotUsedIndex",
       sortKey: { name: "LastBotUsed", type: AttributeType.NUMBER },
       projectionType: ProjectionType.INCLUDE,
-      nonKeyAttributes: ["Title", "CreateTime", "LastBotUsed", "OwnerUserId"],
+      nonKeyAttributes: [
+        "Title",
+        "CreateTime",
+        "LastBotUsed",
+        "OriginalBotId",
+        "IsPinned",
+      ],
     });
 
     const tableAccessRole = new Role(this, "TableAccessRole", {

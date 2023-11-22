@@ -93,6 +93,10 @@ class BotMetaOutput(BaseSchema):
     last_used_time: float
 
 
+class BotSwitchVisibilityInput(BaseSchema):
+    to_public: bool
+
+
 class User(BaseSchema):
     id: str
     name: str

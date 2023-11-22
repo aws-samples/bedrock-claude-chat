@@ -10,6 +10,7 @@ from app.repositories.common import (
     RecordNotFoundError,
     _compose_bot_alias_id,
     _compose_bot_id,
+    _decompose_bot_alias_id,
     _decompose_bot_id,
     _get_table_client,
     _get_table_public_client,
@@ -49,6 +50,7 @@ def store_alias(user_id: str, alias: BotAliasModel):
     item = {
         "PK": user_id,
         "SK": _compose_bot_alias_id(user_id, alias.id),
+        "Title": alias.title,
         "OriginalBotId": alias.original_bot_id,
         "CreateTime": decimal(alias.create_time),
         "LastBotUsed": decimal(alias.last_used_time),
@@ -150,6 +152,7 @@ def find_pinned_bots(user_id: str) -> list[BotMeta]:
         "IndexName": "LastBotUsedIndex",
         "KeyConditionExpression": Key("PK").eq(user_id),
         "ScanIndexForward": False,
+        # Fetch only pinned bots and aliases
         "FilterExpression": Attr("IsPinned").eq(True),
     }
     response = table.query(**query_params)
@@ -161,19 +164,44 @@ def find_pinned_bots(user_id: str) -> list[BotMeta]:
             is_original_available = True
             try:
                 bot = find_public_bot_by_id(item["OriginalBotId"])
-            except RecordNotFoundError:
-                is_original_available = False
-
-            bots.append(
-                BotMeta(
+                logger.debug(f"Found original bot: {bot.id}")
+                meta = BotMeta(
                     id=bot.id,
                     title=bot.title,
                     create_time=float(bot.create_time),
                     last_used_time=float(bot.last_used_time),
                     owned=False,
-                    available=is_original_available,
+                    available=True,
                 )
-            )
+            except RecordNotFoundError:
+                # Original bot is removed
+                is_original_available = False
+                logger.debug(f"Original bot {item['OriginalBotId']} has been removed")
+                meta = BotMeta(
+                    id=item["OriginalBotId"],
+                    title=item["Title"],
+                    create_time=float(item["CreateTime"]),
+                    last_used_time=float(item["LastBotUsed"]),
+                    owned=False,
+                    available=False,
+                )
+
+            if is_original_available and bot.title != item["Title"]:
+                # Update alias to the latest
+                store_alias(
+                    user_id,
+                    BotAliasModel(
+                        id=_decompose_bot_alias_id(item["SK"]),
+                        # Update title
+                        title=bot.title,
+                        original_bot_id=item["OriginalBotId"],
+                        create_time=float(item["CreateTime"]),
+                        last_used_time=float(item["LastBotUsed"]),
+                        is_pinned=True,
+                    ),
+                )
+
+            bots.append(meta)
         else:
             # Private bots
             bots.append(
@@ -260,6 +288,7 @@ def update_bot_visibility(user_id: str, bot_id: str, visible: bool):
 
     try:
         if visible:
+            # To visible (open to public)
             response = table.update_item(
                 Key={"PK": user_id, "SK": _compose_bot_id(user_id, bot_id)},
                 UpdateExpression="SET PublicBotId = :val",
@@ -267,6 +296,7 @@ def update_bot_visibility(user_id: str, bot_id: str, visible: bool):
                 ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
             )
         else:
+            # To hide (close to private)
             response = table.update_item(
                 Key={"PK": user_id, "SK": _compose_bot_id(user_id, bot_id)},
                 UpdateExpression="REMOVE PublicBotId",
