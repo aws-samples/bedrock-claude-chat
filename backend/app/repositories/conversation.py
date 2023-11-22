@@ -8,6 +8,7 @@ from functools import wraps
 import boto3
 from app.repositories.common import (
     TABLE_NAME,
+    TRANSACTION_BATCH_SIZE,
     RecordNotFoundError,
     _compose_bot_id,
     _compose_conv_id,
@@ -17,78 +18,16 @@ from app.repositories.common import (
 )
 from app.repositories.model import (
     ContentModel,
-    ConversationMetaModel,
+    ConversationMeta,
     ConversationModel,
     MessageModel,
 )
 from app.utils import get_current_time
 from boto3.dynamodb.conditions import Key
+from botocore.exceptions import ClientError
 
 logger = logging.getLogger(__name__)
 sts_client = boto3.client("sts")
-
-
-# def _get_table_client(user_id: str):
-#     """Get a DynamoDB table client with row level access
-#     Ref: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_dynamodb_items.html
-#     """
-#     if "AWS_EXECUTION_ENV" not in os.environ:
-#         if DDB_ENDPOINT_URL:
-#             # NOTE: This is for local development using DynamDB Local
-#             dynamodb = boto3.resource(
-#                 "dynamodb",
-#                 endpoint_url=DDB_ENDPOINT_URL,
-#                 aws_access_key_id="key",
-#                 aws_secret_access_key="key",
-#                 region_name="us-east-1",
-#             )
-#         else:
-#             dynamodb = boto3.resource("dynamodb")
-#         return dynamodb.Table(TABLE_NAME)
-
-#     policy_document = {
-#         "Statement": [
-#             {
-#                 "Effect": "Allow",
-#                 "Action": [
-#                     "dynamodb:BatchGetItem",
-#                     "dynamodb:BatchWriteItem",
-#                     "dynamodb:ConditionCheckItem",
-#                     "dynamodb:DeleteItem",
-#                     "dynamodb:DescribeTable",
-#                     "dynamodb:GetItem",
-#                     "dynamodb:GetRecords",
-#                     "dynamodb:PutItem",
-#                     "dynamodb:Query",
-#                     "dynamodb:Scan",
-#                     "dynamodb:UpdateItem",
-#                 ],
-#                 "Resource": [
-#                     f"arn:aws:dynamodb:{REGION}:{ACCOUNT}:table/{TABLE_NAME}",
-#                     f"arn:aws:dynamodb:{REGION}:{ACCOUNT}:table/{TABLE_NAME}/index/*",
-#                 ],
-#                 "Condition": {
-#                     # Allow access to items with the same partition key as the user id
-#                     "ForAllValues:StringLike": {"dynamodb:LeadingKeys": [f"{user_id}*"]}
-#                 },
-#             }
-#         ]
-#     }
-#     assumed_role_object = sts_client.assume_role(
-#         RoleArn=TABLE_ACCESS_ROLE_ARN,
-#         RoleSessionName="DynamoDBSession",
-#         Policy=json.dumps(policy_document),
-#     )
-#     credentials = assumed_role_object["Credentials"]
-#     dynamodb = boto3.resource(
-#         "dynamodb",
-#         region_name=REGION,
-#         aws_access_key_id=credentials["AccessKeyId"],
-#         aws_secret_access_key=credentials["SecretAccessKey"],
-#         aws_session_token=credentials["SessionToken"],
-#     )
-#     table = dynamodb.Table(TABLE_NAME)
-#     return table
 
 
 def store_conversation(user_id: str, conversation: ConversationModel):
@@ -113,6 +52,7 @@ def store_conversation(user_id: str, conversation: ConversationModel):
             }
         },
     ]
+    # TODO
     if conversation.bot_id:
         transact_items.append(
             # Update `LastBotUsed`
@@ -135,18 +75,20 @@ def store_conversation(user_id: str, conversation: ConversationModel):
     return response
 
 
-def find_conversation_by_user_id(user_id: str) -> list[ConversationMetaModel]:
+def find_conversation_by_user_id(user_id: str) -> list[ConversationMeta]:
     logger.debug(f"Finding conversations for user: {user_id}")
     table = _get_table_client(user_id)
-    response = table.query(
-        KeyConditionExpression=Key("PK").eq(user_id)
+
+    query_params = {
+        "KeyConditionExpression": Key("PK").eq(user_id)
         # NOTE: Need SK to fetch only conversations
         & Key("SK").begins_with(f"{user_id}#CONV#"),
-        ScanIndexForward=False,
-    )
+        "ScanIndexForward": False,
+    }
 
+    response = table.query(**query_params)
     conversations = [
-        ConversationMetaModel(
+        ConversationMeta(
             id=_decompose_conv_id(item["SK"]),
             create_time=float(item["CreateTime"]),
             title=item["Title"],
@@ -161,19 +103,15 @@ def find_conversation_by_user_id(user_id: str) -> list[ConversationMetaModel]:
     MAX_QUERY_COUNT = 5
     while "LastEvaluatedKey" in response:
         model = json.loads(response["Items"][0]["MessageMap"]).popitem()[1]["model"]
+        query_params["ExclusiveStartKey"] = response["LastEvaluatedKey"]
         # NOTE: max page size is 1MB
         # See: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.Pagination.html
         response = table.query(
-            KeyConditionExpression=Key("PK").eq(user_id)
-            # NOTE: Need SK to fetch only conversations
-            & Key("SK").begins_with(f"{user_id}#CONV#"),
-            ProjectionExpression="SK, CreateTime, Title",
-            ScanIndexForward=False,
-            ExclusiveStartKey=response["LastEvaluatedKey"],
+            **query_params,
         )
         conversations.extend(
             [
-                ConversationMetaModel(
+                ConversationMeta(
                     id=_decompose_conv_id(item["SK"]),
                     create_time=float(item["CreateTime"]),
                     title=item["Title"],
@@ -233,74 +171,86 @@ def delete_conversation_by_id(user_id: str, conversation_id: str):
     logger.debug(f"Deleting conversation: {conversation_id}")
     table = _get_table_client(user_id)
 
-    # Query the index
-    response = table.query(
-        IndexName="SKIndex",
-        KeyConditionExpression=Key("SK").eq(_compose_conv_id(user_id, conversation_id)),
-    )
+    try:
+        response = table.delete_item(
+            Key={"PK": user_id, "SK": _compose_conv_id(user_id, conversation_id)},
+            ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
+        )
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
+            raise RecordNotFoundError(
+                f"Conversation with id {conversation_id} not found"
+            )
+        else:
+            raise e
 
-    # Check if conversation exists
-    if response["Items"]:
-        user_id = response["Items"][0]["PK"]
-        key = {
-            "PK": user_id,
-            "SK": _compose_conv_id(user_id, conversation_id),
-        }
-        delete_response = table.delete_item(Key=key)
-        return delete_response
-    else:
-        raise RecordNotFoundError(f"No conversation found with id: {conversation_id}")
+    return response
 
 
 def delete_conversation_by_user_id(user_id: str):
-    logger.debug(f"Deleting conversations for user: {user_id}")
-    # First, find all conversations for the user
-    conversations = find_conversation_by_user_id(user_id)
-    if conversations:
-        table = _get_table_client(user_id)
-        responses = []
-        for conversation in conversations:
-            # Construct key to delete
-            key = {
-                "PK": user_id,
-                "SK": _compose_conv_id(user_id, conversation.id),
-            }
-            response = table.delete_item(Key=key)
-            responses.append(response)
-        return responses
-    else:
-        raise RecordNotFoundError(f"No conversations found for user id: {user_id}")
+    logger.debug(f"Deleting ALL conversations for user: {user_id}")
+    table = _get_table_client(user_id)
+
+    query_params = {
+        "KeyConditionExpression": Key("PK").eq(user_id)
+        # NOTE: Need SK to fetch only conversations
+        & Key("SK").begins_with(f"{user_id}#CONV#"),
+        "ProjectionExpression": "SK",  # Only SK is needed to delete
+    }
+
+    def delete_batch(batch):
+        with table.batch_writer() as writer:
+            for item in batch:
+                writer.delete_item(Key={"PK": user_id, "SK": item["SK"]})
+
+    try:
+        response = table.query(
+            **query_params,
+        )
+
+        while True:
+            items = response.get("Items", [])
+            for i in range(0, len(items), TRANSACTION_BATCH_SIZE):
+                batch = items[i : i + TRANSACTION_BATCH_SIZE]
+                delete_batch(batch)
+
+            # Check if next page exists
+            if "LastEvaluatedKey" not in response:
+                break
+
+            # Load next page
+            query_params["ExclusiveStartKey"] = response["LastEvaluatedKey"]
+            response = table.query(
+                **query_params,
+            )
+
+    except ClientError as e:
+        logger.error(f"An error occurred: {e.response['Error']['Message']}")
 
 
 def change_conversation_title(user_id: str, conversation_id: str, new_title: str):
-    logger.debug(f"Changing conversation title: {conversation_id}")
-    logger.debug(f"New title: {new_title}")
+    logger.debug(f"Updating conversation title: {conversation_id} to {new_title}")
     table = _get_table_client(user_id)
 
-    # First, we need to find the item using the GSI
-    response = table.query(
-        IndexName="SKIndex",
-        KeyConditionExpression=Key("SK").eq(_compose_conv_id(user_id, conversation_id)),
-    )
+    try:
+        response = table.update_item(
+            Key={
+                "PK": user_id,
+                "SK": _compose_conv_id(user_id, conversation_id),
+            },
+            UpdateExpression="set Title=:t",
+            ExpressionAttributeValues={":t": new_title},
+            ReturnValues="UPDATED_NEW",
+            ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
+        )
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
+            raise RecordNotFoundError(
+                f"Conversation with id {conversation_id} not found"
+            )
+        else:
+            raise e
 
-    items = response["Items"]
-    if not items:
-        raise RecordNotFoundError(f"No conversation found with id {conversation_id}")
-
-    # We'll just update the first item in case there are multiple matches
-    item = items[0]
-    user_id = item["PK"]
-
-    # Then, we update the item using its primary key
-    response = table.update_item(
-        Key={
-            "PK": user_id,
-            "SK": _compose_conv_id(user_id, conversation_id),
-        },
-        UpdateExpression="set Title=:t",
-        ExpressionAttributeValues={":t": new_title},
-        ReturnValues="UPDATED_NEW",
-    )
     logger.debug(f"Updated conversation title response: {response}")
 
     return response

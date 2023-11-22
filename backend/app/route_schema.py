@@ -46,7 +46,7 @@ class ChatOutput(BaseSchema):
     create_time: float
 
 
-class ConversationMeta(BaseSchema):
+class ConversationMetaOutput(BaseSchema):
     id: str
     title: str
     create_time: float
@@ -83,9 +83,10 @@ class BotOutput(BaseSchema):
     title: str
     instruction: str
     description: str | None
+    is_public: bool
 
 
-class BotMeta(BaseSchema):
+class BotMetaOutput(BaseSchema):
     id: str
     title: str
     create_time: float

@@ -1,3 +1,4 @@
+import json
 import os
 
 import boto3
@@ -7,9 +8,14 @@ TABLE_NAME = os.environ.get("TABLE_NAME", "")
 ACCOUNT = os.environ.get("ACCOUNT", "")
 REGION = os.environ.get("REGION", "ap-northeast-1")
 TABLE_ACCESS_ROLE_ARN = os.environ.get("TABLE_ACCESS_ROLE_ARN", "")
+TRANSACTION_BATCH_SIZE = 25
 
 
 class RecordNotFoundError(Exception):
+    pass
+
+
+class RecordAccessNotAllowedError(Exception):
     pass
 
 
@@ -31,9 +37,17 @@ def _decompose_bot_id(conv_id: str):
     return conv_id.split("#")[-1]
 
 
+def _compose_bot_alias_id(user_id: str, conversation_id: str):
+    # Add user_id prefix for row level security to match with `LeadingKeys` condition
+    return f"{user_id}#BOT_ALIAS#{conversation_id}"
+
+
+def _decompose_bot_alias_id(conv_id: str):
+    return conv_id.split("#")[-1]
+
+
 def _get_aws_resource(service_name, user_id=None):
-    """
-    Get AWS resource with optional row-level access control for DynamoDB.
+    """Get AWS resource with optional row-level access control for DynamoDB.
     Ref: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_dynamodb_items.html
     """
     if "AWS_EXECUTION_ENV" not in os.environ:
@@ -56,12 +70,24 @@ def _get_aws_resource(service_name, user_id=None):
                 {
                     "Effect": "Allow",
                     "Action": [
-                        # List of DynamoDB actions
+                        "dynamodb:BatchGetItem",
+                        "dynamodb:BatchWriteItem",
+                        "dynamodb:ConditionCheckItem",
+                        "dynamodb:DeleteItem",
+                        "dynamodb:DescribeTable",
+                        "dynamodb:GetItem",
+                        "dynamodb:GetRecords",
+                        "dynamodb:PutItem",
+                        "dynamodb:Query",
+                        "dynamodb:Scan",
+                        "dynamodb:UpdateItem",
                     ],
                     "Resource": [
-                        # Resource ARNs
+                        f"arn:aws:dynamodb:{REGION}:{ACCOUNT}:table/{TABLE_NAME}",
+                        f"arn:aws:dynamodb:{REGION}:{ACCOUNT}:table/{TABLE_NAME}/index/*",
                     ],
                     "Condition": {
+                        # Allow access to items with the same partition key as the user id
                         "ForAllValues:StringLike": {
                             "dynamodb:LeadingKeys": [f"{user_id}*"]
                         }
@@ -82,18 +108,22 @@ def _get_aws_resource(service_name, user_id=None):
         )
         return session.resource(service_name, region_name=REGION)
 
+    # No row-level access control resource
     return boto3.resource(service_name)
 
 
 def _get_dynamodb_client(user_id=None):
-    """
-    Get a DynamoDB client, optionally with row-level access control.
-    """
+    """Get a DynamoDB client, optionally with row-level access control."""
     return _get_aws_resource("dynamodb", user_id=user_id).meta.client
 
 
 def _get_table_client(user_id):
-    """
-    Get a DynamoDB table client with row-level access.
-    """
+    """Get a DynamoDB table client with row-level access."""
     return _get_aws_resource("dynamodb", user_id=user_id).Table(TABLE_NAME)
+
+
+def _get_table_public_client():
+    """Get a DynamoDB table client.
+    Warning: No row-level access. Use for only limited use case.
+    """
+    return _get_aws_resource("dynamodb").Table(TABLE_NAME)

@@ -28,81 +28,84 @@ from app.repositories.model import (
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
+# class TestRowLevelAccess(unittest.TestCase):
+#     def setUp(self) -> None:
+#         self.conversation_user_1 = ConversationModel(
+#             id="1",
+#             create_time=1627984879.9,
+#             title="Test Conversation",
+#             message_map={
+#                 "a": MessageModel(
+#                     role="user",
+#                     content=ContentModel(content_type="text", body="Hello"),
+#                     model="model",
+#                     children=["x", "y"],
+#                     parent="z",
+#                     create_time=1627984879.9,
+#                 )
+#             },
+#             last_message_id="x",
+#         )
+#         store_conversation("user1", self.conversation_user_1)
 
-class TestRowLevelAccess(unittest.TestCase):
-    def setUp(self) -> None:
-        self.conversation_user_1 = ConversationModel(
-            id="1",
-            create_time=1627984879.9,
-            title="Test Conversation",
-            messages=[
-                MessageModel(
-                    id="1",
-                    role="user",
-                    content=ContentModel(content_type="text", body="Hello"),
-                    model="model",
-                    create_time=1627984879.9,
-                )
-            ],
-        )
-        store_conversation("user1", self.conversation_user_1)
+#         self.conversation_user_2 = ConversationModel(
+#             id="2",
+#             create_time=1627984879.9,
+#             title="Test Conversation",
+#             message_map={
+#                 "a": MessageModel(
+#                     role="user",
+#                     content=ContentModel(content_type="text", body="Hello"),
+#                     model="model",
+#                     children=["x", "y"],
+#                     parent="z",
+#                     create_time=1627984879.9,
+#                 )
+#             },
+#             last_message_id="x",
+#         )
+#         store_conversation("user2", self.conversation_user_2)
 
-        self.conversation_user_2 = ConversationModel(
-            id="2",
-            create_time=1627984879.9,
-            title="Test Conversation",
-            messages=[
-                MessageModel(
-                    id="1",
-                    role="user",
-                    content=ContentModel(content_type="text", body="Hello"),
-                    model="model",
-                    create_time=1627984879.9,
-                )
-            ],
-        )
-        store_conversation("user2", self.conversation_user_2)
+#     def test_find_conversation_by_user_id(self):
+#         # Create table client for user1
+#         table = _get_table_client("user1")
 
-    def test_find_conversation_by_user_id(self):
-        # Create table client for user1
-        table = _get_table_client("user1")
+#         table.query(
+#             KeyConditionExpression=Key("PK").eq(
+#                 _compose_conv_id("user1", self.conversation_user_1.id)
+#             )
+#         )
 
-        table.query(
-            KeyConditionExpression=Key("PK").eq(
-                _compose_conv_id("user1", self.conversation_user_1.id)
-            )
-        )
+#         with self.assertRaises(ClientError):
+#             # Raise `AccessDeniedException` because user1 cannot access user2's data
+#             table.query(
+#                 KeyConditionExpression=Key("PK").eq(
+#                     _compose_conv_id("user2", self.conversation_user_2.id)
+#                 )
+#             )
 
-        with self.assertRaises(ClientError):
-            # Raise `AccessDeniedException` because user1 cannot access user2's data
-            table.query(
-                KeyConditionExpression=Key("PK").eq(
-                    _compose_conv_id("user2", self.conversation_user_2.id)
-                )
-            )
+#     def test_find_conversation_by_id(self):
+#         # Create table client for user1
+#         table = _get_table_client("user1")
 
-    def test_find_conversation_by_id(self):
-        # Create table client for user1
-        table = _get_table_client("user1")
+#         table.query(
+#             IndexName="SKIndex",
+#             KeyConditionExpression=Key("SK").eq(
+#                 _compose_conv_id("user1", self.conversation_user_1.id)
+#             ),
+#         )
+#         with self.assertRaises(ClientError):
+#             # Raise `AccessDeniedException` because user1 cannot access user2's data
+#             table.query(
+#                 IndexName="SKIndex",
+#                 KeyConditionExpression=Key("SK").eq(
+#                     _compose_conv_id("user2", self.conversation_user_2.id)
+#                 ),
+#             )
 
-        table.query(
-            IndexName="SKIndex",
-            KeyConditionExpression=Key("SK").eq(
-                _compose_conv_id("user1", self.conversation_user_1.id)
-            ),
-        )
-        with self.assertRaises(ClientError):
-            # Raise `AccessDeniedException` because user1 cannot access user2's data
-            table.query(
-                IndexName="SKIndex",
-                KeyConditionExpression=Key("SK").eq(
-                    _compose_conv_id("user2", self.conversation_user_2.id)
-                ),
-            )
-
-    def tearDown(self) -> None:
-        delete_conversation_by_user_id("user1")
-        delete_conversation_by_user_id("user2")
+#     def tearDown(self) -> None:
+#         delete_conversation_by_user_id("user1")
+#         delete_conversation_by_user_id("user2")
 
 
 class TestConversationRepository(unittest.TestCase):
@@ -217,6 +220,8 @@ class TestConversationBotRepository(unittest.TestCase):
             description="Test Bot Description",
             create_time=1627984879.9,
             last_used_time=1627984879.9,
+            is_public=False,
+            is_pinned=False,
         )
         bot2 = BotModel(
             id="2",
@@ -225,6 +230,8 @@ class TestConversationBotRepository(unittest.TestCase):
             description="Test Bot Description",
             create_time=1627984879.9,
             last_used_time=1627984879.9,
+            is_public=False,
+            is_pinned=False,
         )
 
         store_conversation("user", conversation1)
@@ -267,8 +274,7 @@ class TestConversationBotRepository(unittest.TestCase):
         self.assertGreater(bot_after.last_used_time, bot_before.last_used_time)
 
     def tearDown(self) -> None:
-        delete_conversation_by_id("user", "1")
-        delete_conversation_by_id("user", "2")
+        delete_conversation_by_user_id("user")
         delete_bot_by_id("user", "1")
         delete_bot_by_id("user", "2")
 

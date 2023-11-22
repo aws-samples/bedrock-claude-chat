@@ -17,19 +17,19 @@ from app.repositories.custom_bot import (
 from app.repositories.model import BotModel
 from app.route_schema import (
     BotInput,
-    BotMeta,
+    BotMetaOutput,
     BotOutput,
     ChatInput,
     ChatOutput,
     Content,
     Conversation,
-    ConversationMeta,
+    ConversationMetaOutput,
     MessageOutput,
     NewTitleInput,
     ProposedTitle,
     User,
 )
-from app.usecase import chat, get_invoke_payload, propose_conversation_title
+from app.usecase import chat, propose_conversation_title
 from app.utils import get_current_time
 from fastapi import APIRouter, Request
 
@@ -53,7 +53,7 @@ def post_message(request: Request, chat_input: ChatInput):
 
 @router.get("/conversation/{conversation_id}", response_model=Conversation)
 def get_conversation(request: Request, conversation_id: str):
-    """Get all conversation history"""
+    """Get a conversation history"""
     current_user: User = request.state.current_user
 
     conversation = find_conversation_by_id(current_user.id, conversation_id)
@@ -87,7 +87,7 @@ def delete_conversation(request: Request, conversation_id: str):
     delete_conversation_by_id(current_user.id, conversation_id)
 
 
-@router.get("/conversations", response_model=list[ConversationMeta])
+@router.get("/conversations", response_model=list[ConversationMetaOutput])
 def get_all_conversations(
     request: Request,
 ):
@@ -96,7 +96,7 @@ def get_all_conversations(
 
     conversations = find_conversation_by_user_id(current_user.id)
     output = [
-        ConversationMeta(
+        ConversationMetaOutput(
             id=conversation.id,
             title=conversation.title,
             create_time=conversation.create_time,
@@ -138,9 +138,9 @@ def get_proposed_title(request: Request, conversation_id: str):
     return ProposedTitle(title=title)
 
 
-@router.post("/bot", ressponse_model=BotOutput)
+@router.post("/bot", response_model=BotOutput)
 def post_bot(request: Request, bot_input: BotInput):
-    """Create new bot. If bot with the same id already exists, it will be overwritten."""
+    """Create new bot."""
     current_user: User = request.state.current_user
 
     store_bot(
@@ -149,6 +149,7 @@ def post_bot(request: Request, bot_input: BotInput):
             id=bot_input.id,
             title=bot_input.title,
             description=bot_input.description,
+            instruction=bot_input.instruction,
             create_time=get_current_time(),
             last_used_time=get_current_time(),
         ),
@@ -156,25 +157,32 @@ def post_bot(request: Request, bot_input: BotInput):
     return BotOutput(
         id=bot_input.id,
         title=bot_input.title,
+        instruction=bot_input.instruction,
         description=bot_input.description,
         create_time=get_current_time(),
         last_used_time=None,
     )
 
 
-@router.get("/bot", response_model=list[BotMeta])
+@router.get("/bot", response_model=list[BotMetaOutput])
 def get_all_bots(request: Request, limit: Optional[int] = None):
     """Get all bots. The order is descending by `last_used_time`.
     If limit is specified, only the first n bots will be returned.
     """
     current_user: User = request.state.current_user
 
-    bots = find_bot_by_user_id(current_user.id)
+    bots = find_bot_by_user_id(current_user.id, limit=limit)
 
-    if limit is not None and limit > 0:
-        bots = bots[:limit]
-
-    return bots
+    output = [
+        BotMeta(
+            id=bot.id,
+            title=bot.title,
+            create_time=bot.create_time,
+            last_used_time=bot.last_used_time,
+        )
+        for bot in bots
+    ]
+    return output
 
 
 @router.get("/bot/{bot_id}", response_model=BotOutput)
@@ -183,7 +191,15 @@ def get_bot(request: Request, bot_id: str):
     current_user: User = request.state.current_user
 
     bot = find_bot_by_id(current_user.id, bot_id)
-    return bot
+    output = BotOutput(
+        id=bot.id,
+        title=bot.title,
+        instruction=bot.instruction,
+        description=bot.description,
+        create_time=float(bot.create_time),
+        last_used_time=float(bot.last_used_time),
+    )
+    return output
 
 
 @router.delete("/bot/{bot_id}")
@@ -192,3 +208,30 @@ def delete_bot(request: Request, bot_id: str):
     current_user: User = request.state.current_user
 
     delete_bot_by_id(current_user.id, bot_id)
+
+
+@router.put("/bot/{bot_id}")
+def make_bot_public(request: Request, bot_id: str):
+    """Make bot public"""
+    current_user: User = request.state.current_user
+
+    raise NotImplementedError()
+
+    # TODO: implement update method to repository
+
+    bot = find_bot_by_id(current_user.id, bot_id)
+    # store_bot(
+    #     current_user.id,
+    #     BotModel(
+    #         id=bot.id,
+    #         title=bot.title,
+    #         description=bot.description,
+    #         instruction=bot.instruction,
+    #         create_time=bot.create_time,
+    #         last_used_time=bot.last_used_time,
+    #         public_bot_id=bot.id
+    #     ),
+    # )
+
+
+# TODO: remove alias

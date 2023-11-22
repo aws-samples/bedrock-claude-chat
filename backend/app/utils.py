@@ -21,6 +21,8 @@ def get_buffer_string(conversations: dict[str, MessageModel]) -> str:
             prefix = "Human: "
         elif conversation.role == "system":
             prefix = "System: "
+        elif conversation.role == "instruction":
+            prefix = "Instruction: "
         else:
             raise ValueError(f"Unsupported role: {conversation.role}")
 
@@ -29,7 +31,7 @@ def get_buffer_string(conversations: dict[str, MessageModel]) -> str:
             message = f"{prefix}{conversation.content.body}"
             string_messages.append(message)
 
-    # 最後のメッセージがユーザーからのものである場合、prefixを追加します。
+    # If the last message is from the user, add a new line before the assistant's response
     # Ref: https://docs.anthropic.com/claude/docs/introduction-to-prompt-design#human--assistant-formatting
     if conversations[-1].role == "user":
         string_messages.append("Assistant: ")

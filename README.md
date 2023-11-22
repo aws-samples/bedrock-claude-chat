@@ -70,6 +70,7 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 - [x] I18n
 - [x] Model switch (Claude Instant / Claude)
 - [x] Customized bot creation
+- [ ] Customized bot sharing
 - [ ] File upload / retriever (RAG)
 
 ## Deploy using CDK

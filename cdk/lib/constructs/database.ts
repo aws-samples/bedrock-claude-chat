@@ -30,12 +30,18 @@ export class Database extends Construct {
       indexName: "SKIndex",
       partitionKey: { name: "SK", type: AttributeType.STRING },
     });
+    table.addGlobalSecondaryIndex({
+      // Used to fetch public bots
+      indexName: "PublicBotIdIndex",
+      partitionKey: { name: "PublicBotId", type: AttributeType.STRING },
+      // TODO: add `nonKeyAttributes` for efficiency
+    });
     table.addLocalSecondaryIndex({
       // Used to fetch all bots for a user. Sorted by bot used time
       indexName: "LastBotUsedIndex",
       sortKey: { name: "LastBotUsed", type: AttributeType.NUMBER },
       projectionType: ProjectionType.INCLUDE,
-      nonKeyAttributes: ["Title", "CreateTime", "LastBotUsed"],
+      nonKeyAttributes: ["Title", "CreateTime", "LastBotUsed", "OwnerUserId"],
     });
 
     const tableAccessRole = new Role(this, "TableAccessRole", {

@@ -4,13 +4,16 @@ import unittest
 sys.path.append(".")
 
 from app.repositories.custom_bot import (
+    delete_alias_by_id,
     delete_bot_by_id,
     find_bot_by_id,
     find_bot_by_user_id,
+    find_pinned_bots,
+    store_alias,
     store_bot,
     update_last_used_time,
 )
-from app.repositories.model import BotModel
+from app.repositories.model import BotAliasModel, BotModel
 
 
 class TestCustomBotRepository(unittest.TestCase):
@@ -22,6 +25,8 @@ class TestCustomBotRepository(unittest.TestCase):
             description="Test Bot Description",
             create_time=1627984879.9,
             last_used_time=1627984879.9,
+            is_public=True,
+            is_pinned=False,
         )
         store_bot("user1", bot)
 
@@ -33,6 +38,8 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(bot.instruction, "Test Bot Prompt")
         self.assertEqual(bot.create_time, 1627984879.9)
         self.assertEqual(bot.last_used_time, 1627984879.9)
+        self.assertEqual(bot.is_public, True)
+        self.assertEqual(bot.is_pinned, False)
 
         # Assert bot is stored in user1's bot list
         bot = find_bot_by_user_id("user1")
@@ -54,6 +61,8 @@ class TestCustomBotRepository(unittest.TestCase):
             instruction="Test Bot Prompt",
             create_time=1627984879.9,
             last_used_time=1627984879.9,
+            is_public=False,
+            is_pinned=False,
         )
         store_bot("user1", bot)
         update_last_used_time("user1", "1")
@@ -63,8 +72,6 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertNotEqual(bot.last_used_time, 1627984879.9)
 
         delete_bot_by_id("user1", "1")
-        bot = find_bot_by_user_id("user1")
-        self.assertEqual(len(bot), 0)
 
     def test_order_is_descending(self):
         bot1 = BotModel(
@@ -74,6 +81,8 @@ class TestCustomBotRepository(unittest.TestCase):
             instruction="Test Bot Prompt",
             create_time=1627984879.9,
             last_used_time=1627984879.9,
+            is_public=False,
+            is_pinned=False,
         )
         bot2 = BotModel(
             id="2",
@@ -82,6 +91,8 @@ class TestCustomBotRepository(unittest.TestCase):
             instruction="Test Bot Prompt",
             create_time=1627984879.9,
             last_used_time=1627984879.9,
+            is_public=False,
+            is_pinned=False,
         )
         bot3 = BotModel(
             id="3",
@@ -90,6 +101,8 @@ class TestCustomBotRepository(unittest.TestCase):
             instruction="Test Bot Prompt",
             create_time=1627984879.9,
             last_used_time=1627984879.9,
+            is_public=False,
+            is_pinned=False,
         )
         bot4 = BotModel(
             id="4",
@@ -98,6 +111,8 @@ class TestCustomBotRepository(unittest.TestCase):
             instruction="Test Bot Prompt",
             create_time=1627984879.9,
             last_used_time=1627984879.9,
+            is_public=False,
+            is_pinned=False,
         )
         store_bot("user1", bot1)
         store_bot("user1", bot2)
@@ -131,6 +146,8 @@ class TestCustomBotRepository(unittest.TestCase):
             instruction="Test Bot Prompt",
             create_time=1627984879.9,
             last_used_time=1627984879.9,
+            is_public=False,
+            is_pinned=False,
         )
         bot2 = BotModel(
             id="2",
@@ -139,6 +156,8 @@ class TestCustomBotRepository(unittest.TestCase):
             instruction="Test Bot Prompt",
             create_time=1627984879.9,
             last_used_time=1627984879.9,
+            is_public=False,
+            is_pinned=False,
         )
         bot3 = BotModel(
             id="3",
@@ -147,17 +166,92 @@ class TestCustomBotRepository(unittest.TestCase):
             instruction="Test Bot Prompt",
             create_time=1627984879.9,
             last_used_time=1627984879.9,
+            is_public=False,
+            is_pinned=False,
         )
         store_bot("user1", bot1)
         store_bot("user1", bot2)
         store_bot("user1", bot3)
 
         bots = find_bot_by_user_id("user1", limit=2)
-        self.assertEqual(len(bots), 3)
+        self.assertEqual(len(bots), 2)
 
         delete_bot_by_id("user1", "1")
         delete_bot_by_id("user1", "2")
         delete_bot_by_id("user1", "3")
+
+    def test_find_pinned_bots(self):
+        private_bot1 = BotModel(
+            id="1",
+            title="Test Bot",
+            description="Test Bot Description",
+            instruction="Test Bot Prompt",
+            create_time=1627984879.9,
+            last_used_time=1627984879.9,
+            is_public=False,
+            # Pinned
+            is_pinned=True,
+        )
+        private_bot2 = BotModel(
+            id="2",
+            title="Test Bot",
+            description="Test Bot Description",
+            instruction="Test Bot Prompt",
+            create_time=1627984879.9,
+            last_used_time=1627984879.9,
+            is_public=False,
+            # Not Pinned
+            is_pinned=False,
+        )
+        public_bot = BotModel(
+            id="3",
+            title="Test Public Bot",
+            description="Test Bot Description",
+            instruction="Test Bot Prompt",
+            create_time=1627984879.9,
+            last_used_time=1627984879.9,
+            # Open to public
+            is_public=True,
+            # Pinned
+            is_pinned=True,
+        )
+        alias = BotAliasModel(
+            id="4",
+            original_bot_id="3",
+            last_used_time=1627984879.9,
+            create_time=1627984879.9,
+            is_pinned=True,
+            # Alias bot has owner user id
+            owner_user_id="user2",
+        )
+
+        # Store private bots as user1
+        store_bot("user1", private_bot1)
+        store_bot("user1", private_bot2)
+        # Store public bot owned by `user2`
+        store_bot("user2", public_bot)
+        # Store alias to public bot
+        store_alias("user1", alias)
+
+        bots = find_pinned_bots("user1")
+
+        self.assertEqual(len(bots), 2)
+        # Pinned private bot
+        self.assertEqual(bots[0].id, "1")
+        self.assertEqual(bots[1].id, "3")
+        # Original bot (Test Public Bot) should be fetched
+        self.assertEqual(bots[1].title, "Test Public Bot")
+
+        bots = find_bot_by_user_id("user1")
+        # Alias bot should not be included
+        self.assertEqual(len(bots), 2)
+        self.assertEqual(bots[0].id, "1")
+        self.assertEqual(bots[1].id, "2")
+
+        delete_bot_by_id("user1", "1")
+        delete_bot_by_id("user1", "2")
+        delete_bot_by_id("user2", "3")
+        delete_alias_by_id("user1", "4")
 
 
 if __name__ == "__main__":

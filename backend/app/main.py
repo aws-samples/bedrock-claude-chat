@@ -4,7 +4,7 @@ import traceback
 from typing import Callable
 
 from app.auth import verify_token
-from app.repositories.conversation import RecordNotFoundError
+from app.repositories.common import RecordAccessNotAllowedError, RecordNotFoundError
 from app.route import router
 from app.route_schema import User
 from app.utils import is_running_on_lambda
@@ -45,6 +45,7 @@ def error_handler_factory(status_code: int) -> Callable[[Exception], JSONRespons
 
 
 app.add_exception_handler(RecordNotFoundError, error_handler_factory(404))
+app.add_exception_handler(RecordAccessNotAllowedError, error_handler_factory(403))
 app.add_exception_handler(ValueError, error_handler_factory(400))
 app.add_exception_handler(TypeError, error_handler_factory(400))
 app.add_exception_handler(
