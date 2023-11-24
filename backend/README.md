@@ -25,6 +25,8 @@ export BEDROCK_REGION=us-east-1
 
 ```
 python tests/test_bedrock.py
-python tests/test_usecases.py
-python tests/repositories/test_conversation.py TestConversationRepository
+python tests/repositories/test_conversation.py
+python tests/repositories/test_custom_bot.py
+python tests/usecases/test_bot.py
+python tests/usecases/test_chat.py
 ```

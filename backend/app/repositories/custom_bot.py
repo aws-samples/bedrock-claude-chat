@@ -452,7 +452,7 @@ def delete_alias_by_id(user_id: str, bot_id: str):
         )
     except ClientError as e:
         if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
-            raise RecordNotFoundError(f"Bot with id {bot_id} not found")
+            raise RecordNotFoundError(f"Bot alias with id {bot_id} not found")
         else:
             raise e
 

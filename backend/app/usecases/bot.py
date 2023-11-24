@@ -94,12 +94,12 @@ def fetch_bot(user_id: str, bot_id: str) -> tuple[bool, BotModel]:
 def modify_pin_status(user_id: str, bot_id: str, pinned: bool):
     """Modify bot pin status."""
     try:
-        update_bot_pin_status(user_id, bot_id, pinned)
+        return update_bot_pin_status(user_id, bot_id, pinned)
     except RecordNotFoundError:
         pass
 
     try:
-        update_alias_pin_status(user_id, bot_id, pinned)
+        return update_alias_pin_status(user_id, bot_id, pinned)
     except RecordNotFoundError:
         raise RecordNotFoundError(f"Bot {bot_id} is neither owned nor alias.")
 
@@ -107,12 +107,12 @@ def modify_pin_status(user_id: str, bot_id: str, pinned: bool):
 def remove_bot_by_id(user_id: str, bot_id: str):
     """Remove bot by id."""
     try:
-        delete_bot_by_id(user_id, bot_id)
+        return delete_bot_by_id(user_id, bot_id)
     except RecordNotFoundError:
         pass
 
     try:
-        delete_alias_by_id(user_id, bot_id)
+        return delete_alias_by_id(user_id, bot_id)
     except RecordNotFoundError:
         raise RecordNotFoundError(f"Bot {bot_id} is neither owned nor alias.")
 
@@ -120,11 +120,11 @@ def remove_bot_by_id(user_id: str, bot_id: str):
 def modify_bot_last_used_time(user_id: str, bot_id: str):
     """Modify bot last used time."""
     try:
-        update_bot_last_used_time(user_id, bot_id)
+        return update_bot_last_used_time(user_id, bot_id)
     except RecordNotFoundError:
         pass
 
     try:
-        update_alias_last_used_time(user_id, bot_id)
+        return update_alias_last_used_time(user_id, bot_id)
     except RecordNotFoundError:
         raise RecordNotFoundError(f"Bot {bot_id} is neither owned nor alias.")

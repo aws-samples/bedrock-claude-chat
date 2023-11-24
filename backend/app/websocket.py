@@ -7,6 +7,7 @@ from app.auth import verify_token
 from app.repositories.conversation import store_conversation
 from app.repositories.model import ContentModel, MessageModel
 from app.route_schema import ChatInputWithToken
+from app.usecases.bot import modify_bot_last_used_time
 from app.usecases.chat import get_invoke_payload, prepare_conversation
 from app.utils import get_bedrock_client, get_current_time
 from ulid import ULID
@@ -100,5 +101,8 @@ def handler(event, context):
 
     # Persist conversation
     store_conversation(user_id, conversation)
+    # Update bot last used time
+    if chat_input.bot_id:
+        modify_bot_last_used_time(user_id, chat_input.bot_id)
 
     return {"statusCode": 200, "body": json.dumps({"conversationId": conversation.id})}

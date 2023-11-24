@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Optional
 
 from humps import camelize
 from pydantic import BaseModel, Field
@@ -34,7 +34,7 @@ class MessageOutput(BaseSchema):
 class ChatInput(BaseSchema):
     conversation_id: str
     message: MessageInput
-    bot_id: str | None
+    bot_id: Optional[str | None] = Field(None)
 
 
 class ChatInputWithToken(ChatInput):

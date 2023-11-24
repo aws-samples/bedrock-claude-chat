@@ -32,46 +32,24 @@ sts_client = boto3.client("sts")
 
 def store_conversation(user_id: str, conversation: ConversationModel):
     logger.debug(f"Storing conversation: {conversation.model_dump_json()}")
-    client = _get_dynamodb_client(user_id)
+    table = _get_table_client(user_id)
 
-    transact_items = [
-        {
-            "Put": {
-                "TableName": TABLE_NAME,
-                "Item": {
-                    "PK": user_id,
-                    "SK": _compose_conv_id(user_id, conversation.id),
-                    "Title": conversation.title,
-                    "CreateTime": decimal(conversation.create_time),
-                    "MessageMap": json.dumps(
-                        {k: v.model_dump() for k, v in conversation.message_map.items()}
-                    ),
-                    "LastMessageId": conversation.last_message_id,
-                    "BotId": conversation.bot_id,
-                },
-            }
-        },
-    ]
-    # TODO
+    item_params = {
+        "PK": user_id,
+        "SK": _compose_conv_id(user_id, conversation.id),
+        "Title": conversation.title,
+        "CreateTime": decimal(conversation.create_time),
+        "MessageMap": json.dumps(
+            {k: v.model_dump() for k, v in conversation.message_map.items()}
+        ),
+        "LastMessageId": conversation.last_message_id,
+    }
     if conversation.bot_id:
-        transact_items.append(
-            # Update `LastBotUsed`
-            {
-                "Update": {
-                    "TableName": TABLE_NAME,
-                    "Key": {
-                        "PK": user_id,
-                        "SK": _compose_bot_id(user_id, conversation.bot_id),
-                    },
-                    "UpdateExpression": "set LastBotUsed = :current_time",
-                    "ExpressionAttributeValues": {
-                        ":current_time": decimal(get_current_time())
-                    },
-                }
-            },
-        )
+        item_params["BotId"] = conversation.bot_id
 
-    response = client.transact_write_items(TransactItems=transact_items)
+    response = table.put_item(
+        Item=item_params,
+    )
     return response
 
 
@@ -94,7 +72,7 @@ def find_conversation_by_user_id(user_id: str) -> list[ConversationMeta]:
             title=item["Title"],
             # NOTE: all message has the same model
             model=json.loads(item["MessageMap"]).popitem()[1]["model"],
-            bot_id=item["BotId"],
+            bot_id=item["BotId"] if "BotId" in item else None,
         )
         for item in response["Items"]
     ]
@@ -116,7 +94,7 @@ def find_conversation_by_user_id(user_id: str) -> list[ConversationMeta]:
                     create_time=float(item["CreateTime"]),
                     title=item["Title"],
                     model=model,
-                    bot_id=item["BotId"],
+                    bot_id=item["BotId"] if "BotId" in item else None,
                 )
                 for item in response["Items"]
             ]
@@ -161,7 +139,7 @@ def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationM
             for k, v in json.loads(item["MessageMap"]).items()
         },
         last_message_id=item["LastMessageId"],
-        bot_id=item["BotId"],
+        bot_id=item["BotId"] if "BotId" in item else None,
     )
     logger.debug(f"Found conversation: {conv}")
     return conv

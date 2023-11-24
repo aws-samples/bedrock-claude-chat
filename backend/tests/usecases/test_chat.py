@@ -7,14 +7,27 @@ from pprint import pprint
 
 from app.repositories.conversation import (
     delete_conversation_by_id,
+    delete_conversation_by_user_id,
     find_conversation_by_id,
     store_conversation,
 )
-from app.repositories.model import ContentModel, ConversationModel, MessageModel
+from app.repositories.custom_bot import (
+    delete_alias_by_id,
+    delete_bot_by_id,
+    store_bot,
+    update_bot_visibility,
+)
+from app.repositories.model import (
+    BotModel,
+    ContentModel,
+    ConversationModel,
+    MessageModel,
+)
 from app.route_schema import ChatInput, ChatOutput, Content, MessageInput, MessageOutput
 from app.usecases.chat import chat, propose_conversation_title, trace_to_root
 
-MODEL = "claude-v2"
+MODEL = "claude-instant-v1"
+# MODEL = "claude-v2"
 
 
 class TestTraceToRoot(unittest.TestCase):
@@ -23,7 +36,7 @@ class TestTraceToRoot(unittest.TestCase):
             "user_1": MessageModel(
                 role="user",
                 content=ContentModel(content_type="text", body="user_1"),
-                model="model",
+                model=MODEL,
                 children=["bot_1"],
                 parent=None,
                 create_time=1627984879.9,
@@ -31,7 +44,7 @@ class TestTraceToRoot(unittest.TestCase):
             "bot_1": MessageModel(
                 role="assistant",
                 content=ContentModel(content_type="text", body="bot_1"),
-                model="model",
+                model=MODEL,
                 children=["user_2"],
                 parent="user_1",
                 create_time=1627984879.9,
@@ -39,7 +52,7 @@ class TestTraceToRoot(unittest.TestCase):
             "user_2": MessageModel(
                 role="user",
                 content=ContentModel(content_type="text", body="user_2"),
-                model="model",
+                model=MODEL,
                 children=["bot_2"],
                 parent="bot_1",
                 create_time=1627984879.9,
@@ -47,7 +60,7 @@ class TestTraceToRoot(unittest.TestCase):
             "bot_2": MessageModel(
                 role="assistant",
                 content=ContentModel(content_type="text", body="bot_2"),
-                model="model",
+                model=MODEL,
                 children=["user_3a", "user_3b"],
                 parent="user_2",
                 create_time=1627984879.9,
@@ -55,7 +68,7 @@ class TestTraceToRoot(unittest.TestCase):
             "user_3a": MessageModel(
                 role="user",
                 content=ContentModel(content_type="text", body="user_3a"),
-                model="model",
+                model=MODEL,
                 children=[],
                 parent="bot_2",
                 create_time=1627984879.9,
@@ -63,7 +76,7 @@ class TestTraceToRoot(unittest.TestCase):
             "user_3b": MessageModel(
                 role="user",
                 content=ContentModel(content_type="text", body="user_3b"),
-                model="model",
+                model=MODEL,
                 children=[],
                 parent="bot_2",
                 create_time=1627984879.9,
@@ -341,8 +354,109 @@ class TestProposeTitle(unittest.TestCase):
         delete_conversation_by_id("user1", self.output.conversation_id)
 
 
-class TestChatWithBot(unittest.TestCase):
-    ...
+class TestChatWithCustomizedBot(unittest.TestCase):
+    def setUp(self) -> None:
+        private_bot = BotModel(
+            id="private1",
+            title="Test Bot",
+            description="Test Bot Description",
+            instruction="いついかなる時も、俺様風の口調で返答してください。日本語以外の言語は認めません。",
+            create_time=1627984879.9,
+            last_used_time=1627984879.9,
+            is_pinned=True,
+            public_bot_id=None,
+        )
+        public_bot = BotModel(
+            id="public1",
+            title="Test Bot",
+            description="Test Bot Description",
+            instruction="いついかなる時も、大阪弁で返答してください。日本語以外の言語は認めません。",
+            create_time=1627984879.9,
+            last_used_time=1627984879.9,
+            # Pinned
+            is_pinned=True,
+            public_bot_id="public1",
+        )
+        store_bot("user1", private_bot)
+        store_bot("user2", public_bot)
+        update_bot_visibility("user2", "public1", True)
+
+    def tearDown(self) -> None:
+        delete_bot_by_id("user1", "private1")
+        delete_bot_by_id("user2", "public1")
+        delete_conversation_by_user_id("user1")
+
+    def test_chat_with_private_bot(self):
+        chat_input = ChatInput(
+            conversation_id="test_conversation_id",
+            message=MessageInput(
+                role="user",
+                content=Content(
+                    content_type="text",
+                    body="こんにちは",
+                ),
+                model=MODEL,
+                parent_message_id=None,
+            ),
+            bot_id="private1",
+        )
+        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+        print(output)
+
+        conv = find_conversation_by_id("user1", output.conversation_id)
+        chat_input = ChatInput(
+            conversation_id=conv.id,
+            message=MessageInput(
+                role="user",
+                content=Content(
+                    content_type="text",
+                    body="自己紹介して",
+                ),
+                model=MODEL,
+                parent_message_id=conv.last_message_id,
+            ),
+            bot_id="private1",
+        )
+        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+        print(output)
+
+    def test_chat_with_public_bot(self):
+        chat_input = ChatInput(
+            conversation_id="test_conversation_id",
+            message=MessageInput(
+                role="user",
+                content=Content(
+                    content_type="text",
+                    body="こんにちは",
+                ),
+                model=MODEL,
+                parent_message_id=None,
+            ),
+            bot_id="public1",
+        )
+        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+
+        print(output)
+
+        conv = find_conversation_by_id("user1", output.conversation_id)
+        chat_input = ChatInput(
+            conversation_id=conv.id,
+            message=MessageInput(
+                role="user",
+                content=Content(
+                    content_type="text",
+                    body="自己紹介して",
+                ),
+                model=MODEL,
+                parent_message_id=conv.last_message_id,
+            ),
+            bot_id="private1",
+        )
+        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+        print(output)
+
+        # Delete alias
+        delete_alias_by_id("user1", "public1")
 
 
 if __name__ == "__main__":

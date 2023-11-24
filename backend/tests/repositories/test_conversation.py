@@ -118,7 +118,7 @@ class TestConversationRepository(unittest.TestCase):
                 "a": MessageModel(
                     role="user",
                     content=ContentModel(content_type="text", body="Hello"),
-                    model="model",
+                    model="claude-instant-v1",
                     children=["x", "y"],
                     parent="z",
                     create_time=1627984879.9,
@@ -146,7 +146,7 @@ class TestConversationRepository(unittest.TestCase):
         self.assertEqual(message_map["a"].role, "user")
         self.assertEqual(message_map["a"].content.content_type, "text")
         self.assertEqual(message_map["a"].content.body, "Hello")
-        self.assertEqual(message_map["a"].model, "model")
+        self.assertEqual(message_map["a"].model, "claude-instant-v1")
         self.assertEqual(message_map["a"].children, ["x", "y"])
         self.assertEqual(message_map["a"].parent, "z")
         self.assertEqual(message_map["a"].create_time, 1627984879.9)
@@ -187,7 +187,7 @@ class TestConversationBotRepository(unittest.TestCase):
                 "a": MessageModel(
                     role="user",
                     content=ContentModel(content_type="text", body="Hello"),
-                    model="model",
+                    model="claude-instant-v1",
                     children=["x", "y"],
                     parent="z",
                     create_time=1627984879.9,
@@ -204,7 +204,7 @@ class TestConversationBotRepository(unittest.TestCase):
                 "a": MessageModel(
                     role="user",
                     content=ContentModel(content_type="text", body="Hello"),
-                    model="model",
+                    model="claude-instant-v1",
                     children=["x", "y"],
                     parent="z",
                     create_time=1627984879.9,
@@ -220,7 +220,7 @@ class TestConversationBotRepository(unittest.TestCase):
             description="Test Bot Description",
             create_time=1627984879.9,
             last_used_time=1627984879.9,
-            is_public=False,
+            public_bot_id="1",
             is_pinned=False,
         )
         bot2 = BotModel(
@@ -230,7 +230,7 @@ class TestConversationBotRepository(unittest.TestCase):
             description="Test Bot Description",
             create_time=1627984879.9,
             last_used_time=1627984879.9,
-            is_public=False,
+            public_bot_id="2",
             is_pinned=False,
         )
 
@@ -246,32 +246,6 @@ class TestConversationBotRepository(unittest.TestCase):
     def test_only_bot_is_fetched(self):
         bots = find_private_bots_by_user_id("user")
         self.assertEqual(len(bots), 2)
-
-    def test_last_bot_used_updated(self):
-        # Update existing conversation
-        conversation = ConversationModel(
-            id="2",
-            create_time=1627984879.9,
-            title="Test Conversation",
-            message_map={
-                "a": MessageModel(
-                    role="user",
-                    content=ContentModel(content_type="text", body="Hello"),
-                    model="model",
-                    children=["x", "y"],
-                    parent="z",
-                    create_time=1627984879.9,
-                )
-            },
-            last_message_id="x",
-            bot_id="1",
-        )
-        bot_before = find_private_bot_by_id("user", "1")
-        store_conversation("user", conversation)
-        bot_after = find_private_bot_by_id("user", "1")
-
-        # Assert that last_used_time is later than before
-        self.assertGreater(bot_after.last_used_time, bot_before.last_used_time)
 
     def tearDown(self) -> None:
         delete_conversation_by_user_id("user")

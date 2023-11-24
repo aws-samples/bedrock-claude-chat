@@ -8,12 +8,8 @@ from app.repositories.conversation import (
     find_conversation_by_user_id,
 )
 from app.repositories.custom_bot import (
-    delete_alias_by_id,
-    delete_bot_by_id,
     find_all_bots_by_user_id,
-    find_private_bot_by_id,
     find_private_bots_by_user_id,
-    store_bot,
     update_bot_visibility,
 )
 from app.repositories.model import BotModel
@@ -171,7 +167,7 @@ def patch_bot_pin_status(request: Request, bot_id: str, pinned: bool):
     return modify_pin_status(request.state.current_user.id, bot_id, pinned)
 
 
-@router.patch("/bot/{bot_id}")
+@router.patch("/bot/{bot_id}/visibility")
 def patch_bot_visibility(
     request: Request, bot_id: str, visibility_input: BotSwitchVisibilityInput
 ):
@@ -245,6 +241,8 @@ def get_bot(request: Request, bot_id: str):
 
 @router.delete("/bot/{bot_id}")
 def delete_bot(request: Request, bot_id: str):
-    """Delete bot by id"""
+    """Delete bot by id. This can be used for both owned and shared bots.
+    If the bot is shared, just remove the alias.
+    """
     current_user: User = request.state.current_user
     remove_bot_by_id(current_user.id, bot_id)

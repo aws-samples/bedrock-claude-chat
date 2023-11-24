@@ -57,6 +57,7 @@ def prepare_conversation(
         parent_id = "system"
 
         if chat_input.bot_id:
+            logger.debug("Bot id is provided. Fetching bot.")
             parent_id = "instruction"
             # Fetch bot and append instruction
             is_public, bot = fetch_bot(user_id, chat_input.bot_id)
@@ -74,11 +75,12 @@ def prepare_conversation(
             initial_message_map["system"].children.append("instruction")
 
             if is_public:
+                logger.debug("Bot is public. Creating alias.")
                 # Create alias item
                 store_alias(
                     user_id,
                     BotAliasModel(
-                        id=str(ULID()),
+                        id=bot.id,
                         title=bot.title,
                         original_bot_id=chat_input.bot_id,
                         create_time=current_time,
@@ -112,10 +114,16 @@ def prepare_conversation(
     )
     conversation.message_map[message_id] = new_message
 
-    if conversation.message_map.get(chat_input.message.parent_message_id) is not None:
+    if (
+        chat_input.message.parent_message_id
+        and conversation.message_map.get(chat_input.message.parent_message_id)
+        is not None
+    ):
         conversation.message_map[chat_input.message.parent_message_id].children.append(
             message_id
         )
+    elif chat_input.message.parent_message_id is not None:
+        conversation.message_map[parent_id].children.append(message_id)  # type: ignore
 
     return (message_id, conversation)
 
@@ -125,7 +133,7 @@ def get_invoke_payload(conversation: ConversationModel, chat_input: ChatInput):
         node_id=chat_input.message.parent_message_id,
         message_map=conversation.message_map,
     )
-    messages.append(MessageModel(**chat_input.message.model_dump()))
+    messages.append(chat_input.message)  # type: ignore
     prompt = get_buffer_string(messages)
     body = _create_body(chat_input.message.model, prompt)
     model_id = get_model_id(chat_input.message.model)
@@ -140,10 +148,12 @@ def get_invoke_payload(conversation: ConversationModel, chat_input: ChatInput):
 
 
 def trace_to_root(
-    node_id: str, message_map: dict[str, MessageModel]
+    node_id: str | None, message_map: dict[str, MessageModel]
 ) -> list[MessageModel]:
     """Trace message map from leaf node to root node."""
     result = []
+    if node_id is None:
+        node_id = "instruction" if "instruction" in message_map else "system"
 
     current_node = message_map.get(node_id)
     while current_node:
@@ -158,15 +168,15 @@ def trace_to_root(
 
 def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     user_msg_id, conversation = prepare_conversation(user_id, chat_input)
-
     messages = trace_to_root(
         node_id=chat_input.message.parent_message_id,
         message_map=conversation.message_map,
     )
-    messages.append(MessageModel(**chat_input.message.model_dump()))
+    messages.append(chat_input.message)  # type: ignore
 
     # Invoke Bedrock
     prompt = get_buffer_string(messages)
+
     reply_txt = invoke(prompt=prompt, model=chat_input.message.model)
 
     # Issue id for new assistant message
