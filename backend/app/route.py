@@ -1,5 +1,4 @@
-from datetime import datetime
-from typing import Optional
+from typing import Literal, Union
 
 from app.repositories.conversation import (
     change_conversation_title,
@@ -11,8 +10,9 @@ from app.repositories.conversation import (
 from app.repositories.custom_bot import (
     delete_alias_by_id,
     delete_bot_by_id,
-    find_bot_by_id,
-    find_bot_by_user_id,
+    find_all_bots_by_user_id,
+    find_private_bot_by_id,
+    find_private_bots_by_user_id,
     store_bot,
     update_bot_visibility,
 )
@@ -20,6 +20,7 @@ from app.repositories.model import BotModel
 from app.route_schema import (
     BotInput,
     BotMetaOutput,
+    BotModifyInput,
     BotOutput,
     BotSwitchVisibilityInput,
     ChatInput,
@@ -31,6 +32,13 @@ from app.route_schema import (
     NewTitleInput,
     ProposedTitle,
     User,
+)
+from app.usecases.bot import (
+    create_new_bot,
+    fetch_bot,
+    modify_owned_bot,
+    modify_pin_status,
+    remove_bot_by_id,
 )
 from app.usecases.chat import chat, propose_conversation_title
 from app.utils import get_current_time
@@ -78,12 +86,13 @@ def get_conversation(request: Request, conversation_id: str):
             )
             for message_id, message in conversation.message_map.items()
         },
+        bot_id=conversation.bot_id,
     )
     return output
 
 
 @router.delete("/conversation/{conversation_id}")
-def delete_conversation(request: Request, conversation_id: str):
+def remove_conversation(request: Request, conversation_id: str):
     """Delete conversation"""
     current_user: User = request.state.current_user
 
@@ -104,6 +113,7 @@ def get_all_conversations(
             title=conversation.title,
             create_time=conversation.create_time,
             model=conversation.model,
+            bot_id=conversation.bot_id,
         )
         for conversation in conversations
     ]
@@ -111,7 +121,7 @@ def get_all_conversations(
 
 
 @router.delete("/conversations")
-def delete_all_conversations(
+def remove_all_conversations(
     request: Request,
 ):
     """Delete all conversations"""
@@ -119,7 +129,7 @@ def delete_all_conversations(
 
 
 @router.patch("/conversation/{conversation_id}/title")
-def update_conversation_title(
+def patch_conversation_title(
     request: Request, conversation_id: str, new_title_input: NewTitleInput
 ):
     """Update conversation title"""
@@ -143,38 +153,59 @@ def get_proposed_title(request: Request, conversation_id: str):
 
 @router.post("/bot", response_model=BotOutput)
 def post_bot(request: Request, bot_input: BotInput):
-    """Create new bot."""
+    """Create new private owned bot."""
     current_user: User = request.state.current_user
 
-    store_bot(
-        current_user.id,
-        BotModel(
-            id=bot_input.id,
-            title=bot_input.title,
-            description=bot_input.description,
-            instruction=bot_input.instruction,
-            create_time=get_current_time(),
-            last_used_time=get_current_time(),
-        ),
-    )
-    return BotOutput(
-        id=bot_input.id,
-        title=bot_input.title,
-        instruction=bot_input.instruction,
-        description=bot_input.description,
-        create_time=get_current_time(),
-        last_used_time=None,
-    )
+    return create_new_bot(current_user.id, bot_input)
+
+
+@router.patch("/bot/{bot_id}")
+def patch_bot(request: Request, bot_id: str, modify_input: BotModifyInput):
+    """Modify owned bot title, instruction and description."""
+    return modify_owned_bot(request.state.current_user.id, bot_id, modify_input)
+
+
+@router.patch("/bot/{bot_id}/pinned")
+def patch_bot_pin_status(request: Request, bot_id: str, pinned: bool):
+    """Modify owned bot pin status."""
+    return modify_pin_status(request.state.current_user.id, bot_id, pinned)
+
+
+@router.patch("/bot/{bot_id}")
+def patch_bot_visibility(
+    request: Request, bot_id: str, visibility_input: BotSwitchVisibilityInput
+):
+    """Switch bot visibility"""
+    current_user: User = request.state.current_user
+    update_bot_visibility(current_user.id, bot_id, visibility_input.to_public)
 
 
 @router.get("/bot", response_model=list[BotMetaOutput])
-def get_all_bots(request: Request, limit: Optional[int] = None):
+def get_all_bots(
+    request: Request,
+    kind: Literal["private", "mixed"] = "private",
+    pinned: bool = False,
+    limit: int | None = None,
+):
     """Get all bots. The order is descending by `last_used_time`.
-    If limit is specified, only the first n bots will be returned.
+    - If `kind` is `private`, only private bots will be returned.
+        - If `mixed` must give either `pinned` or `limit`.
+    - If `pinned` is True, only pinned bots will be returned.
+        - When kind is `private`, this will be ignored.
+    - If `limit` is specified, only the first n bots will be returned.
+        - Cannot specify both `pinned` and `limit`.
     """
     current_user: User = request.state.current_user
 
-    bots = find_bot_by_user_id(current_user.id, limit=limit)
+    bots = []
+    if kind == "private":
+        bots = find_private_bots_by_user_id(current_user.id, limit=limit)
+    elif kind == "mixed":
+        bots = find_all_bots_by_user_id(
+            current_user.id, limit=limit, only_pinned=pinned
+        )
+    else:
+        raise ValueError(f"Invalid kind: {kind}")
 
     output = [
         BotMetaOutput(
@@ -182,6 +213,9 @@ def get_all_bots(request: Request, limit: Optional[int] = None):
             title=bot.title,
             create_time=bot.create_time,
             last_used_time=bot.last_used_time,
+            is_pinned=bot.is_pinned,
+            owned=True,
+            available=True,
         )
         for bot in bots
     ]
@@ -190,17 +224,21 @@ def get_all_bots(request: Request, limit: Optional[int] = None):
 
 @router.get("/bot/{bot_id}", response_model=BotOutput)
 def get_bot(request: Request, bot_id: str):
-    """Get bot by id"""
+    """Get bot by id. This returns both owned private and shared public bots."""
     current_user: User = request.state.current_user
 
-    bot = find_bot_by_id(current_user.id, bot_id)
+    is_public, bot = fetch_bot(current_user.id, bot_id)
+    owned = not is_public
     output = BotOutput(
         id=bot.id,
         title=bot.title,
         instruction=bot.instruction,
         description=bot.description,
-        create_time=float(bot.create_time),
-        last_used_time=float(bot.last_used_time),
+        create_time=bot.create_time,
+        last_used_time=bot.last_used_time,
+        is_public=bot.public_bot_id is not None,
+        is_pinned=bot.is_pinned,
+        owned=owned,
     )
     return output
 
@@ -209,15 +247,4 @@ def get_bot(request: Request, bot_id: str):
 def delete_bot(request: Request, bot_id: str):
     """Delete bot by id"""
     current_user: User = request.state.current_user
-
-    delete_bot_by_id(current_user.id, bot_id)
-    # TODO: alias
-
-
-@router.put("/bot/{bot_id}")
-def switch_bot_visibility(
-    request: Request, bot_id: str, visibility_input: BotSwitchVisibilityInput
-):
-    """Switch bot visibility"""
-    current_user: User = request.state.current_user
-    update_bot_visibility(current_user.id, bot_id, visibility_input.to_public)
+    remove_bot_by_id(current_user.id, bot_id)

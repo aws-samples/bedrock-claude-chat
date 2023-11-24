@@ -12,7 +12,7 @@ def is_running_on_lambda():
     return "AWS_EXECUTION_ENV" in os.environ
 
 
-def get_buffer_string(conversations: dict[str, MessageModel]) -> str:
+def get_buffer_string(conversations: list[MessageModel]) -> str:
     string_messages = []
     for conversation in conversations:
         if conversation.role == "assistant":
@@ -27,7 +27,7 @@ def get_buffer_string(conversations: dict[str, MessageModel]) -> str:
             raise ValueError(f"Unsupported role: {conversation.role}")
 
         if conversation.role != "system":
-            # Ignore system messages (currently `system` is dummy)
+            # Ignore system messages (currently `system` is dummy whose parent is null)
             message = f"{prefix}{conversation.content.body}"
             string_messages.append(message)
 

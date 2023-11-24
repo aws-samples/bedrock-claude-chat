@@ -15,8 +15,8 @@ from app.repositories.conversation import (
 )
 from app.repositories.custom_bot import (
     delete_bot_by_id,
-    find_bot_by_id,
-    find_bot_by_user_id,
+    find_private_bot_by_id,
+    find_private_bots_by_user_id,
     store_bot,
 )
 from app.repositories.model import (
@@ -125,7 +125,7 @@ class TestConversationRepository(unittest.TestCase):
                 )
             },
             last_message_id="x",
-            bot_id="1",
+            bot_id=None,
         )
 
         # Test storing conversation
@@ -151,7 +151,7 @@ class TestConversationRepository(unittest.TestCase):
         self.assertEqual(message_map["a"].parent, "z")
         self.assertEqual(message_map["a"].create_time, 1627984879.9)
         self.assertEqual(found_conversation.last_message_id, "x")
-        self.assertEqual(found_conversation.bot_id, "1")
+        self.assertEqual(found_conversation.bot_id, None)
 
         # Test update title
         response = change_conversation_title(
@@ -244,7 +244,7 @@ class TestConversationBotRepository(unittest.TestCase):
         self.assertEqual(len(conversations), 2)
 
     def test_only_bot_is_fetched(self):
-        bots = find_bot_by_user_id("user")
+        bots = find_private_bots_by_user_id("user")
         self.assertEqual(len(bots), 2)
 
     def test_last_bot_used_updated(self):
@@ -266,9 +266,9 @@ class TestConversationBotRepository(unittest.TestCase):
             last_message_id="x",
             bot_id="1",
         )
-        bot_before = find_bot_by_id("user", "1")
+        bot_before = find_private_bot_by_id("user", "1")
         store_conversation("user", conversation)
-        bot_after = find_bot_by_id("user", "1")
+        bot_after = find_private_bot_by_id("user", "1")
 
         # Assert that last_used_time is later than before
         self.assertGreater(bot_after.last_used_time, bot_before.last_used_time)

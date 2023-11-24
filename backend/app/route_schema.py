@@ -34,6 +34,7 @@ class MessageOutput(BaseSchema):
 class ChatInput(BaseSchema):
     conversation_id: str
     message: MessageInput
+    bot_id: str | None
 
 
 class ChatInputWithToken(ChatInput):
@@ -41,8 +42,9 @@ class ChatInputWithToken(ChatInput):
 
 
 class ChatOutput(BaseSchema):
-    conversation_id: str | None = Field(...)
+    conversation_id: str
     message: MessageOutput
+    bot_id: str | None
     create_time: float
 
 
@@ -51,6 +53,7 @@ class ConversationMetaOutput(BaseSchema):
     title: str
     create_time: float
     model: str
+    bot_id: str | None
 
 
 class Conversation(BaseSchema):
@@ -59,6 +62,7 @@ class Conversation(BaseSchema):
     create_time: float
     message_map: dict[str, MessageOutput]
     last_message_id: str
+    bot_id: str | None
 
 
 class NewTitleInput(BaseSchema):
@@ -76,14 +80,30 @@ class BotInput(BaseSchema):
     description: str | None
 
 
-class BotOutput(BaseSchema):
-    id: str
-    create_time: float
-    last_used_time: float
+class BotModifyInput(BaseSchema):
     title: str
     instruction: str
     description: str | None
+
+
+class BotModifyOutput(BaseSchema):
+    id: str
+    title: str
+    instruction: str
+    description: str | None
+
+
+class BotOutput(BaseSchema):
+    id: str
+    title: str
+    description: str | None
+    instruction: str
+    create_time: float
+    last_used_time: float
     is_public: bool
+    is_pinned: bool
+    # Whether the bot is owned by the user
+    owned: bool
 
 
 class BotMetaOutput(BaseSchema):
@@ -91,6 +111,11 @@ class BotMetaOutput(BaseSchema):
     title: str
     create_time: float
     last_used_time: float
+    is_pinned: bool
+    owned: bool
+    # Whether the bot is available or not.
+    # This can be `False` if the bot is not owned by the user and original bot is removed.
+    available: bool
 
 
 class BotSwitchVisibilityInput(BaseSchema):

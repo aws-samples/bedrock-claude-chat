@@ -99,6 +99,7 @@ class TestStartChat(unittest.TestCase):
                 model=MODEL,
                 parent_message_id=None,
             ),
+            bot_id=None,
         )
         output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
         self.output = output
@@ -163,6 +164,7 @@ class TestContinueChat(unittest.TestCase):
                         create_time=1627984879.9,
                     ),
                 },
+                bot_id=None,
             ),
         )
 
@@ -178,6 +180,7 @@ class TestContinueChat(unittest.TestCase):
                 model=MODEL,
                 parent_message_id="1-assistant",
             ),
+            bot_id=None,
         )
         output: ChatOutput = chat(user_id=self.user_id, chat_input=chat_input)
         self.output = output
@@ -256,6 +259,7 @@ class TestRegenerateChat(unittest.TestCase):
                         create_time=1627984879.9,
                     ),
                 },
+                bot_id=None,
             ),
         )
 
@@ -273,6 +277,7 @@ class TestRegenerateChat(unittest.TestCase):
                 # a-2: en, b-2: zh
                 parent_message_id="a-2",
             ),
+            bot_id=None,
         )
         output: ChatOutput = chat(user_id=self.user_id, chat_input=chat_input)
         self.output = output
@@ -294,6 +299,7 @@ class TestRegenerateChat(unittest.TestCase):
                 # a-2: en, b-2: zh
                 parent_message_id="b-2",
             ),
+            bot_id=None,
         )
         output: ChatOutput = chat(user_id=self.user_id, chat_input=chat_input)
         self.output = output
@@ -320,6 +326,7 @@ class TestProposeTitle(unittest.TestCase):
                 model=MODEL,
                 parent_message_id=None,
             ),
+            bot_id=None,
         )
         output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
 
@@ -332,6 +339,10 @@ class TestProposeTitle(unittest.TestCase):
 
     def tearDown(self) -> None:
         delete_conversation_by_id("user1", self.output.conversation_id)
+
+
+class TestChatWithBot(unittest.TestCase):
+    ...
 
 
 if __name__ == "__main__":
