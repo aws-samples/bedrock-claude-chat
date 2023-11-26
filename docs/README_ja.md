@@ -1,6 +1,6 @@
 # Bedrock Claude Chat
 
-> **Warning**
+> [!Warning]
 > 現在のバージョン(`v0.3.x`)は会話スキーマの変更により以前のバージョン(`v0.1.0`, `v0.2.x`)との互換性がありません。以前のバージョンで DynamoDB に保存された会話はレンダリングできませんのでご注意ください。
 
 このリポジトリは、生成系 AI を提供する[Amazon Bedrock](https://aws.amazon.com/jp/bedrock/)の基盤モデルの一つである、Anthropic 社製 LLM [Claude 2](https://www.anthropic.com/index/claude-2)を利用したチャットボットのサンプルです。
@@ -31,7 +31,7 @@ Frontend URL: https://xxxxxxxxx.cloudfront.net
 
 上記のようなサインアップ画面が現れますので、E メールを登録・ログインしご利用ください。
 
-> **Important**
+> [!Important]
 > このデプロイ方法では、URL を知っている誰でもサインアップできてしまいます。本番運用で使用する場合は、セキュリティリスクを軽減するために IP アドレス制限やセルフサインアップの無効化を強くお勧めします。設定方法は、IP アドレス制限の場合は[Deploy using CDK](#deploy-using-cdk)、セルフサインアップの無効化の場合は[セルフサインアップを無効化する](#セルフサインアップを無効化する)をご覧ください。
 
 ## アーキテクチャ
