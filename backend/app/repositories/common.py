@@ -62,54 +62,49 @@ def _get_aws_resource(service_name, user_id=None):
         else:
             return boto3.resource(service_name)
 
-    # Assuming role for specific user-level access
+    policy_document = {
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Action": [
+                    "dynamodb:BatchGetItem",
+                    "dynamodb:BatchWriteItem",
+                    "dynamodb:ConditionCheckItem",
+                    "dynamodb:DeleteItem",
+                    "dynamodb:DescribeTable",
+                    "dynamodb:GetItem",
+                    "dynamodb:GetRecords",
+                    "dynamodb:PutItem",
+                    "dynamodb:Query",
+                    "dynamodb:Scan",
+                    "dynamodb:UpdateItem",
+                ],
+                "Resource": [
+                    f"arn:aws:dynamodb:{REGION}:{ACCOUNT}:table/{TABLE_NAME}",
+                    f"arn:aws:dynamodb:{REGION}:{ACCOUNT}:table/{TABLE_NAME}/index/*",
+                ],
+            }
+        ]
+    }
     if user_id:
-        sts_client = boto3.client("sts")
-        policy_document = {
-            "Statement": [
-                {
-                    "Effect": "Allow",
-                    "Action": [
-                        "dynamodb:BatchGetItem",
-                        "dynamodb:BatchWriteItem",
-                        "dynamodb:ConditionCheckItem",
-                        "dynamodb:DeleteItem",
-                        "dynamodb:DescribeTable",
-                        "dynamodb:GetItem",
-                        "dynamodb:GetRecords",
-                        "dynamodb:PutItem",
-                        "dynamodb:Query",
-                        "dynamodb:Scan",
-                        "dynamodb:UpdateItem",
-                    ],
-                    "Resource": [
-                        f"arn:aws:dynamodb:{REGION}:{ACCOUNT}:table/{TABLE_NAME}",
-                        f"arn:aws:dynamodb:{REGION}:{ACCOUNT}:table/{TABLE_NAME}/index/*",
-                    ],
-                    "Condition": {
-                        # Allow access to items with the same partition key as the user id
-                        "ForAllValues:StringLike": {
-                            "dynamodb:LeadingKeys": [f"{user_id}*"]
-                        }
-                    },
-                }
-            ]
+        policy_document["Statement"][0]["Condition"] = {
+            # Allow access to items with the same partition key as the user id
+            "ForAllValues:StringLike": {"dynamodb:LeadingKeys": [f"{user_id}*"]}
         }
-        assumed_role_object = sts_client.assume_role(
-            RoleArn=TABLE_ACCESS_ROLE_ARN,
-            RoleSessionName="DynamoDBSession",
-            Policy=json.dumps(policy_document),
-        )
-        credentials = assumed_role_object["Credentials"]
-        session = boto3.Session(
-            aws_access_key_id=credentials["AccessKeyId"],
-            aws_secret_access_key=credentials["SecretAccessKey"],
-            aws_session_token=credentials["SessionToken"],
-        )
-        return session.resource(service_name, region_name=REGION)
 
-    # No row-level access control resource
-    return boto3.resource(service_name)
+    sts_client = boto3.client("sts")
+    assumed_role_object = sts_client.assume_role(
+        RoleArn=TABLE_ACCESS_ROLE_ARN,
+        RoleSessionName="DynamoDBSession",
+        Policy=json.dumps(policy_document),
+    )
+    credentials = assumed_role_object["Credentials"]
+    session = boto3.Session(
+        aws_access_key_id=credentials["AccessKeyId"],
+        aws_secret_access_key=credentials["SecretAccessKey"],
+        aws_session_token=credentials["SessionToken"],
+    )
+    return session.resource(service_name, region_name=REGION)
 
 
 def _get_dynamodb_client(user_id=None):

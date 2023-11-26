@@ -18,6 +18,7 @@ from app.route_schema import (
     BotMetaOutput,
     BotModifyInput,
     BotOutput,
+    BotPinnedInput,
     BotSwitchVisibilityInput,
     ChatInput,
     ChatOutput,
@@ -162,9 +163,10 @@ def patch_bot(request: Request, bot_id: str, modify_input: BotModifyInput):
 
 
 @router.patch("/bot/{bot_id}/pinned")
-def patch_bot_pin_status(request: Request, bot_id: str, pinned: bool):
+def patch_bot_pin_status(request: Request, bot_id: str, pinned_input: BotPinnedInput):
     """Modify owned bot pin status."""
-    return modify_pin_status(request.state.current_user.id, bot_id, pinned)
+    current_user: User = request.state.current_user
+    return modify_pin_status(current_user.id, bot_id, pinned=pinned_input.pinned)
 
 
 @router.patch("/bot/{bot_id}/visibility")

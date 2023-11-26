@@ -122,6 +122,10 @@ class BotSwitchVisibilityInput(BaseSchema):
     to_public: bool
 
 
+class BotPinnedInput(BaseSchema):
+    pinned: bool
+
+
 class User(BaseSchema):
     id: str
     name: str
