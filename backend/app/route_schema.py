@@ -109,9 +109,11 @@ class BotOutput(BaseSchema):
 class BotMetaOutput(BaseSchema):
     id: str
     title: str
+    description: str
     create_time: float
     last_used_time: float
     is_pinned: bool
+    is_public: bool
     owned: bool
     # Whether the bot is available or not.
     # This can be `False` if the bot is not owned by the user and original bot is removed.

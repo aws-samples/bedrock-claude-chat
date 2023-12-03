@@ -75,16 +75,16 @@ def modify_owned_bot(
 
 def fetch_bot(user_id: str, bot_id: str) -> tuple[bool, BotModel]:
     """Fetch bot by id.
-    The first element of the returned tuple is whether the bot is public or not.
+    The first element of the returned tuple is whether the bot is owned or not.
     `True` means the bot is public.
     """
     try:
-        return False, find_private_bot_by_id(user_id, bot_id)
+        return True, find_private_bot_by_id(user_id, bot_id)
     except RecordNotFoundError:
         pass  #
 
     try:
-        return True, find_public_bot_by_id(bot_id)
+        return False, find_public_bot_by_id(bot_id)
     except RecordNotFoundError:
         raise RecordNotFoundError(
             f"Bot with ID {bot_id} not found in both private (for user {user_id}) and public items."

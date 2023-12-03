@@ -58,9 +58,11 @@ class ConversationMeta(BaseModel):
 class BotMeta(BaseModel):
     id: str
     title: str
+    description: str
     create_time: float
     last_used_time: float
     is_pinned: bool
+    is_public: bool
     # Whether the bot is owned by the user
     owned: bool
     # Whether the bot is available or not.

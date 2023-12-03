@@ -47,6 +47,8 @@ export class Database extends Construct {
         "LastBotUsed",
         "OriginalBotId",
         "IsPinned",
+        "Description",
+        "PublicBotId",
       ],
     });
 

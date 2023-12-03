@@ -51,6 +51,9 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(bot[0].create_time, 1627984879.9)
         self.assertEqual(bot[0].last_used_time, 1627984879.9)
         self.assertEqual(bot[0].is_pinned, False)
+        self.assertEqual(bot[0].is_pinned, False)
+        self.assertEqual(bot[0].description, "Test Bot Description")
+        self.assertEqual(bot[0].is_public, False)
 
         delete_bot_by_id("user1", "1")
         bot = find_private_bots_by_user_id("user1")
@@ -253,7 +256,7 @@ class TestFindAllBots(unittest.TestCase):
         self.assertEqual(bots[3].id, "1")
 
         # Should be alias2 -> 4 -> 2 -> alias1 -> 3 -> 1
-        bots = find_all_bots_by_user_id("user1")
+        bots = find_all_bots_by_user_id("user1", limit=6)
         self.assertEqual(len(bots), 6)
         self.assertEqual(bots[0].id, "public2")
         self.assertEqual(bots[1].id, "4")
@@ -320,7 +323,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
         update_bot(
             "user2", "public1", title="Updated Title", description="", instruction=""
         )
-        bots = find_all_bots_by_user_id("user1")
+        bots = find_all_bots_by_user_id("user1", limit=3)
         self.assertEqual(len(bots), 3)
         self.assertEqual(bots[0].id, "1")
         self.assertEqual(bots[1].id, "2")
@@ -330,7 +333,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
 
         # Make private
         update_bot_visibility("user2", "public1", False)
-        bots = find_all_bots_by_user_id("user1")
+        bots = find_all_bots_by_user_id("user1", limit=3)
         self.assertEqual(len(bots), 3)
         self.assertEqual(bots[0].id, "1")
         self.assertEqual(bots[1].id, "2")

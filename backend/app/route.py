@@ -214,6 +214,8 @@ def get_all_bots(
             is_pinned=bot.is_pinned,
             owned=True,
             available=True,
+            description=bot.description,
+            is_public=bot.is_public,
         )
         for bot in bots
     ]
@@ -225,8 +227,7 @@ def get_bot(request: Request, bot_id: str):
     """Get bot by id. This returns both owned private and shared public bots."""
     current_user: User = request.state.current_user
 
-    is_public, bot = fetch_bot(current_user.id, bot_id)
-    owned = not is_public
+    owned, bot = fetch_bot(current_user.id, bot_id)
     output = BotOutput(
         id=bot.id,
         title=bot.title,
@@ -234,7 +235,7 @@ def get_bot(request: Request, bot_id: str):
         description=bot.description,
         create_time=bot.create_time,
         last_used_time=bot.last_used_time,
-        is_public=bot.public_bot_id is not None,
+        is_public=True if bot.public_bot_id else False,
         is_pinned=bot.is_pinned,
         owned=owned,
     )

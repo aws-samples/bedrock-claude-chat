@@ -196,6 +196,8 @@ def find_private_bots_by_user_id(
             owned=True,
             available=True,
             is_pinned=item["IsPinned"],
+            description=item["Description"],
+            is_public="PublicBotId" in item,
         )
         for item in response["Items"]
     ]
@@ -215,6 +217,8 @@ def find_private_bots_by_user_id(
                     owned=True,
                     available=True,
                     is_pinned=item["IsPinned"],
+                    description=item["Description"],
+                    is_public="PublicBotId" in item,
                 )
                 for item in response["Items"]
             ]
@@ -280,6 +284,8 @@ def find_all_bots_by_user_id(
                     is_pinned=item["IsPinned"],
                     owned=False,
                     available=True,
+                    description=bot.description,
+                    is_public=True,
                 )
             except RecordNotFoundError:
                 # Original bot is removed
@@ -294,6 +300,8 @@ def find_all_bots_by_user_id(
                     owned=False,
                     # NOTE: Original bot is removed
                     available=False,
+                    description="This item is no longer available",
+                    is_public=False,
                 )
 
             if is_original_available and bot.title != item["Title"]:
@@ -323,6 +331,8 @@ def find_all_bots_by_user_id(
                     is_pinned=item["IsPinned"],
                     owned=True,
                     available=True,
+                    description=item["Description"],
+                    is_public=False,
                 )
             )
 
@@ -352,7 +362,7 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
         create_time=float(item["CreateTime"]),
         last_used_time=float(item["LastBotUsed"]),
         is_pinned=item["IsPinned"],
-        public_bot_id=None,
+        public_bot_id=None if "PublicBotId" not in item else item["PublicBotId"],
     )
 
     logger.debug(f"Found bot: {bot}")
