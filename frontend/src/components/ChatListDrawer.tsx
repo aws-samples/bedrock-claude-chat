@@ -178,7 +178,7 @@ const ChatListDrawer: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const { opened, switchOpen } = useDrawer();
   const { conversations } = useConversation();
-  const { myBots } = useBot();
+  const { starredBots, recentlyUsedUnsterredBots } = useBot();
 
   const [prevConversations, setPrevConversations] =
     useState<typeof conversations>();
@@ -288,8 +288,15 @@ const ChatListDrawer: React.FC<Props> = (props) => {
               onClick={onClickNewChat}
               labelComponent={t('button.newChat')}
             />
+            <DrawerItem
+              isActive={false}
+              icon={<PiCompass />}
+              to="bot/explore"
+              labelComponent={t('button.explore')}
+            />
 
-            {myBots?.map((bot) => (
+            <div className="ml-2 italic">{t('app.starredBots')}</div>
+            {starredBots?.map((bot) => (
               <DrawerItem
                 key={bot.id}
                 isActive={false}
@@ -299,12 +306,16 @@ const ChatListDrawer: React.FC<Props> = (props) => {
               />
             ))}
 
-            <DrawerItem
-              isActive={false}
-              icon={<PiCompass />}
-              to="bot/explore"
-              labelComponent={t('button.explore')}
-            />
+            <div className="ml-2 italic">{t('app.recentlyUsedBots')}</div>
+            {recentlyUsedUnsterredBots?.map((bot) => (
+              <DrawerItem
+                key={bot.id}
+                isActive={false}
+                to={`bot/${bot.id}`}
+                icon={<PiRobot />}
+                labelComponent={bot.title}
+              />
+            ))}
 
             <div className="ml-2 italic">{t('app.conversationHistory')}</div>
             {conversations?.map((conversation, idx) => (

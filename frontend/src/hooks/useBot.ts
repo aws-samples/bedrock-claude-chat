@@ -10,14 +10,21 @@ const useBot = () => {
     kind: 'private',
   });
 
-  const { data: mixedBots } = api.bots({
+  const { data: starredBots } = api.bots({
     kind: 'mixed',
-    limit: 10,
+    pinned: true,
+  });
+
+  const { data: recentlyUsedBots } = api.bots({
+    kind: 'mixed',
+    limit: 30,
   });
 
   return {
     myBots,
-    mixedBots,
+    starredBots,
+    recentlyUsedUnsterredBots: recentlyUsedBots?.filter((bot) => !bot.isPinned),
+    recentlyUsedSharedBots: recentlyUsedBots?.filter((bot) => !bot.owned),
     getBot: async (botId: string) => {
       return (await api.getBot(botId)).data;
     },
@@ -88,6 +95,11 @@ const useBot = () => {
         .finally(() => {
           mutateMyBots();
         });
+    },
+    updateBotPinning: (botId: string, isPinned: boolean) => {
+      return api.updateBotPinned(botId, {
+        pinned: isPinned,
+      });
     },
     deleteBot: (botId: string) => {
       const idx = myBots?.findIndex((bot) => bot.id === botId) ?? -1;

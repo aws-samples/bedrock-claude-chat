@@ -66,7 +66,7 @@ export type GetBotsRequest =
     }
   | {
       kind: 'mixed';
-      pinned: number;
+      pinned: boolean;
     };
 
 export type GetBotsResponse = (BotMeta & {

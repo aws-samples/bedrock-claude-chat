@@ -3,10 +3,13 @@ const translation = {
     app: {
       name: 'Bedrock Claude Chat',
       inputMessage: 'Send a message',
+      starredBots: 'Starred Bots',
+      recentlyUsedBots: 'Recently Used Bots',
       conversationHistory: 'History',
     },
     bot: {
       myBots: 'My Bots',
+      recentlyUsedBots: 'Recently Used Shared Bots',
       sharedBots: 'Shared Bots',
       create: {
         pageTitle: 'Create My Bot',
