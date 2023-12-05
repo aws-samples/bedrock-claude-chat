@@ -332,7 +332,7 @@ def find_all_bots_by_user_id(
                     owned=True,
                     available=True,
                     description=item["Description"],
-                    is_public=False,
+                    is_public="PublicBotId" in item,
                 )
             )
 
