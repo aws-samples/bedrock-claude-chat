@@ -76,7 +76,8 @@ def modify_owned_bot(
 def fetch_bot(user_id: str, bot_id: str) -> tuple[bool, BotModel]:
     """Fetch bot by id.
     The first element of the returned tuple is whether the bot is owned or not.
-    `True` means the bot is public.
+    `True` means the bot is owned by the user.
+    `False` means the bot is shared by another user.
     """
     try:
         return True, find_private_bot_by_id(user_id, bot_id)

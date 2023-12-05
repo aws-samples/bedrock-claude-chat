@@ -103,6 +103,7 @@ def handler(event, context):
     store_conversation(user_id, conversation)
     # Update bot last used time
     if chat_input.bot_id:
+        logger.debug("Bot id is provided. Updating bot last used time.")
         modify_bot_last_used_time(user_id, chat_input.bot_id)
 
     return {"statusCode": 200, "body": json.dumps({"conversationId": conversation.id})}

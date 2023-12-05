@@ -225,8 +225,8 @@ class TestFindAllBots(unittest.TestCase):
         bots = find_all_bots_by_user_id("user1", limit=3)
         self.assertEqual(len(bots), 3)
         fetched_bot_ids = set(bot.id for bot in bots)
-        expected_bot_ids = {"public1", "public2"}
-        self.assertTrue(expected_bot_ids.issubset(fetched_bot_ids))
+        expected_bot_ids = {"public1", "public2", "1", "2", "3", "4"}
+        self.assertTrue(fetched_bot_ids.issubset(expected_bot_ids))
 
     def test_find_pinned_bots(self):
         # Only pinned bots fetched

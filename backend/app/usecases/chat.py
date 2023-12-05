@@ -60,7 +60,7 @@ def prepare_conversation(
             logger.debug("Bot id is provided. Fetching bot.")
             parent_id = "instruction"
             # Fetch bot and append instruction
-            is_public, bot = fetch_bot(user_id, chat_input.bot_id)
+            owned, bot = fetch_bot(user_id, chat_input.bot_id)
             initial_message_map["instruction"] = MessageModel(
                 role="instruction",
                 content=ContentModel(
@@ -74,8 +74,10 @@ def prepare_conversation(
             )
             initial_message_map["system"].children.append("instruction")
 
-            if is_public:
-                logger.debug("Bot is public. Creating alias.")
+            if not owned:
+                logger.debug(
+                    "Bot is not owned by the user. Creating alias to shared bot."
+                )
                 # Create alias item
                 store_alias(
                     user_id,
@@ -176,6 +178,9 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
 
     # Invoke Bedrock
     prompt = get_buffer_string(messages)
+    # import pdb
+
+    # pdb.set_trace()
 
     reply_txt = invoke(prompt=prompt, model=chat_input.message.model)
 
@@ -200,6 +205,8 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     store_conversation(user_id, conversation)
     # Update bot last used time
     if chat_input.bot_id:
+        logger.debug("Bot id is provided. Updating bot last used time.")
+        # Update bot last used time
         modify_bot_last_used_time(user_id, chat_input.bot_id)
 
     output = ChatOutput(
