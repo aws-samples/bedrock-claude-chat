@@ -192,8 +192,8 @@ def get_all_bots(
             create_time=bot.create_time,
             last_used_time=bot.last_used_time,
             is_pinned=bot.is_pinned,
-            owned=True,
-            available=True,
+            owned=bot.owned,
+            available=bot.available,
             description=bot.description,
             is_public=bot.is_public,
         )
