@@ -6,6 +6,8 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import ChatPage from './pages/ChatPage.tsx';
 import NotFound from './pages/NotFound.tsx';
 import './i18n';
+import BotExplorePage from './pages/BotExplorePage.tsx';
+import BotCreatePage from './pages/BotCreatePage.tsx';
 
 const router = createBrowserRouter([
   {
@@ -14,6 +16,18 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
+        element: <ChatPage />,
+      },
+      {
+        path: '/bot/explore',
+        element: <BotExplorePage />,
+      },
+      {
+        path: '/bot/create',
+        element: <BotCreatePage />,
+      },
+      {
+        path: '/bot/:botId',
         element: <ChatPage />,
       },
       {

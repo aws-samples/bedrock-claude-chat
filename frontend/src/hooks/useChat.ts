@@ -268,7 +268,7 @@ const useChat = () => {
     );
   };
 
-  const postChat = (content: string, model: Model) => {
+  const postChat = (content: string, model: Model, botId?: string) => {
     const isNewChat = conversationId ? false : true;
     const newConversationId = ulid();
 
@@ -299,6 +299,7 @@ const useChat = () => {
         parentMessageId: parentMessageId,
       },
       stream: true,
+      botId,
     };
     const createNewConversation = () => {
       setConversationId(newConversationId);
@@ -462,7 +463,7 @@ const useChat = () => {
     regenerate,
     getPostedModel,
     // エラーのリトライ
-    retryPostChat: (content?: string) => {
+    retryPostChat: (params: { content?: string; botId?: string }) => {
       const length_ = messages.length;
       if (length_ === 0) {
         return;
@@ -472,11 +473,15 @@ const useChat = () => {
         // 通常のメッセージ送信時
         // エラー発生時の最新のメッセージはユーザ入力;
         removeMessage(conversationId, latestMessage.id);
-        postChat(content ?? latestMessage.content.body, getPostedModel());
+        postChat(
+          params.content ?? latestMessage.content.body,
+          getPostedModel(),
+          params.botId
+        );
       } else {
         // 再生成時
         regenerate({
-          content: content ?? latestMessage.content.body,
+          content: params.content ?? latestMessage.content.body,
         });
       }
     },

@@ -67,7 +67,8 @@ const InputChatContent: React.FC<Props> = (props) => {
       />
       {messages.length > 1 && (
         <Button
-          className="absolute -top-14 right-0 border-gray-400 bg-aws-paper p-2 text-sm"
+          className="absolute -top-14 right-0 p-2 text-sm"
+          outlined
           disabled={disabledRegenerate}
           onClick={props.onRegenerate}>
           <PiArrowsCounterClockwise className="mr-2" />

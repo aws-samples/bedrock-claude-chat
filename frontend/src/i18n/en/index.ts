@@ -3,6 +3,42 @@ const translation = {
     app: {
       name: 'Bedrock Claude Chat',
       inputMessage: 'Send a message',
+      conversationHistory: 'History',
+    },
+    bot: {
+      myBots: 'My Bots',
+      sharedBots: 'Shared Bots',
+      create: {
+        pageTitle: 'Create My Bot',
+      },
+      item: {
+        title: 'Name',
+        description: 'Description',
+        instruction: 'Instructions',
+      },
+      button: {
+        newBot: 'Create New Bot',
+        create: 'Create',
+        edit: 'Edit',
+        share: 'Share',
+        unshare: 'Unshare',
+        delete: 'Delete',
+      },
+      deleteDialog: {
+        title: 'Delete?',
+        content: 'Are you sure to delete <Bold>{{title}}</Bold>?',
+      },
+      shareDialog: {
+        share: {
+          title: 'Share your bot?',
+          content: 'Your <Bold>{{title}}</Bold> will be shared with ALL users.',
+        },
+        unshare: {
+          title: 'Unshare your bot?',
+          content:
+            'Your <Bold>{{title}}</Bold> will NOT be available to other users.',
+        },
+      },
     },
     deleteDialog: {
       title: 'Delete?',
@@ -17,6 +53,7 @@ const translation = {
     },
     button: {
       newChat: 'New Chat',
+      explore: 'Explore',
       SaveAndSubmit: 'Save & Submit',
       resend: 'Resend',
       regenerate: 'Regenerate',

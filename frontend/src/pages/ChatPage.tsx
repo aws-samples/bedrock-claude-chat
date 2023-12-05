@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import InputChatContent from '../components/InputChatContent';
 import useChat from '../hooks/useChat';
 import ChatMessage from '../components/ChatMessage';
@@ -9,9 +9,17 @@ import Button from '../components/Button';
 import { useTranslation } from 'react-i18next';
 import SwitchBedrockModel from '../components/SwitchBedrockModel';
 import { Model } from '../@types/conversation';
+import useBot from '../hooks/useBot';
 
 const ChatPage: React.FC = () => {
   const { t } = useTranslation();
+  const { botId } = useParams();
+  const { myBots } = useBot();
+
+  const botName = useMemo(() => {
+    return myBots?.filter((bot) => bot.id === botId)[0]?.title ?? '';
+  }, [botId, myBots]);
+
   const [content, setContent] = useState('');
   const [model, setModel] = useState<Model>('claude-instant-v1');
   const {
@@ -35,9 +43,9 @@ const ChatPage: React.FC = () => {
   }, [paramConversationId]);
 
   const onSend = useCallback(() => {
-    postChat(content, model);
+    postChat(content, model, botId);
     setContent('');
-  }, [content, postChat]);
+  }, [botId, content, model, postChat]);
 
   const onChangeCurrentMessageId = useCallback(
     (messageId: string) => {
@@ -49,12 +57,12 @@ const ChatPage: React.FC = () => {
   const onSubmitEditedContent = useCallback(
     (messageId: string, content: string) => {
       if (hasError) {
-        retryPostChat(content);
+        retryPostChat({ content, botId });
       } else {
         regenerate({ messageId, content });
       }
     },
-    [hasError, regenerate, retryPostChat]
+    [botId, hasError, regenerate, retryPostChat]
   );
 
   const onRegenerate = useCallback(() => {
@@ -71,16 +79,15 @@ const ChatPage: React.FC = () => {
 
   return (
     <>
-      <div className="flex flex-col items-center justify-start">
-        <div className="m-1">
-          <SwitchBedrockModel
-            postedModel={getPostedModel()}
-            model={model}
-            setModel={setModel}
-          />
-        </div>
-        <hr className="w-full border-t border-gray-300" />
+      <div className="relative flex justify-center">
+        <div className="absolute left-0 p-3 font-bold">{botName}</div>
+        <SwitchBedrockModel
+          postedModel={getPostedModel()}
+          model={model}
+          setModel={setModel}
+        />
       </div>
+      <hr className="w-full border-t border-gray-300" />
       <div className="pb-52 lg:pb-40">
         {messages.length === 0 ? (
           <>
@@ -116,9 +123,14 @@ const ChatPage: React.FC = () => {
             </div>
 
             <Button
-              className="mt-2 border-gray-400 bg-white shadow "
+              className="mt-2 shadow "
               icon={<PiArrowsCounterClockwise />}
-              onClick={retryPostChat}>
+              outlined
+              onClick={() => {
+                retryPostChat({
+                  botId,
+                });
+              }}>
               {t('button.resend')}
             </Button>
           </div>

@@ -7,19 +7,20 @@ import React, {
   useState,
 } from 'react';
 import { BaseProps } from '../@types/common';
-import { Link, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import useDrawer from '../hooks/useDrawer';
 import ButtonIcon from './ButtonIcon';
 import {
   PiChat,
   PiCheck,
+  PiCompass,
+  PiNotePencil,
   PiPencilLine,
-  PiPlus,
+  PiRobot,
   PiTrash,
   PiX,
 } from 'react-icons/pi';
 
-import Button from './Button';
 import useConversation from '../hooks/useConversation';
 import LazyOutputText from './LazyOutputText';
 import DialogConfirmDelete from './DialogConfirmDeleteChat';
@@ -28,6 +29,8 @@ import { isMobile } from 'react-device-detect';
 import useChat from '../hooks/useChat';
 import { useTranslation } from 'react-i18next';
 import Menu from './Menu';
+import useBot from '../hooks/useBot';
+import DrawerItem from './DrawerItem';
 
 type Props = BaseProps & {
   onSignOut: () => void;
@@ -42,6 +45,8 @@ type ItemProps = BaseProps & {
 };
 
 const Item: React.FC<ItemProps> = (props) => {
+  const { pathname } = useLocation();
+  const { conversationId: pathParam } = useParams();
   const { conversationId } = useChat();
   const [tempLabel, setTempLabel] = useState('');
   const [editing, setEditing] = useState(false);
@@ -50,8 +55,11 @@ const Item: React.FC<ItemProps> = (props) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const active = useMemo<boolean>(() => {
-    return conversationId === props.to;
-  }, [conversationId, props.to]);
+    console.log(pathname);
+    return (
+      pathParam === props.to || (pathname === '/' && conversationId == props.to)
+    );
+  }, [conversationId, pathParam, pathname, props.to]);
 
   const onClickEdit = useCallback(() => {
     setEditing(true);
@@ -104,17 +112,13 @@ const Item: React.FC<ItemProps> = (props) => {
   }, [editing]);
 
   return (
-    <Link
-      className={`group mx-2 my-1 flex h-10 items-center  rounded px-2 ${
-        active ? 'bg-aws-sea-blue' : 'hover:bg-aws-sea-blue-hover'
-      } ${props.className ?? ''}`}
+    <DrawerItem
+      isActive={active}
       to={props.to}
-      onClick={props.onClick}>
-      <div className={`flex h-8 max-h-5 w-full justify-start overflow-hidden`}>
-        <div className="mr-2 text-base">
-          <PiChat />
-        </div>
-        <div className="relative flex-1 text-ellipsis break-all">
+      onClick={props.onClick}
+      icon={<PiChat />}
+      labelComponent={
+        <>
           {editing ? (
             <input
               ref={inputRef}
@@ -136,7 +140,7 @@ const Item: React.FC<ItemProps> = (props) => {
           )}
           {!editing && (
             <div
-              className={`absolute inset-y-0 right-0 w-8 bg-gradient-to-l 
+              className={`absolute inset-y-0 right-0 w-8 bg-gradient-to-l
               ${
                 active
                   ? 'from-aws-sea-blue'
@@ -145,9 +149,10 @@ const Item: React.FC<ItemProps> = (props) => {
               `}
             />
           )}
-        </div>
-
-        <div className="flex">
+        </>
+      }
+      actionComponent={
+        <>
           {active && !editing && (
             <>
               <ButtonIcon className="text-base" onClick={onClickEdit}>
@@ -174,9 +179,9 @@ const Item: React.FC<ItemProps> = (props) => {
               </ButtonIcon>
             </>
           )}
-        </div>
-      </div>
-    </Link>
+        </>
+      }
+    />
   );
 };
 
@@ -184,6 +189,8 @@ const ChatListDrawer: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const { opened, switchOpen } = useDrawer();
   const { conversations } = useConversation();
+  const { myBots } = useBot();
+
   const [prevConversations, setPrevConversations] =
     useState<typeof conversations>();
   const [generateTitleIndex, setGenerateTitleIndex] = useState(-1);
@@ -213,7 +220,6 @@ const ChatListDrawer: React.FC<Props> = (props) => {
 
   const onClickNewChat = useCallback(() => {
     newChat();
-    navigate('');
     closeSamllDrawer();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -285,19 +291,32 @@ const ChatListDrawer: React.FC<Props> = (props) => {
           className={`lg:visible lg:w-64 ${
             opened ? 'visible w-64' : 'invisible w-0'
           } text-sm  text-white transition-width`}>
-          <div
-            className={`${
-              opened ? 'w-64' : 'w-0'
-            } fixed top-0 z-50 h-14 bg-aws-squid-ink p-2 transition-width lg:w-64 `}>
-            <Button
-              className="h-full w-full bg-aws-squid-ink"
+          <div className="absolute top-0 w-full overflow-y-auto overflow-x-hidden pb-12">
+            <DrawerItem
+              isActive={false}
+              icon={<PiNotePencil className="text-lg" />}
+              to=""
               onClick={onClickNewChat}
-              icon={<PiPlus />}>
-              {t('button.newChat')}
-            </Button>
-          </div>
+              labelComponent={t('button.newChat')}
+            />
 
-          <div className="absolute top-14 w-full overflow-y-auto overflow-x-hidden pb-12">
+            {myBots?.map((bot) => (
+              <DrawerItem
+                isActive={false}
+                to={`bot/${bot.id}`}
+                icon={<PiRobot className="mr-2" />}
+                labelComponent={bot.title}
+              />
+            ))}
+
+            <DrawerItem
+              isActive={false}
+              icon={<PiCompass className="text-lg" />}
+              to="bot/explore"
+              labelComponent={t('button.explore')}
+            />
+
+            <div className="ml-2 italic">{t('app.conversationHistory')}</div>
             {conversations?.map((conversation, idx) => (
               <Item
                 key={idx}

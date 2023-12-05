@@ -1,24 +1,24 @@
 import React from 'react';
 import { BaseProps } from '../@types/common';
-import { ConversationMeta } from '../@types/conversation';
 import Button from './Button';
 import ModalDialog from './ModalDialog';
 import { Trans, useTranslation } from 'react-i18next';
+import { BotMeta } from '../@types/bot';
 
 type Props = BaseProps & {
   isOpen: boolean;
-  target?: ConversationMeta;
-  onDelete: (botId: string) => void;
+  target?: BotMeta;
+  onDelete: (conversationId: string) => void;
   onClose: () => void;
 };
 
-const DialogConfirmDeleteChat: React.FC<Props> = (props) => {
+const DialogConfirmDeleteBot: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   return (
-    <ModalDialog {...props} title={t('deleteDialog.title')}>
+    <ModalDialog {...props} title={t('bot.deleteDialog.title')}>
       <div>
         <Trans
-          i18nKey="deleteDialog.content"
+          i18nKey="bot.deleteDialog.content"
           values={{
             title: props.target?.title,
           }}
@@ -44,4 +44,4 @@ const DialogConfirmDeleteChat: React.FC<Props> = (props) => {
   );
 };
 
-export default DialogConfirmDeleteChat;
+export default DialogConfirmDeleteBot;

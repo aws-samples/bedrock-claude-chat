@@ -6,6 +6,7 @@ type Props = BaseProps & {
   rightIcon?: React.ReactNode;
   disabled?: boolean;
   text?: boolean;
+  outlined?: boolean;
   onClick: () => void;
   children: React.ReactNode;
 };
@@ -18,11 +19,14 @@ const Button = forwardRef<HTMLButtonElement, Props>((props, ref) => {
         props.className ?? ''
       } flex items-center justify-center rounded-lg ${
         props.text ? '' : 'border'
-      } p-1 px-3  ${
-        (props.className?.indexOf('bg-') ?? -1) < 0
-          ? ' bg-aws-sea-blue text-aws-font-color-white'
-          : ''
-      }  ${props.disabled ? 'opacity-30' : 'hover:brightness-75'} `}
+      } p-1 px-3  
+       ${
+         props.outlined
+           ? 'border-aws-squid-ink/50 bg-transparent hover:bg-white'
+           : 'bg-aws-sea-blue text-aws-font-color-white'
+       }
+     
+        ${props.disabled ? 'opacity-30' : 'hover:brightness-75'} `}
       onClick={(e) => {
         e.stopPropagation();
         e.preventDefault();
