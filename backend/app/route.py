@@ -37,7 +37,7 @@ from app.usecases.bot import (
     modify_pin_status,
     remove_bot_by_id,
 )
-from app.usecases.chat import chat, propose_conversation_title
+from app.usecases.chat import chat, fetch_conversation, propose_conversation_title
 from app.utils import get_current_time
 from fastapi import APIRouter, Request
 
@@ -64,27 +64,7 @@ def get_conversation(request: Request, conversation_id: str):
     """Get a conversation history"""
     current_user: User = request.state.current_user
 
-    conversation = find_conversation_by_id(current_user.id, conversation_id)
-    output = Conversation(
-        id=conversation_id,
-        title=conversation.title,
-        create_time=conversation.create_time,
-        last_message_id=conversation.last_message_id,
-        message_map={
-            message_id: MessageOutput(
-                role=message.role,
-                content=Content(
-                    content_type=message.content.content_type,
-                    body=message.content.body,
-                ),
-                model=message.model,
-                children=message.children,
-                parent=message.parent,
-            )
-            for message_id, message in conversation.message_map.items()
-        },
-        bot_id=conversation.bot_id,
-    )
+    output = fetch_conversation(current_user.id, conversation_id)
     return output
 
 

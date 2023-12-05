@@ -17,7 +17,7 @@ from app.repositories.model import (
     ConversationModel,
     MessageModel,
 )
-from app.route_schema import ChatInput, ChatOutput, Content, MessageOutput
+from app.route_schema import ChatInput, ChatOutput, Content, Conversation, MessageOutput
 from app.usecases.bot import fetch_bot, modify_bot_last_used_time
 from app.utils import get_buffer_string, get_current_time
 from ulid import ULID
@@ -124,7 +124,7 @@ def prepare_conversation(
         conversation.message_map[chat_input.message.parent_message_id].children.append(
             message_id
         )
-    elif chat_input.message.parent_message_id is not None:
+    else:
         conversation.message_map[parent_id].children.append(message_id)  # type: ignore
 
     return (message_id, conversation)
@@ -154,7 +154,7 @@ def trace_to_root(
 ) -> list[MessageModel]:
     """Trace message map from leaf node to root node."""
     result = []
-    if node_id is None:
+    if not node_id:
         node_id = "instruction" if "instruction" in message_map else "system"
 
     current_node = message_map.get(node_id)
@@ -178,9 +178,6 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
 
     # Invoke Bedrock
     prompt = get_buffer_string(messages)
-    # import pdb
-
-    # pdb.set_trace()
 
     reply_txt = invoke(prompt=prompt, model=chat_input.message.model)
 
@@ -268,3 +265,38 @@ def propose_conversation_title(
     reply_txt = invoke(prompt=prompt, model=model)
     reply_txt = reply_txt.replace("\n", "")
     return reply_txt
+
+
+def fetch_conversation(user_id: str, conversation_id: str) -> Conversation:
+    conversation = find_conversation_by_id(user_id, conversation_id)
+
+    message_map = {
+        message_id: MessageOutput(
+            role=message.role,
+            content=Content(
+                content_type=message.content.content_type,
+                body=message.content.body,
+            ),
+            model=message.model,
+            children=message.children,
+            parent=message.parent,
+        )
+        for message_id, message in conversation.message_map.items()
+    }
+    # Omit instruction
+    if "instruction" in message_map:
+        for c in message_map["instruction"].children:
+            message_map[c].parent = "system"
+        message_map["system"].children = message_map["instruction"].children
+
+        del message_map["instruction"]
+
+    output = Conversation(
+        id=conversation_id,
+        title=conversation.title,
+        create_time=conversation.create_time,
+        last_message_id=conversation.last_message_id,
+        message_map=message_map,
+        bot_id=conversation.bot_id,
+    )
+    return output

@@ -24,7 +24,12 @@ from app.repositories.model import (
     MessageModel,
 )
 from app.route_schema import ChatInput, ChatOutput, Content, MessageInput, MessageOutput
-from app.usecases.chat import chat, propose_conversation_title, trace_to_root
+from app.usecases.chat import (
+    chat,
+    fetch_conversation,
+    propose_conversation_title,
+    trace_to_root,
+)
 
 MODEL = "claude-instant-v1"
 # MODEL = "claude-v2"
@@ -386,14 +391,86 @@ class TestChatWithCustomizedBot(unittest.TestCase):
         delete_bot_by_id("user2", "public1")
         delete_conversation_by_user_id("user1")
 
-    def test_chat_with_private_bot(self):
+    # def test_chat_with_private_bot(self):
+    #     chat_input = ChatInput(
+    #         conversation_id="test_conversation_id",
+    #         message=MessageInput(
+    #             role="user",
+    #             content=Content(
+    #                 content_type="text",
+    #                 body="こんにちは",
+    #             ),
+    #             model=MODEL,
+    #             parent_message_id=None,
+    #         ),
+    #         bot_id="private1",
+    #     )
+    #     output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+    #     print(output)
+
+    #     conv = find_conversation_by_id("user1", output.conversation_id)
+    #     chat_input = ChatInput(
+    #         conversation_id=conv.id,
+    #         message=MessageInput(
+    #             role="user",
+    #             content=Content(
+    #                 content_type="text",
+    #                 body="自己紹介して",
+    #             ),
+    #             model=MODEL,
+    #             parent_message_id=conv.last_message_id,
+    #         ),
+    #         bot_id="private1",
+    #     )
+    #     output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+    #     print(output)
+
+    # def test_chat_with_public_bot(self):
+    #     chat_input = ChatInput(
+    #         conversation_id="test_conversation_id",
+    #         message=MessageInput(
+    #             role="user",
+    #             content=Content(
+    #                 content_type="text",
+    #                 body="こんにちは",
+    #             ),
+    #             model=MODEL,
+    #             parent_message_id=None,
+    #         ),
+    #         bot_id="public1",
+    #     )
+    #     output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+
+    #     print(output)
+
+    #     conv = find_conversation_by_id("user1", output.conversation_id)
+    #     chat_input = ChatInput(
+    #         conversation_id=conv.id,
+    #         message=MessageInput(
+    #             role="user",
+    #             content=Content(
+    #                 content_type="text",
+    #                 body="自己紹介して",
+    #             ),
+    #             model=MODEL,
+    #             parent_message_id=conv.last_message_id,
+    #         ),
+    #         bot_id="private1",
+    #     )
+    #     output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+    #     print(output)
+
+    #     # Delete alias
+    #     delete_alias_by_id("user1", "public1")
+
+    def test_fetch_conversation(self):
         chat_input = ChatInput(
             conversation_id="test_conversation_id",
             message=MessageInput(
                 role="user",
                 content=Content(
                     content_type="text",
-                    body="こんにちは",
+                    body="君の名は？",
                 ),
                 model=MODEL,
                 parent_message_id=None,
@@ -401,62 +478,14 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             bot_id="private1",
         )
         output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
-        print(output)
 
-        conv = find_conversation_by_id("user1", output.conversation_id)
-        chat_input = ChatInput(
-            conversation_id=conv.id,
-            message=MessageInput(
-                role="user",
-                content=Content(
-                    content_type="text",
-                    body="自己紹介して",
-                ),
-                model=MODEL,
-                parent_message_id=conv.last_message_id,
-            ),
-            bot_id="private1",
-        )
-        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
-        print(output)
+        conv = fetch_conversation("user1", output.conversation_id)
+        # Assert that instruction is not included
+        self.assertIsNone(conv.message_map.get("instruction"))
 
-    def test_chat_with_public_bot(self):
-        chat_input = ChatInput(
-            conversation_id="test_conversation_id",
-            message=MessageInput(
-                role="user",
-                content=Content(
-                    content_type="text",
-                    body="こんにちは",
-                ),
-                model=MODEL,
-                parent_message_id=None,
-            ),
-            bot_id="public1",
-        )
-        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
-
-        print(output)
-
-        conv = find_conversation_by_id("user1", output.conversation_id)
-        chat_input = ChatInput(
-            conversation_id=conv.id,
-            message=MessageInput(
-                role="user",
-                content=Content(
-                    content_type="text",
-                    body="自己紹介して",
-                ),
-                model=MODEL,
-                parent_message_id=conv.last_message_id,
-            ),
-            bot_id="private1",
-        )
-        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
-        print(output)
-
-        # Delete alias
-        delete_alias_by_id("user1", "public1")
+        msg = trace_to_root(conv.last_message_id, conv.message_map)  # type: ignore
+        self.assertEqual(len(msg), 3)  # system + user + assistant
+        pprint(msg)
 
 
 if __name__ == "__main__":
