@@ -1,5 +1,5 @@
 import { ulid } from 'ulid';
-import { RegisterBotRequest } from '../@types/bot';
+import { RegisterBotRequest, UpdateBotRequest } from '../@types/bot';
 import useBotApi from './useBotApi';
 import { produce } from 'immer';
 
@@ -18,16 +18,76 @@ const useBot = () => {
   return {
     myBots,
     mixedBots,
+    getBot: async (botId: string) => {
+      return (await api.getBot(botId)).data;
+    },
     registerBot: (params: Omit<RegisterBotRequest, 'id'>) => {
-      return api.registerBot({
-        id: ulid(),
-        ...params,
+      const id = ulid();
+      mutateMyBots(
+        produce(myBots, (draft) => {
+          draft?.unshift({
+            id,
+            title: params.title,
+            description: params.description ?? '',
+            available: true,
+            createTime: new Date(),
+            lastUsedTime: new Date(),
+            isPinned: false,
+            isPublic: false,
+            owned: true,
+          });
+        }),
+        {
+          revalidate: false,
+        }
+      );
+      return api
+        .registerBot({
+          id,
+          ...params,
+        })
+        .finally(() => {
+          mutateMyBots();
+        });
+    },
+    updateBot: (botId: string, params: UpdateBotRequest) => {
+      mutateMyBots(
+        produce(myBots, (draft) => {
+          const idx = myBots?.findIndex((bot) => bot.id === botId) ?? -1;
+          if (draft) {
+            draft[idx].title = params.title;
+            draft[idx].description = params.description ?? '';
+          }
+        }),
+        {
+          revalidate: false,
+        }
+      );
+
+      return api.updateBot(botId, params).finally(() => {
+        mutateMyBots();
       });
     },
     updateBotSharing: (botId: string, isShareing: boolean) => {
-      return api.updateBotVisibility(botId, {
-        toPublic: isShareing,
-      });
+      mutateMyBots(
+        produce(myBots, (draft) => {
+          const idx = myBots?.findIndex((bot) => bot.id === botId) ?? -1;
+          if (draft) {
+            draft[idx].isPublic = isShareing;
+          }
+        }),
+        {
+          revalidate: false,
+        }
+      );
+
+      return api
+        .updateBotVisibility(botId, {
+          toPublic: isShareing,
+        })
+        .finally(() => {
+          mutateMyBots();
+        });
     },
     deleteBot: (botId: string) => {
       const idx = myBots?.findIndex((bot) => bot.id === botId) ?? -1;

@@ -11,6 +11,9 @@ const translation = {
       create: {
         pageTitle: 'Create My Bot',
       },
+      edit: {
+        pageTitle: 'Edit My Bot',
+      },
       item: {
         title: 'Name',
         description: 'Description',
@@ -20,23 +23,24 @@ const translation = {
         newBot: 'Create New Bot',
         create: 'Create',
         edit: 'Edit',
-        share: 'Share',
-        unshare: 'Unshare',
         delete: 'Delete',
+        share: 'Share',
+        copy: 'Copy',
+        copied: 'Copied',
       },
       deleteDialog: {
         title: 'Delete?',
         content: 'Are you sure to delete <Bold>{{title}}</Bold>?',
       },
       shareDialog: {
-        share: {
-          title: 'Share your bot?',
-          content: 'Your <Bold>{{title}}</Bold> will be shared with ALL users.',
-        },
-        unshare: {
-          title: 'Unshare your bot?',
+        title: 'Share',
+        off: {
           content:
-            'Your <Bold>{{title}}</Bold> will NOT be available to other users.',
+            'Link sharing is off, so only you can access this document through its URL.',
+        },
+        on: {
+          content:
+            'Link sharing is on, so ALL users can use this link to conversation.',
         },
       },
     },
@@ -59,8 +63,10 @@ const translation = {
       regenerate: 'Regenerate',
       delete: 'Delete',
       deleteAll: 'Delete All',
+      done: 'Done',
       ok: 'OK',
       cancel: 'Cancel',
+      back: 'Back',
       menu: 'Menu',
       language: 'Language',
       clearConversation: 'Delete ALL conversations',

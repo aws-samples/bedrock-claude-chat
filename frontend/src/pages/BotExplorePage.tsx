@@ -1,13 +1,20 @@
-import React, { ReactNode, useCallback, useState } from 'react';
+import React, { ReactNode, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Button from '../components/Button';
-import { PiLockKey, PiPlus, PiTrashBold, PiUsers } from 'react-icons/pi';
+import {
+  PiLink,
+  PiLockKey,
+  PiPlus,
+  PiTrashBold,
+  PiUsers,
+} from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
 import useBot from '../hooks/useBot';
 import ButtonPopover from '../components/ButtonPopover';
 import { BotMeta } from '../@types/bot';
 import DialogConfirmDeleteBot from '../components/DialogConfirmDeleteBot';
-import DialogConfirmShareBot from '../components/DialogConfirmShareBot';
+import DialogConfirmShareBot from '../components/DialogShareBot';
+import ButtonIcon from '../components/ButtonIcon';
 
 type ItemProps = {
   className?: string;
@@ -20,7 +27,7 @@ const ItemBotMenu: React.FC<ItemProps> = (props) => {
     <div
       className={`${
         props.className ?? ''
-      } flex cursor-pointer items-center gap-1 border-b border-aws-font-color/50 bg-aws-paper px-1 py-0.5 first:rounded-t last:rounded-b last:border-b-0 hover:brightness-75`}
+      } flex cursor-pointer items-center gap-1 border-b border-aws-font-color/50 bg-aws-paper px-2 py-1 first:rounded-t last:rounded-b last:border-b-0 hover:brightness-75`}
       onClick={props.onClick}>
       {props.children}
     </div>
@@ -34,13 +41,30 @@ const BotExplorePage: React.FC = () => {
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
   const [isOpenShareDialog, setIsOpenShareDialog] = useState(false);
   const [targetDelete, setTargetDelete] = useState<BotMeta>();
-  const [targetShare, setTargetShare] = useState<BotMeta>();
+  const [targetShareIndex, setTargetShareIndex] = useState<number>();
 
   const { myBots, deleteBot, updateBotSharing } = useBot();
 
+  const targetShareBot = useMemo(() => {
+    if (myBots) {
+      if ((targetShareIndex ?? -1) < 0) {
+        return undefined;
+      }
+      return myBots[targetShareIndex!];
+    }
+    return undefined;
+  }, [myBots, targetShareIndex]);
+
   const onClickNewBot = useCallback(() => {
-    navigate('/bot/create');
+    navigate('/bot/new');
   }, [navigate]);
+
+  const onClickEditBot = useCallback(
+    (botId: string) => {
+      navigate(`/bot/edit/${botId}`);
+    },
+    [navigate]
+  );
 
   const onClickDelete = useCallback((target: BotMeta) => {
     setIsOpenDeleteDialog(true);
@@ -56,19 +80,23 @@ const BotExplorePage: React.FC = () => {
     }
   }, [deleteBot, targetDelete]);
 
-  const onClickShare = useCallback((target: BotMeta) => {
+  const onClickShare = useCallback((targetIndex: number) => {
     setIsOpenShareDialog(true);
-    setTargetShare(target);
+    setTargetShareIndex(targetIndex);
   }, []);
 
   const onToggleShare = useCallback(() => {
-    if (targetShare) {
-      setIsOpenShareDialog(false);
-      updateBotSharing(targetShare.id, !targetShare.isPublic).catch(() => {
-        setIsOpenShareDialog(true);
-      });
+    if (targetShareBot) {
+      updateBotSharing(targetShareBot.id, !targetShareBot.isPublic);
     }
-  }, [targetShare, updateBotSharing]);
+  }, [targetShareBot, updateBotSharing]);
+
+  const onClickBot = useCallback(
+    (botId: string) => {
+      navigate(`/bot/${botId}`);
+    },
+    [navigate]
+  );
 
   return (
     <>
@@ -82,7 +110,7 @@ const BotExplorePage: React.FC = () => {
       />
       <DialogConfirmShareBot
         isOpen={isOpenShareDialog}
-        target={targetShare}
+        target={targetShareBot}
         onToggleShare={onToggleShare}
         onClose={() => {
           setIsOpenShareDialog(false);
@@ -103,16 +131,29 @@ const BotExplorePage: React.FC = () => {
             </div>
             <div className="mt-2 border-b"></div>
 
-            {myBots?.map((bot) => (
+            {myBots?.map((bot, idx) => (
               <div key={bot.id} className="flex justify-between border-b">
-                <div className="h-full w-full cursor-pointer bg-aws-paper p-2 hover:brightness-90">
+                <div
+                  className="h-full w-full cursor-pointer bg-aws-paper p-2 hover:brightness-90"
+                  onClick={() => {
+                    onClickBot(bot.id);
+                  }}>
                   <div className="text-sm font-semibold">{bot.title}</div>
                   <div className="mt-1 text-xs">{bot.description}</div>
                 </div>
 
                 <div className="ml-2 flex items-center gap-2">
                   {bot.isPublic ? (
-                    <PiUsers className="mr-8" />
+                    <div className="flex items-center">
+                      <PiUsers className="mr-1" />
+                      <ButtonIcon
+                        className="mr-6"
+                        onClick={() => {
+                          onClickShare(idx);
+                        }}>
+                        <PiLink />
+                      </ButtonIcon>
+                    </div>
                   ) : (
                     <PiLockKey className="mr-8" />
                   )}
@@ -120,7 +161,9 @@ const BotExplorePage: React.FC = () => {
                   <Button
                     className="h-8 text-sm font-semibold"
                     outlined
-                    onClick={() => {}}>
+                    onClick={() => {
+                      onClickEditBot(bot.id);
+                    }}>
                     {t('bot.button.edit')}
                   </Button>
                   <div className="relative">
@@ -128,7 +171,7 @@ const BotExplorePage: React.FC = () => {
                       <div className="flex w-20 flex-col rounded border border-aws-font-color/50 bg-aws-paper text-sm">
                         <ItemBotMenu
                           onClick={() => {
-                            onClickShare(bot);
+                            onClickShare(idx);
                           }}>
                           <PiUsers />
                           {t('bot.button.share')}

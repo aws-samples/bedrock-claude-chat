@@ -70,7 +70,7 @@ export type GetBotsRequest =
     };
 
 export type GetBotsResponse = (BotMeta & {
-  abailable: boolean;
+  available: boolean;
 })[];
 
 export type GetBotResponse = BotMeta & {

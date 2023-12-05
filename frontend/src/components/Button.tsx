@@ -1,5 +1,6 @@
 import React, { forwardRef } from 'react';
 import { BaseProps } from '../@types/common';
+import { PiSpinnerGap } from 'react-icons/pi';
 
 type Props = BaseProps & {
   icon?: React.ReactNode;
@@ -7,6 +8,7 @@ type Props = BaseProps & {
   disabled?: boolean;
   text?: boolean;
   outlined?: boolean;
+  loading?: boolean;
   onClick: () => void;
   children: React.ReactNode;
 };
@@ -26,14 +28,19 @@ const Button = forwardRef<HTMLButtonElement, Props>((props, ref) => {
            : 'bg-aws-sea-blue text-aws-font-color-white'
        }
      
-        ${props.disabled ? 'opacity-30' : 'hover:brightness-75'} `}
+        ${
+          props.disabled || props.loading ? 'opacity-30' : 'hover:brightness-75'
+        } `}
       onClick={(e) => {
         e.stopPropagation();
         e.preventDefault();
         props.onClick();
       }}
-      disabled={props.disabled}>
-      {props.icon && <div className="mr-2">{props.icon}</div>}
+      disabled={props.disabled || props.loading}>
+      {props.icon && !props.loading && (
+        <div className="-ml-1 mr-2">{props.icon}</div>
+      )}
+      {props.loading && <PiSpinnerGap className="-ml-1 mr-2 animate-spin" />}
       {props.children}
       {props.rightIcon && <div className="mr-2">{props.rightIcon}</div>}
     </button>

@@ -1,13 +1,14 @@
-import React, { useEffect, useRef, useState } from "react";
-import { BaseProps } from "../@types/common";
+import React, { useEffect, useRef, useState } from 'react';
+import { BaseProps } from '../@types/common';
 
 type Props = BaseProps & {
   value?: string;
   label?: string;
   placeholder?: string;
+  disabled?: boolean;
   hint?: string;
-  optional?: boolean;
   noBorder?: boolean;
+  rows?: number;
   onChange: (value: string) => void;
 };
 
@@ -22,47 +23,43 @@ const Textarea: React.FC<Props> = (props) => {
       return;
     }
 
-    ref.current.style.height = "auto";
+    ref.current.style.height = 'auto';
 
     if (ref.current.scrollHeight > MAX_HEIGHT) {
-      ref.current.style.height = MAX_HEIGHT + "px";
+      ref.current.style.height = MAX_HEIGHT + 'px';
       setIsMax(true);
     } else {
-      ref.current.style.height = ref.current.scrollHeight + "px";
+      ref.current.style.height = ref.current.scrollHeight + 'px';
       setIsMax(false);
     }
   }, [props.value]);
 
   return (
-    <>
-      {props.label && (
-        <div>
-          <span className="text-sm text-gray-500">{props.label}</span>
-          {props.optional && (
-            <span className="ml-2 text-xs italic text-gray-500">
-              - Optional
-            </span>
-          )}
-        </div>
-      )}
+    <div className={`${props.className ?? ''} flex w-full flex-col`}>
       <textarea
         ref={ref}
         className={`${
-          props.className ?? ""
-        } w-full resize-none rounded p-1.5 outline-none ${
-          isMax ? "overflow-y-auto" : "overflow-hidden"
-        } ${props.noBorder ? "" : "border border-black/30"} `}
-        rows={1}
+          props.className ?? ''
+        } peer w-full resize-none rounded p-1.5 outline-none ${
+          isMax ? 'overflow-y-auto' : 'overflow-hidden'
+        } ${props.noBorder ? '' : 'border border-black/30'} `}
+        rows={props.rows ?? 1}
         placeholder={props.placeholder}
+        disabled={props.disabled}
         value={props.value}
         onChange={(e) => {
           props.onChange(e.target.value);
         }}
       />
+      {props.label && (
+        <div className="order-first text-sm text-gray-500 peer-focus:font-semibold peer-focus:italic peer-focus:text-aws-font-color">
+          {props.label}
+        </div>
+      )}
       {props.hint && (
         <div className="-mt-0.5 text-xs text-gray-400">{props.hint}</div>
       )}
-    </>
+    </div>
   );
 };
 

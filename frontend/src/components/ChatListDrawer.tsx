@@ -55,7 +55,6 @@ const Item: React.FC<ItemProps> = (props) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const active = useMemo<boolean>(() => {
-    console.log(pathname);
     return (
       pathParam === props.to || (pathname === '/' && conversationId == props.to)
     );
@@ -114,6 +113,7 @@ const Item: React.FC<ItemProps> = (props) => {
   return (
     <DrawerItem
       isActive={active}
+      isBlur={!editing}
       to={props.to}
       onClick={props.onClick}
       icon={<PiChat />}
@@ -137,17 +137,6 @@ const Item: React.FC<ItemProps> = (props) => {
                 <>{props.label}</>
               )}
             </>
-          )}
-          {!editing && (
-            <div
-              className={`absolute inset-y-0 right-0 w-8 bg-gradient-to-l
-              ${
-                active
-                  ? 'from-aws-sea-blue'
-                  : 'from-aws-squid-ink group-hover:from-aws-sea-blue-hover'
-              }
-              `}
-            />
           )}
         </>
       }
@@ -294,7 +283,7 @@ const ChatListDrawer: React.FC<Props> = (props) => {
           <div className="absolute top-0 w-full overflow-y-auto overflow-x-hidden pb-12">
             <DrawerItem
               isActive={false}
-              icon={<PiNotePencil className="text-lg" />}
+              icon={<PiNotePencil />}
               to=""
               onClick={onClickNewChat}
               labelComponent={t('button.newChat')}
@@ -302,16 +291,17 @@ const ChatListDrawer: React.FC<Props> = (props) => {
 
             {myBots?.map((bot) => (
               <DrawerItem
+                key={bot.id}
                 isActive={false}
                 to={`bot/${bot.id}`}
-                icon={<PiRobot className="mr-2" />}
+                icon={<PiRobot />}
                 labelComponent={bot.title}
               />
             ))}
 
             <DrawerItem
               isActive={false}
-              icon={<PiCompass className="text-lg" />}
+              icon={<PiCompass />}
               to="bot/explore"
               labelComponent={t('button.explore')}
             />

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 type Props = {
   className?: string;
   isActive?: boolean;
+  isBlur?: boolean;
   to: string;
   icon: ReactNode;
   labelComponent: ReactNode;
@@ -21,11 +22,21 @@ const DrawerItem: React.FC<Props> = (props) => {
       } ${props.className ?? ''}`}
       to={props.to}
       onClick={props.onClick}>
-      <div
-        className={`flex h-8 max-h-5 w-full items-center justify-start overflow-hidden`}>
-        <div className="mr-2 text-base">{props.icon}</div>
+      <div className={`flex h-8 max-h-5 w-full justify-start overflow-hidden`}>
+        <div className="mr-2 pt-0.5">{props.icon}</div>
         <div className="relative flex-1 text-ellipsis break-all">
           {props.labelComponent}
+          {(props.isBlur ?? true) && (
+            <div
+              className={`absolute inset-y-0 right-0 w-8 bg-gradient-to-l
+              ${
+                props.isActive
+                  ? 'from-aws-sea-blue'
+                  : 'from-aws-squid-ink group-hover:from-aws-sea-blue-hover'
+              }
+              `}
+            />
+          )}
         </div>
 
         <div className="flex">{props.actionComponent}</div>

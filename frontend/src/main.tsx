@@ -7,7 +7,7 @@ import ChatPage from './pages/ChatPage.tsx';
 import NotFound from './pages/NotFound.tsx';
 import './i18n';
 import BotExplorePage from './pages/BotExplorePage.tsx';
-import BotCreatePage from './pages/BotCreatePage.tsx';
+import BotEditPage from './pages/BotEditPage.tsx';
 
 const router = createBrowserRouter([
   {
@@ -23,8 +23,12 @@ const router = createBrowserRouter([
         element: <BotExplorePage />,
       },
       {
-        path: '/bot/create',
-        element: <BotCreatePage />,
+        path: '/bot/new',
+        element: <BotEditPage />,
+      },
+      {
+        path: '/bot/edit/:botId',
+        element: <BotEditPage />,
       },
       {
         path: '/bot/:botId',
