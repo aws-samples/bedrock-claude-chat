@@ -1,6 +1,5 @@
 import React, { ReactNode, useState } from 'react';
-import { PiCaretDown, PiCaretUp } from 'react-icons/pi';
-import ButtonIcon from './ButtonIcon';
+import { PiCaretDown } from 'react-icons/pi';
 
 type Props = {
   className?: string;
@@ -13,18 +12,12 @@ const ExpandableDrawerGroup: React.FC<Props> = (props) => {
 
   return (
     <div className={`${props.className ?? ''}`}>
-      <div className="flex items-center">
-        <ButtonIcon
-          className="px-2 transition"
-          onClick={() => {
-            setIsShow(!isShow);
-          }}>
-          {isShow ? (
-            <PiCaretDown className="text-sm" />
-          ) : (
-            <PiCaretUp className="text-sm" />
-          )}
-        </ButtonIcon>
+      <div
+        className="flex w-full cursor-pointer items-center transition hover:brightness-75"
+        onClick={() => {
+          setIsShow(!isShow);
+        }}>
+        <PiCaretDown className={`mx-1 text-sm ${isShow ? '' : 'rotate-180'}`} />
 
         <div className="italic">{props.label}</div>
       </div>

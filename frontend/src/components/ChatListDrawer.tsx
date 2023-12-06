@@ -276,7 +276,7 @@ const ChatListDrawer: React.FC<Props> = (props) => {
         onDelete={deleteChat}
         onClose={() => setIsOpenDeleteModal(false)}
       />
-      <div className="relative h-full overflow-y-auto bg-aws-squid-ink  ">
+      <div className="relative h-full overflow-y-auto bg-aws-squid-ink  scrollbar-thin scrollbar-thumb-aws-font-color-white">
         <nav
           className={`lg:visible lg:w-64 ${
             opened ? 'visible w-64' : 'invisible w-0'
@@ -296,7 +296,9 @@ const ChatListDrawer: React.FC<Props> = (props) => {
               labelComponent={t('button.explore')}
             />
 
-            <ExpandableDrawerGroup label={t('app.starredBots')}>
+            <ExpandableDrawerGroup
+              label={t('app.starredBots')}
+              className="border-t pt-1">
               {starredBots?.map((bot) => (
                 <DrawerItem
                   key={bot.id}
@@ -308,7 +310,9 @@ const ChatListDrawer: React.FC<Props> = (props) => {
               ))}
             </ExpandableDrawerGroup>
 
-            <ExpandableDrawerGroup label={t('app.recentlyUsedBots')}>
+            <ExpandableDrawerGroup
+              label={t('app.recentlyUsedBots')}
+              className="border-t pt-1">
               {recentlyUsedUnsterredBots
                 ?.slice(0, 3)
                 .map((bot) => (
@@ -322,7 +326,9 @@ const ChatListDrawer: React.FC<Props> = (props) => {
                 ))}
             </ExpandableDrawerGroup>
 
-            <ExpandableDrawerGroup label={t('app.conversationHistory')}>
+            <ExpandableDrawerGroup
+              label={t('app.conversationHistory')}
+              className="border-t pt-1">
               {conversations?.map((conversation, idx) => (
                 <Item
                   key={idx}

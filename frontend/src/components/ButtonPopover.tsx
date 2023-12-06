@@ -26,7 +26,7 @@ const ButtonPopover: React.FC<Props> = (props) => {
             leave="transition ease-in duration-150"
             leaveFrom="opacity-100 translate-y-0"
             leaveTo="opacity-0 translate-y-1">
-            <Popover.Panel className="absolute z-10">
+            <Popover.Panel className="fixed z-10">
               <div className="mt-0.5 overflow-hidden shadow-lg">
                 {props.children}
               </div>
