@@ -309,15 +309,17 @@ const ChatListDrawer: React.FC<Props> = (props) => {
             </ExpandableDrawerGroup>
 
             <ExpandableDrawerGroup label={t('app.recentlyUsedBots')}>
-              {recentlyUsedUnsterredBots?.map((bot) => (
-                <DrawerItem
-                  key={bot.id}
-                  isActive={false}
-                  to={`bot/${bot.id}`}
-                  icon={<PiRobot />}
-                  labelComponent={bot.title}
-                />
-              ))}
+              {recentlyUsedUnsterredBots
+                ?.slice(0, 3)
+                .map((bot) => (
+                  <DrawerItem
+                    key={bot.id}
+                    isActive={false}
+                    to={`bot/${bot.id}`}
+                    icon={<PiRobot />}
+                    labelComponent={bot.title}
+                  />
+                ))}
             </ExpandableDrawerGroup>
 
             <ExpandableDrawerGroup label={t('app.conversationHistory')}>

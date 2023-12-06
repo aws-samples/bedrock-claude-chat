@@ -10,15 +10,11 @@ import { useTranslation } from 'react-i18next';
 import SwitchBedrockModel from '../components/SwitchBedrockModel';
 import { Model } from '../@types/conversation';
 import useBot from '../hooks/useBot';
+import useConversation from '../hooks/useConversation';
+import { AxiosError } from 'axios';
 
 const ChatPage: React.FC = () => {
   const { t } = useTranslation();
-  const { botId } = useParams();
-  const { myBots } = useBot();
-
-  const botName = useMemo(() => {
-    return myBots?.filter((bot) => bot.id === botId)[0]?.title ?? '';
-  }, [botId, myBots]);
 
   const [content, setContent] = useState('');
   const [model, setModel] = useState<Model>('claude-instant-v1');
@@ -26,6 +22,7 @@ const ChatPage: React.FC = () => {
     postingMessage,
     postChat,
     messages,
+    conversationId,
     setConversationId,
     hasError,
     retryPostChat,
@@ -33,9 +30,37 @@ const ChatPage: React.FC = () => {
     regenerate,
     getPostedModel,
   } = useChat();
+
+  const { getBotId } = useConversation();
+  const { getBot } = useBot();
+
   const { scrollToBottom, scrollToTop } = useScroll();
 
-  const { conversationId: paramConversationId } = useParams();
+  const { conversationId: paramConversationId, botId: paramBotId } =
+    useParams();
+
+  const botId = useMemo(() => {
+    return paramBotId ?? getBotId(conversationId);
+  }, [conversationId, getBotId, paramBotId]);
+
+  const [botName, setBotName] = useState('');
+  useEffect(() => {
+    if (botId) {
+      setBotName(t('bot.label.loadingBot'));
+      getBot(botId)
+        .then((bot) => {
+          setBotName(bot.title);
+        })
+        .catch((err: AxiosError) => {
+          if (err.response?.status === 404) {
+            setBotName(t('bot.label.notAvailableBot'));
+          }
+        });
+    } else {
+      setBotName(t('bot.label.normalChat'));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [botId]);
 
   useEffect(() => {
     setConversationId(paramConversationId ?? '');
@@ -43,7 +68,7 @@ const ChatPage: React.FC = () => {
   }, [paramConversationId]);
 
   const onSend = useCallback(() => {
-    postChat(content, model, botId);
+    postChat(content, model, botId ?? undefined);
     setContent('');
   }, [botId, content, model, postChat]);
 
@@ -57,7 +82,7 @@ const ChatPage: React.FC = () => {
   const onSubmitEditedContent = useCallback(
     (messageId: string, content: string) => {
       if (hasError) {
-        retryPostChat({ content, botId });
+        retryPostChat({ content, botId: botId ?? undefined });
       } else {
         regenerate({ messageId, content });
       }
@@ -79,13 +104,19 @@ const ChatPage: React.FC = () => {
 
   return (
     <>
-      <div className="relative flex justify-center">
-        <div className="absolute left-0 p-3 font-bold">{botName}</div>
-        <SwitchBedrockModel
-          postedModel={getPostedModel()}
-          model={model}
-          setModel={setModel}
-        />
+      <div className="relative flex h-14 justify-center">
+        <div className="absolute left-3 top-3 font-bold">{botName}</div>
+        {getPostedModel() ? (
+          <div className="absolute right-3 top-8 text-sm text-gray-500">
+            model: {getPostedModel()}
+          </div>
+        ) : (
+          <SwitchBedrockModel
+            className="my-auto"
+            model={model}
+            setModel={setModel}
+          />
+        )}
       </div>
       <hr className="w-full border-t border-gray-300" />
       <div className="pb-52 lg:pb-40">
@@ -128,7 +159,7 @@ const ChatPage: React.FC = () => {
               outlined
               onClick={() => {
                 retryPostChat({
-                  botId,
+                  botId: botId ?? undefined,
                 });
               }}>
               {t('button.resend')}

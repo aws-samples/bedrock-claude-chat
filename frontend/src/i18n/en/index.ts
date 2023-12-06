@@ -8,9 +8,15 @@ const translation = {
       conversationHistory: 'History',
     },
     bot: {
-      myBots: 'My Bots',
-      recentlyUsedBots: 'Recently Used Shared Bots',
-      sharedBots: 'Shared Bots',
+      label: {
+        myBots: 'My Bots',
+        recentlyUsedBots: 'Recently Used Shared Bots',
+        loadingBot: '...',
+        normalChat: 'Chat',
+        notAvailableBot: '[NOT Available]',
+        noDescription: 'No Description',
+        notAvailable: 'This bot is NOT available.',
+      },
       create: {
         pageTitle: 'Create My Bot',
       },

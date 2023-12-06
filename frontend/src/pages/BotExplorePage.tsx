@@ -26,6 +26,7 @@ type ItemBotProps = {
 };
 
 const ItemBot: React.FC<ItemBotProps> = (props) => {
+  const { t } = useTranslation();
   return (
     <div key={props.bot.id} className="flex justify-between border-b">
       <div
@@ -35,10 +36,22 @@ const ItemBot: React.FC<ItemBotProps> = (props) => {
             : 'text-aws-font-color/30'
         }`}
         onClick={() => {
-          props.onClick(props.bot.id);
+          if (props.bot.available) {
+            props.onClick(props.bot.id);
+          }
         }}>
         <div className="text-sm font-semibold">{props.bot.title}</div>
-        <div className="mt-1 text-xs">{props.bot.description}</div>
+        {props.bot.description ? (
+          <div className="mt-1 text-xs">
+            {props.bot.available
+              ? props.bot.description
+              : t('bot.label.notAvailable')}
+          </div>
+        ) : (
+          <div className="mt-1 text-xs italic text-gray-400">
+            {t('bot.label.noDescription')}
+          </div>
+        )}
       </div>
 
       <div className="ml-2 flex items-center gap-2">{props.children}</div>
@@ -76,9 +89,11 @@ const BotExplorePage: React.FC = () => {
   const {
     myBots,
     recentlyUsedSharedBots,
-    deleteBot,
+    deleteMyBot,
+    deleteRecentlyUsedBot,
     updateBotSharing,
-    updateBotPinning,
+    updateMyBotStarred,
+    updateSharedBotStarred,
   } = useBot();
 
   const targetShareBot = useMemo(() => {
@@ -107,14 +122,14 @@ const BotExplorePage: React.FC = () => {
     setTargetDelete(target);
   }, []);
 
-  const onDelete = useCallback(() => {
+  const onDeleteMyBot = useCallback(() => {
     if (targetDelete) {
       setIsOpenDeleteDialog(false);
-      deleteBot(targetDelete.id).catch(() => {
+      deleteMyBot(targetDelete.id).catch(() => {
         setIsOpenDeleteDialog(true);
       });
     }
-  }, [deleteBot, targetDelete]);
+  }, [deleteMyBot, targetDelete]);
 
   const onClickShare = useCallback((targetIndex: number) => {
     setIsOpenShareDialog(true);
@@ -139,7 +154,7 @@ const BotExplorePage: React.FC = () => {
       <DialogConfirmDeleteBot
         isOpen={isOpenDeleteDialog}
         target={targetDelete}
-        onDelete={onDelete}
+        onDelete={onDeleteMyBot}
         onClose={() => {
           setIsOpenDeleteDialog(false);
         }}
@@ -156,7 +171,7 @@ const BotExplorePage: React.FC = () => {
         <div className="w-2/3">
           <div className="mt-8 w-full">
             <div className="flex items-end justify-between">
-              <div className="text-xl font-bold">{t('bot.myBots')}</div>
+              <div className="text-xl font-bold">{t('bot.label.myBots')}</div>
               <Button
                 className=" text-sm"
                 outlined
@@ -189,7 +204,7 @@ const BotExplorePage: React.FC = () => {
                     <ButtonIcon
                       disabled={!bot.available}
                       onClick={() => {
-                        updateBotPinning(bot.id, false);
+                        updateMyBotStarred(bot.id, false);
                       }}>
                       <PiStarFill className="text-aws-aqua" />
                     </ButtonIcon>
@@ -197,7 +212,7 @@ const BotExplorePage: React.FC = () => {
                     <ButtonIcon
                       disabled={!bot.available}
                       onClick={() => {
-                        updateBotPinning(bot.id, true);
+                        updateMyBotStarred(bot.id, true);
                       }}>
                       <PiStar />
                     </ButtonIcon>
@@ -238,7 +253,9 @@ const BotExplorePage: React.FC = () => {
             ))}
           </div>
           <div className="mt-8">
-            <div className="text-xl font-bold">{t('bot.recentlyUsedBots')}</div>
+            <div className="text-xl font-bold">
+              {t('bot.label.recentlyUsedBots')}
+            </div>
             <div className="mt-2 border-b"></div>
             <div>
               {recentlyUsedSharedBots?.map((bot) => (
@@ -247,7 +264,7 @@ const BotExplorePage: React.FC = () => {
                     <ButtonIcon
                       disabled={!bot.available}
                       onClick={() => {
-                        updateBotPinning(bot.id, false);
+                        updateSharedBotStarred(bot.id, false);
                       }}>
                       <PiStarFill className="text-aws-aqua" />
                     </ButtonIcon>
@@ -255,7 +272,7 @@ const BotExplorePage: React.FC = () => {
                     <ButtonIcon
                       disabled={!bot.available}
                       onClick={() => {
-                        updateBotPinning(bot.id, true);
+                        updateSharedBotStarred(bot.id, true);
                       }}>
                       <PiStar />
                     </ButtonIcon>
@@ -263,7 +280,7 @@ const BotExplorePage: React.FC = () => {
                   <ButtonIcon
                     className="text-red-600"
                     onClick={() => {
-                      deleteBot(bot.id);
+                      deleteRecentlyUsedBot(bot.id);
                     }}>
                     <PiTrash />
                   </ButtonIcon>

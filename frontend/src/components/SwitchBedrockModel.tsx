@@ -5,7 +5,6 @@ import { Model } from '../@types/conversation';
 import Button from './Button';
 
 type Props = BaseProps & {
-  postedModel: Model | null;
   model: Model;
   setModel: (model: Model) => void;
 };
@@ -14,10 +13,11 @@ const SwitchBedrockModel: React.FC<Props> = (props) => {
   const buttonClass =
     'flex-1 w-40 flex items-center rounded-lg p-2 justify-center';
 
-  return props.postedModel ? (
-    <div className="text-sm text-gray-500">model: {props.postedModel}</div>
-  ) : (
-    <div className="flex justify-center gap-2 rounded-lg border bg-gray-200 p-1 text-sm">
+  return (
+    <div
+      className={`${
+        props.className ?? ''
+      } flex justify-center gap-2 rounded-lg border bg-gray-200 p-1 text-sm`}>
       <Button
         className={`${buttonClass} ${
           props.model === 'claude-instant-v1'
