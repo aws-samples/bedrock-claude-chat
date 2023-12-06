@@ -31,6 +31,7 @@ import { useTranslation } from 'react-i18next';
 import Menu from './Menu';
 import useBot from '../hooks/useBot';
 import DrawerItem from './DrawerItem';
+import ExpandableDrawerGroup from './ExpandableDrawerGroup';
 
 type Props = BaseProps & {
   onSignOut: () => void;
@@ -295,40 +296,43 @@ const ChatListDrawer: React.FC<Props> = (props) => {
               labelComponent={t('button.explore')}
             />
 
-            <div className="ml-2 italic">{t('app.starredBots')}</div>
-            {starredBots?.map((bot) => (
-              <DrawerItem
-                key={bot.id}
-                isActive={false}
-                to={`bot/${bot.id}`}
-                icon={<PiRobot />}
-                labelComponent={bot.title}
-              />
-            ))}
+            <ExpandableDrawerGroup label={t('app.starredBots')}>
+              {starredBots?.map((bot) => (
+                <DrawerItem
+                  key={bot.id}
+                  isActive={false}
+                  to={`bot/${bot.id}`}
+                  icon={<PiRobot />}
+                  labelComponent={bot.title}
+                />
+              ))}
+            </ExpandableDrawerGroup>
 
-            <div className="ml-2 italic">{t('app.recentlyUsedBots')}</div>
-            {recentlyUsedUnsterredBots?.map((bot) => (
-              <DrawerItem
-                key={bot.id}
-                isActive={false}
-                to={`bot/${bot.id}`}
-                icon={<PiRobot />}
-                labelComponent={bot.title}
-              />
-            ))}
+            <ExpandableDrawerGroup label={t('app.recentlyUsedBots')}>
+              {recentlyUsedUnsterredBots?.map((bot) => (
+                <DrawerItem
+                  key={bot.id}
+                  isActive={false}
+                  to={`bot/${bot.id}`}
+                  icon={<PiRobot />}
+                  labelComponent={bot.title}
+                />
+              ))}
+            </ExpandableDrawerGroup>
 
-            <div className="ml-2 italic">{t('app.conversationHistory')}</div>
-            {conversations?.map((conversation, idx) => (
-              <Item
-                key={idx}
-                className="grow"
-                label={conversation.title}
-                to={conversation.id}
-                generatedTitle={idx === generateTitleIndex}
-                onClick={closeSamllDrawer}
-                onDelete={onDelete}
-              />
-            ))}
+            <ExpandableDrawerGroup label={t('app.conversationHistory')}>
+              {conversations?.map((conversation, idx) => (
+                <Item
+                  key={idx}
+                  className="grow"
+                  label={conversation.title}
+                  to={conversation.id}
+                  generatedTitle={idx === generateTitleIndex}
+                  onClick={closeSamllDrawer}
+                  onDelete={onDelete}
+                />
+              ))}
+            </ExpandableDrawerGroup>
           </div>
 
           <div
