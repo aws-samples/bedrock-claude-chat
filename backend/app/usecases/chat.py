@@ -154,7 +154,7 @@ def trace_to_root(
 ) -> list[MessageModel]:
     """Trace message map from leaf node to root node."""
     result = []
-    if not node_id:
+    if not node_id or node_id == "system":
         node_id = "instruction" if "instruction" in message_map else "system"
 
     current_node = message_map.get(node_id)
