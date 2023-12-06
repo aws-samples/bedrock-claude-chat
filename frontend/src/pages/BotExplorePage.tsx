@@ -13,12 +13,13 @@ import {
 } from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
 import useBot from '../hooks/useBot';
-import ButtonPopover from '../components/ButtonPopover';
 import { BotMeta, GetBotsResponse } from '../@types/bot';
 import DialogConfirmDeleteBot from '../components/DialogConfirmDeleteBot';
 import DialogConfirmShareBot from '../components/DialogShareBot';
 import ButtonIcon from '../components/ButtonIcon';
 import { BaseProps } from '../@types/common';
+import PopoverMenu from '../components/PopoverMenu';
+import PopoverItem from '../components/PopoverItem';
 
 type ItemBotProps = BaseProps & {
   bot: GetBotsResponse[number];
@@ -58,24 +59,6 @@ const ItemBot: React.FC<ItemBotProps> = (props) => {
       </div>
 
       <div className="ml-2 flex items-center gap-2">{props.children}</div>
-    </div>
-  );
-};
-
-type ItemBotMenuProps = {
-  className?: string;
-  children: ReactNode;
-  onClick: () => void;
-};
-
-const ItemBotMenu: React.FC<ItemBotMenuProps> = (props) => {
-  return (
-    <div
-      className={`${
-        props.className ?? ''
-      } flex cursor-pointer items-center gap-1 border-b border-aws-font-color/50 bg-aws-paper px-2 py-1 first:rounded-t last:rounded-b last:border-b-0 hover:brightness-75`}
-      onClick={props.onClick}>
-      {props.children}
     </div>
   );
 };
@@ -185,7 +168,7 @@ const BotExplorePage: React.FC = () => {
             </div>
             <div className="mt-2 border-b"></div>
 
-            <div className="h-4/5 overflow-y-scroll border-b  pr-1 scrollbar-thin scrollbar-thumb-aws-font-color/20 ">
+            <div className="h-4/5 overflow-x-hidden overflow-y-scroll border-b  pr-1 scrollbar-thin scrollbar-thumb-aws-font-color/20 ">
               {myBots?.map((bot, idx) => (
                 <ItemBot
                   key={bot.id}
@@ -236,26 +219,24 @@ const BotExplorePage: React.FC = () => {
                     {t('bot.button.edit')}
                   </Button>
                   <div className="relative">
-                    <ButtonPopover className="h-8">
-                      <div className="flex w-20 flex-col rounded border border-aws-font-color/50 bg-aws-paper text-sm">
-                        <ItemBotMenu
-                          onClick={() => {
-                            onClickShare(idx);
-                          }}>
-                          <PiUsers />
-                          {t('bot.button.share')}
-                        </ItemBotMenu>
+                    <PopoverMenu className="h-8" target="bottom-right">
+                      <PopoverItem
+                        onClick={() => {
+                          onClickShare(idx);
+                        }}>
+                        <PiUsers />
+                        {t('bot.button.share')}
+                      </PopoverItem>
 
-                        <ItemBotMenu
-                          className="font-bold text-red-600"
-                          onClick={() => {
-                            onClickDelete(bot);
-                          }}>
-                          <PiTrashBold />
-                          {t('bot.button.delete')}
-                        </ItemBotMenu>
-                      </div>
-                    </ButtonPopover>
+                      <PopoverItem
+                        className="font-bold text-red-600"
+                        onClick={() => {
+                          onClickDelete(bot);
+                        }}>
+                        <PiTrashBold />
+                        {t('bot.button.delete')}
+                      </PopoverItem>
+                    </PopoverMenu>
                   </div>
                 </ItemBot>
               ))}

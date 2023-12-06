@@ -1,13 +1,23 @@
 import { Popover, Transition } from '@headlessui/react';
-import React, { Fragment, ReactNode } from 'react';
+import React, { Fragment, ReactNode, useMemo } from 'react';
 import { PiDotsThreeOutlineFill } from 'react-icons/pi';
 
 type Props = {
   className?: string;
+  target?: 'bottom-left' | 'bottom-right';
   children: ReactNode;
 };
 
-const ButtonPopover: React.FC<Props> = (props) => {
+const PopoverMenu: React.FC<Props> = (props) => {
+  const origin = useMemo(() => {
+    if (props.target === 'bottom-left') {
+      return 'left-0';
+    } else if (props.target === 'bottom-right') {
+      return 'right-0';
+    }
+    return 'left-3';
+  }, [props.target]);
+
   return (
     <Popover className="relative">
       {() => (
@@ -26,9 +36,11 @@ const ButtonPopover: React.FC<Props> = (props) => {
             leave="transition ease-in duration-150"
             leaveFrom="opacity-100 translate-y-0"
             leaveTo="opacity-0 translate-y-1">
-            <Popover.Panel className="fixed z-10">
+            <Popover.Panel className={`absolute z-10 ${origin}`}>
               <div className="mt-0.5 overflow-hidden shadow-lg">
-                {props.children}
+                <div className="flex flex-col whitespace-nowrap rounded border border-aws-font-color/50 bg-aws-paper text-sm">
+                  {props.children}
+                </div>
               </div>
             </Popover.Panel>
           </Transition>
@@ -38,4 +50,4 @@ const ButtonPopover: React.FC<Props> = (props) => {
   );
 };
 
-export default ButtonPopover;
+export default PopoverMenu;

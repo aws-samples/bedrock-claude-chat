@@ -57,7 +57,9 @@ const Item: React.FC<ItemProps> = (props) => {
 
   const active = useMemo<boolean>(() => {
     return (
-      pathParam === props.to || (pathname === '/' && conversationId == props.to)
+      pathParam === props.to ||
+      ((pathname === '/' || pathname.startsWith('/bot/')) &&
+        conversationId == props.to)
     );
   }, [conversationId, pathParam, pathname, props.to]);
 
@@ -186,8 +188,9 @@ const ChatListDrawer: React.FC<Props> = (props) => {
   const [generateTitleIndex, setGenerateTitleIndex] = useState(-1);
 
   const { deleteConversation } = useConversation();
-  const { newChat } = useChat();
+  const { newChat, conversationId } = useChat();
   const navigate = useNavigate();
+  const { botId } = useParams();
 
   useEffect(() => {
     setPrevConversations(conversations);
@@ -213,6 +216,15 @@ const ChatListDrawer: React.FC<Props> = (props) => {
     closeSamllDrawer();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const onClickNewBotChat = useCallback(
+    () => {
+      newChat();
+      closeSamllDrawer();
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
 
   const [isOpenDeleteModal, setIsOpenDeleteModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<
@@ -276,7 +288,7 @@ const ChatListDrawer: React.FC<Props> = (props) => {
         onDelete={deleteChat}
         onClose={() => setIsOpenDeleteModal(false)}
       />
-      <div className="relative h-full overflow-y-auto bg-aws-squid-ink  scrollbar-thin scrollbar-thumb-aws-font-color-white">
+      <div className="relative h-full overflow-y-auto bg-aws-squid-ink  ">
         <nav
           className={`lg:visible lg:w-64 ${
             opened ? 'visible w-64' : 'invisible w-0'
@@ -302,10 +314,11 @@ const ChatListDrawer: React.FC<Props> = (props) => {
               {starredBots?.map((bot) => (
                 <DrawerItem
                   key={bot.id}
-                  isActive={false}
+                  isActive={botId === bot.id && !conversationId}
                   to={`bot/${bot.id}`}
                   icon={<PiRobot />}
                   labelComponent={bot.title}
+                  onClick={onClickNewBotChat}
                 />
               ))}
             </ExpandableDrawerGroup>
@@ -322,6 +335,7 @@ const ChatListDrawer: React.FC<Props> = (props) => {
                     to={`bot/${bot.id}`}
                     icon={<PiRobot />}
                     labelComponent={bot.title}
+                    onClick={onClickNewBotChat}
                   />
                 ))}
             </ExpandableDrawerGroup>

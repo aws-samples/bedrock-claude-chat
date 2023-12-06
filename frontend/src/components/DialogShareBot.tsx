@@ -5,7 +5,7 @@ import ModalDialog from './ModalDialog';
 import { Trans, useTranslation } from 'react-i18next';
 import { BotMeta } from '../@types/bot';
 import Toggle from './Toggle';
-import copy from 'copy-to-clipboard';
+import { copyBotUrl, getBotUrl } from '../utils/BotUtils';
 
 type Props = BaseProps & {
   isOpen: boolean;
@@ -24,17 +24,17 @@ const DialogShareBot: React.FC<Props> = (props) => {
   }, [props.target?.isPublic]);
 
   const url = useMemo(() => {
-    return `${window.location.origin}/bot/${props.target?.id}`;
+    return getBotUrl(props.target?.id ?? '');
   }, [props.target]);
 
   const onClickCopy = useCallback(() => {
-    copy(url);
+    copyBotUrl(props.target?.id ?? '');
     setLabelCopy(t('bot.button.copied'));
 
     setTimeout(() => {
       setLabelCopy(t('bot.button.copy'));
     }, 3000);
-  }, [t, url]);
+  }, [props.target?.id, t]);
 
   return (
     <ModalDialog {...props} title={t('bot.shareDialog.title')}>

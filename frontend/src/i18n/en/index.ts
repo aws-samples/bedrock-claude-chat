@@ -11,11 +11,16 @@ const translation = {
       label: {
         myBots: 'My Bots',
         recentlyUsedBots: 'Recently Used Shared Bots',
-        loadingBot: '...',
+        loadingBot: 'Loading...',
         normalChat: 'Chat',
         notAvailableBot: '[NOT Available]',
         noDescription: 'No Description',
         notAvailable: 'This bot is NOT available.',
+      },
+      titleSubmenu: {
+        edit: 'Edit',
+        copyLink: 'Copy Link',
+        copiedLink: 'Copied',
       },
       create: {
         pageTitle: 'Create My Bot',

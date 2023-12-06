@@ -3,8 +3,15 @@ import InputChatContent from '../components/InputChatContent';
 import useChat from '../hooks/useChat';
 import ChatMessage from '../components/ChatMessage';
 import useScroll from '../hooks/useScroll';
-import { useParams } from 'react-router-dom';
-import { PiArrowsCounterClockwise, PiWarningCircleFill } from 'react-icons/pi';
+import { useNavigate, useParams } from 'react-router-dom';
+import {
+  PiArrowsCounterClockwise,
+  PiLink,
+  PiPencilLine,
+  PiStar,
+  PiStarFill,
+  PiWarningCircleFill,
+} from 'react-icons/pi';
 import Button from '../components/Button';
 import { useTranslation } from 'react-i18next';
 import SwitchBedrockModel from '../components/SwitchBedrockModel';
@@ -12,9 +19,16 @@ import { Model } from '../@types/conversation';
 import useBot from '../hooks/useBot';
 import useConversation from '../hooks/useConversation';
 import { AxiosError } from 'axios';
+import ButtonPopover from '../components/PopoverMenu';
+import PopoverItem from '../components/PopoverItem';
+import { GetBotResponse } from '../@types/bot';
+import { copyBotUrl } from '../utils/BotUtils';
+import { produce } from 'immer';
+import ButtonIcon from '../components/ButtonIcon';
 
 const ChatPage: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   const [content, setContent] = useState('');
   const [model, setModel] = useState<Model>('claude-instant-v1');
@@ -43,21 +57,29 @@ const ChatPage: React.FC = () => {
     return paramBotId ?? getBotId(conversationId);
   }, [conversationId, getBotId, paramBotId]);
 
-  const [botName, setBotName] = useState('');
+  const [pageTitle, setPageTitle] = useState('');
+  const [bot, setBot] = useState<GetBotResponse>();
+  const [isAvailabilityBot, setIsAvailabilityBot] = useState(false);
   useEffect(() => {
+    setIsAvailabilityBot(false);
     if (botId) {
-      setBotName(t('bot.label.loadingBot'));
+      setPageTitle(t('bot.label.loadingBot'));
+      setBot(undefined);
       getBot(botId)
         .then((bot) => {
-          setBotName(bot.title);
+          setIsAvailabilityBot(true);
+          setPageTitle(bot.title);
+          setBot(bot);
         })
         .catch((err: AxiosError) => {
           if (err.response?.status === 404) {
-            setBotName(t('bot.label.notAvailableBot'));
+            setPageTitle(t('bot.label.notAvailableBot'));
+            setBot(undefined);
           }
         });
     } else {
-      setBotName(t('bot.label.normalChat'));
+      setPageTitle(t('bot.label.normalChat'));
+      setBot(undefined);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [botId]);
@@ -102,10 +124,99 @@ const ChatPage: React.FC = () => {
     }
   }, [messages, scrollToBottom, scrollToTop]);
 
+  const { updateMyBotStarred, updateSharedBotStarred } = useBot();
+  const onClickBotEdit = useCallback(
+    (botId: string) => {
+      navigate(`/bot/edit/${botId}`);
+    },
+    [navigate]
+  );
+
+  const onClickStar = useCallback(() => {
+    if (!bot) {
+      return;
+    }
+    const isStarred = !bot.isPinned;
+    setBot(
+      produce(bot, (draft) => {
+        draft.isPinned = isStarred;
+      })
+    );
+
+    try {
+      if (bot.owned) {
+        updateMyBotStarred(bot.id, isStarred);
+      } else {
+        updateSharedBotStarred(bot.id, isStarred);
+      }
+    } catch {
+      setBot(
+        produce(bot, (draft) => {
+          if (draft) {
+            draft.isPinned = !isStarred;
+          }
+        })
+      );
+    }
+  }, [bot, updateMyBotStarred, updateSharedBotStarred]);
+
+  const [copyLabel, setCopyLabel] = useState(t('bot.titleSubmenu.copyLink'));
+  const onClickCopyUrl = useCallback(
+    (botId: string) => {
+      copyBotUrl(botId);
+      setCopyLabel(t('bot.titleSubmenu.copiedLink'));
+      setTimeout(() => {
+        setCopyLabel(t('bot.titleSubmenu.copyLink'));
+      }, 3000);
+    },
+    [t]
+  );
+
   return (
     <>
       <div className="relative flex h-14 justify-center">
-        <div className="absolute left-3 top-3 font-bold">{botName}</div>
+        <div className="absolute left-3 top-3 flex font-bold">
+          <div>
+            <div>{pageTitle}</div>
+            <div className="text-xs font-thin">{bot?.description}</div>
+          </div>
+
+          {isAvailabilityBot && (
+            <div className="ml-6 flex items-start">
+              <ButtonIcon onClick={onClickStar}>
+                {bot?.isPinned ? (
+                  <PiStarFill className="text-aws-aqua" />
+                ) : (
+                  <PiStar />
+                )}
+              </ButtonIcon>
+              <ButtonPopover className="ml-1">
+                {bot?.owned && (
+                  <PopoverItem
+                    onClick={() => {
+                      if (bot) {
+                        onClickBotEdit(bot.id);
+                      }
+                    }}>
+                    <PiPencilLine />
+                    {t('bot.titleSubmenu.edit')}
+                  </PopoverItem>
+                )}
+                {bot?.isPublic && (
+                  <PopoverItem
+                    onClick={() => {
+                      if (bot) {
+                        onClickCopyUrl(bot.id);
+                      }
+                    }}>
+                    <PiLink />
+                    {copyLabel}
+                  </PopoverItem>
+                )}
+              </ButtonPopover>
+            </div>
+          )}
+        </div>
         {getPostedModel() ? (
           <div className="absolute right-3 top-8 text-sm text-gray-500">
             model: {getPostedModel()}

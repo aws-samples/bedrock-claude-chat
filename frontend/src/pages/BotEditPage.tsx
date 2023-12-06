@@ -36,8 +36,8 @@ const BotEditPage: React.FC = () => {
   }, [botId]);
 
   const onClickBack = useCallback(() => {
-    navigate('/bot/explore');
-  }, [navigate]);
+    history.back();
+  }, []);
 
   const onClickCreate = useCallback(() => {
     setIsLoading(true);
