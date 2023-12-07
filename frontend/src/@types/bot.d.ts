@@ -11,6 +11,14 @@ export type BotMeta = {
   owned: boolean;
 };
 
+export type BotMetaWithAvailable = BotMeta & {
+  available: boolean;
+};
+
+export type BotDetails = BotMeta & {
+  instruction: string;
+};
+
 export type RegisterBotRequest = {
   id: string;
   title: string;
@@ -18,17 +26,7 @@ export type RegisterBotRequest = {
   description?: string;
 };
 
-export type RegisterBotResponse = {
-  id: string;
-  title: string;
-  instruction: string;
-  description: string;
-  createTime: Date;
-  lastUsedTime: Date;
-  isPublic: boolean;
-  isPinned: boolean;
-  owned: boolean;
-};
+export type RegisterBotResponse = BotMeta;
 
 export type UpdateBotRequest = {
   title: string;
@@ -69,10 +67,8 @@ export type GetBotsRequest =
       pinned: boolean;
     };
 
-export type GetBotsResponse = (BotMeta & {
-  available: boolean;
-})[];
+export type GetBotsResponse = BotMetaWithAvailable[];
 
-export type GetBotResponse = BotMeta & {
-  instruction: string;
-};
+export type GetMyBotResponse = BotDetails;
+
+export type GetBotSummaryResponse = BotMeta;

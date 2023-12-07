@@ -1,7 +1,8 @@
 import {
-  GetBotResponse,
+  GetBotSummaryResponse,
   GetBotsRequest,
   GetBotsResponse,
+  GetMyBotResponse,
   RegisterBotRequest,
   RegisterBotResponse,
   UpdateBotPinnedRequest,
@@ -19,10 +20,12 @@ const useBotApi = () => {
   return {
     bots: (req: GetBotsRequest) => {
       return http.get<GetBotsResponse>(['bot', req]);
-      // return http.get<GetBotsResponse>('bot');
     },
-    getBot: (botId: string) => {
-      return http.getOnce<GetBotResponse>(`bot/${botId}`);
+    getMyBot: (botId: string) => {
+      return http.getOnce<GetMyBotResponse>(`bot/private/${botId}`);
+    },
+    getBotSummary: (botId: string) => {
+      return http.getOnce<GetBotSummaryResponse>(`bot/summary/${botId}`);
     },
     registerBot: (params: RegisterBotRequest) => {
       return http.post<RegisterBotResponse>('bot', params);

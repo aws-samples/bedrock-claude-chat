@@ -27,8 +27,11 @@ const useBot = () => {
       (bot) => !bot.isPinned && bot.available
     ),
     recentlyUsedSharedBots: recentlyUsedBots?.filter((bot) => !bot.owned),
-    getBot: async (botId: string) => {
-      return (await api.getBot(botId)).data;
+    getMyBot: async (botId: string) => {
+      return (await api.getMyBot(botId)).data;
+    },
+    getBotSummary: async (botId: string) => {
+      return (await api.getBotSummary(botId)).data;
     },
     registerBot: (params: Omit<RegisterBotRequest, 'id'>) => {
       const id = ulid();
@@ -99,9 +102,21 @@ const useBot = () => {
         });
     },
     updateMyBotStarred: (botId: string, isStarred: boolean) => {
-      const idx = myBots?.findIndex((bot) => bot.id === botId) ?? -1;
+      const idxMybots = myBots?.findIndex((bot) => bot.id === botId) ?? -1;
       mutateMyBots(
         produce(myBots, (draft) => {
+          if (draft) {
+            draft[idxMybots].isPinned = isStarred;
+          }
+        }),
+        {
+          revalidate: false,
+        }
+      );
+
+      mutateRecentlyUsedBots(
+        produce(recentlyUsedBots, (draft) => {
+          const idx = draft?.findIndex((bot) => bot.id === botId) ?? -1;
           if (draft) {
             draft[idx].isPinned = isStarred;
           }
@@ -110,11 +125,12 @@ const useBot = () => {
           revalidate: false,
         }
       );
+
       mutateStarredBots(
         produce(starredBots, (draft) => {
           if (myBots && isStarred) {
             draft?.unshift({
-              ...myBots[idx],
+              ...myBots[idxMybots],
             });
           } else if (!isStarred) {
             const idxStarred =
@@ -131,6 +147,7 @@ const useBot = () => {
         .finally(() => {
           mutateMyBots();
           mutateStarredBots();
+          mutateRecentlyUsedBots();
         });
     },
     updateSharedBotStarred: (botId: string, isStarred: boolean) => {

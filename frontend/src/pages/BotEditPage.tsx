@@ -11,7 +11,7 @@ const BotEditPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { botId } = useParams();
-  const { getBot, registerBot, updateBot } = useBot();
+  const { getMyBot, registerBot, updateBot } = useBot();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -22,7 +22,7 @@ const BotEditPage: React.FC = () => {
   useEffect(() => {
     if (botId) {
       setIsLoading(true);
-      getBot(botId)
+      getMyBot(botId)
         .then((bot) => {
           setTitle(bot.title);
           setDescription(bot.description);

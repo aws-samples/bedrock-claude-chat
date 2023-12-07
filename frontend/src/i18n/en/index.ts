@@ -14,8 +14,11 @@ const translation = {
         loadingBot: 'Loading...',
         normalChat: 'Chat',
         notAvailableBot: '[NOT Available]',
+        notAvailableBotInputMessage: 'This bot is NOT abailable.',
         noDescription: 'No Description',
         notAvailable: 'This bot is NOT available.',
+        noBots: 'No Bots.',
+        noBotsRecentlyUsed: 'No Recently Used Shared Bots.',
       },
       titleSubmenu: {
         edit: 'Edit',

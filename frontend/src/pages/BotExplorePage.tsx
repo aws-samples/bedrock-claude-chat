@@ -13,7 +13,7 @@ import {
 } from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
 import useBot from '../hooks/useBot';
-import { BotMeta, GetBotsResponse } from '../@types/bot';
+import { BotMeta, BotMetaWithAvailable } from '../@types/bot';
 import DialogConfirmDeleteBot from '../components/DialogConfirmDeleteBot';
 import DialogConfirmShareBot from '../components/DialogShareBot';
 import ButtonIcon from '../components/ButtonIcon';
@@ -22,7 +22,7 @@ import PopoverMenu from '../components/PopoverMenu';
 import PopoverItem from '../components/PopoverItem';
 
 type ItemBotProps = BaseProps & {
-  bot: GetBotsResponse[number];
+  bot: BotMetaWithAvailable;
   onClick: (botId: string) => void;
   children: ReactNode;
 };
@@ -169,6 +169,11 @@ const BotExplorePage: React.FC = () => {
             <div className="mt-2 border-b"></div>
 
             <div className="h-4/5 overflow-x-hidden overflow-y-scroll border-b  pr-1 scrollbar-thin scrollbar-thumb-aws-font-color/20 ">
+              {myBots?.length === 0 && (
+                <div className="flex h-full w-full items-center justify-center italic">
+                  {t('bot.label.noBots')}
+                </div>
+              )}
               {myBots?.map((bot, idx) => (
                 <ItemBot
                   key={bot.id}
@@ -248,6 +253,11 @@ const BotExplorePage: React.FC = () => {
             </div>
             <div className="mt-2 border-b"></div>
             <div className="h-4/5 overflow-y-scroll border-b pr-1 scrollbar-thin scrollbar-thumb-aws-font-color/20">
+              {recentlyUsedSharedBots?.length === 0 && (
+                <div className="flex h-full w-full items-center justify-center italic">
+                  {t('bot.label.noBotsRecentlyUsed')}
+                </div>
+              )}
               {recentlyUsedSharedBots?.map((bot) => (
                 <ItemBot
                   key={bot.id}

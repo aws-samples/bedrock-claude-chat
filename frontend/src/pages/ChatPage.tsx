@@ -21,10 +21,11 @@ import useConversation from '../hooks/useConversation';
 import { AxiosError } from 'axios';
 import ButtonPopover from '../components/PopoverMenu';
 import PopoverItem from '../components/PopoverItem';
-import { GetBotResponse } from '../@types/bot';
+
 import { copyBotUrl } from '../utils/BotUtils';
 import { produce } from 'immer';
 import ButtonIcon from '../components/ButtonIcon';
+import { BotMeta } from '../@types/bot';
 
 const ChatPage: React.FC = () => {
   const { t } = useTranslation();
@@ -46,7 +47,7 @@ const ChatPage: React.FC = () => {
   } = useChat();
 
   const { getBotId } = useConversation();
-  const { getBot } = useBot();
+  const { getBotSummary } = useBot();
 
   const { scrollToBottom, scrollToTop } = useScroll();
 
@@ -58,14 +59,16 @@ const ChatPage: React.FC = () => {
   }, [conversationId, getBotId, paramBotId]);
 
   const [pageTitle, setPageTitle] = useState('');
-  const [bot, setBot] = useState<GetBotResponse>();
+  const [bot, setBot] = useState<BotMeta>();
   const [isAvailabilityBot, setIsAvailabilityBot] = useState(false);
+  const [isLoadingBot, setIsLoadingBot] = useState(false);
   useEffect(() => {
     setIsAvailabilityBot(false);
     if (botId) {
       setPageTitle(t('bot.label.loadingBot'));
       setBot(undefined);
-      getBot(botId)
+      setIsLoadingBot(true);
+      getBotSummary(botId)
         .then((bot) => {
           setIsAvailabilityBot(true);
           setPageTitle(bot.title);
@@ -76,6 +79,9 @@ const ChatPage: React.FC = () => {
             setPageTitle(t('bot.label.notAvailableBot'));
             setBot(undefined);
           }
+        })
+        .finally(() => {
+          setIsLoadingBot(false);
         });
     } else {
       setPageTitle(t('bot.label.normalChat'));
@@ -83,6 +89,10 @@ const ChatPage: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [botId]);
+
+  const disabledInput = useMemo(() => {
+    return botId !== null && !isAvailabilityBot && !isLoadingBot;
+  }, [botId, isAvailabilityBot, isLoadingBot]);
 
   useEffect(() => {
     setConversationId(paramConversationId ?? '');
@@ -282,7 +292,13 @@ const ChatPage: React.FC = () => {
       <div className="absolute bottom-0 z-0 flex w-full justify-center">
         <InputChatContent
           content={content}
-          disabled={postingMessage}
+          disabledSend={postingMessage}
+          disabled={disabledInput}
+          placeholder={
+            disabledInput
+              ? t('bot.label.notAvailableBotInputMessage')
+              : undefined
+          }
           onChangeContent={setContent}
           onSend={onSend}
           onRegenerate={onRegenerate}

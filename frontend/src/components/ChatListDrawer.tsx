@@ -288,7 +288,7 @@ const ChatListDrawer: React.FC<Props> = (props) => {
         onDelete={deleteChat}
         onClose={() => setIsOpenDeleteModal(false)}
       />
-      <div className="relative h-full overflow-y-auto bg-aws-squid-ink  ">
+      <div className="relative h-full overflow-y-auto bg-aws-squid-ink scrollbar-thin scrollbar-track-white scrollbar-thumb-aws-squid-ink/30 ">
         <nav
           className={`lg:visible lg:w-64 ${
             opened ? 'visible w-64' : 'invisible w-0'
