@@ -2,6 +2,7 @@ from app.repositories.common import RecordNotFoundError
 from app.repositories.custom_bot import (
     delete_alias_by_id,
     delete_bot_by_id,
+    find_alias_by_id,
     find_private_bot_by_id,
     find_public_bot_by_id,
     store_bot,
@@ -18,7 +19,7 @@ from app.route_schema import (
     BotModifyInput,
     BotModifyOutput,
     BotOutput,
-    BotSwitchVisibilityInput,
+    BotSummaryOutput,
 )
 from app.utils import get_current_time
 
@@ -89,6 +90,41 @@ def fetch_bot(user_id: str, bot_id: str) -> tuple[bool, BotModel]:
     except RecordNotFoundError:
         raise RecordNotFoundError(
             f"Bot with ID {bot_id} not found in both private (for user {user_id}) and public items."
+        )
+
+
+def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
+    try:
+        bot = find_private_bot_by_id(user_id, bot_id)
+        return BotSummaryOutput(
+            id=bot_id,
+            title=bot.title,
+            description=bot.description,
+            create_time=bot.create_time,
+            last_used_time=bot.last_used_time,
+            is_pinned=bot.is_pinned,
+            is_public=True if bot.public_bot_id else False,
+            owned=True,
+        )
+
+    except RecordNotFoundError:
+        pass
+
+    try:
+        alias = find_alias_by_id(user_id, bot_id)
+        return BotSummaryOutput(
+            id=alias.id,
+            title=alias.title,
+            description=alias.description,
+            create_time=alias.create_time,
+            last_used_time=alias.last_used_time,
+            is_pinned=alias.is_pinned,
+            is_public=True,
+            owned=False,
+        )
+    except RecordNotFoundError:
+        raise RecordNotFoundError(
+            f"Bot with ID {bot_id} not found in both private (for user {user_id}) and alias items."
         )
 
 

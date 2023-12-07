@@ -84,6 +84,7 @@ def prepare_conversation(
                     BotAliasModel(
                         id=bot.id,
                         title=bot.title,
+                        description=bot.description,
                         original_bot_id=chat_input.bot_id,
                         create_time=current_time,
                         last_used_time=current_time,

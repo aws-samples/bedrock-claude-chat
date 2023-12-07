@@ -120,6 +120,17 @@ class BotMetaOutput(BaseSchema):
     available: bool
 
 
+class BotSummaryOutput(BaseSchema):
+    id: str
+    title: str
+    description: str
+    create_time: float
+    last_used_time: float
+    is_pinned: bool
+    is_public: bool
+    owned: bool
+
+
 class BotSwitchVisibilityInput(BaseSchema):
     to_public: bool
 

@@ -81,6 +81,7 @@ def store_alias(user_id: str, alias: BotAliasModel):
         "PK": user_id,
         "SK": _compose_bot_alias_id(user_id, alias.id),
         "Title": alias.title,
+        "Description": alias.description,
         "OriginalBotId": alias.original_bot_id,
         "CreateTime": decimal(alias.create_time),
         "LastBotUsed": decimal(alias.last_used_time),
@@ -304,14 +305,17 @@ def find_all_bots_by_user_id(
                     is_public=False,
                 )
 
-            if is_original_available and bot.title != item["Title"]:
+            if is_original_available and (
+                bot.title != item["Title"] or bot.description != item["Description"]
+            ):
                 # Replace alias to the latest
                 store_alias(
                     user_id,
                     BotAliasModel(
                         id=_decompose_bot_alias_id(item["SK"]),
-                        # Update title
+                        # Update title and description
                         title=bot.title,
+                        description=bot.description,
                         original_bot_id=item["OriginalBotId"],
                         create_time=float(item["CreateTime"]),
                         last_used_time=float(item["LastBotUsed"]),
@@ -392,6 +396,32 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
         public_bot_id=item["PublicBotId"],
     )
     logger.debug(f"Found public bot: {bot}")
+    return bot
+
+
+def find_alias_by_id(user_id: str, alias_id: str) -> BotAliasModel:
+    """Find alias bot by id."""
+    table = _get_table_client(user_id)
+    logger.debug(f"Finding alias bot with id: {alias_id}")
+    response = table.query(
+        IndexName="SKIndex",
+        KeyConditionExpression=Key("SK").eq(_compose_bot_alias_id(user_id, alias_id)),
+    )
+    if len(response["Items"]) == 0:
+        raise RecordNotFoundError(f"Alias bot with id {alias_id} not found")
+    item = response["Items"][0]
+
+    bot = BotAliasModel(
+        id=_decompose_bot_alias_id(item["SK"]),
+        title=item["Title"],
+        description=item["Description"],
+        original_bot_id=item["OriginalBotId"],
+        create_time=float(item["CreateTime"]),
+        last_used_time=float(item["LastBotUsed"]),
+        is_pinned=item["IsPinned"],
+    )
+
+    logger.debug(f"Found alias: {bot}")
     return bot
 
 

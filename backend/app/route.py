@@ -9,6 +9,7 @@ from app.repositories.conversation import (
 )
 from app.repositories.custom_bot import (
     find_all_bots_by_user_id,
+    find_private_bot_by_id,
     find_private_bots_by_user_id,
     update_bot_visibility,
 )
@@ -19,6 +20,7 @@ from app.route_schema import (
     BotModifyInput,
     BotOutput,
     BotPinnedInput,
+    BotSummaryOutput,
     BotSwitchVisibilityInput,
     ChatInput,
     ChatOutput,
@@ -33,6 +35,7 @@ from app.route_schema import (
 from app.usecases.bot import (
     create_new_bot,
     fetch_bot,
+    fetch_bot_summary,
     modify_owned_bot,
     modify_pin_status,
     remove_bot_by_id,
@@ -202,12 +205,12 @@ def get_all_bots(
     return output
 
 
-@router.get("/bot/{bot_id}", response_model=BotOutput)
-def get_bot(request: Request, bot_id: str):
-    """Get bot by id. This returns both owned private and shared public bots."""
+@router.get("/bot/private/{bot_id}", response_model=BotOutput)
+def get_private_bot(request: Request, bot_id: str):
+    """Get private bot by id."""
     current_user: User = request.state.current_user
 
-    owned, bot = fetch_bot(current_user.id, bot_id)
+    bot = find_private_bot_by_id(current_user.id, bot_id)
     output = BotOutput(
         id=bot.id,
         title=bot.title,
@@ -217,9 +220,17 @@ def get_bot(request: Request, bot_id: str):
         last_used_time=bot.last_used_time,
         is_public=True if bot.public_bot_id else False,
         is_pinned=bot.is_pinned,
-        owned=owned,
+        owned=True,
     )
     return output
+
+
+@router.get("/bot/summary/{bot_id}", response_model=BotSummaryOutput)
+def get_bot_summary(request: Request, bot_id: str):
+    """Get bot summary by id."""
+    current_user: User = request.state.current_user
+
+    return fetch_bot_summary(current_user.id, bot_id)
 
 
 @router.delete("/bot/{bot_id}")

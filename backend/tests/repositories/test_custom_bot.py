@@ -177,6 +177,7 @@ class TestFindAllBots(unittest.TestCase):
             id="alias1",
             # Different from original. Should be updated after `find_all_bots_by_user_id`
             title="Test Alias",
+            description="Test Alias Description",
             original_bot_id="public1",
             last_used_time=1627984879.9,
             create_time=1627984879.9,
@@ -186,6 +187,7 @@ class TestFindAllBots(unittest.TestCase):
         alias2 = BotAliasModel(
             id="alias2",
             title="Test Alias",
+            description="Test Alias Description",
             original_bot_id="public2",
             last_used_time=1627984879.9,
             create_time=1627984879.9,
@@ -301,6 +303,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
         alias1 = BotAliasModel(
             id="4",
             title="Test Alias",
+            description="Test Alias Description",
             original_bot_id="public1",
             last_used_time=1627984879.9,
             create_time=1627984879.9,
