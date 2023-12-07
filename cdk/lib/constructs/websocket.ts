@@ -73,7 +73,7 @@ export class WebSocket extends Construct {
           file: "websocket.Dockerfile",
         }
       ),
-      memorySize: 256,
+      memorySize: 512,
       timeout: Duration.minutes(15),
       environment: {
         ACCOUNT: Stack.of(this).account,

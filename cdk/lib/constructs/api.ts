@@ -64,7 +64,7 @@ export class Api extends Construct {
           file: "Dockerfile",
         }
       ),
-      memorySize: 256,
+      memorySize: 1024,
       timeout: Duration.seconds(30),
       environment: {
         TABLE_NAME: database.tableName,
