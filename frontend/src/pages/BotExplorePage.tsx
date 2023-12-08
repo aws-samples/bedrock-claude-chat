@@ -21,6 +21,7 @@ import { BaseProps } from '../@types/common';
 import PopoverMenu from '../components/PopoverMenu';
 import PopoverItem from '../components/PopoverItem';
 import useChat from '../hooks/useChat';
+import Help from '../components/Help';
 
 type ItemBotProps = BaseProps & {
   bot: BotMetaWithAvailable;
@@ -160,7 +161,11 @@ const BotExplorePage: React.FC = () => {
         <div className="w-2/3">
           <div className="h-1/2 w-full pt-8">
             <div className="flex items-end justify-between">
-              <div className="text-xl font-bold">{t('bot.label.myBots')}</div>
+              <div className="flex items-center gap-2">
+                <div className="text-xl font-bold">{t('bot.label.myBots')}</div>
+                <Help direction="right" message={t('bot.help.overview')} />
+              </div>
+
               <Button
                 className=" text-sm"
                 outlined

@@ -57,7 +57,7 @@ const Textarea: React.FC<Props> = (props) => {
         </div>
       )}
       {props.hint && (
-        <div className="-mt-0.5 text-xs text-gray-400">{props.hint}</div>
+        <div className="mt-0.5 text-xs text-gray-400">{props.hint}</div>
       )}
     </div>
   );

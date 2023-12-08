@@ -4,8 +4,9 @@ import InputText from '../components/InputText';
 import Button from '../components/Button';
 import useBot from '../hooks/useBot';
 import { useNavigate, useParams } from 'react-router-dom';
-import { PiCaretLeft } from 'react-icons/pi';
+import { PiCaretLeft, PiNote } from 'react-icons/pi';
 import Textarea from '../components/Textarea';
+import DialogInstructionsSamples from '../components/DialogInstructionsSamples';
 
 const BotEditPage: React.FC = () => {
   const { t } = useTranslation();
@@ -71,54 +72,76 @@ const BotEditPage: React.FC = () => {
     }
   }, [botId, description, instruction, navigate, title, updateBot]);
 
+  const [isOpenSamples, setIsOpenSamples] = useState(false);
+
   return (
-    <div className="flex justify-center">
-      <div className="w-2/3">
-        <div className="mt-5 w-full">
-          <div className="text-xl font-bold">
-            {botId ? t('bot.edit.pageTitle') : t('bot.create.pageTitle')}
-          </div>
+    <>
+      <DialogInstructionsSamples
+        isOpen={isOpenSamples}
+        onClose={() => {
+          setIsOpenSamples(false);
+        }}
+      />
+      <div className="flex justify-center">
+        <div className="w-2/3">
+          <div className="mt-5 w-full">
+            <div className="text-xl font-bold">
+              {botId ? t('bot.edit.pageTitle') : t('bot.create.pageTitle')}
+            </div>
 
-          <div className="mt-3 flex flex-col gap-3">
-            <InputText
-              label={t('bot.item.title')}
-              disabled={isLoading}
-              value={title}
-              onChange={setTitle}
-            />
-            <InputText
-              label={t('bot.item.description')}
-              disabled={isLoading}
-              value={description}
-              onChange={setDescription}
-            />
-            <Textarea
-              label={t('bot.item.instruction')}
-              disabled={isLoading}
-              rows={5}
-              value={instruction}
-              onChange={setInstruction}
-            />
-
-            <div className="flex justify-between">
-              <Button outlined icon={<PiCaretLeft />} onClick={onClickBack}>
-                {t('button.back')}
-              </Button>
-
-              {botId ? (
-                <Button onClick={onClickEdit} loading={isLoading}>
-                  {t('bot.button.edit')}
+            <div className="mt-3 flex flex-col gap-3">
+              <InputText
+                label={t('bot.item.title')}
+                disabled={isLoading}
+                value={title}
+                onChange={setTitle}
+              />
+              <InputText
+                label={t('bot.item.description')}
+                disabled={isLoading}
+                value={description}
+                onChange={setDescription}
+              />
+              <div className="relative mt-3">
+                <Button
+                  className="absolute -top-3 right-0 text-xs"
+                  outlined
+                  onClick={() => {
+                    setIsOpenSamples(true);
+                  }}>
+                  <PiNote className="mr-1" />
+                  {t('bot.button.instructionsSamples')}
                 </Button>
-              ) : (
-                <Button onClick={onClickCreate} loading={isLoading}>
-                  {t('bot.button.create')}
+                <Textarea
+                  label={t('bot.item.instruction')}
+                  disabled={isLoading}
+                  rows={5}
+                  hint={t('bot.help.instructions')}
+                  value={instruction}
+                  onChange={setInstruction}
+                />
+              </div>
+
+              <div className="flex justify-between">
+                <Button outlined icon={<PiCaretLeft />} onClick={onClickBack}>
+                  {t('button.back')}
                 </Button>
-              )}
+
+                {botId ? (
+                  <Button onClick={onClickEdit} loading={isLoading}>
+                    {t('bot.button.edit')}
+                  </Button>
+                ) : (
+                  <Button onClick={onClickCreate} loading={isLoading}>
+                    {t('bot.button.create')}
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
