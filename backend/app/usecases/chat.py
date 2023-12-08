@@ -9,7 +9,7 @@ from app.repositories.conversation import (
     find_conversation_by_id,
     store_conversation,
 )
-from app.repositories.custom_bot import store_alias
+from app.repositories.custom_bot import find_alias_by_id, store_alias
 from app.repositories.model import (
     BotAliasModel,
     BotModel,
@@ -75,22 +75,26 @@ def prepare_conversation(
             initial_message_map["system"].children.append("instruction")
 
             if not owned:
-                logger.debug(
-                    "Bot is not owned by the user. Creating alias to shared bot."
-                )
-                # Create alias item
-                store_alias(
-                    user_id,
-                    BotAliasModel(
-                        id=bot.id,
-                        title=bot.title,
-                        description=bot.description,
-                        original_bot_id=chat_input.bot_id,
-                        create_time=current_time,
-                        last_used_time=current_time,
-                        is_pinned=False,
-                    ),
-                )
+                try:
+                    # Check alias is already created
+                    find_alias_by_id(user_id, chat_input.bot_id)
+                except RecordNotFoundError:
+                    logger.debug(
+                        "Bot is not owned by the user. Creating alias to shared bot."
+                    )
+                    # Create alias item
+                    store_alias(
+                        user_id,
+                        BotAliasModel(
+                            id=bot.id,
+                            title=bot.title,
+                            description=bot.description,
+                            original_bot_id=chat_input.bot_id,
+                            create_time=current_time,
+                            last_used_time=current_time,
+                            is_pinned=False,
+                        ),
+                    )
 
         # Create new conversation
         conversation = ConversationModel(
