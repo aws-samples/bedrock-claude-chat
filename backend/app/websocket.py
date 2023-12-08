@@ -4,7 +4,7 @@ from datetime import datetime
 
 import boto3
 from app.auth import verify_token
-from app.repositories.conversation import store_conversation
+from app.repositories.conversation import RecordNotFoundError, store_conversation
 from app.repositories.model import ContentModel, MessageModel
 from app.route_schema import ChatInputWithToken
 from app.usecases.bot import modify_bot_last_used_time
@@ -55,7 +55,16 @@ def handler(event, context):
         return {"statusCode": 403, "body": "Invalid token."}
 
     user_id = decoded["sub"]
-    user_msg_id, conversation = prepare_conversation(user_id, chat_input)
+    try:
+        user_msg_id, conversation = prepare_conversation(user_id, chat_input)
+    except RecordNotFoundError:
+        if chat_input.bot_id:
+            gatewayapi.post_to_connection(
+                ConnectionId=connection_id, Data="Bot not found.".encode("utf-8")
+            )
+            return {"statusCode": 404, "body": f"bot {chat_input.bot_id} not found."}
+        else:
+            return {"statusCode": 400, "body": "Invalid request."}
     payload = get_invoke_payload(conversation, chat_input)
 
     try:

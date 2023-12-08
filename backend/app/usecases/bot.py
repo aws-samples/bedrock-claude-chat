@@ -123,8 +123,24 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
             owned=False,
         )
     except RecordNotFoundError:
+        pass
+
+    try:
+        # NOTE: At the first time using shared bot, alias is not created yet.
+        bot = find_public_bot_by_id(bot_id)
+        return BotSummaryOutput(
+            id=bot_id,
+            title=bot.title,
+            description=bot.description,
+            create_time=bot.create_time,
+            last_used_time=bot.last_used_time,
+            is_pinned=False,
+            is_public=True,
+            owned=False,
+        )
+    except RecordNotFoundError:
         raise RecordNotFoundError(
-            f"Bot with ID {bot_id} not found in both private (for user {user_id}) and alias items."
+            f"Bot with ID {bot_id} not found in both private (for user {user_id}) and alias, shared items."
         )
 
 
