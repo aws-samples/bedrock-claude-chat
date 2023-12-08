@@ -82,34 +82,34 @@ def handler(event, context):
     stream = response.get("body")
     completions = []
     for chunk in generate_chunk(stream):
+        chunk_data = json.loads(chunk.decode("utf-8"))
+        completions.append(chunk_data["completion"])
+        if "stop_reason" in chunk_data and chunk_data["stop_reason"] is not None:
+            # Persist conversation before finish streaming so that front-end can avoid 404 issue
+            concatenated = "".join(completions)
+            # Append entire completion as the last message
+            assistant_msg_id = str(ULID())
+            message = MessageModel(
+                role="assistant",
+                content=ContentModel(content_type="text", body=concatenated),
+                model=chat_input.message.model,
+                children=[],
+                parent=user_msg_id,
+                create_time=get_current_time(),
+            )
+            conversation.message_map[assistant_msg_id] = message
+            # Append children to parent
+            conversation.message_map[user_msg_id].children.append(assistant_msg_id)
+            conversation.last_message_id = assistant_msg_id
+
+            store_conversation(user_id, conversation)
         try:
             # Send completion
             gatewayapi.post_to_connection(ConnectionId=connection_id, Data=chunk)
-            chunk_data = json.loads(chunk.decode("utf-8"))
-            completions.append(chunk_data["completion"])
         except Exception as e:
             print(f"Failed to post message: {str(e)}")
             return {"statusCode": 500, "body": "Failed to send message to connection."}
 
-    concatenated = "".join(completions)
-
-    # Append entire completion as the last message
-    assistant_msg_id = str(ULID())
-    message = MessageModel(
-        role="assistant",
-        content=ContentModel(content_type="text", body=concatenated),
-        model=chat_input.message.model,
-        children=[],
-        parent=user_msg_id,
-        create_time=get_current_time(),
-    )
-    conversation.message_map[assistant_msg_id] = message
-    # Append children to parent
-    conversation.message_map[user_msg_id].children.append(assistant_msg_id)
-    conversation.last_message_id = assistant_msg_id
-
-    # Persist conversation
-    store_conversation(user_id, conversation)
     # Update bot last used time
     if chat_input.bot_id:
         logger.debug("Bot id is provided. Updating bot last used time.")
