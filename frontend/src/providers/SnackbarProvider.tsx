@@ -22,7 +22,7 @@ const SnackbarProvider: React.FC<Props> = ({ children }) => {
 
   return (
     <>
-      <div className="fixed left-1/4 top-0 z-50 w-1/2">
+      <div className="fixed left-0 top-0 z-50 w-full lg:left-1/3 lg:w-1/2">
         <Transition
           show={isOpen}
           enter="transform transition duration-75"

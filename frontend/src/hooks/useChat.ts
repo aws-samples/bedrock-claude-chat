@@ -302,12 +302,14 @@ const useChat = () => {
       botId,
     };
     const createNewConversation = () => {
-      setConversationId(newConversationId);
       // 画面のチラつき防止のために、Stateをコピーする
       copyMessages('', newConversationId);
 
       conversationApi
         .updateTitleWithGeneratedTitle(newConversationId)
+        .then(() => {
+          setConversationId(newConversationId);
+        })
         .finally(() => {
           syncConversations().then(() => {
             setIsGeneratedTitle(true);

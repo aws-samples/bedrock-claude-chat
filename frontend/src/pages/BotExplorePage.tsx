@@ -20,6 +20,7 @@ import ButtonIcon from '../components/ButtonIcon';
 import { BaseProps } from '../@types/common';
 import PopoverMenu from '../components/PopoverMenu';
 import PopoverItem from '../components/PopoverItem';
+import useChat from '../hooks/useChat';
 
 type ItemBotProps = BaseProps & {
   bot: BotMetaWithAvailable;
@@ -72,6 +73,7 @@ const BotExplorePage: React.FC = () => {
   const [targetDelete, setTargetDelete] = useState<BotMeta>();
   const [targetShareIndex, setTargetShareIndex] = useState<number>();
 
+  const { newChat } = useChat();
   const {
     myBots,
     recentlyUsedSharedBots,
@@ -130,9 +132,10 @@ const BotExplorePage: React.FC = () => {
 
   const onClickBot = useCallback(
     (botId: string) => {
+      newChat();
       navigate(`/bot/${botId}`);
     },
-    [navigate]
+    [navigate, newChat]
   );
 
   return (
