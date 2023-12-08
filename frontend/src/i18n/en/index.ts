@@ -14,7 +14,7 @@ const translation = {
         loadingBot: 'Loading...',
         normalChat: 'Chat',
         notAvailableBot: '[NOT Available]',
-        notAvailableBotInputMessage: 'This bot is NOT abailable.',
+        notAvailableBotInputMessage: 'This bot is NOT available.',
         noDescription: 'No Description',
         notAvailable: 'This bot is NOT available.',
         noBots: 'No Bots.',
@@ -53,7 +53,7 @@ const translation = {
         title: 'Share',
         off: {
           content:
-            'Link sharing is off, so only you can access this document through its URL.',
+            'Link sharing is off, so only you can access this bot through its URL.',
         },
         on: {
           content:
@@ -74,7 +74,7 @@ const translation = {
     },
     button: {
       newChat: 'New Chat',
-      explore: 'Explore',
+      botConsole: 'Bot Console',
       SaveAndSubmit: 'Save & Submit',
       resend: 'Resend',
       regenerate: 'Regenerate',

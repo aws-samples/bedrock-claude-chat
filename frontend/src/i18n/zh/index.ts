@@ -1,5 +1,5 @@
+// Check for any missing settings by uncomment
 // import en from '../en';
-
 // const translation: typeof en = {
 const translation = {
   translation: {

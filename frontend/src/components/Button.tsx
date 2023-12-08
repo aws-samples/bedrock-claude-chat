@@ -19,7 +19,7 @@ const Button = forwardRef<HTMLButtonElement, Props>((props, ref) => {
       ref={ref}
       className={`${
         props.className ?? ''
-      } flex items-center justify-center rounded-lg ${
+      } flex items-center justify-center whitespace-nowrap rounded-lg ${
         props.text ? '' : 'border'
       } p-1 px-3  
        ${
