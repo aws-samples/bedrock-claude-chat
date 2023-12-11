@@ -35,7 +35,11 @@ def prepare_conversation(
         conversation = find_conversation_by_id(user_id, chat_input.conversation_id)
         logger.debug(f"Found conversation: {conversation}")
         parent_id = chat_input.message.parent_message_id
+        if chat_input.message.parent_message_id == "system" and chat_input.bot_id:
+            # The case editing first user message and use bot
+            parent_id = "instruction"
     except RecordNotFoundError:
+        # The case for new conversation. Note that editing first user message is not considered as new conversation.
         logger.debug(
             f"No conversation found with id: {chat_input.conversation_id}. Creating new conversation."
         )
