@@ -1,23 +1,43 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import InputChatContent from '../components/InputChatContent';
 import useChat from '../hooks/useChat';
 import ChatMessage from '../components/ChatMessage';
 import useScroll from '../hooks/useScroll';
-import { useParams } from 'react-router-dom';
-import { PiArrowsCounterClockwise, PiWarningCircleFill } from 'react-icons/pi';
+import { useNavigate, useParams } from 'react-router-dom';
+import {
+  PiArrowsCounterClockwise,
+  PiLink,
+  PiPencilLine,
+  PiStar,
+  PiStarFill,
+  PiWarningCircleFill,
+} from 'react-icons/pi';
 import Button from '../components/Button';
 import { useTranslation } from 'react-i18next';
 import SwitchBedrockModel from '../components/SwitchBedrockModel';
 import { Model } from '../@types/conversation';
+import useBot from '../hooks/useBot';
+import useConversation from '../hooks/useConversation';
+import { AxiosError } from 'axios';
+import ButtonPopover from '../components/PopoverMenu';
+import PopoverItem from '../components/PopoverItem';
+
+import { copyBotUrl } from '../utils/BotUtils';
+import { produce } from 'immer';
+import ButtonIcon from '../components/ButtonIcon';
+import { BotMeta } from '../@types/bot';
 
 const ChatPage: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+
   const [content, setContent] = useState('');
   const [model, setModel] = useState<Model>('claude-instant-v1');
   const {
     postingMessage,
     postChat,
     messages,
+    conversationId,
     setConversationId,
     hasError,
     retryPostChat,
@@ -25,9 +45,54 @@ const ChatPage: React.FC = () => {
     regenerate,
     getPostedModel,
   } = useChat();
+
+  const { getBotId } = useConversation();
+  const { getBotSummary } = useBot();
+
   const { scrollToBottom, scrollToTop } = useScroll();
 
-  const { conversationId: paramConversationId } = useParams();
+  const { conversationId: paramConversationId, botId: paramBotId } =
+    useParams();
+
+  const botId = useMemo(() => {
+    return paramBotId ?? getBotId(conversationId);
+  }, [conversationId, getBotId, paramBotId]);
+
+  const [pageTitle, setPageTitle] = useState('');
+  const [bot, setBot] = useState<BotMeta>();
+  const [isAvailabilityBot, setIsAvailabilityBot] = useState(false);
+  const [isLoadingBot, setIsLoadingBot] = useState(false);
+  useEffect(() => {
+    setIsAvailabilityBot(false);
+    if (botId) {
+      setPageTitle(t('bot.label.loadingBot'));
+      setBot(undefined);
+      setIsLoadingBot(true);
+      getBotSummary(botId)
+        .then((bot) => {
+          setIsAvailabilityBot(true);
+          setPageTitle(bot.title);
+          setBot(bot);
+        })
+        .catch((err: AxiosError) => {
+          if (err.response?.status === 404) {
+            setPageTitle(t('bot.label.notAvailableBot'));
+            setBot(undefined);
+          }
+        })
+        .finally(() => {
+          setIsLoadingBot(false);
+        });
+    } else {
+      setPageTitle(t('bot.label.normalChat'));
+      setBot(undefined);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [botId]);
+
+  const disabledInput = useMemo(() => {
+    return botId !== null && !isAvailabilityBot && !isLoadingBot;
+  }, [botId, isAvailabilityBot, isLoadingBot]);
 
   useEffect(() => {
     setConversationId(paramConversationId ?? '');
@@ -35,9 +100,9 @@ const ChatPage: React.FC = () => {
   }, [paramConversationId]);
 
   const onSend = useCallback(() => {
-    postChat(content, model);
+    postChat(content, model, botId ?? undefined);
     setContent('');
-  }, [content, postChat]);
+  }, [botId, content, model, postChat]);
 
   const onChangeCurrentMessageId = useCallback(
     (messageId: string) => {
@@ -49,17 +114,19 @@ const ChatPage: React.FC = () => {
   const onSubmitEditedContent = useCallback(
     (messageId: string, content: string) => {
       if (hasError) {
-        retryPostChat(content);
+        retryPostChat({ content, botId: botId ?? undefined });
       } else {
-        regenerate({ messageId, content });
+        regenerate({ messageId, content, botId: botId ?? undefined });
       }
     },
-    [hasError, regenerate, retryPostChat]
+    [botId, hasError, regenerate, retryPostChat]
   );
 
   const onRegenerate = useCallback(() => {
-    regenerate();
-  }, [regenerate]);
+    regenerate({
+      botId: botId ?? undefined,
+    });
+  }, [botId, regenerate]);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -69,18 +136,112 @@ const ChatPage: React.FC = () => {
     }
   }, [messages, scrollToBottom, scrollToTop]);
 
+  const { updateMyBotStarred, updateSharedBotStarred } = useBot();
+  const onClickBotEdit = useCallback(
+    (botId: string) => {
+      navigate(`/bot/edit/${botId}`);
+    },
+    [navigate]
+  );
+
+  const onClickStar = useCallback(() => {
+    if (!bot) {
+      return;
+    }
+    const isStarred = !bot.isPinned;
+    setBot(
+      produce(bot, (draft) => {
+        draft.isPinned = isStarred;
+      })
+    );
+
+    try {
+      if (bot.owned) {
+        updateMyBotStarred(bot.id, isStarred);
+      } else {
+        updateSharedBotStarred(bot.id, isStarred);
+      }
+    } catch {
+      setBot(
+        produce(bot, (draft) => {
+          if (draft) {
+            draft.isPinned = !isStarred;
+          }
+        })
+      );
+    }
+  }, [bot, updateMyBotStarred, updateSharedBotStarred]);
+
+  const [copyLabel, setCopyLabel] = useState(t('bot.titleSubmenu.copyLink'));
+  const onClickCopyUrl = useCallback(
+    (botId: string) => {
+      copyBotUrl(botId);
+      setCopyLabel(t('bot.titleSubmenu.copiedLink'));
+      setTimeout(() => {
+        setCopyLabel(t('bot.titleSubmenu.copyLink'));
+      }, 3000);
+    },
+    [t]
+  );
+
   return (
     <>
-      <div className="flex flex-col items-center justify-start">
-        <div className="m-1">
+      <div className="relative flex h-14 justify-center">
+        <div className="absolute left-3 top-3 flex font-bold">
+          <div>
+            <div>{pageTitle}</div>
+            <div className="text-xs font-thin">{bot?.description}</div>
+          </div>
+
+          {isAvailabilityBot && (
+            <div className="ml-6 flex items-start">
+              <ButtonIcon onClick={onClickStar}>
+                {bot?.isPinned ? (
+                  <PiStarFill className="text-aws-aqua" />
+                ) : (
+                  <PiStar />
+                )}
+              </ButtonIcon>
+              <ButtonPopover className="ml-1">
+                {bot?.owned && (
+                  <PopoverItem
+                    onClick={() => {
+                      if (bot) {
+                        onClickBotEdit(bot.id);
+                      }
+                    }}>
+                    <PiPencilLine />
+                    {t('bot.titleSubmenu.edit')}
+                  </PopoverItem>
+                )}
+                {bot?.isPublic && (
+                  <PopoverItem
+                    onClick={() => {
+                      if (bot) {
+                        onClickCopyUrl(bot.id);
+                      }
+                    }}>
+                    <PiLink />
+                    {copyLabel}
+                  </PopoverItem>
+                )}
+              </ButtonPopover>
+            </div>
+          )}
+        </div>
+        {getPostedModel() ? (
+          <div className="absolute right-3 top-8 text-sm text-gray-500">
+            model: {getPostedModel()}
+          </div>
+        ) : (
           <SwitchBedrockModel
-            postedModel={getPostedModel()}
+            className="my-auto"
             model={model}
             setModel={setModel}
           />
-        </div>
-        <hr className="w-full border-t border-gray-300" />
+        )}
       </div>
+      <hr className="w-full border-t border-gray-300" />
       <div className="pb-52 lg:pb-40">
         {messages.length === 0 ? (
           <>
@@ -116,9 +277,14 @@ const ChatPage: React.FC = () => {
             </div>
 
             <Button
-              className="mt-2 border-gray-400 bg-white shadow "
+              className="mt-2 shadow "
               icon={<PiArrowsCounterClockwise />}
-              onClick={retryPostChat}>
+              outlined
+              onClick={() => {
+                retryPostChat({
+                  botId: botId ?? undefined,
+                });
+              }}>
               {t('button.resend')}
             </Button>
           </div>
@@ -128,7 +294,13 @@ const ChatPage: React.FC = () => {
       <div className="absolute bottom-0 z-0 flex w-full justify-center">
         <InputChatContent
           content={content}
-          disabled={postingMessage}
+          disabledSend={postingMessage}
+          disabled={disabledInput}
+          placeholder={
+            disabledInput
+              ? t('bot.label.notAvailableBotInputMessage')
+              : undefined
+          }
           onChangeContent={setContent}
           onSend={onSend}
           onRegenerate={onRegenerate}

@@ -4,11 +4,12 @@ from datetime import datetime
 
 import boto3
 from app.auth import verify_token
-from app.repositories.conversation import store_conversation
+from app.repositories.conversation import RecordNotFoundError, store_conversation
 from app.repositories.model import ContentModel, MessageModel
 from app.route_schema import ChatInputWithToken
-from app.usecase import get_invoke_payload, prepare_conversation
-from app.utils import get_bedrock_client
+from app.usecases.bot import modify_bot_last_used_time
+from app.usecases.chat import get_invoke_payload, prepare_conversation
+from app.utils import get_bedrock_client, get_current_time
 from ulid import ULID
 
 client = get_bedrock_client()
@@ -54,7 +55,16 @@ def handler(event, context):
         return {"statusCode": 403, "body": "Invalid token."}
 
     user_id = decoded["sub"]
-    user_msg_id, conversation = prepare_conversation(user_id, chat_input)
+    try:
+        user_msg_id, conversation = prepare_conversation(user_id, chat_input)
+    except RecordNotFoundError:
+        if chat_input.bot_id:
+            gatewayapi.post_to_connection(
+                ConnectionId=connection_id, Data="Bot not found.".encode("utf-8")
+            )
+            return {"statusCode": 404, "body": f"bot {chat_input.bot_id} not found."}
+        else:
+            return {"statusCode": 400, "body": "Invalid request."}
     payload = get_invoke_payload(conversation, chat_input)
 
     try:
@@ -72,33 +82,37 @@ def handler(event, context):
     stream = response.get("body")
     completions = []
     for chunk in generate_chunk(stream):
+        chunk_data = json.loads(chunk.decode("utf-8"))
+        completions.append(chunk_data["completion"])
+        if "stop_reason" in chunk_data and chunk_data["stop_reason"] is not None:
+            # Persist conversation before finish streaming so that front-end can avoid 404 issue
+            concatenated = "".join(completions)
+            # Append entire completion as the last message
+            assistant_msg_id = str(ULID())
+            message = MessageModel(
+                role="assistant",
+                content=ContentModel(content_type="text", body=concatenated),
+                model=chat_input.message.model,
+                children=[],
+                parent=user_msg_id,
+                create_time=get_current_time(),
+            )
+            conversation.message_map[assistant_msg_id] = message
+            # Append children to parent
+            conversation.message_map[user_msg_id].children.append(assistant_msg_id)
+            conversation.last_message_id = assistant_msg_id
+
+            store_conversation(user_id, conversation)
         try:
             # Send completion
             gatewayapi.post_to_connection(ConnectionId=connection_id, Data=chunk)
-            chunk_data = json.loads(chunk.decode("utf-8"))
-            completions.append(chunk_data["completion"])
         except Exception as e:
             print(f"Failed to post message: {str(e)}")
             return {"statusCode": 500, "body": "Failed to send message to connection."}
 
-    concatenated = "".join(completions)
-
-    # Append entire completion as the last message
-    assistant_msg_id = str(ULID())
-    message = MessageModel(
-        role="assistant",
-        content=ContentModel(content_type="text", body=concatenated),
-        model=chat_input.message.model,
-        children=[],
-        parent=user_msg_id,
-        create_time=datetime.now().timestamp(),
-    )
-    conversation.message_map[assistant_msg_id] = message
-    # Append children to parent
-    conversation.message_map[user_msg_id].children.append(assistant_msg_id)
-    conversation.last_message_id = assistant_msg_id
-
-    # Persist conversation
-    store_conversation(user_id, conversation)
+    # Update bot last used time
+    if chat_input.bot_id:
+        logger.debug("Bot id is provided. Updating bot last used time.")
+        modify_bot_last_used_time(user_id, chat_input.bot_id)
 
     return {"statusCode": 200, "body": json.dumps({"conversationId": conversation.id})}

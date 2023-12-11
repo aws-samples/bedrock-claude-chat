@@ -119,7 +119,7 @@ const ChatMessage: React.FC<Props> = (props) => {
               <div className="flex justify-center gap-3">
                 <Button onClick={onSubmit}>{t('button.SaveAndSubmit')}</Button>
                 <Button
-                  className="border-gray-400 bg-aws-paper"
+                  outlined
                   onClick={() => {
                     setIsEdit(false);
                   }}>

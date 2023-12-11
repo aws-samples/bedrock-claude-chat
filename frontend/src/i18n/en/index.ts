@@ -3,6 +3,96 @@ const translation = {
     app: {
       name: 'Bedrock Claude Chat',
       inputMessage: 'Send a message',
+      starredBots: 'Starred Bots',
+      recentlyUsedBots: 'Recently Used Bots',
+      conversationHistory: 'History',
+    },
+    bot: {
+      label: {
+        myBots: 'My Bots',
+        recentlyUsedBots: 'Recently Used Shared Bots',
+        loadingBot: 'Loading...',
+        normalChat: 'Chat',
+        notAvailableBot: '[NOT Available]',
+        notAvailableBotInputMessage: 'This bot is NOT available.',
+        noDescription: 'No Description',
+        notAvailable: 'This bot is NOT available.',
+        noBots: 'No Bots.',
+        noBotsRecentlyUsed: 'No Recently Used Shared Bots.',
+      },
+      titleSubmenu: {
+        edit: 'Edit',
+        copyLink: 'Copy Link',
+        copiedLink: 'Copied',
+      },
+      help: {
+        overview:
+          'Bots operate according to predefined instructions. Chat does not work as intended unless the context is defined in the message, but with bots, there is no need to define the context.',
+        instructions:
+          'Define how the bot should behave. Giving ambiguous instructions may lead to unpredictable movements, so provide clear and specific instructions.',
+      },
+      samples: {
+        title: 'Instructions Samples',
+        reference:
+          'Reference: https://docs.anthropic.com/claude/docs/how-to-use-system-prompts',
+        pythonCodeAssistant: {
+          title: 'Python Coding Assistant',
+          prompt: `Write a short and high-quality python script for the given task, something a very skilled python expert would write. You are writing code for an experienced developer so only add comments for things that are non-obvious. Make sure to include any imports required. 
+NEVER write anything before the \`\`\`python\`\`\` block. After you are done generating the code and after the \`\`\`python\`\`\` block, check your work carefully to make sure there are no mistakes, errors, or inconsistencies. If there are errors, list those errors in <error> tags, then generate a new version with those errors fixed. If there are no errors, write "CHECKED: NO ERRORS" in <error> tags.`,
+        },
+        mailCategorizer: {
+          title: 'Mail Categorizer',
+          prompt: `You are a customer service agent tasked with classifying emails by type. Please output your answer and then justify your classification. 
+
+The classification categories are: 
+(A) Pre-sale question 
+(B) Broken or defective item 
+(C) Billing question 
+(D) Other (please explain)
+
+How would you categorize this email?`,
+        },
+        fitnessCoach: {
+          title: 'Personal Fitness Coach',
+          prompt: `You are an upbeat, enthusiastic personal fitness coach named Sam. Sam is passionate about helping clients get fit and lead healthier lifestyles. You write in an encouraging and friendly tone and always try to guide your clients toward better fitness goals. If the user asks you something unrelated to fitness, either bring the topic back to fitness, or say that you cannot answer.`,
+        },
+      },
+      create: {
+        pageTitle: 'Create My Bot',
+      },
+      edit: {
+        pageTitle: 'Edit My Bot',
+      },
+      item: {
+        title: 'Name',
+        description: 'Description',
+        instruction: 'Instructions',
+      },
+      button: {
+        newBot: 'Create New Bot',
+        create: 'Create',
+        edit: 'Edit',
+        delete: 'Delete',
+        share: 'Share',
+        copy: 'Copy',
+        copied: 'Copied',
+        instructionsSamples: 'Samples',
+      },
+      deleteDialog: {
+        title: 'Delete?',
+        content: 'Are you sure to delete <Bold>{{title}}</Bold>?',
+      },
+      shareDialog: {
+        title: 'Share',
+        off: {
+          content:
+            'Link sharing is off, so only you can access this bot through its URL.',
+        },
+        on: {
+          content:
+            'Link sharing is on, so ALL users can use this link to conversation.',
+        },
+      },
     },
     deleteDialog: {
       title: 'Delete?',
@@ -17,17 +107,21 @@ const translation = {
     },
     button: {
       newChat: 'New Chat',
+      botConsole: 'Bot Console',
       SaveAndSubmit: 'Save & Submit',
       resend: 'Resend',
       regenerate: 'Regenerate',
       delete: 'Delete',
       deleteAll: 'Delete All',
+      done: 'Done',
       ok: 'OK',
       cancel: 'Cancel',
+      back: 'Back',
       menu: 'Menu',
       language: 'Language',
       clearConversation: 'Delete ALL conversations',
       signOut: 'Sign out',
+      close: 'Close',
     },
     error: {
       answerResponse: 'An error occurred while responding.',

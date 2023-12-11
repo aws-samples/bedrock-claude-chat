@@ -4,7 +4,7 @@ import traceback
 from typing import Callable
 
 from app.auth import verify_token
-from app.repositories.conversation import RecordNotFoundError
+from app.repositories.common import RecordAccessNotAllowedError, RecordNotFoundError
 from app.route import router
 from app.route_schema import User
 from app.utils import is_running_on_lambda
@@ -14,6 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
+from pydantic import ValidationError
 from starlette.routing import Match
 from starlette.types import ASGIApp, Message
 
@@ -45,12 +46,10 @@ def error_handler_factory(status_code: int) -> Callable[[Exception], JSONRespons
 
 
 app.add_exception_handler(RecordNotFoundError, error_handler_factory(404))
+app.add_exception_handler(RecordAccessNotAllowedError, error_handler_factory(403))
 app.add_exception_handler(ValueError, error_handler_factory(400))
 app.add_exception_handler(TypeError, error_handler_factory(400))
-app.add_exception_handler(
-    RequestValidationError,
-    lambda request, exc: (print(exc), {"content": {}, "status_code": 422})[1],
-)
+app.add_exception_handler(ValidationError, error_handler_factory(422))
 app.add_exception_handler(Exception, error_handler_factory(500))
 
 security = HTTPBearer()
@@ -102,7 +101,6 @@ async def add_log_requests(request: Request, call_next: ASGIApp):
         return {"type": "http.request", "body": body}
 
     request._receive = receive
-
     response = await call_next(request)
 
     return response

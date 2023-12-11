@@ -2,12 +2,13 @@
 
 ![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/test.yml/badge.svg)
 
-> **Warning**
-> The current version (`v0.2.x`) has no compatibility with ex version (`v0.1.0`) due to the change of the conversation schema. Please note that conversations stored in DynamoDB with ex version cannot be rendered.
+> [!Warning]
+> The current version (`v0.3.x`) has no compatibility with ex version (`v0.1.0`, `v0.2.x`) due to the change of DynamoDB table schema. **Please note that UPDATE (i.e. `cdk deploy`) FROM `v0.2.x` TO `v0.3.x` WILL DESTROY ALL OF EXISTING CONVERSATION.**
 
 This repository is a sample chatbot using the Anthropic company's LLM [Claude 2](https://www.anthropic.com/index/claude-2), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI.
 
 ![](./docs/imgs/demo1.gif)
+![](./docs/imgs/bot1.png)
 
 ## 📚 Supported Languages
 
@@ -39,7 +40,7 @@ Frontend URL: https://xxxxxxxxx.cloudfront.net
 
 The sign-up screen will appear as shown above, where you can register your email and log in.
 
-> **Important**
+> [!Important]
 > This deployment method allows anyone with the URL to sign up. For production use, we strongly recommend adding IP address restrictions or disabling self-signup to mitigate security risks. To set up, [Deploy using CDK](#deploy-using-cdk) for IP address restrictions or [Disable self sign up](#disable-self-sign-up).
 
 ## Architecture
@@ -69,7 +70,10 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 - [x] Edit message & re-send
 - [x] I18n
 - [x] Model switch (Claude Instant / Claude)
-- [ ] Save and re-use prompt template
+- [x] Customized bot creation
+- [x] Customized bot sharing
+- [ ] File upload / retriever
+- [ ] Web retriever
 
 ## Deploy using CDK
 

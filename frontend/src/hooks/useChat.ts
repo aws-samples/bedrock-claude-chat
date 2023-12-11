@@ -268,7 +268,7 @@ const useChat = () => {
     );
   };
 
-  const postChat = (content: string, model: Model) => {
+  const postChat = (content: string, model: Model, botId?: string) => {
     const isNewChat = conversationId ? false : true;
     const newConversationId = ulid();
 
@@ -299,14 +299,17 @@ const useChat = () => {
         parentMessageId: parentMessageId,
       },
       stream: true,
+      botId,
     };
     const createNewConversation = () => {
-      setConversationId(newConversationId);
       // 画面のチラつき防止のために、Stateをコピーする
       copyMessages('', newConversationId);
 
       conversationApi
         .updateTitleWithGeneratedTitle(newConversationId)
+        .then(() => {
+          setConversationId(newConversationId);
+        })
         .finally(() => {
           syncConversations().then(() => {
             setIsGeneratedTitle(true);
@@ -367,9 +370,13 @@ const useChat = () => {
 
   /**
    * 再生成
-   * @param props content: 内容を上書きしたい場合に設定  messageId: 再生成対象のmessageId
+   * @param props content: 内容を上書きしたい場合に設定  messageId: 再生成対象のmessageId  botId: ボットの場合は設定する
    */
-  const regenerate = (props?: { content?: string; messageId?: string }) => {
+  const regenerate = (props?: {
+    content?: string;
+    messageId?: string;
+    botId?: string;
+  }) => {
     let index: number = -1;
     // messageIdが指定されている場合は、指定されたメッセージをベースにする
     if (props?.messageId) {
@@ -401,7 +408,12 @@ const useChat = () => {
         parentMessageId: parentMessage.parent,
       },
       stream: true,
+      botId: props?.botId,
     };
+
+    if (input.message.parentMessageId === null) {
+      input.message.parentMessageId = 'system';
+    }
 
     setPostingMessage(true);
 
@@ -462,7 +474,7 @@ const useChat = () => {
     regenerate,
     getPostedModel,
     // エラーのリトライ
-    retryPostChat: (content?: string) => {
+    retryPostChat: (params: { content?: string; botId?: string }) => {
       const length_ = messages.length;
       if (length_ === 0) {
         return;
@@ -472,11 +484,16 @@ const useChat = () => {
         // 通常のメッセージ送信時
         // エラー発生時の最新のメッセージはユーザ入力;
         removeMessage(conversationId, latestMessage.id);
-        postChat(content ?? latestMessage.content.body, getPostedModel());
+        postChat(
+          params.content ?? latestMessage.content.body,
+          getPostedModel(),
+          params.botId
+        );
       } else {
         // 再生成時
         regenerate({
-          content: content ?? latestMessage.content.body,
+          content: params.content ?? latestMessage.content.body,
+          botId: params.botId,
         });
       }
     },

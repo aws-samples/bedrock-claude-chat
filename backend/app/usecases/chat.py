@@ -1,6 +1,7 @@
 import json
 import logging
 from datetime import datetime
+from typing import Literal
 
 from app.bedrock import _create_body, get_model_id, invoke
 from app.repositories.conversation import (
@@ -8,9 +9,17 @@ from app.repositories.conversation import (
     find_conversation_by_id,
     store_conversation,
 )
-from app.repositories.model import ContentModel, ConversationModel, MessageModel
-from app.route_schema import ChatInput, ChatOutput, Content, MessageOutput
-from app.utils import get_buffer_string
+from app.repositories.custom_bot import find_alias_by_id, store_alias
+from app.repositories.model import (
+    BotAliasModel,
+    BotModel,
+    ContentModel,
+    ConversationModel,
+    MessageModel,
+)
+from app.route_schema import ChatInput, ChatOutput, Content, Conversation, MessageOutput
+from app.usecases.bot import fetch_bot, modify_bot_last_used_time
+from app.utils import get_buffer_string, get_current_time
 from ulid import ULID
 
 logger = logging.getLogger(__name__)
@@ -20,37 +29,87 @@ logger.setLevel(logging.DEBUG)
 def prepare_conversation(
     user_id: str, chat_input: ChatInput
 ) -> tuple[str, ConversationModel]:
+    current_time = get_current_time()
+
     try:
         # Fetch existing conversation
         conversation = find_conversation_by_id(user_id, chat_input.conversation_id)
         logger.debug(f"Found conversation: {conversation}")
         parent_id = chat_input.message.parent_message_id
+        if chat_input.message.parent_message_id == "system" and chat_input.bot_id:
+            # The case editing first user message and use bot
+            parent_id = "instruction"
     except RecordNotFoundError:
+        # The case for new conversation. Note that editing first user message is not considered as new conversation.
         logger.debug(
             f"No conversation found with id: {chat_input.conversation_id}. Creating new conversation."
         )
+
+        initial_message_map = {
+            # Dummy system message
+            "system": MessageModel(
+                role="system",
+                content=ContentModel(
+                    content_type="text",
+                    body="",
+                ),
+                model=chat_input.message.model,
+                children=[],
+                parent=None,
+                create_time=current_time,
+            )
+        }
+        parent_id = "system"
+
+        if chat_input.bot_id:
+            logger.debug("Bot id is provided. Fetching bot.")
+            parent_id = "instruction"
+            # Fetch bot and append instruction
+            owned, bot = fetch_bot(user_id, chat_input.bot_id)
+            initial_message_map["instruction"] = MessageModel(
+                role="instruction",
+                content=ContentModel(
+                    content_type="text",
+                    body=bot.instruction,
+                ),
+                model=chat_input.message.model,
+                children=[],
+                parent="system",
+                create_time=current_time,
+            )
+            initial_message_map["system"].children.append("instruction")
+
+            if not owned:
+                try:
+                    # Check alias is already created
+                    find_alias_by_id(user_id, chat_input.bot_id)
+                except RecordNotFoundError:
+                    logger.debug(
+                        "Bot is not owned by the user. Creating alias to shared bot."
+                    )
+                    # Create alias item
+                    store_alias(
+                        user_id,
+                        BotAliasModel(
+                            id=bot.id,
+                            title=bot.title,
+                            description=bot.description,
+                            original_bot_id=chat_input.bot_id,
+                            create_time=current_time,
+                            last_used_time=current_time,
+                            is_pinned=False,
+                        ),
+                    )
+
         # Create new conversation
         conversation = ConversationModel(
             id=chat_input.conversation_id,
             title="New conversation",
-            create_time=datetime.now().timestamp(),
-            message_map={
-                # Dummy system message
-                "system": MessageModel(
-                    role="system",
-                    content=ContentModel(
-                        content_type="text",
-                        body="",
-                    ),
-                    model=chat_input.message.model,
-                    children=[],
-                    parent=None,
-                    create_time=datetime.now().timestamp(),
-                )
-            },
+            create_time=current_time,
+            message_map=initial_message_map,
             last_message_id="",
+            bot_id=chat_input.bot_id,
         )
-        parent_id = "system"
 
     # Append user chat input to the conversation
     message_id = str(ULID())
@@ -63,14 +122,10 @@ def prepare_conversation(
         model=chat_input.message.model,
         children=[],
         parent=parent_id,
-        create_time=datetime.now().timestamp(),
+        create_time=current_time,
     )
     conversation.message_map[message_id] = new_message
-
-    if conversation.message_map.get(chat_input.message.parent_message_id) is not None:
-        conversation.message_map[chat_input.message.parent_message_id].children.append(
-            message_id
-        )
+    conversation.message_map[parent_id].children.append(message_id)  # type: ignore
 
     return (message_id, conversation)
 
@@ -80,7 +135,7 @@ def get_invoke_payload(conversation: ConversationModel, chat_input: ChatInput):
         node_id=chat_input.message.parent_message_id,
         message_map=conversation.message_map,
     )
-    messages.append(chat_input.message)
+    messages.append(chat_input.message)  # type: ignore
     prompt = get_buffer_string(messages)
     body = _create_body(chat_input.message.model, prompt)
     model_id = get_model_id(chat_input.message.model)
@@ -95,10 +150,12 @@ def get_invoke_payload(conversation: ConversationModel, chat_input: ChatInput):
 
 
 def trace_to_root(
-    node_id: str, message_map: dict[str, MessageModel]
+    node_id: str | None, message_map: dict[str, MessageModel]
 ) -> list[MessageModel]:
-    """Trace message map from node to root."""
+    """Trace message map from leaf node to root node."""
     result = []
+    if not node_id or node_id == "system":
+        node_id = "instruction" if "instruction" in message_map else "system"
 
     current_node = message_map.get(node_id)
     while current_node:
@@ -113,15 +170,15 @@ def trace_to_root(
 
 def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     user_msg_id, conversation = prepare_conversation(user_id, chat_input)
-
     messages = trace_to_root(
         node_id=chat_input.message.parent_message_id,
         message_map=conversation.message_map,
     )
-    messages.append(chat_input.message)
+    messages.append(chat_input.message)  # type: ignore
 
     # Invoke Bedrock
     prompt = get_buffer_string(messages)
+
     reply_txt = invoke(prompt=prompt, model=chat_input.message.model)
 
     # Issue id for new assistant message
@@ -133,7 +190,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         model=chat_input.message.model,
         children=[],
         parent=user_msg_id,
-        create_time=datetime.now().timestamp(),
+        create_time=get_current_time(),
     )
     conversation.message_map[assistant_msg_id] = message
 
@@ -143,6 +200,11 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
 
     # Store updated conversation
     store_conversation(user_id, conversation)
+    # Update bot last used time
+    if chat_input.bot_id:
+        logger.debug("Bot id is provided. Updating bot last used time.")
+        # Update bot last used time
+        modify_bot_last_used_time(user_id, chat_input.bot_id)
 
     output = ChatOutput(
         conversation_id=conversation.id,
@@ -157,13 +219,16 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
             children=message.children,
             parent=message.parent,
         ),
+        bot_id=conversation.bot_id,
     )
 
     return output
 
 
 def propose_conversation_title(
-    user_id: str, conversation_id: str, model="claude-instant-v1"
+    user_id: str,
+    conversation_id: str,
+    model: Literal["claude-instant-v1", "claude-v2"] = "claude-instant-v1",
 ) -> str:
     PROMPT = """Reading the conversation above, what is the appropriate title for the conversation? When answering the title, please follow the rules below:
 <rules>
@@ -191,7 +256,7 @@ def propose_conversation_title(
         model=model,
         children=[],
         parent=conversation.last_message_id,
-        create_time=datetime.now().timestamp(),
+        create_time=get_current_time(),
     )
     messages.append(new_message)
 
@@ -200,3 +265,38 @@ def propose_conversation_title(
     reply_txt = invoke(prompt=prompt, model=model)
     reply_txt = reply_txt.replace("\n", "")
     return reply_txt
+
+
+def fetch_conversation(user_id: str, conversation_id: str) -> Conversation:
+    conversation = find_conversation_by_id(user_id, conversation_id)
+
+    message_map = {
+        message_id: MessageOutput(
+            role=message.role,
+            content=Content(
+                content_type=message.content.content_type,
+                body=message.content.body,
+            ),
+            model=message.model,
+            children=message.children,
+            parent=message.parent,
+        )
+        for message_id, message in conversation.message_map.items()
+    }
+    # Omit instruction
+    if "instruction" in message_map:
+        for c in message_map["instruction"].children:
+            message_map[c].parent = "system"
+        message_map["system"].children = message_map["instruction"].children
+
+        del message_map["instruction"]
+
+    output = Conversation(
+        id=conversation_id,
+        title=conversation.title,
+        create_time=conversation.create_time,
+        last_message_id=conversation.last_message_id,
+        message_map=message_map,
+        bot_id=conversation.bot_id,
+    )
+    return output

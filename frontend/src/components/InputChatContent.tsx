@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 
 type Props = {
   content: string;
+  disabledSend?: boolean;
   disabled?: boolean;
   placeholder?: string;
   onChangeContent: (content: string) => void;
@@ -20,8 +21,8 @@ const InputChatContent: React.FC<Props> = (props) => {
   const { postingMessage, hasError, messages } = useChat();
 
   const disabledSend = useMemo(() => {
-    return props.content === '' || props.disabled || hasError;
-  }, [hasError, props.content, props.disabled]);
+    return props.content === '' || props.disabledSend || hasError;
+  }, [hasError, props.content, props.disabledSend]);
 
   const disabledRegenerate = useMemo(() => {
     return postingMessage || hasError;
@@ -53,22 +54,24 @@ const InputChatContent: React.FC<Props> = (props) => {
       id="input-chat-content"
       className="relative mb-7 flex w-11/12 items-end rounded-xl border border-black/10 bg-white shadow-[0_0_30px_7px] shadow-gray-400/50 md:w-10/12 lg:w-4/6 xl:w-3/6">
       <Textarea
-        className="m-2 -mr-14 bg-transparent pr-14 scrollbar-thin scrollbar-thumb-gray-200 "
+        className="m-1 -mr-16 bg-transparent pr-6 scrollbar-thin scrollbar-thumb-gray-200 "
         placeholder={props.placeholder ?? t('app.inputMessage')}
+        disabled={props.disabled}
         noBorder
         value={props.content}
         onChange={props.onChangeContent}
       />
       <ButtonSend
         className="m-2 align-bottom"
-        disabled={disabledSend}
+        disabled={disabledSend || props.disabled}
         loading={postingMessage}
         onClick={props.onSend}
       />
       {messages.length > 1 && (
         <Button
-          className="absolute -top-14 right-0 border-gray-400 bg-aws-paper p-2 text-sm"
-          disabled={disabledRegenerate}
+          className="absolute -top-14 right-0 bg-aws-paper p-2 text-sm"
+          outlined
+          disabled={disabledRegenerate || props.disabled}
           onClick={props.onRegenerate}>
           <PiArrowsCounterClockwise className="mr-2" />
           {t('button.regenerate')}

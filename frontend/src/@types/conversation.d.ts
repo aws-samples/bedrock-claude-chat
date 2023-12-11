@@ -24,6 +24,7 @@ export type PostMessageRequest = {
   message: MessageContent & {
     parentMessageId: null | string;
   };
+  botId?: string;
 };
 
 export type PostMessageResponse = {
@@ -38,6 +39,7 @@ export type ConversationMeta = {
   createTime: number;
   lastMessageId: string;
   model: Model;
+  botId?: string;
 };
 
 export type MessageMap = {

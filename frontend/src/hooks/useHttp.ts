@@ -26,6 +26,15 @@ const fetcher = (url: string) => {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+const fetcfWithParams = ([url, params]: [string, Record<string, any>]) => {
+  return api
+    .get(url, {
+      params,
+    })
+    .then((res) => res.data);
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 // const getErrorMessage = (error: AxiosError<any>): string => {
 //   return error.response?.data?.message ?? error.message;
 // };
@@ -48,13 +57,17 @@ const useHttp = () => {
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     get: <Data = any, Error = any>(
-      url: string | null,
+      url: string | [string, ...unknown[]] | null,
       config?: SWRConfiguration
     ) => {
       // eslint-disable-next-line react-hooks/rules-of-hooks
-      return useSWR<Data, AxiosError<Error>>(url, fetcher, {
-        ...config,
-      });
+      return useSWR<Data, AxiosError<Error>>(
+        url,
+        typeof url === 'string' ? fetcher : fetcfWithParams,
+        {
+          ...config,
+        }
+      );
     },
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
