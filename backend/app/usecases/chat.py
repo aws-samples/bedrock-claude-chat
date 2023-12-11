@@ -125,17 +125,6 @@ def prepare_conversation(
         create_time=current_time,
     )
     conversation.message_map[message_id] = new_message
-
-    # if (
-    #     chat_input.message.parent_message_id
-    #     and conversation.message_map.get(chat_input.message.parent_message_id)
-    #     is not None
-    # ):
-    #     conversation.message_map[chat_input.message.parent_message_id].children.append(
-    #         message_id
-    #     )
-    # else:
-    #     conversation.message_map[parent_id].children.append(message_id)  # type: ignore
     conversation.message_map[parent_id].children.append(message_id)  # type: ignore
 
     return (message_id, conversation)
