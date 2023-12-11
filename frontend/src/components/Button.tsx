@@ -21,13 +21,14 @@ const Button = forwardRef<HTMLButtonElement, Props>((props, ref) => {
         props.className ?? ''
       } flex items-center justify-center whitespace-nowrap rounded-lg ${
         props.text ? '' : 'border'
-      } p-1 px-3  
+      }  p-1  px-3
        ${
          props.outlined
-           ? 'border-aws-squid-ink/50 bg-transparent hover:bg-white'
+           ? `border-aws-squid-ink/50 hover:bg-white ${
+               !props.className?.includes('bg-') && 'bg-transparent'
+             }`
            : 'bg-aws-sea-blue text-aws-font-color-white'
        }
-     
         ${
           props.disabled || props.loading ? 'opacity-30' : 'hover:brightness-75'
         } `}

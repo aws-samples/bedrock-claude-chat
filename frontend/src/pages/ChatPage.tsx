@@ -116,15 +116,17 @@ const ChatPage: React.FC = () => {
       if (hasError) {
         retryPostChat({ content, botId: botId ?? undefined });
       } else {
-        regenerate({ messageId, content });
+        regenerate({ messageId, content, botId: botId ?? undefined });
       }
     },
     [botId, hasError, regenerate, retryPostChat]
   );
 
   const onRegenerate = useCallback(() => {
-    regenerate();
-  }, [regenerate]);
+    regenerate({
+      botId: botId ?? undefined,
+    });
+  }, [botId, regenerate]);
 
   useEffect(() => {
     if (messages.length > 0) {

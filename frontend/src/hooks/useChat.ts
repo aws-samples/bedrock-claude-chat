@@ -370,9 +370,13 @@ const useChat = () => {
 
   /**
    * 再生成
-   * @param props content: 内容を上書きしたい場合に設定  messageId: 再生成対象のmessageId
+   * @param props content: 内容を上書きしたい場合に設定  messageId: 再生成対象のmessageId  botId: ボットの場合は設定する
    */
-  const regenerate = (props?: { content?: string; messageId?: string }) => {
+  const regenerate = (props?: {
+    content?: string;
+    messageId?: string;
+    botId?: string;
+  }) => {
     let index: number = -1;
     // messageIdが指定されている場合は、指定されたメッセージをベースにする
     if (props?.messageId) {
@@ -404,7 +408,12 @@ const useChat = () => {
         parentMessageId: parentMessage.parent,
       },
       stream: true,
+      botId: props?.botId,
     };
+
+    if (input.message.parentMessageId === null) {
+      input.message.parentMessageId = 'system';
+    }
 
     setPostingMessage(true);
 
@@ -484,6 +493,7 @@ const useChat = () => {
         // 再生成時
         regenerate({
           content: params.content ?? latestMessage.content.body,
+          botId: params.botId,
         });
       }
     },
