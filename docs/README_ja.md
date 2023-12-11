@@ -6,6 +6,7 @@
 このリポジトリは、生成系 AI を提供する[Amazon Bedrock](https://aws.amazon.com/jp/bedrock/)の基盤モデルの一つである、Anthropic 社製 LLM [Claude 2](https://www.anthropic.com/index/claude-2)を利用したチャットボットのサンプルです。
 
 ![](./imgs/demo2.gif)
+![](./imgs/bot2.png)
 
 ## 🚀 まずはお試し
 

@@ -8,6 +8,7 @@
 This repository is a sample chatbot using the Anthropic company's LLM [Claude 2](https://www.anthropic.com/index/claude-2), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI.
 
 ![](./docs/imgs/demo1.gif)
+![](./docs/imgs/bot1.png)
 
 ## 📚 Supported Languages
 
