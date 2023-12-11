@@ -391,77 +391,104 @@ class TestChatWithCustomizedBot(unittest.TestCase):
         delete_bot_by_id("user2", "public1")
         delete_conversation_by_user_id("user1")
 
-    # def test_chat_with_private_bot(self):
-    #     chat_input = ChatInput(
-    #         conversation_id="test_conversation_id",
-    #         message=MessageInput(
-    #             role="user",
-    #             content=Content(
-    #                 content_type="text",
-    #                 body="こんにちは",
-    #             ),
-    #             model=MODEL,
-    #             parent_message_id=None,
-    #         ),
-    #         bot_id="private1",
-    #     )
-    #     output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
-    #     print(output)
+    def test_chat_with_private_bot(self):
+        # First message
+        chat_input = ChatInput(
+            conversation_id="test_conversation_id",
+            message=MessageInput(
+                role="user",
+                content=Content(
+                    content_type="text",
+                    body="こんにちは",
+                ),
+                model=MODEL,
+                parent_message_id=None,
+            ),
+            bot_id="private1",
+        )
+        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+        print(output)
 
-    #     conv = find_conversation_by_id("user1", output.conversation_id)
-    #     chat_input = ChatInput(
-    #         conversation_id=conv.id,
-    #         message=MessageInput(
-    #             role="user",
-    #             content=Content(
-    #                 content_type="text",
-    #                 body="自己紹介して",
-    #             ),
-    #             model=MODEL,
-    #             parent_message_id=conv.last_message_id,
-    #         ),
-    #         bot_id="private1",
-    #     )
-    #     output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
-    #     print(output)
+        conv = find_conversation_by_id("user1", output.conversation_id)
+        self.assertEqual(len(conv.message_map["system"].children), 1)
+        self.assertEqual(conv.message_map["system"].children[0], "instruction")
+        self.assertEqual(len(conv.message_map["instruction"].children), 1)
 
-    # def test_chat_with_public_bot(self):
-    #     chat_input = ChatInput(
-    #         conversation_id="test_conversation_id",
-    #         message=MessageInput(
-    #             role="user",
-    #             content=Content(
-    #                 content_type="text",
-    #                 body="こんにちは",
-    #             ),
-    #             model=MODEL,
-    #             parent_message_id=None,
-    #         ),
-    #         bot_id="public1",
-    #     )
-    #     output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+        # Second message
+        chat_input = ChatInput(
+            conversation_id=conv.id,
+            message=MessageInput(
+                role="user",
+                content=Content(
+                    content_type="text",
+                    body="自己紹介して",
+                ),
+                model=MODEL,
+                parent_message_id=conv.last_message_id,
+            ),
+            bot_id="private1",
+        )
+        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+        print(output)
 
-    #     print(output)
+        # Edit first message
+        chat_input = ChatInput(
+            conversation_id=conv.id,
+            message=MessageInput(
+                role="user",
+                content=Content(
+                    content_type="text",
+                    body="こんばんは",
+                ),
+                model=MODEL,
+                parent_message_id="system",
+            ),
+            bot_id="private1",
+        )
+        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
 
-    #     conv = find_conversation_by_id("user1", output.conversation_id)
-    #     chat_input = ChatInput(
-    #         conversation_id=conv.id,
-    #         message=MessageInput(
-    #             role="user",
-    #             content=Content(
-    #                 content_type="text",
-    #                 body="自己紹介して",
-    #             ),
-    #             model=MODEL,
-    #             parent_message_id=conv.last_message_id,
-    #         ),
-    #         bot_id="private1",
-    #     )
-    #     output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
-    #     print(output)
+        conv = find_conversation_by_id("user1", output.conversation_id)
+        self.assertEqual(len(conv.message_map["system"].children), 1)
+        self.assertEqual(conv.message_map["system"].children[0], "instruction")
+        self.assertEqual(len(conv.message_map["instruction"].children), 2)
 
-    #     # Delete alias
-    #     delete_alias_by_id("user1", "public1")
+    def test_chat_with_public_bot(self):
+        chat_input = ChatInput(
+            conversation_id="test_conversation_id",
+            message=MessageInput(
+                role="user",
+                content=Content(
+                    content_type="text",
+                    body="こんにちは",
+                ),
+                model=MODEL,
+                parent_message_id=None,
+            ),
+            bot_id="public1",
+        )
+        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+
+        print(output)
+
+        conv = find_conversation_by_id("user1", output.conversation_id)
+        chat_input = ChatInput(
+            conversation_id=conv.id,
+            message=MessageInput(
+                role="user",
+                content=Content(
+                    content_type="text",
+                    body="自己紹介して",
+                ),
+                model=MODEL,
+                parent_message_id=conv.last_message_id,
+            ),
+            bot_id="private1",
+        )
+        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+        print(output)
+
+        # Delete alias
+        delete_alias_by_id("user1", "public1")
 
     def test_fetch_conversation(self):
         chat_input = ChatInput(
