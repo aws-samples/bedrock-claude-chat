@@ -1,0 +1,9 @@
+langchain==0.0.349
+boto3==1.28.57
+beautifulsoup4==4.12.2
+lxml==4.9.3
+tqdm==4.66.1
+unstructured==0.11.2
+libmagic==1.0
+pg8000==1.30.3
+python-ulid==1.1.0

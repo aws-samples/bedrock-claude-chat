@@ -13,9 +13,11 @@ import { Auth } from "./auth";
 import { Platform } from "aws-cdk-lib/aws-ecr-assets";
 import { Stack } from "aws-cdk-lib";
 import * as iam from "aws-cdk-lib/aws-iam";
+import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as path from "path";
 
 export interface ApiProps {
+  readonly vpc: ec2.IVpc;
   readonly database: ITable;
   readonly corsAllowOrigins?: string[];
   readonly auth: Auth;
@@ -64,6 +66,8 @@ export class Api extends Construct {
           file: "Dockerfile",
         }
       ),
+      vpc: props.vpc,
+      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
       memorySize: 1024,
       timeout: Duration.seconds(30),
       environment: {

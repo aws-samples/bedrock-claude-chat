@@ -133,7 +133,7 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 
 ## Others
 
-### Configure text generation parameters
+### Configure text generation / embedding parameters
 
 Edit [config.py](./backend/app/config.py) and run `cdk deploy`.
 
@@ -144,6 +144,12 @@ GENERATION_CONFIG = {
     "top_k": 250,
     "top_p": 0.999,
     "stop_sequences": ["Human: ", "Assistant: "],
+}
+
+EMBEDDING_CONFIG = {
+    "model_id": "amazon.titan-embed-text-v1",
+    "chunk_size": 1000,
+    "chunk_overlap": 100,
 }
 ```
 

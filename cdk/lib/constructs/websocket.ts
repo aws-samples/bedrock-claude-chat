@@ -13,8 +13,10 @@ import { SnsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { Auth } from "./auth";
 import { ITable } from "aws-cdk-lib/aws-dynamodb";
 import { CfnRouteResponse } from "aws-cdk-lib/aws-apigatewayv2";
+import * as ec2 from "aws-cdk-lib/aws-ec2";
 
 export interface WebSocketProps {
+  readonly vpc: ec2.IVpc;
   readonly database: ITable;
   readonly auth: Auth;
   readonly bedrockRegion: string;
@@ -73,6 +75,8 @@ export class WebSocket extends Construct {
           file: "websocket.Dockerfile",
         }
       ),
+      vpc: props.vpc,
+      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
       memorySize: 512,
       timeout: Duration.minutes(15),
       environment: {

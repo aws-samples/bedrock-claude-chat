@@ -12,6 +12,9 @@ import { Database } from "./constructs/database";
 import { Frontend } from "./constructs/frontend";
 import { WebSocket } from "./constructs/websocket";
 import * as cdk from "aws-cdk-lib";
+import * as ec2 from "aws-cdk-lib/aws-ec2";
+import { Embedding } from "./constructs/embedding";
+import { VectorStore } from "./constructs/vectorstore";
 
 export interface BedrockChatStackProps extends StackProps {
   readonly bedrockRegion: string;
@@ -21,6 +24,8 @@ export interface BedrockChatStackProps extends StackProps {
 export class BedrockChatStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: BedrockChatStackProps) {
     super(scope, id, props);
+
+    const vpc = new ec2.Vpc(this, "VPC", {});
 
     const accessLogBucket = new Bucket(this, "AccessLogBucket", {
       encryption: BucketEncryption.S3_MANAGED,
@@ -35,6 +40,7 @@ export class BedrockChatStack extends cdk.Stack {
     const database = new Database(this, "Database");
 
     const backendApi = new Api(this, "BackendApi", {
+      vpc,
       database: database.table,
       auth,
       bedrockRegion: props.bedrockRegion,
@@ -43,6 +49,7 @@ export class BedrockChatStack extends cdk.Stack {
 
     // For streaming response
     const websocket = new WebSocket(this, "WebSocket", {
+      vpc,
       database: database.table,
       tableAccessRole: database.tableAccessRole,
       auth,
@@ -56,6 +63,32 @@ export class BedrockChatStack extends cdk.Stack {
       accessLogBucket,
       webAclId: props.webAclId,
     });
+
+    const vectorStore = new VectorStore(this, "VectorStore", {
+      vpc: vpc,
+    });
+    const embedding = new Embedding(this, "Embedding", {
+      vpc,
+      bedrockRegion: props.bedrockRegion,
+      database: database.table,
+      dbConfig: {
+        host: vectorStore.cluster.clusterEndpoint.hostname,
+        username: vectorStore.secret
+          .secretValueFromJson("username")
+          .unsafeUnwrap()
+          .toString(),
+        password: vectorStore.secret
+          .secretValueFromJson("password")
+          .unsafeUnwrap()
+          .toString(),
+        port: vectorStore.cluster.clusterEndpoint.port,
+        database: vectorStore.secret
+          .secretValueFromJson("dbname")
+          .unsafeUnwrap()
+          .toString(),
+      },
+    });
+    vectorStore.allowFrom(embedding.handler);
 
     new CfnOutput(this, "FrontendURL", {
       value: `https://${frontend.cloudFrontWebDistribution.distributionDomainName}`,

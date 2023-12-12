@@ -1,6 +1,6 @@
 import json
 
-from app.config import GENERATION_CONFIG
+from app.config import EMBEDDING_CONFIG, GENERATION_CONFIG
 from app.utils import get_bedrock_client
 
 client = get_bedrock_client()
@@ -51,3 +51,20 @@ def invoke(prompt: str, model: str) -> str:
     output_txt = _extract_output_text(model, response)
 
     return output_txt
+
+
+def calculate_embeddings(question: str) -> list[float]:
+    payload = json.dumps({"inputText": question}).encode("utf-8")
+    accept = "application/json"
+    content_type = "application/json"
+
+    response = client.invoke_model(
+        accept=accept,
+        contentType=content_type,
+        body=payload,
+        modelId=EMBEDDING_CONFIG["model_id"],
+    )
+    output = json.loads(response.get("body").read())
+    embedding = output.get("embedding")
+
+    return embedding

@@ -126,7 +126,7 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 
 ## その他
 
-### テキスト生成パラメータの設定
+### テキスト生成パラメータ・ベクトル埋め込みパラメータの設定
 
 [config.py](../backend/app/config.py)を編集後、`cdk deploy`を実行してください。
 
@@ -137,6 +137,12 @@ GENERATION_CONFIG = {
     "top_k": 250,
     "top_p": 0.999,
     "stop_sequences": ["Human: ", "Assistant: "],
+}
+
+EMBEDDING_CONFIG = {
+    "model_id": "amazon.titan-embed-text-v1",
+    "chunk_size": 1000,
+    "chunk_overlap": 100,
 }
 ```
 
