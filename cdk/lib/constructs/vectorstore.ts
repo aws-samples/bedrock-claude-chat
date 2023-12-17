@@ -5,9 +5,8 @@ import { CustomResource, Duration } from "aws-cdk-lib";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as path from "path";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 
-// UUID for custom resource handler
-const UUID = "d1b4d3c5-1f3d-11ec-9621-0242ac130012";
 const DB_NAME = "postgres";
 
 export interface VectorStoreProps {
@@ -47,53 +46,47 @@ export class VectorStore extends Construct {
       // ],
     });
 
-    // TODO: use normal handler instead of singleton
-    const customResourceHandler = new lambda.SingletonFunction(
-      this,
-      "CustomResourceHandler",
-      {
-        runtime: lambda.Runtime.NODEJS_18_X,
-        code: lambda.Code.fromAsset(
-          path.join(__dirname, "../../custom-resources/setup-pgvector/")
-        ),
-        handler: "index.handler",
-        uuid: UUID,
-        lambdaPurpose: "CustomResourceSetupVectorStore",
-        vpc: props.vpc,
-        timeout: Duration.minutes(5),
-      }
-    );
-    sg.connections.allowFrom(
-      customResourceHandler,
-      ec2.Port.tcp(cluster.clusterEndpoint.port)
-    );
-
-    new CustomResource(this, "CustomResourceSetup", {
-      serviceToken: customResourceHandler.functionArn,
-      resourceType: "Custom::SetupVectorStore",
-      properties: {
-        dbConfig: {
-          host: cluster.clusterEndpoint.hostname,
-          user: cluster
-            .secret!.secretValueFromJson("username")
-            .unsafeUnwrap()
-            .toString(),
-          password: cluster
-            .secret!.secretValueFromJson("password")
-            .unsafeUnwrap()
-            .toString(),
-          port: cluster.clusterEndpoint.port.toString(),
-          database: cluster
-            .secret!.secretValueFromJson("dbname")
-            .unsafeUnwrap()
-            .toString(),
-        },
-        dbClusterIdentifier: cluster
+    const setupHandler = new NodejsFunction(this, "CustomResourceHandler", {
+      vpc: props.vpc,
+      runtime: lambda.Runtime.NODEJS_18_X,
+      entry: path.join(
+        __dirname,
+        "../../custom-resources/setup-pgvector/index.js"
+      ),
+      handler: "handler",
+      timeout: Duration.minutes(5),
+      environment: {
+        DB_HOST: cluster.clusterEndpoint.hostname,
+        DB_USER: cluster
+          .secret!.secretValueFromJson("username")
+          .unsafeUnwrap()
+          .toString(),
+        DB_PASSWORD: cluster
+          .secret!.secretValueFromJson("password")
+          .unsafeUnwrap()
+          .toString(),
+        DB_NAME: cluster
+          .secret!.secretValueFromJson("dbname")
+          .unsafeUnwrap()
+          .toString(),
+        DB_PORT: cluster.clusterEndpoint.port.toString(),
+        DB_CLUSTER_IDENTIFIER: cluster
           .secret!.secretValueFromJson("dbClusterIdentifier")
           .unsafeUnwrap()
           .toString(),
       },
     });
+
+    sg.connections.allowFrom(
+      setupHandler,
+      ec2.Port.tcp(cluster.clusterEndpoint.port)
+    );
+
+    // new CustomResource(this, "CustomResourceSetup", {
+    //   serviceToken: setupHandler.functionArn,
+    //   resourceType: "Custom::SetupVectorStore",
+    //   properties: {},
+    // });
 
     this.securityGroup = sg;
     this.cluster = cluster;

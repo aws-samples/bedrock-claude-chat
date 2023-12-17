@@ -12,7 +12,7 @@ from app.repositories.custom_bot import (
     update_bot_last_used_time,
     update_bot_pin_status,
 )
-from app.repositories.model import BotModel
+from app.repositories.model import BotModel, KnowledgeModel
 from app.route_schema import (
     BotInput,
     BotMetaOutput,
@@ -20,6 +20,7 @@ from app.route_schema import (
     BotModifyOutput,
     BotOutput,
     BotSummaryOutput,
+    Knowledge,
 )
 from app.utils import get_current_time
 
@@ -40,18 +41,34 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             last_used_time=current_time,
             public_bot_id=None,
             is_pinned=False,
+            knowledge=KnowledgeModel(
+                source_urls=bot_input.knowledge.source_urls,
+                sitemap_urls=bot_input.knowledge.sitemap_urls,
+            )
+            if bot_input.knowledge
+            else KnowledgeModel(source_urls=[], sitemap_urls=[]),
+            sync_status="QUEUED",
+            sync_status_reason="",
         ),
     )
     return BotOutput(
         id=bot_input.id,
         title=bot_input.title,
         instruction=bot_input.instruction,
-        description=bot_input.description,
+        description=bot_input.description if bot_input.description else "",
         create_time=current_time,
         last_used_time=current_time,
         is_public=False,
         is_pinned=False,
         owned=True,
+        knowledge=Knowledge(
+            source_urls=bot_input.knowledge.source_urls,
+            sitemap_urls=bot_input.knowledge.sitemap_urls,
+        )
+        if bot_input.knowledge
+        else Knowledge(source_urls=[], sitemap_urls=[]),
+        sync_status="QUEUED",
+        sync_status_reason="",
     )
 
 
@@ -65,12 +82,26 @@ def modify_owned_bot(
         title=modify_input.title,
         instruction=modify_input.instruction,
         description=modify_input.description if modify_input.description else "",
+        knowledge=KnowledgeModel(
+            source_urls=modify_input.knowledge.source_urls,
+            sitemap_urls=modify_input.knowledge.sitemap_urls,
+        )
+        if modify_input.knowledge
+        else KnowledgeModel(source_urls=[], sitemap_urls=[]),
+        sync_status="QUEUED",
+        sync_status_reason="",
     )
     return BotModifyOutput(
         id=bot_id,
         title=modify_input.title,
         instruction=modify_input.instruction,
-        description=modify_input.description,
+        description=modify_input.description if modify_input.description else "",
+        knowledge=Knowledge(
+            source_urls=modify_input.knowledge.source_urls,
+            sitemap_urls=modify_input.knowledge.sitemap_urls,
+        )
+        if modify_input.knowledge
+        else Knowledge(source_urls=[], sitemap_urls=[]),
     )
 
 

@@ -13,7 +13,7 @@ GENERATION_CONFIG = {
 # This parameter will pass to `RecursiveCharacterTextSplitter` of `langchain`.
 # See: https://api.python.langchain.com/en/latest/text_splitter/langchain.text_splitter.RecursiveCharacterTextSplitter.html
 EMBEDDING_CONFIG = {
-    "model_id": "amazon.titan-embed-text-v1",
+    "model_id": "cohere.embed-multilingual-v3",
     "chunk_size": 1000,
     "chunk_overlap": 100,
 }

@@ -15,7 +15,8 @@ from app.repositories.common import (
     _get_table_client,
     _get_table_public_client,
 )
-from app.repositories.model import BotAliasModel, BotMeta, BotModel
+from app.repositories.model import BotAliasModel, BotMeta, BotModel, KnowledgeModel
+from app.route_schema import type_sync_status
 from app.utils import get_current_time
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
@@ -37,6 +38,9 @@ def store_bot(user_id: str, custom_bot: BotModel):
         "CreateTime": decimal(custom_bot.create_time),
         "LastBotUsed": decimal(custom_bot.last_used_time),
         "IsPinned": custom_bot.is_pinned,
+        "Knowledge": custom_bot.knowledge.model_dump(),
+        "SyncStatus": custom_bot.sync_status,
+        "SyncStatusReason": custom_bot.sync_status_reason,
     }
 
     response = table.put_item(Item=item)
@@ -44,7 +48,14 @@ def store_bot(user_id: str, custom_bot: BotModel):
 
 
 def update_bot(
-    user_id: str, bot_id: str, title: str, description: str, instruction: str
+    user_id: str,
+    bot_id: str,
+    title: str,
+    description: str,
+    instruction: str,
+    knowledge: KnowledgeModel,
+    sync_status: type_sync_status,
+    sync_status_reason: str,
 ):
     """Update bot title, description, and instruction.
     NOTE: Use `update_bot_visibility` to update visibility.
@@ -55,11 +66,14 @@ def update_bot(
     try:
         response = table.update_item(
             Key={"PK": user_id, "SK": _compose_bot_id(user_id, bot_id)},
-            UpdateExpression="SET Title = :title, Description = :description, Instruction = :instruction",
+            UpdateExpression="SET Title = :title, Description = :description, Instruction = :instruction, Knowledge = :knowledge, SyncStatus = :sync_status, SyncStatusReason = :sync_status_reason",
             ExpressionAttributeValues={
                 ":title": title,
                 ":description": description,
                 ":instruction": instruction,
+                ":knowledge": knowledge.model_dump(),
+                ":sync_status": sync_status,
+                ":sync_status_reason": sync_status_reason,
             },
             ReturnValues="ALL_NEW",
             ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
@@ -367,6 +381,9 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
         last_used_time=float(item["LastBotUsed"]),
         is_pinned=item["IsPinned"],
         public_bot_id=None if "PublicBotId" not in item else item["PublicBotId"],
+        knowledge=KnowledgeModel(**item["Knowledge"]),
+        sync_status=item["SyncStatus"],
+        sync_status_reason=item["SyncStatusReason"],
     )
 
     logger.debug(f"Found bot: {bot}")
@@ -394,6 +411,9 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
         last_used_time=float(item["LastBotUsed"]),
         is_pinned=item["IsPinned"],
         public_bot_id=item["PublicBotId"],
+        knowledge=KnowledgeModel(**item["Knowledge"]),
+        sync_status=item["SyncStatus"],
+        sync_status_reason=item["SyncStatusReason"],
     )
     logger.debug(f"Found public bot: {bot}")
     return bot

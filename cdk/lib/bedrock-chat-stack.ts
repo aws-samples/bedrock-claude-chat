@@ -26,6 +26,26 @@ export class BedrockChatStack extends cdk.Stack {
     super(scope, id, props);
 
     const vpc = new ec2.Vpc(this, "VPC", {});
+    const vectorStore = new VectorStore(this, "VectorStore", {
+      vpc: vpc,
+    });
+
+    const dbConfig = {
+      host: vectorStore.cluster.clusterEndpoint.hostname,
+      username: vectorStore.secret
+        .secretValueFromJson("username")
+        .unsafeUnwrap()
+        .toString(),
+      password: vectorStore.secret
+        .secretValueFromJson("password")
+        .unsafeUnwrap()
+        .toString(),
+      port: vectorStore.cluster.clusterEndpoint.port,
+      database: vectorStore.secret
+        .secretValueFromJson("dbname")
+        .unsafeUnwrap()
+        .toString(),
+    };
 
     const accessLogBucket = new Bucket(this, "AccessLogBucket", {
       encryption: BucketEncryption.S3_MANAGED,
@@ -50,6 +70,7 @@ export class BedrockChatStack extends cdk.Stack {
     // For streaming response
     const websocket = new WebSocket(this, "WebSocket", {
       vpc,
+      dbConfig,
       database: database.table,
       tableAccessRole: database.tableAccessRole,
       auth,
@@ -64,29 +85,11 @@ export class BedrockChatStack extends cdk.Stack {
       webAclId: props.webAclId,
     });
 
-    const vectorStore = new VectorStore(this, "VectorStore", {
-      vpc: vpc,
-    });
     const embedding = new Embedding(this, "Embedding", {
       vpc,
       bedrockRegion: props.bedrockRegion,
       database: database.table,
-      dbConfig: {
-        host: vectorStore.cluster.clusterEndpoint.hostname,
-        username: vectorStore.secret
-          .secretValueFromJson("username")
-          .unsafeUnwrap()
-          .toString(),
-        password: vectorStore.secret
-          .secretValueFromJson("password")
-          .unsafeUnwrap()
-          .toString(),
-        port: vectorStore.cluster.clusterEndpoint.port,
-        database: vectorStore.secret
-          .secretValueFromJson("dbname")
-          .unsafeUnwrap()
-          .toString(),
-      },
+      dbConfig,
     });
     vectorStore.allowFrom(embedding.handler);
 

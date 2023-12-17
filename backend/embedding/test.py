@@ -1,6 +1,9 @@
+import json
 import os
 
 import boto3
+import nest_asyncio
+import xmltodict
 from langchain.document_loaders import (
     SitemapLoader,
     UnstructuredURLLoader,
@@ -8,9 +11,12 @@ from langchain.document_loaders import (
 )
 from langchain.embeddings.bedrock import BedrockEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from lxml import etree
+
+nest_asyncio.apply()
 
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
-MODEL_ID = os.environ.get("MODEL_ID", "amazon.titan-embed-text-v1")
+MODEL_ID = os.environ.get("MODEL_ID", "cohere.embed-multilingual-v3")
 CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE", 1000))
 CHUNK_OVERLAP = int(os.environ.get("CHUNK_OVERLAP", 100))
 
@@ -27,9 +33,27 @@ CHUNK_OVERLAP = int(os.environ.get("CHUNK_OVERLAP", 100))
 
 
 if __name__ == "__main__":
-    urls = ["https://docs.kanaries.net/ja/topics/LangChain/langchain-document-loader"]
+    # with open("sitemap_example.xml", "r") as f:
+    #     sitemap_xml = f.read()
+    # d = xmltodict.parse(sitemap_xml)
+    # urlset = d["urlset"]
+    # print(urlset["url"])
+    # print(len(urlset["url"]))
+
+    # bedrock = boto3.client(service_name="bedrock", region_name=BEDROCK_REGION)
+    # json_data = bedrock.list_foundation_models()
+    # model_ids = [
+    #     model_summary["modelId"] for model_summary in json_data["modelSummaries"]
+    # ]
+    # print(model_ids)
+
+    # loader = SitemapLoader(web_path="https://python.langchain.com/sitemap.xml")
+    # print(loader.load())
+
+    urls = ["https://qiita.com/cyberBOSE/items/3660e36eccbe0e354c27"]
     loader = UnstructuredURLLoader(urls)
     documents = loader.load()
+    print(documents)
 
     # Use chunk_size of 1000.
     # We felt that the answer we would be looking for would be

@@ -3,6 +3,9 @@ from typing import Literal, Optional
 from humps import camelize
 from pydantic import BaseModel, Field
 
+# Knowledge sync status type
+type_sync_status = Literal["QUEUED", "RUNNING", "SUCCEEDED", "FAILED"]
+
 
 class BaseSchema(BaseModel):
     class Config:
@@ -13,6 +16,11 @@ class BaseSchema(BaseModel):
 class Content(BaseSchema):
     content_type: Literal["text"]
     body: str
+
+
+class Knowledge(BaseSchema):
+    source_urls: list[str]
+    sitemap_urls: list[str]
 
 
 class MessageInput(BaseSchema):
@@ -78,25 +86,28 @@ class BotInput(BaseSchema):
     title: str
     instruction: str
     description: str | None
+    knowledge: Knowledge | None
 
 
 class BotModifyInput(BaseSchema):
     title: str
     instruction: str
     description: str | None
+    knowledge: Knowledge | None
 
 
 class BotModifyOutput(BaseSchema):
     id: str
     title: str
     instruction: str
-    description: str | None
+    description: str
+    knowledge: Knowledge
 
 
 class BotOutput(BaseSchema):
     id: str
     title: str
-    description: str | None
+    description: str
     instruction: str
     create_time: float
     last_used_time: float
@@ -104,6 +115,9 @@ class BotOutput(BaseSchema):
     is_pinned: bool
     # Whether the bot is owned by the user
     owned: bool
+    knowledge: Knowledge
+    sync_status: type_sync_status
+    sync_status_reason: str
 
 
 class BotMetaOutput(BaseSchema):

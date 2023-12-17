@@ -34,6 +34,8 @@ def insert(
 
     try:
         with conn.cursor() as cursor:
+            # TODO: Overwrite if the same content exists
+            # Drop same bot_id first and then insert for idenpotency
             insert_query = f"INSERT INTO items (id, botid, content, source, embedding) VALUES (%s, %s, %s, %s, %s)"
             values_to_insert = []
             for source, content, embedding in zip(sources, contents, embeddings):
@@ -77,10 +79,12 @@ def handler(event, context):
     try:
         insert(bot_id, contents, sources, embeddings)
         # Update bot status on dynamodb table
+        # Need to care idenpotency
         # TODO
     except Exception as e:
         print(e)
         # Update bot status on dynamodb table
+        # Need to care idenpotency
         # TODO
 
     return {"statusCode": 200, "body": "Success"}

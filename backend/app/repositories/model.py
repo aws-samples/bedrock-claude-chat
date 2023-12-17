@@ -1,11 +1,17 @@
 from typing import Literal
 
+from app.route_schema import type_sync_status
 from pydantic import BaseModel
 
 
 class ContentModel(BaseModel):
     content_type: Literal["text"]
     body: str
+
+
+class KnowledgeModel(BaseModel):
+    source_urls: list[str]
+    sitemap_urls: list[str]
 
 
 class MessageModel(BaseModel):
@@ -36,6 +42,9 @@ class BotModel(BaseModel):
     # This can be used as the bot is public or not. Also used for GSI PK
     public_bot_id: str | None
     is_pinned: bool
+    knowledge: KnowledgeModel
+    sync_status: type_sync_status
+    sync_status_reason: str
 
 
 class BotAliasModel(BaseModel):

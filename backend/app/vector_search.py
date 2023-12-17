@@ -20,6 +20,7 @@ class SearchResult(BaseModel):
     bot_id: str
     content: str
     source: str
+    rank: int
 
 
 def search(bot_id: str, limit: int, query: str) -> list[SearchResult]:
@@ -68,4 +69,7 @@ LIMIT %s
     # ]
     logger.debug(f"search results: {results}")
 
-    return [SearchResult(bot_id=r[1], content=r[2], source=r[3]) for r in results]
+    return [
+        SearchResult(rank=i, bot_id=r[1], content=r[2], source=r[3])
+        for i, r in enumerate(results)
+    ]

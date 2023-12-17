@@ -54,7 +54,7 @@ export class Api extends Construct {
     );
     handlerRole.addManagedPolicy(
       iam.ManagedPolicy.fromAwsManagedPolicyName(
-        "service-role/AWSLambdaBasicExecutionRole"
+        "service-role/AWSLambdaVPCAccessExecutionRole"
       )
     );
 

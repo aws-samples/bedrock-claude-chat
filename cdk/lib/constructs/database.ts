@@ -4,9 +4,11 @@ import {
   BillingMode,
   Table,
   ProjectionType,
+  StreamViewType,
 } from "aws-cdk-lib/aws-dynamodb";
 import { AccountPrincipal, Role } from "aws-cdk-lib/aws-iam";
 import { Construct } from "constructs";
+import { CfnPipe } from "aws-cdk-lib/aws-pipes";
 
 export interface DatabaseProps {}
 
@@ -24,6 +26,7 @@ export class Database extends Construct {
       sortKey: { name: "SK", type: AttributeType.STRING },
       billingMode: BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY,
+      stream: StreamViewType.NEW_IMAGE,
     });
     table.addGlobalSecondaryIndex({
       // Used to fetch conversation or bot by id
@@ -56,6 +59,26 @@ export class Database extends Construct {
       assumedBy: new AccountPrincipal(Stack.of(this).account),
     });
     table.grantReadWriteData(tableAccessRole);
+
+    /**
+     * Pipe
+     */
+    const pipe = new CfnPipe(this, "Pipe", {
+      source: _sourceArn,
+      sourceParameters: {
+        sqsQueueParameters: {
+          batchSize: 1,
+          maximumBatchingWindowInSeconds: 6,
+        },
+      },
+      enrichment: _enrichmentArn,
+      enrichmentParameters: {},
+      target: _targetArn,
+      targetParameters: {
+        cloudWatchLogsParameters: {},
+      },
+      roleArn: _roleArn,
+    });
 
     this.table = table;
     this.tableAccessRole = tableAccessRole;

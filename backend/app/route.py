@@ -13,7 +13,6 @@ from app.repositories.custom_bot import (
     find_private_bots_by_user_id,
     update_bot_visibility,
 )
-from app.repositories.model import BotModel
 from app.route_schema import (
     BotInput,
     BotMetaOutput,
@@ -27,6 +26,7 @@ from app.route_schema import (
     Content,
     Conversation,
     ConversationMetaOutput,
+    Knowledge,
     MessageOutput,
     NewTitleInput,
     ProposedTitle,
@@ -42,6 +42,7 @@ from app.usecases.bot import (
 )
 from app.usecases.chat import chat, fetch_conversation, propose_conversation_title
 from app.utils import get_current_time
+from app.vector_search import search
 from fastapi import APIRouter, Request
 
 router = APIRouter()
@@ -221,6 +222,12 @@ def get_private_bot(request: Request, bot_id: str):
         is_public=True if bot.public_bot_id else False,
         is_pinned=bot.is_pinned,
         owned=True,
+        knowledge=Knowledge(
+            source_urls=bot.knowledge.source_urls,
+            sitemap_urls=bot.knowledge.sitemap_urls,
+        ),
+        sync_status=bot.sync_status,
+        sync_status_reason=bot.sync_status_reason,
     )
     return output
 
@@ -240,3 +247,12 @@ def delete_bot(request: Request, bot_id: str):
     """
     current_user: User = request.state.current_user
     remove_bot_by_id(current_user.id, bot_id)
+
+
+@router.get("/bot/{bot_id}/search")
+def search_knowledge(request: Request, bot_id: str, query: str):
+    """Search knowledge
+    TODO: remove when release (debug purpose)
+    """
+    current_user: User = request.state.current_user
+    return search(bot_id, 10, query)

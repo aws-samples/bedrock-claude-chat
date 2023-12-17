@@ -11,18 +11,17 @@ const setUp = async (dbConfig) => {
     await client.query("CREATE EXTENSION IF NOT EXISTS pgcrypto;");
     await client.query("CREATE EXTENSION IF NOT EXISTS vector;");
     await client.query("DROP TABLE IF EXISTS items;");
-    // NOTE: Titan embedding dimension is 1536
-    // Ref: https://aws.amazon.com/bedrock/titan/
+    // NOTE: Cohere multi lingual embedding dimension is 1024
+    // Ref: https://txt.cohere.com/introducing-embed-v3/
     await client.query(`CREATE TABLE IF NOT EXISTS items(
                          id CHAR(26) primary key,
                          botid CHAR(26),
                          content text,
                          source text,
-                         embedding vector(1536));`);
+                         embedding vector(1024));`);
     await client.query(`CREATE INDEX ON items 
                          USING ivfflat (embedding vector_l2_ops) WITH (lists = 5000);`);
     await client.query(`CREATE INDEX ON items (botid);`);
-    await client.query("VACUUM ANALYZE items;");
 
     console.log("SQL execution successful.");
   } catch (err) {
@@ -63,10 +62,17 @@ exports.handler = async (event, context) => {
   console.log(`Received event: ${JSON.stringify(event, null, 2)}`);
   console.log(`Received context: ${JSON.stringify(context, null, 2)}`);
 
-  const dbConfig = event.ResourceProperties.dbConfig;
+  // const dbConfig = event.ResourceProperties.dbConfig;
+  const dbConfig = {
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    port: process.env.DB_PORT,
+  };
   console.log(`Received dbConfig: ${JSON.stringify(dbConfig, null, 2)}`);
 
-  const dbClusterIdentifier = event.ResourceProperties.dbClusterIdentifier;
+  const dbClusterIdentifier = process.env.DB_CLUSTER_IDENTIFIER;
 
   try {
     switch (event.RequestType) {
