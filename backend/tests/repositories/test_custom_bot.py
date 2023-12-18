@@ -16,7 +16,7 @@ from app.repositories.custom_bot import (
     update_bot_last_used_time,
     update_bot_visibility,
 )
-from app.repositories.model import BotAliasModel, BotModel
+from app.repositories.model import BotAliasModel, BotModel, KnowledgeModel
 
 
 class TestCustomBotRepository(unittest.TestCase):
@@ -30,6 +30,12 @@ class TestCustomBotRepository(unittest.TestCase):
             last_used_time=1627984879.9,
             is_pinned=False,
             public_bot_id=None,
+            knowledge=KnowledgeModel(
+                source_urls=["https://aws.amazon.com/"],
+                sitemap_urls=["https://aws.amazon.sitemap.xml"],
+            ),
+            sync_status="RUNNING",
+            sync_status_reason="reason",
         )
         store_bot("user1", bot)
 
@@ -42,6 +48,10 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(bot.create_time, 1627984879.9)
         self.assertEqual(bot.last_used_time, 1627984879.9)
         self.assertEqual(bot.is_pinned, False)
+        self.assertEqual(bot.knowledge.source_urls, ["https://aws.amazon.com/"])
+        self.assertEqual(bot.knowledge.sitemap_urls, ["https://aws.amazon.sitemap.xml"])
+        self.assertEqual(bot.sync_status, "RUNNING")
+        self.assertEqual(bot.sync_status_reason, "reason")
 
         # Assert bot is stored in user1's bot list
         bot = find_private_bots_by_user_id("user1")
@@ -69,6 +79,12 @@ class TestCustomBotRepository(unittest.TestCase):
             last_used_time=1627984879.9,
             is_pinned=False,
             public_bot_id=None,
+            knowledge=KnowledgeModel(
+                source_urls=["https://aws.amazon.com/"],
+                sitemap_urls=["https://aws.amazon.sitemap.xml"],
+            ),
+            sync_status="RUNNING",
+            sync_status_reason="reason",
         )
         store_bot("user1", bot)
         update_bot_last_used_time("user1", "1")
@@ -89,6 +105,12 @@ class TestCustomBotRepository(unittest.TestCase):
             last_used_time=1627984879.9,
             is_pinned=False,
             public_bot_id=None,
+            knowledge=KnowledgeModel(
+                source_urls=["https://aws.amazon.com/jp"],
+                sitemap_urls=["https://aws.amazon.sitemap.xml/jp"],
+            ),
+            sync_status="FAILED",
+            sync_status_reason="error",
         )
         store_bot("user1", bot)
         update_bot(
@@ -97,12 +119,24 @@ class TestCustomBotRepository(unittest.TestCase):
             title="Updated Title",
             description="Updated Description",
             instruction="Updated Instruction",
+            knowledge=KnowledgeModel(
+                source_urls=["https://aws.amazon.com/"],
+                sitemap_urls=["https://aws.amazon.sitemap.xml"],
+            ),
+            sync_status="RUNNING",
+            sync_status_reason="reason",
         )
 
         bot = find_private_bot_by_id("user1", "1")
         self.assertEqual(bot.title, "Updated Title")
         self.assertEqual(bot.description, "Updated Description")
         self.assertEqual(bot.instruction, "Updated Instruction")
+        self.assertEqual(bot.knowledge.source_urls, ["https://aws.amazon.com/jp"])
+        self.assertEqual(
+            bot.knowledge.sitemap_urls, ["https://aws.amazon.sitemap.xml/jp"]
+        )
+        self.assertEqual(bot.sync_status, "RUNNING")
+        self.assertEqual(bot.sync_status_reason, "reason")
 
         delete_bot_by_id("user1", "1")
 
@@ -119,6 +153,12 @@ class TestFindAllBots(unittest.TestCase):
             # Pinned
             is_pinned=True,
             public_bot_id=None,
+            knowledge=KnowledgeModel(
+                source_urls=["https://aws.amazon.com/"],
+                sitemap_urls=["https://aws.amazon.sitemap.xml"],
+            ),
+            sync_status="RUNNING",
+            sync_status_reason="reason",
         )
         bot2 = BotModel(
             id="2",
@@ -130,6 +170,12 @@ class TestFindAllBots(unittest.TestCase):
             # Pinned
             is_pinned=True,
             public_bot_id=None,
+            knowledge=KnowledgeModel(
+                source_urls=["https://aws.amazon.com/"],
+                sitemap_urls=["https://aws.amazon.sitemap.xml"],
+            ),
+            sync_status="RUNNING",
+            sync_status_reason="reason",
         )
         bot3 = BotModel(
             id="3",
@@ -141,6 +187,12 @@ class TestFindAllBots(unittest.TestCase):
             # Not Pinned
             is_pinned=False,
             public_bot_id=None,
+            knowledge=KnowledgeModel(
+                source_urls=["https://aws.amazon.com/"],
+                sitemap_urls=["https://aws.amazon.sitemap.xml"],
+            ),
+            sync_status="RUNNING",
+            sync_status_reason="reason",
         )
         bot4 = BotModel(
             id="4",
@@ -152,6 +204,12 @@ class TestFindAllBots(unittest.TestCase):
             # Not Pinned
             is_pinned=False,
             public_bot_id=None,
+            knowledge=KnowledgeModel(
+                source_urls=["https://aws.amazon.com/"],
+                sitemap_urls=["https://aws.amazon.sitemap.xml"],
+            ),
+            sync_status="RUNNING",
+            sync_status_reason="reason",
         )
         public_bot1 = BotModel(
             id="public1",
@@ -162,6 +220,12 @@ class TestFindAllBots(unittest.TestCase):
             last_used_time=1627984879.9,
             is_pinned=True,
             public_bot_id=None,
+            knowledge=KnowledgeModel(
+                source_urls=["https://aws.amazon.com/"],
+                sitemap_urls=["https://aws.amazon.sitemap.xml"],
+            ),
+            sync_status="RUNNING",
+            sync_status_reason="reason",
         )
         public_bot2 = BotModel(
             id="public2",
@@ -172,6 +236,12 @@ class TestFindAllBots(unittest.TestCase):
             last_used_time=1627984879.9,
             is_pinned=True,
             public_bot_id=None,
+            knowledge=KnowledgeModel(
+                source_urls=["https://aws.amazon.com/"],
+                sitemap_urls=["https://aws.amazon.sitemap.xml"],
+            ),
+            sync_status="RUNNING",
+            sync_status_reason="reason",
         )
         alias1 = BotAliasModel(
             id="alias1",
@@ -279,6 +349,12 @@ class TestUpdateBotVisibility(unittest.TestCase):
             last_used_time=1627984879.9,
             is_pinned=True,
             public_bot_id=None,
+            knowledge=KnowledgeModel(
+                source_urls=["https://aws.amazon.com/"],
+                sitemap_urls=["https://aws.amazon.sitemap.xml"],
+            ),
+            sync_status="RUNNING",
+            sync_status_reason="reason",
         )
         bot2 = BotModel(
             id="2",
@@ -289,6 +365,12 @@ class TestUpdateBotVisibility(unittest.TestCase):
             last_used_time=1627984879.9,
             is_pinned=True,
             public_bot_id=None,
+            knowledge=KnowledgeModel(
+                source_urls=["https://aws.amazon.com/"],
+                sitemap_urls=["https://aws.amazon.sitemap.xml"],
+            ),
+            sync_status="RUNNING",
+            sync_status_reason="reason",
         )
         public1 = BotModel(
             id="public1",
@@ -299,6 +381,12 @@ class TestUpdateBotVisibility(unittest.TestCase):
             last_used_time=1627984879.9,
             is_pinned=False,
             public_bot_id="public1",
+            knowledge=KnowledgeModel(
+                source_urls=["https://aws.amazon.com/"],
+                sitemap_urls=["https://aws.amazon.sitemap.xml"],
+            ),
+            sync_status="RUNNING",
+            sync_status_reason="reason",
         )
         alias1 = BotAliasModel(
             id="4",
@@ -324,7 +412,14 @@ class TestUpdateBotVisibility(unittest.TestCase):
     def test_update_bot_visibility(self):
         # Change original tilte
         update_bot(
-            "user2", "public1", title="Updated Title", description="", instruction=""
+            "user2",
+            "public1",
+            title="Updated Title",
+            description="",
+            instruction="",
+            knowledge=KnowledgeModel(source_urls=[], sitemap_urls=[]),
+            sync_status="RUNNING",
+            sync_status_reason="",
         )
         bots = find_all_bots_by_user_id("user1", limit=3)
         self.assertEqual(len(bots), 3)
