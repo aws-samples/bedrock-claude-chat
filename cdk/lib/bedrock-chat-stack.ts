@@ -91,7 +91,7 @@ export class BedrockChatStack extends cdk.Stack {
       database: database.table,
       dbConfig,
     });
-    vectorStore.allowFrom(embedding.handler);
+    vectorStore.allowFrom(embedding.taskSecurityGroup);
 
     new CfnOutput(this, "FrontendURL", {
       value: `https://${frontend.cloudFrontWebDistribution.distributionDomainName}`,

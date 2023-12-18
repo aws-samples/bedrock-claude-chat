@@ -82,11 +82,14 @@ export class VectorStore extends Construct {
       ec2.Port.tcp(cluster.clusterEndpoint.port)
     );
 
-    // new CustomResource(this, "CustomResourceSetup", {
-    //   serviceToken: setupHandler.functionArn,
-    //   resourceType: "Custom::SetupVectorStore",
-    //   properties: {},
-    // });
+    new CustomResource(this, "CustomResourceSetup", {
+      serviceToken: setupHandler.functionArn,
+      resourceType: "Custom::SetupVectorStore",
+      properties: {
+        // Dummy property to trigger
+        id: cluster.clusterEndpoint.hostname,
+      },
+    });
 
     this.securityGroup = sg;
     this.cluster = cluster;

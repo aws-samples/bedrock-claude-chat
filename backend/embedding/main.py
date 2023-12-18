@@ -1,9 +1,11 @@
+import argparse
 import json
 import os
 
 import boto3
 import pg8000
 from app.config import EMBEDDING_CONFIG
+from app.repositories.custom_bot import _decompose_bot_id
 from langchain.document_loaders import UnstructuredURLLoader
 from langchain.embeddings.bedrock import BedrockEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -34,8 +36,9 @@ def insert(
 
     try:
         with conn.cursor() as cursor:
-            # TODO: Overwrite if the same content exists
-            # Drop same bot_id first and then insert for idenpotency
+            delete_query = "DELETE FROM items WHERE botid = %s"
+            cursor.execute(delete_query, (bot_id,))
+
             insert_query = f"INSERT INTO items (id, botid, content, source, embedding) VALUES (%s, %s, %s, %s, %s)"
             values_to_insert = []
             for source, content, embedding in zip(sources, contents, embeddings):
@@ -43,6 +46,8 @@ def insert(
                 values_to_insert.append((id_, bot_id, content, source, embedding))
 
             cursor.executemany(insert_query, values_to_insert)
+
+        conn.commit()
     except Exception as e:
         conn.rollback()
         raise e
@@ -50,17 +55,11 @@ def insert(
         conn.close()
 
 
-def handler(event, context):
-    print(event)
+def main(bot_id: str, sitemap_urls: list[str], source_urls: list[str]):
+    # TODO: sitemap
 
-    # NOTE: Batch size is 1
-    record = event["Records"][0]
-    body = json.loads(record["body"])
-    bot_id = body["bot_id"]
-    urls = body["urls"]
-
-    # Calculate embeddings using langchain
-    loader = UnstructuredURLLoader(urls)
+    # Calculate embeddings using LangChain
+    loader = UnstructuredURLLoader(source_urls)
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP, length_function=len
     )
@@ -88,3 +87,28 @@ def handler(event, context):
         # TODO
 
     return {"statusCode": 200, "body": "Success"}
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("new_image", type=str)
+    args = parser.parse_args()
+
+    new_image = json.loads(args.new_image)
+    print(new_image)
+
+    knowledge = new_image["Knowledge"]["M"]
+    print(knowledge)
+
+    sitemap_urls = [x["S"] for x in knowledge["sitemap_urls"]["L"]]
+    print(sitemap_urls)
+
+    source_urls = [x["S"] for x in knowledge["source_urls"]["L"]]
+    print(source_urls)
+
+    sk = new_image["SK"]["S"]
+    print(sk)
+
+    bot_id = _decompose_bot_id(sk)
+
+    main(bot_id, sitemap_urls, source_urls)
