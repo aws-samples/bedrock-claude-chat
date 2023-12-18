@@ -65,6 +65,7 @@ export class BedrockChatStack extends cdk.Stack {
       auth,
       bedrockRegion: props.bedrockRegion,
       tableAccessRole: database.tableAccessRole,
+      dbConfig,
     });
 
     // For streaming response
@@ -90,8 +91,10 @@ export class BedrockChatStack extends cdk.Stack {
       bedrockRegion: props.bedrockRegion,
       database: database.table,
       dbConfig,
+      tableAccessRole: database.tableAccessRole,
     });
     vectorStore.allowFrom(embedding.taskSecurityGroup);
+    vectorStore.allowFrom(backendApi.handler);
 
     new CfnOutput(this, "FrontendURL", {
       value: `https://${frontend.cloudFrontWebDistribution.distributionDomainName}`,

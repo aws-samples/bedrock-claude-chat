@@ -50,9 +50,12 @@ if __name__ == "__main__":
     # loader = SitemapLoader(web_path="https://python.langchain.com/sitemap.xml")
     # print(loader.load())
 
-    urls = ["https://qiita.com/cyberBOSE/items/3660e36eccbe0e354c27"]
+    urls = [
+        " https://pages.awscloud.com/rs/112-TZM-766/images/AWS-Black-Belt_2023_AmazonMSK_0430_v1.pdf"
+    ]
     loader = UnstructuredURLLoader(urls)
     documents = loader.load()
+
     print(documents)
 
     # Use chunk_size of 1000.

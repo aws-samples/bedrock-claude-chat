@@ -2,7 +2,7 @@ import { Construct } from "constructs";
 import { DockerImageCode, DockerImageFunction } from "aws-cdk-lib/aws-lambda";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as path from "path";
-import { Duration, RemovalPolicy } from "aws-cdk-lib";
+import { Duration, RemovalPolicy, Stack } from "aws-cdk-lib";
 import * as sqs from "aws-cdk-lib/aws-sqs";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import { Platform } from "aws-cdk-lib/aws-ecr-assets";
@@ -25,6 +25,7 @@ export interface EmbeddingProps {
   readonly database: ITable;
   readonly dbConfig: DbConfig;
   readonly bedrockRegion: string;
+  readonly tableAccessRole: iam.IRole;
 }
 
 export class Embedding extends Construct {
@@ -32,6 +33,9 @@ export class Embedding extends Construct {
   constructor(scope: Construct, id: string, props: EmbeddingProps) {
     super(scope, id);
 
+    /**
+     * ECS
+     */
     const cluster = new ecs.Cluster(this, "Cluster", {
       vpc: props.vpc,
     });
@@ -46,6 +50,18 @@ export class Embedding extends Construct {
           operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
         },
       }
+    );
+    taskDefinition.addToTaskRolePolicy(
+      new iam.PolicyStatement({
+        actions: ["bedrock:*"],
+        resources: ["*"],
+      })
+    );
+    taskDefinition.addToTaskRolePolicy(
+      new iam.PolicyStatement({
+        actions: ["sts:AssumeRole"],
+        resources: [props.tableAccessRole.roleArn],
+      })
     );
     const taskLogGroup = new logs.LogGroup(this, "TaskLogGroup", {
       removalPolicy: RemovalPolicy.DESTROY,
@@ -70,6 +86,10 @@ export class Embedding extends Construct {
         DB_USER: props.dbConfig.username,
         DB_PASSWORD: props.dbConfig.password,
         DB_NAME: props.dbConfig.database,
+        ACCOUNT: Stack.of(this).account,
+        REGION: Stack.of(this).region,
+        TABLE_NAME: props.database.tableName,
+        TABLE_ACCESS_ROLE_ARN: props.tableAccessRole.roleArn,
       },
     });
     taskLogGroup.grantWrite(container.taskDefinition.executionRole!);
@@ -79,7 +99,7 @@ export class Embedding extends Construct {
     });
 
     /**
-     * Pipe
+     * EventBridge Pipes
      */
     const pipeLogGroup = new logs.LogGroup(this, "PipeLogGroup", {
       removalPolicy: RemovalPolicy.DESTROY,
@@ -154,6 +174,7 @@ export class Embedding extends Construct {
           taskCount: 1,
           taskDefinitionArn: taskDefinition.taskDefinitionArn,
           overrides: {
+            // Pass event as argument.
             // Ref: https://repost.aws/questions/QU_WC7301mT8qR7ip_9cyjdQ/eventbridge-pipes-and-ecs-task
             containerOverrides: [
               {
@@ -174,54 +195,5 @@ export class Embedding extends Construct {
     });
 
     this.taskSecurityGroup = taskSg;
-
-    /**
-     * SQS + Lambda
-     */
-    // const queue = new sqs.Queue(this, "Queue", {
-    //   // Ref: https://aws.amazon.com/jp/blogs/compute/implementing-aws-well-architected-best-practices-for-amazon-sqs-part-2/#:~:text=It%20is%20recommended%20to%20keep,messages%20if%20the%20invocation%20fails.
-    //   visibilityTimeout: Duration.minutes(15 * 6),
-    // });
-
-    // // Currently use Lambda for embedding, which can excess 15 minutes timeout.
-    // // For large dataset, we need to use another option such as ECS Fargate.
-    // const handler = new DockerImageFunction(this, "Handler", {
-    //   code: DockerImageCode.fromImageAsset(
-    //     path.join(__dirname, "../../../backend"),
-    //     {
-    //       platform: Platform.LINUX_AMD64,
-    //       file: "embedding.Dockerfile",
-    //     }
-    //   ),
-    //   timeout: Duration.minutes(15),
-    //   memorySize: 2048,
-    //   vpc: props.vpc,
-    //   vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
-    //   environment: {
-    //     BEDROCK_REGION: props.bedrockRegion,
-    //     DB_HOST: props.dbConfig.host,
-    //     DB_PORT: props.dbConfig.port.toString(),
-    //     DB_USER: props.dbConfig.username,
-    //     DB_PASSWORD: props.dbConfig.password,
-    //     DB_NAME: props.dbConfig.database,
-    //   },
-    // });
-    // handler.role?.addToPrincipalPolicy(
-    //   new iam.PolicyStatement({
-    //     actions: ["bedrock:*"],
-    //     resources: ["*"],
-    //   })
-    // );
-    // queue.grantConsumeMessages(handler);
-    // props.database.grantReadWriteData(handler);
-
-    // new lambda.EventSourceMapping(this, "EventSource", {
-    //   target: handler,
-    //   eventSourceArn: queue.queueArn,
-    //   // TODO
-    //   batchSize: 1,
-    // });
-
-    // this.handler = handler;
   }
 }

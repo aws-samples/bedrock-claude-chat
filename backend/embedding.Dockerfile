@@ -1,5 +1,10 @@
 FROM public.ecr.aws/docker/library/python:3.11.6-slim-bullseye
 
+# Ref: https://github.com/langchain-ai/langchain/issues/3002
+RUN apt-get update && apt-get install -y \
+    libmagic-mgc \
+    libmagic1
+
 ENV PYTHONPATH="${PYTHONPATH}:/src"
 
 WORKDIR /src

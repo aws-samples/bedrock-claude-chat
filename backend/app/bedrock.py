@@ -53,18 +53,20 @@ def invoke(prompt: str, model: str) -> str:
     return output_txt
 
 
-def calculate_embeddings(question: str) -> list[float]:
-    payload = json.dumps({"inputText": question}).encode("utf-8")
+def calculate_query_embedding(question: str) -> list[float]:
+    model_id = EMBEDDING_CONFIG["model_id"]
+
+    # Currently only supports "cohere.embed-multilingual-v3"
+    assert model_id == "cohere.embed-multilingual-v3"
+
+    payload = json.dumps({"texts": [question], "input_type": "search_query"})
     accept = "application/json"
     content_type = "application/json"
 
     response = client.invoke_model(
-        accept=accept,
-        contentType=content_type,
-        body=payload,
-        modelId=EMBEDDING_CONFIG["model_id"],
+        accept=accept, contentType=content_type, body=payload, modelId=model_id
     )
     output = json.loads(response.get("body").read())
-    embedding = output.get("embedding")
+    embedding = output.get("embeddings")[0]
 
     return embedding

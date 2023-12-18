@@ -3,7 +3,11 @@ import { ArnFormat, CfnOutput, Duration } from "aws-cdk-lib";
 import { ITable } from "aws-cdk-lib/aws-dynamodb";
 import { HttpLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
 import { HttpUserPoolAuthorizer } from "@aws-cdk/aws-apigatewayv2-authorizers-alpha";
-import { DockerImageCode, DockerImageFunction } from "aws-cdk-lib/aws-lambda";
+import {
+  DockerImageCode,
+  DockerImageFunction,
+  IFunction,
+} from "aws-cdk-lib/aws-lambda";
 import {
   CorsHttpMethod,
   HttpApi,
@@ -15,10 +19,12 @@ import { Stack } from "aws-cdk-lib";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as path from "path";
+import { DbConfig } from "./embedding";
 
 export interface ApiProps {
   readonly vpc: ec2.IVpc;
   readonly database: ITable;
+  readonly dbConfig: DbConfig;
   readonly corsAllowOrigins?: string[];
   readonly auth: Auth;
   readonly bedrockRegion: string;
@@ -27,6 +33,7 @@ export interface ApiProps {
 
 export class Api extends Construct {
   readonly api: HttpApi;
+  readonly handler: IFunction;
   constructor(scope: Construct, id: string, props: ApiProps) {
     super(scope, id);
 
@@ -79,6 +86,11 @@ export class Api extends Construct {
         REGION: Stack.of(this).region,
         BEDROCK_REGION: props.bedrockRegion,
         TABLE_ACCESS_ROLE_ARN: tableAccessRole.roleArn,
+        DB_NAME: props.dbConfig.database,
+        DB_HOST: props.dbConfig.host,
+        DB_USER: props.dbConfig.username,
+        DB_PASSWORD: props.dbConfig.password,
+        DB_PORT: props.dbConfig.port.toString(),
       },
       role: handlerRole,
     });
@@ -124,6 +136,7 @@ export class Api extends Construct {
     api.addRoutes(routeProps);
 
     this.api = api;
+    this.handler = handler;
 
     new CfnOutput(this, "BackendApiUrl", { value: api.apiEndpoint });
   }

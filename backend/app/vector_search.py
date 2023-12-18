@@ -3,7 +3,7 @@ import logging
 import os
 
 import pg8000
-from app.bedrock import calculate_embeddings
+from app.bedrock import calculate_query_embedding
 from app.utils import get_bedrock_client
 from pydantic import BaseModel
 
@@ -33,7 +33,7 @@ def search(bot_id: str, limit: int, query: str) -> list[SearchResult]:
         list[tuple]: list of tuples containing (id, botid, source, embedding)
         for each result. embedding is a list of floats.
     """
-    query_embedding = calculate_embeddings(query)
+    query_embedding = calculate_query_embedding(query)
     logger.debug(f"query_embedding: {query_embedding}")
 
     conn = pg8000.connect(
@@ -46,6 +46,9 @@ def search(bot_id: str, limit: int, query: str) -> list[SearchResult]:
 
     try:
         with conn.cursor() as cursor:
+            # NOTE: <-> is the KNN by L2 distance in pgvector.
+            # If you want to use inner product or cosine distance, use <#> or <=> respectively.
+            # Ref: https://github.com/pgvector/pgvector?tab=readme-ov-file#getting-started
             search_query = """
 SELECT id, botid, content, source, embedding 
 FROM items 
@@ -53,7 +56,7 @@ WHERE botid = %s
 ORDER BY embedding <-> %s 
 LIMIT %s
 """
-            cursor.execute(search_query, (bot_id, query_embedding, limit))
+            cursor.execute(search_query, (bot_id, json.dumps(query_embedding), limit))
             results = cursor.fetchall()
     except Exception as e:
         conn.rollback()
