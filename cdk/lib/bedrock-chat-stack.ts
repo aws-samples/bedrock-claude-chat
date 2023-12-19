@@ -95,6 +95,7 @@ export class BedrockChatStack extends cdk.Stack {
     });
     vectorStore.allowFrom(embedding.taskSecurityGroup);
     vectorStore.allowFrom(backendApi.handler);
+    vectorStore.allowFrom(websocket.handler);
 
     new CfnOutput(this, "FrontendURL", {
       value: `https://${frontend.cloudFrontWebDistribution.distributionDomainName}`,

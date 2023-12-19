@@ -18,3 +18,8 @@ EMBEDDING_CONFIG = {
     "chunk_size": 1000,
     "chunk_overlap": 100,
 }
+
+# Configure search parameter to fetch relevant documents from vector store.
+SEARCH_CONFIG = {
+    "max_results": 5,
+}

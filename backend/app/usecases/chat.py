@@ -1,9 +1,11 @@
 import json
 import logging
+from copy import deepcopy
 from datetime import datetime
 from typing import Literal
 
 from app.bedrock import _create_body, get_model_id, invoke
+from app.config import SEARCH_CONFIG
 from app.repositories.conversation import (
     RecordNotFoundError,
     find_conversation_by_id,
@@ -20,6 +22,7 @@ from app.repositories.model import (
 from app.route_schema import ChatInput, ChatOutput, Content, Conversation, MessageOutput
 from app.usecases.bot import fetch_bot, modify_bot_last_used_time
 from app.utils import get_buffer_string, get_current_time
+from app.vector_search import SearchResult, search_related_docs
 from ulid import ULID
 
 logger = logging.getLogger(__name__)
@@ -28,8 +31,9 @@ logger.setLevel(logging.DEBUG)
 
 def prepare_conversation(
     user_id: str, chat_input: ChatInput
-) -> tuple[str, ConversationModel]:
+) -> tuple[str, ConversationModel, BotModel | None]:
     current_time = get_current_time()
+    bot = None
 
     try:
         # Fetch existing conversation
@@ -60,7 +64,6 @@ def prepare_conversation(
             )
         }
         parent_id = "system"
-
         if chat_input.bot_id:
             logger.debug("Bot id is provided. Fetching bot.")
             parent_id = "instruction"
@@ -127,13 +130,13 @@ def prepare_conversation(
     conversation.message_map[message_id] = new_message
     conversation.message_map[parent_id].children.append(message_id)  # type: ignore
 
-    return (message_id, conversation)
+    return (message_id, conversation, bot)
 
 
-def get_invoke_payload(conversation: ConversationModel, chat_input: ChatInput):
+def get_invoke_payload(message_map: dict[str, MessageModel], chat_input: ChatInput):
     messages = trace_to_root(
         node_id=chat_input.message.parent_message_id,
-        message_map=conversation.message_map,
+        message_map=message_map,
     )
     messages.append(chat_input.message)  # type: ignore
     prompt = get_buffer_string(messages)
@@ -168,11 +171,82 @@ def trace_to_root(
     return result[::-1]
 
 
+# def compress_knowledge(query: str, results: list[SearchResult]) -> tuple[bool, str]:
+#     """Compress knowledge to avoid token limit. Extract only related parts from the search results."""
+#     contexts_prompt = ""
+#     for result in results:
+#         contexts_prompt += f"<context>\n{result.content}</context>\n"
+#     NO_RELEVANT_DOC = "THERE_IS_NO_RELEVANT_DOC"
+#     PROMPT = """Human: Given the following question and contexts, extract any part of the context *AS IS* that is relevant to answer the question.
+# Remember, *DO NOT* edit the extracted parts of the context.
+# <question>
+# {}
+# </question>
+# <contexts>
+# {}
+# </contexts>
+# If none of the context is relevant, just say {}.
+
+# Assistant:
+# """.format(
+#         query, contexts_prompt, NO_RELEVANT_DOC
+#     )
+#     reply_txt = invoke(prompt=PROMPT, model="claude-instant-v1")
+#     print(reply_txt)
+
+#     if reply_txt.find(NO_RELEVANT_DOC) != -1:
+#         return False, ""
+
+#     return reply_txt
+
+
+def insert_knowledge(
+    bot: BotModel, conversation: ConversationModel, search_results: list[SearchResult]
+) -> ConversationModel:
+    """Insert knowledge to the conversation."""
+    if len(search_results) == 0:
+        return conversation
+
+    context_prompt = ""
+    for result in search_results:
+        context_prompt += f"<context>\n{result.content}</context>\n"
+
+    instruction_prompt = conversation.message_map["instruction"].content.body
+    inserted_prompt = """{}
+In addition to the previous instruction, you must respond based on the following contexts:
+<contexts>
+{}
+</contexts>
+Remember, *YOU MUST NEVER GUESS*. If you are not sure, just say "I don't know".
+""".format(
+        instruction_prompt, context_prompt
+    )
+    logger.debug(f"Inserted prompt: {inserted_prompt}")
+
+    conversation_with_context = deepcopy(conversation)
+    conversation_with_context.message_map["instruction"].content.body = inserted_prompt
+
+    return conversation_with_context
+
+
 def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
-    user_msg_id, conversation = prepare_conversation(user_id, chat_input)
+    user_msg_id, conversation, bot = prepare_conversation(user_id, chat_input)
+
+    message_map = conversation.message_map
+    if bot:
+        # Fetch most related documents from vector store
+        query = conversation.message_map[user_msg_id].content.body
+        results = search_related_docs(
+            bot_id=bot.id, limit=SEARCH_CONFIG["max_results"], query=query
+        )
+        logger.debug(f"Search results from vector store: {results}")
+
+        # Insert contexts to instruction
+        conversation_with_context = insert_knowledge(bot, conversation, results)
+        message_map = conversation_with_context.message_map
+
     messages = trace_to_root(
-        node_id=chat_input.message.parent_message_id,
-        message_map=conversation.message_map,
+        node_id=chat_input.message.parent_message_id, message_map=message_map
     )
     messages.append(chat_input.message)  # type: ignore
 

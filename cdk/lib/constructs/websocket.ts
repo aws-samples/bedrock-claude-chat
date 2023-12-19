@@ -2,7 +2,11 @@ import { Construct } from "constructs";
 import * as apigwv2 from "@aws-cdk/aws-apigatewayv2-alpha";
 import { WebSocketLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
 import * as python from "@aws-cdk/aws-lambda-python-alpha";
-import { DockerImageCode, DockerImageFunction } from "aws-cdk-lib/aws-lambda";
+import {
+  DockerImageCode,
+  DockerImageFunction,
+  IFunction,
+} from "aws-cdk-lib/aws-lambda";
 import * as path from "path";
 import { Runtime } from "aws-cdk-lib/aws-lambda";
 import * as iam from "aws-cdk-lib/aws-iam";
@@ -27,6 +31,7 @@ export interface WebSocketProps {
 
 export class WebSocket extends Construct {
   readonly webSocketApi: apigwv2.IWebSocketApi;
+  readonly handler: IFunction;
   private readonly defaultStageName = "dev";
 
   constructor(scope: Construct, id: string, props: WebSocketProps) {
@@ -131,6 +136,7 @@ export class WebSocket extends Construct {
     });
 
     this.webSocketApi = webSocketApi;
+    this.handler = handler;
 
     new CfnOutput(this, "WebSocketEndpoint", {
       value: this.apiEndpoint,

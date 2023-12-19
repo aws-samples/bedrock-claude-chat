@@ -23,7 +23,7 @@ class SearchResult(BaseModel):
     rank: int
 
 
-def search(bot_id: str, limit: int, query: str) -> list[SearchResult]:
+def search_related_docs(bot_id: str, limit: int, query: str) -> list[SearchResult]:
     """Search to fetch top n most related documents from pgvector.
     Args:
         bot_id (str): bot id
@@ -70,8 +70,6 @@ LIMIT %s
     #     ('124', 'bot_1', 'content_2', 'source_2', [0.234, 0.567, 0.890]),
     #     ...
     # ]
-    logger.debug(f"search results: {results}")
-
     return [
         SearchResult(rank=i, bot_id=r[1], content=r[2], source=r[3])
         for i, r in enumerate(results)

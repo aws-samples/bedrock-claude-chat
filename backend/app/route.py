@@ -42,7 +42,7 @@ from app.usecases.bot import (
 )
 from app.usecases.chat import chat, fetch_conversation, propose_conversation_title
 from app.utils import get_current_time
-from app.vector_search import search
+from app.vector_search import search_related_docs
 from fastapi import APIRouter, Request
 
 router = APIRouter()
@@ -255,4 +255,4 @@ def search_knowledge(request: Request, bot_id: str, query: str):
     TODO: remove when release (debug purpose)
     """
     current_user: User = request.state.current_user
-    return search(bot_id, 10, query)
+    return search_related_docs(bot_id, 10, query)

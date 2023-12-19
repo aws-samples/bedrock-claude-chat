@@ -4,12 +4,14 @@ from datetime import datetime
 
 import boto3
 from app.auth import verify_token
+from app.config import SEARCH_CONFIG
 from app.repositories.conversation import RecordNotFoundError, store_conversation
 from app.repositories.model import ContentModel, MessageModel
 from app.route_schema import ChatInputWithToken
 from app.usecases.bot import modify_bot_last_used_time
-from app.usecases.chat import get_invoke_payload, prepare_conversation
+from app.usecases.chat import get_invoke_payload, insert_knowledge, prepare_conversation
 from app.utils import get_bedrock_client, get_current_time
+from app.vector_search import SearchResult, search_related_docs
 from ulid import ULID
 
 client = get_bedrock_client()
@@ -56,7 +58,7 @@ def handler(event, context):
 
     user_id = decoded["sub"]
     try:
-        user_msg_id, conversation = prepare_conversation(user_id, chat_input)
+        user_msg_id, conversation, bot = prepare_conversation(user_id, chat_input)
     except RecordNotFoundError:
         if chat_input.bot_id:
             gatewayapi.post_to_connection(
@@ -65,7 +67,29 @@ def handler(event, context):
             return {"statusCode": 404, "body": f"bot {chat_input.bot_id} not found."}
         else:
             return {"statusCode": 400, "body": "Invalid request."}
-    payload = get_invoke_payload(conversation, chat_input)
+
+    message_map = conversation.message_map
+    if bot:
+        gatewayapi.post_to_connection(
+            ConnectionId=connection_id,
+            Data=json.dumps(
+                dict(
+                    status="FETCHING_KNOWLEDGE",
+                )
+            ).encode("utf-8"),
+        )
+        # Fetch most related documents from vector store
+        query = conversation.message_map[user_msg_id].content.body
+        results = search_related_docs(
+            bot_id=bot.id, limit=SEARCH_CONFIG["max_results"], query=query
+        )
+        logger.debug(f"Search results from vector store: {results}")
+
+        # Insert contexts to instruction
+        conversation_with_context = insert_knowledge(bot, conversation, results)
+        message_map = conversation_with_context.message_map
+
+    payload = get_invoke_payload(message_map, chat_input)
 
     try:
         # Invoke bedrock streaming api

@@ -53,7 +53,10 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 - [Amazon CloudFront](https://aws.amazon.com/cloudfront/) + [S3](https://aws.amazon.com/s3/): Frontend application delivery ([React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/))
 - [AWS WAF](https://aws.amazon.com/waf/): IP address restriction
 - [Amazon Cognito](https://aws.amazon.com/cognito/): User authentication
-- [Amazon Bedrock](https://aws.amazon.com/bedrock/): Managed service to utilize foundational models via APIs
+- [Amazon Bedrock](https://aws.amazon.com/bedrock/): Managed service to utilize foundational models via APIs. We use Claude for chat response and Cohere for vector embedding
+- [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): Receive event from DynamoDB stream and pass to ECS
+- [Amazon Elastic Container Service](https://aws.amazon.com/ecs/): Run vector embedding task
+- [Amazon Aurora PostgreSQL](https://aws.amazon.com/rds/aurora/): Vector store ([pgvector](https://github.com/pgvector/pgvector))
 
 ![](docs/imgs/arch.png)
 
@@ -72,8 +75,9 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 - [x] Model switch (Claude Instant / Claude)
 - [x] Customized bot creation
 - [x] Customized bot sharing
+- [x] Web retriever
 - [ ] File upload / retriever
-- [ ] Web retriever
+- [ ] Admin console
 
 ## Deploy using CDK
 
@@ -195,9 +199,12 @@ Thank you for considering contribution on this repository! We welcome for bug fi
 - [Local Development](./docs/LOCAL_DEVELOPMENT.md)
 - [CONTRIBUTING](./CONTRIBUTING.md)
 
-### RAG using Kendra
+### RAG using vector store
 
-In this sample, we have not implemented RAG using Kendra. This is because when it comes to real-world deployments, factors such as access control policies, the presence or absence of data connectors, and the methods for authentication and authorization for the connected data sources can be quite diverse depending on the organization, making it difficult to generalize them in a simple manner. To put this into practice, you should consider downsides like decreased latency and increased token consumption. For these reasons, a proof of concept (PoC) to verify search accuracy is essential.
+In this example, we've implemented the RAG feature using [pgvector](https://github.com/pgvector/pgvector), a PostgreSQL extension that facilitates vector search. We've chosen to run pgvector on [Amazon Aurora Serverless v2](https://aws.amazon.com/rds/aurora/serverless/) due to its cost-effectiveness compared to alternatives like [OpenSearch](https://opensearch.org/) and [Amazon Kendra](https://aws.amazon.com/kendra/), especially when dealing with a smaller user base. This approach allows for a more budget-friendly start.  
+Please note that this example implements only simple logic. If you want to customize, also see: [CONFIGURE_KNOWLEDGE](./docs/CONFIGURE_KNOWLEDGE.md).
+
+If interested in RAG using Kendra, also refer following samples:
 
 - [generative-ai-use-cases-jp](https://github.com/aws-samples/generative-ai-use-cases-jp) (In Japanese)
 - [simple-lex-kendra-jp](https://github.com/aws-samples/simple-lex-kendra-jp) (In Japanese)
