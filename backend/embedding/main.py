@@ -3,15 +3,19 @@ import json
 import os
 
 import boto3
+import nest_asyncio
 import pg8000
 from app.config import EMBEDDING_CONFIG
 from app.repositories.common import _get_table_client
 from app.repositories.custom_bot import _compose_bot_id, _decompose_bot_id
 from app.route_schema import type_sync_status
-from langchain.document_loaders import UnstructuredURLLoader
+from langchain.document_loaders import SitemapLoader, UnstructuredURLLoader
 from langchain.embeddings.bedrock import BedrockEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.document_loaders.base import BaseLoader
 from ulid import ULID
+
+nest_asyncio.apply()
 
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
 MODEL_ID = EMBEDDING_CONFIG["model_id"]
@@ -75,9 +79,32 @@ def update_sync_status(
     )
 
 
-def main(user_id: str, bot_id: str, sitemap_urls: list[str], source_urls: list[str]):
-    # TODO: sitemap
+def embed(
+    loader: BaseLoader,
+    contents: list[str],
+    sources: list[str],
+    embeddings: list[list[float]],
+):
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP, length_function=len
+    )
+    embeddings_model = BedrockEmbeddings(
+        client=boto3.client("bedrock-runtime", BEDROCK_REGION), model_id=MODEL_ID
+    )
+    documents = loader.load()
+    splitted = text_splitter.split_documents(documents)
 
+    contents.extend([t.page_content for t in splitted])
+    sources.extend([t.metadata["source"] for t in splitted])
+
+    print("Embedding...")
+    embeddings.extend(
+        embeddings_model.embed_documents([t.page_content for t in splitted])
+    )
+    print("Done embedding.")
+
+
+def main(user_id: str, bot_id: str, sitemap_urls: list[str], source_urls: list[str]):
     update_sync_status(
         user_id,
         bot_id,
@@ -87,24 +114,19 @@ def main(user_id: str, bot_id: str, sitemap_urls: list[str], source_urls: list[s
 
     try:
         # Calculate embeddings using LangChain
-        loader = UnstructuredURLLoader(source_urls)
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP, length_function=len
-        )
-        embeddings_model = BedrockEmbeddings(
-            client=boto3.client("bedrock-runtime", BEDROCK_REGION), model_id=MODEL_ID
-        )
+        contents = []
+        sources = []
+        embeddings = []
 
-        documents = loader.load()
-        splitted = text_splitter.split_documents(documents)
+        if len(source_urls) > 0:
+            embed(UnstructuredURLLoader(source_urls), contents, sources, embeddings)
+        if len(sitemap_urls) > 0:
+            for sitemap_url in sitemap_urls:
+                loader = SitemapLoader(web_path=sitemap_url)
+                loader.requests_per_second = 1
+                embed(loader, contents, sources, embeddings)
 
-        contents = [t.page_content for t in splitted]
-        sources = [t.metadata["source"] for t in splitted]
-        embeddings = embeddings_model.embed_documents(
-            [t.page_content for t in splitted]
-        )
-
-        print(f"number of splitted documents: {len(splitted)}")
+        print(f"Number of chunks: {len(contents)}")
 
         # Insert records into postgres
         insert_to_postgres(bot_id, contents, sources, embeddings)
@@ -142,5 +164,7 @@ if __name__ == "__main__":
 
     print(f"source_urls to crawl: {source_urls}")
     print(f"sitemap_urls to crawl: {sitemap_urls}")
+
+    assert len(source_urls) > 0 or len(sitemap_urls) > 0
 
     main(user_id, bot_id, sitemap_urls, source_urls)

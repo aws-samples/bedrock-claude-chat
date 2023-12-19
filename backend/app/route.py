@@ -255,4 +255,6 @@ def search_knowledge(request: Request, bot_id: str, query: str):
     TODO: remove when release (debug purpose)
     """
     current_user: User = request.state.current_user
-    return search_related_docs(bot_id, 10, query)
+    results = search_related_docs(bot_id, 10, query)
+
+    return results

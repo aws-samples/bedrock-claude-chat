@@ -64,6 +64,8 @@ LIMIT %s
     finally:
         conn.close()
 
+    logger.debug(f"{len(results)} records found.")
+
     # NOTE: results should be:
     # [
     #     ('123', 'bot_1', 'content_1', 'source_1', [0.123, 0.456, 0.789]),
