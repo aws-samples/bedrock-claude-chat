@@ -226,6 +226,7 @@ class TestConversationBotRepository(unittest.TestCase):
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
+                filenames=["aws.pdf"],
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
@@ -242,6 +243,7 @@ class TestConversationBotRepository(unittest.TestCase):
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
+                filenames=["aws.pdf"],
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",

@@ -263,6 +263,7 @@ class TestFindAllBots(unittest.TestCase):
             create_time=1627984879.9,
             # Pinned
             is_pinned=True,
+            sync_status="RUNNING",
         )
         alias2 = BotAliasModel(
             id="alias2",
@@ -273,6 +274,7 @@ class TestFindAllBots(unittest.TestCase):
             create_time=1627984879.9,
             # Not Pinned
             is_pinned=False,
+            sync_status="RUNNING",
         )
         store_bot("user1", bot1)
         store_bot("user1", bot2)
@@ -409,6 +411,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             last_used_time=1627984879.9,
             create_time=1627984879.9,
             is_pinned=True,
+            sync_status="RUNNING",
         )
         store_bot("user1", bot1)
         store_bot("user1", bot2)

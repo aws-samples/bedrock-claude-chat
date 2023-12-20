@@ -100,6 +100,7 @@ def store_alias(user_id: str, alias: BotAliasModel):
         "CreateTime": decimal(alias.create_time),
         "LastBotUsed": decimal(alias.last_used_time),
         "IsPinned": alias.is_pinned,
+        "SyncStatus": alias.sync_status,
     }
 
     response = table.put_item(Item=item)
@@ -213,6 +214,7 @@ def find_private_bots_by_user_id(
             is_pinned=item["IsPinned"],
             description=item["Description"],
             is_public="PublicBotId" in item,
+            sync_status=item["SyncStatus"],
         )
         for item in response["Items"]
     ]
@@ -234,6 +236,7 @@ def find_private_bots_by_user_id(
                     is_pinned=item["IsPinned"],
                     description=item["Description"],
                     is_public="PublicBotId" in item,
+                    sync_status=item["SyncStatus"],
                 )
                 for item in response["Items"]
             ]
@@ -301,6 +304,7 @@ def find_all_bots_by_user_id(
                     available=True,
                     description=bot.description,
                     is_public=True,
+                    sync_status=bot.sync_status,
                 )
             except RecordNotFoundError:
                 # Original bot is removed
@@ -317,12 +321,15 @@ def find_all_bots_by_user_id(
                     available=False,
                     description="This item is no longer available",
                     is_public=False,
+                    sync_status="ORIGINAL_NOT_FOUND",
                 )
 
             if is_original_available and (
-                bot.title != item["Title"] or bot.description != item["Description"]
+                bot.title != item["Title"]
+                or bot.description != item["Description"]
+                or bot.sync_status != item["SyncStatus"]
             ):
-                # Replace alias to the latest
+                # Update alias to the latest original bot
                 store_alias(
                     user_id,
                     BotAliasModel(
@@ -334,6 +341,7 @@ def find_all_bots_by_user_id(
                         create_time=float(item["CreateTime"]),
                         last_used_time=float(item["LastBotUsed"]),
                         is_pinned=True,
+                        sync_status=item["SyncStatus"],
                     ),
                 )
 
@@ -351,6 +359,7 @@ def find_all_bots_by_user_id(
                     available=True,
                     description=item["Description"],
                     is_public="PublicBotId" in item,
+                    sync_status=item["SyncStatus"],
                 )
             )
 
@@ -439,6 +448,7 @@ def find_alias_by_id(user_id: str, alias_id: str) -> BotAliasModel:
         create_time=float(item["CreateTime"]),
         last_used_time=float(item["LastBotUsed"]),
         is_pinned=item["IsPinned"],
+        sync_status=item["SyncStatus"],
     )
 
     logger.debug(f"Found alias: {bot}")

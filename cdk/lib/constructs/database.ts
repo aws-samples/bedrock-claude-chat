@@ -42,16 +42,7 @@ export class Database extends Construct {
       // Used to fetch all bots for a user. Sorted by bot used time
       indexName: "LastBotUsedIndex",
       sortKey: { name: "LastBotUsed", type: AttributeType.NUMBER },
-      projectionType: ProjectionType.INCLUDE,
-      nonKeyAttributes: [
-        "Title",
-        "CreateTime",
-        "LastBotUsed",
-        "OriginalBotId",
-        "IsPinned",
-        "Description",
-        "PublicBotId",
-      ],
+      // TODO: add `nonKeyAttributes` for efficiency
     });
 
     const tableAccessRole = new Role(this, "TableAccessRole", {

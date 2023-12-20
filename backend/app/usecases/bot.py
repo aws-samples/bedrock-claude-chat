@@ -17,7 +17,6 @@ from app.repositories.custom_bot import (
 from app.repositories.model import BotModel, KnowledgeModel
 from app.route_schema import (
     BotInput,
-    BotMetaOutput,
     BotModifyInput,
     BotModifyOutput,
     BotOutput,
@@ -144,6 +143,7 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
             is_pinned=bot.is_pinned,
             is_public=True if bot.public_bot_id else False,
             owned=True,
+            sync_status=bot.sync_status,
         )
 
     except RecordNotFoundError:
@@ -160,6 +160,7 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
             is_pinned=alias.is_pinned,
             is_public=True,
             owned=False,
+            sync_status=alias.sync_status,
         )
     except RecordNotFoundError:
         pass
@@ -173,9 +174,10 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
             description=bot.description,
             create_time=bot.create_time,
             last_used_time=bot.last_used_time,
-            is_pinned=False,
+            is_pinned=False,  # NOTE: Shared bot is not pinned by default.
             is_public=True,
             owned=False,
+            sync_status=bot.sync_status,
         )
     except RecordNotFoundError:
         raise RecordNotFoundError(

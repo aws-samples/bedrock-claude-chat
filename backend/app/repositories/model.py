@@ -56,6 +56,7 @@ class BotAliasModel(BaseModel):
     create_time: float
     last_used_time: float
     is_pinned: bool
+    sync_status: type_sync_status
 
 
 class ConversationMeta(BaseModel):
@@ -79,3 +80,4 @@ class BotMeta(BaseModel):
     # Whether the bot is available or not.
     # This can be `False` if the bot is not owned by the user and original bot is removed.
     available: bool
+    sync_status: type_sync_status

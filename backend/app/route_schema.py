@@ -4,7 +4,10 @@ from humps import camelize
 from pydantic import BaseModel, Field
 
 # Knowledge sync status type
-type_sync_status = Literal["QUEUED", "RUNNING", "SUCCEEDED", "FAILED"]
+# NOTE: `ORIGINAL_NOT_FOUND` is used when the original bot is removed.
+type_sync_status = Literal[
+    "QUEUED", "RUNNING", "SUCCEEDED", "FAILED", "ORIGINAL_NOT_FOUND"
+]
 
 
 class BaseSchema(BaseModel):
@@ -133,6 +136,7 @@ class BotMetaOutput(BaseSchema):
     # Whether the bot is available or not.
     # This can be `False` if the bot is not owned by the user and original bot is removed.
     available: bool
+    sync_status: type_sync_status
 
 
 class BotSummaryOutput(BaseSchema):
@@ -144,6 +148,7 @@ class BotSummaryOutput(BaseSchema):
     is_pinned: bool
     is_public: bool
     owned: bool
+    sync_status: type_sync_status
 
 
 class BotSwitchVisibilityInput(BaseSchema):

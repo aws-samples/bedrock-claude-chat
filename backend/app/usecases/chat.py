@@ -21,7 +21,7 @@ from app.repositories.model import (
 )
 from app.route_schema import ChatInput, ChatOutput, Content, Conversation, MessageOutput
 from app.usecases.bot import fetch_bot, modify_bot_last_used_time
-from app.utils import get_buffer_string, get_current_time
+from app.utils import get_buffer_string, get_current_time, is_running_on_lambda
 from app.vector_search import SearchResult, search_related_docs
 from ulid import ULID
 
@@ -101,6 +101,7 @@ def prepare_conversation(
                             create_time=current_time,
                             last_used_time=current_time,
                             is_pinned=False,
+                            sync_status=bot.sync_status,
                         ),
                     )
 
@@ -233,7 +234,8 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     user_msg_id, conversation, bot = prepare_conversation(user_id, chat_input)
 
     message_map = conversation.message_map
-    if bot:
+    if bot and is_running_on_lambda():
+        # NOTE: `is_running_on_lambda`is a workaround for local testing due to no postgres mock.
         # Fetch most related documents from vector store
         query = conversation.message_map[user_msg_id].content.body
         results = search_related_docs(

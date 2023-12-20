@@ -202,6 +202,7 @@ def get_all_bots(
             available=bot.available,
             description=bot.description,
             is_public=bot.is_public,
+            sync_status=bot.sync_status,
         )
         for bot in bots
     ]

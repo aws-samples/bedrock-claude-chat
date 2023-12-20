@@ -373,7 +373,7 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             last_used_time=1627984879.9,
             is_pinned=True,
             public_bot_id=None,
-            knowledge=KnowledgeModel(source_urls=[], sitemap_urls=[]),
+            knowledge=KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[]),
             sync_status="SUCCEEDED",
             sync_status_reason="",
         )
@@ -387,7 +387,7 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             # Pinned
             is_pinned=True,
             public_bot_id="public1",
-            knowledge=KnowledgeModel(source_urls=[], sitemap_urls=[]),
+            knowledge=KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[]),
             sync_status="SUCCEEDED",
             sync_status_reason="",
         )
@@ -562,6 +562,7 @@ class TestInsertKnowledge(unittest.TestCase):
             knowledge=KnowledgeModel(
                 source_urls=[],
                 sitemap_urls=[],
+                filenames=[],
             ),
             sync_status="SUCCEEDED",
             sync_status_reason="",
