@@ -12,6 +12,7 @@ class ContentModel(BaseModel):
 class KnowledgeModel(BaseModel):
     source_urls: list[str]
     sitemap_urls: list[str]
+    filenames: list[str]
 
 
 class MessageModel(BaseModel):

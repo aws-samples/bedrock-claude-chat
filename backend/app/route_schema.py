@@ -21,6 +21,7 @@ class Content(BaseSchema):
 class Knowledge(BaseSchema):
     source_urls: list[str]
     sitemap_urls: list[str]
+    filenames: list[str]
 
 
 class MessageInput(BaseSchema):

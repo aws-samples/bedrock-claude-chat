@@ -9,7 +9,11 @@ from app.config import EMBEDDING_CONFIG
 from app.repositories.common import _get_table_client
 from app.repositories.custom_bot import _compose_bot_id, _decompose_bot_id
 from app.route_schema import type_sync_status
-from langchain.document_loaders import SitemapLoader, UnstructuredURLLoader
+from langchain.document_loaders import (
+    S3FileLoader,
+    SitemapLoader,
+    UnstructuredURLLoader,
+)
 from langchain.embeddings.bedrock import BedrockEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders.base import BaseLoader
@@ -27,6 +31,7 @@ DB_HOST = os.environ.get("DB_HOST", "")
 DB_USER = os.environ.get("DB_USER", "postgres")
 DB_PASSWORD = os.environ.get("DB_PASSWORD", "password")
 DB_PORT = int(os.environ.get("DB_PORT", 5432))
+DOCUMENT_BUCKET = os.environ.get("DOCUMENT_BUCKET", "langchain-documents")
 
 
 def insert_to_postgres(
@@ -104,7 +109,13 @@ def embed(
     print("Done embedding.")
 
 
-def main(user_id: str, bot_id: str, sitemap_urls: list[str], source_urls: list[str]):
+def main(
+    user_id: str,
+    bot_id: str,
+    sitemap_urls: list[str],
+    source_urls: list[str],
+    filenames: list[str],
+):
     update_sync_status(
         user_id,
         bot_id,
@@ -112,7 +123,18 @@ def main(user_id: str, bot_id: str, sitemap_urls: list[str], source_urls: list[s
         "",
     )
 
+    status_reason = ""
     try:
+        if len(sitemap_urls) + len(source_urls) + len(filenames) == 0:
+            status_reason = "No contents to embed."
+            update_sync_status(
+                user_id,
+                bot_id,
+                "SUCCEEDED",
+                status_reason,
+            )
+            return
+
         # Calculate embeddings using LangChain
         contents = []
         sources = []
@@ -125,11 +147,22 @@ def main(user_id: str, bot_id: str, sitemap_urls: list[str], source_urls: list[s
                 loader = SitemapLoader(web_path=sitemap_url)
                 loader.requests_per_second = 1
                 embed(loader, contents, sources, embeddings)
+        if len(filenames) > 0:
+            for filename in filenames:
+                embed(
+                    S3FileLoader(
+                        bucket=DOCUMENT_BUCKET, key=f"{user_id}/{bot_id}/{filename}"
+                    ),
+                    contents,
+                    sources,
+                    embeddings,
+                )
 
         print(f"Number of chunks: {len(contents)}")
 
         # Insert records into postgres
         insert_to_postgres(bot_id, contents, sources, embeddings)
+        status_reason = "Successfully inserted to vector store."
     except Exception as e:
         print("[ERROR] Failed to embed.")
         print(e)
@@ -140,7 +173,7 @@ def main(user_id: str, bot_id: str, sitemap_urls: list[str], source_urls: list[s
         user_id,
         bot_id,
         "SUCCEEDED",
-        "",
+        status_reason,
     )
 
 
@@ -155,6 +188,7 @@ if __name__ == "__main__":
     knowledge = new_image["Knowledge"]["M"]
     sitemap_urls = [x["S"] for x in knowledge["sitemap_urls"]["L"]]
     source_urls = [x["S"] for x in knowledge["source_urls"]["L"]]
+    filenames = [x["S"] for x in knowledge["filenames"]["L"]]
 
     sk = new_image["SK"]["S"]
     bot_id = _decompose_bot_id(sk)
@@ -164,7 +198,6 @@ if __name__ == "__main__":
 
     print(f"source_urls to crawl: {source_urls}")
     print(f"sitemap_urls to crawl: {sitemap_urls}")
+    print(f"filenames: {filenames}")
 
-    assert len(source_urls) > 0 or len(sitemap_urls) > 0
-
-    main(user_id, bot_id, sitemap_urls, source_urls)
+    main(user_id, bot_id, sitemap_urls, source_urls, filenames)

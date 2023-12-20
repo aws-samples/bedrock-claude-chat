@@ -11,6 +11,7 @@ import { ITable } from "aws-cdk-lib/aws-dynamodb";
 import { CfnPipe } from "aws-cdk-lib/aws-pipes";
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as logs from "aws-cdk-lib/aws-logs";
+import { IBucket } from "aws-cdk-lib/aws-s3";
 
 export interface DbConfig {
   readonly host: string;
@@ -26,6 +27,7 @@ export interface EmbeddingProps {
   readonly dbConfig: DbConfig;
   readonly bedrockRegion: string;
   readonly tableAccessRole: iam.IRole;
+  readonly documentBucket: IBucket;
 }
 
 export class Embedding extends Construct {
@@ -90,6 +92,7 @@ export class Embedding extends Construct {
         REGION: Stack.of(this).region,
         TABLE_NAME: props.database.tableName,
         TABLE_ACCESS_ROLE_ARN: props.tableAccessRole.roleArn,
+        DOCUMENT_BUCKET: props.documentBucket.bucketName,
       },
     });
     taskLogGroup.grantWrite(container.taskDefinition.executionRole!);

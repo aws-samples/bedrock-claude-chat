@@ -33,6 +33,7 @@ class TestCustomBotRepository(unittest.TestCase):
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
+                filenames=["test.txt"],
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
@@ -50,6 +51,7 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(bot.is_pinned, False)
         self.assertEqual(bot.knowledge.source_urls, ["https://aws.amazon.com/"])
         self.assertEqual(bot.knowledge.sitemap_urls, ["https://aws.amazon.sitemap.xml"])
+        self.assertEqual(bot.knowledge.filenames, ["test.txt"])
         self.assertEqual(bot.sync_status, "RUNNING")
         self.assertEqual(bot.sync_status_reason, "reason")
 
@@ -82,6 +84,7 @@ class TestCustomBotRepository(unittest.TestCase):
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
+                filenames=["test.txt"],
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
@@ -108,6 +111,7 @@ class TestCustomBotRepository(unittest.TestCase):
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/jp"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml/jp"],
+                filenames=["test.txt"],
             ),
             sync_status="FAILED",
             sync_status_reason="error",
@@ -120,8 +124,9 @@ class TestCustomBotRepository(unittest.TestCase):
             description="Updated Description",
             instruction="Updated Instruction",
             knowledge=KnowledgeModel(
-                source_urls=["https://aws.amazon.com/"],
-                sitemap_urls=["https://aws.amazon.sitemap.xml"],
+                source_urls=["https://updated.com/"],
+                sitemap_urls=["https://updated.xml"],
+                filenames=["updated.txt"],
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
@@ -131,10 +136,9 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(bot.title, "Updated Title")
         self.assertEqual(bot.description, "Updated Description")
         self.assertEqual(bot.instruction, "Updated Instruction")
-        self.assertEqual(bot.knowledge.source_urls, ["https://aws.amazon.com/jp"])
-        self.assertEqual(
-            bot.knowledge.sitemap_urls, ["https://aws.amazon.sitemap.xml/jp"]
-        )
+        self.assertEqual(bot.knowledge.source_urls, ["https://updated.com/"])
+        self.assertEqual(bot.knowledge.sitemap_urls, ["https://updated.xml"])
+        self.assertEqual(bot.knowledge.filenames, ["updated.txt"])
         self.assertEqual(bot.sync_status, "RUNNING")
         self.assertEqual(bot.sync_status_reason, "reason")
 
@@ -156,6 +160,7 @@ class TestFindAllBots(unittest.TestCase):
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
+                filenames=["test.txt"],
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
@@ -173,6 +178,7 @@ class TestFindAllBots(unittest.TestCase):
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
+                filenames=["test.txt"],
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
@@ -190,6 +196,7 @@ class TestFindAllBots(unittest.TestCase):
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
+                filenames=["test.txt"],
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
@@ -207,6 +214,7 @@ class TestFindAllBots(unittest.TestCase):
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
+                filenames=["test.txt"],
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
@@ -223,6 +231,7 @@ class TestFindAllBots(unittest.TestCase):
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
+                filenames=["test.txt"],
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
@@ -239,6 +248,7 @@ class TestFindAllBots(unittest.TestCase):
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
+                filenames=["test.txt"],
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
@@ -352,6 +362,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
+                filenames=["test.txt"],
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
@@ -368,6 +379,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
+                filenames=["test.txt"],
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
@@ -384,6 +396,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
+                filenames=["test.txt"],
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
@@ -417,7 +430,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             title="Updated Title",
             description="",
             instruction="",
-            knowledge=KnowledgeModel(source_urls=[], sitemap_urls=[]),
+            knowledge=KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[]),
             sync_status="RUNNING",
             sync_status_reason="",
         )

@@ -48,9 +48,10 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             knowledge=KnowledgeModel(
                 source_urls=bot_input.knowledge.source_urls,
                 sitemap_urls=bot_input.knowledge.sitemap_urls,
+                filenames=bot_input.knowledge.filenames,
             )
             if bot_input.knowledge
-            else KnowledgeModel(source_urls=[], sitemap_urls=[]),
+            else KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[]),
             sync_status="QUEUED",
             sync_status_reason="",
         ),
@@ -68,9 +69,10 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         knowledge=Knowledge(
             source_urls=bot_input.knowledge.source_urls,
             sitemap_urls=bot_input.knowledge.sitemap_urls,
+            filenames=bot_input.knowledge.filenames,
         )
         if bot_input.knowledge
-        else Knowledge(source_urls=[], sitemap_urls=[]),
+        else Knowledge(source_urls=[], sitemap_urls=[], filenames=[]),
         sync_status="QUEUED",
         sync_status_reason="",
     )
@@ -89,9 +91,10 @@ def modify_owned_bot(
         knowledge=KnowledgeModel(
             source_urls=modify_input.knowledge.source_urls,
             sitemap_urls=modify_input.knowledge.sitemap_urls,
+            filenames=modify_input.knowledge.filenames,
         )
         if modify_input.knowledge
-        else KnowledgeModel(source_urls=[], sitemap_urls=[]),
+        else KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[]),
         sync_status="QUEUED",
         sync_status_reason="",
     )
@@ -103,9 +106,10 @@ def modify_owned_bot(
         knowledge=Knowledge(
             source_urls=modify_input.knowledge.source_urls,
             sitemap_urls=modify_input.knowledge.sitemap_urls,
+            filenames=modify_input.knowledge.filenames,
         )
         if modify_input.knowledge
-        else Knowledge(source_urls=[], sitemap_urls=[]),
+        else Knowledge(source_urls=[], sitemap_urls=[], filenames=[]),
     )
 
 
@@ -220,6 +224,6 @@ def modify_bot_last_used_time(user_id: str, bot_id: str):
 
 def issue_presigned_url(user_id: str, bot_id: str, filename: str) -> str:
     response = generate_presigned_url(
-        DOCUMENT_BUCKET, f"{_compose_bot_id(user_id,bot_id)}/{filename}", expiration=60
+        DOCUMENT_BUCKET, f"{user_id}/{bot_id}/{filename}", expiration=3600
     )
     return response

@@ -227,6 +227,7 @@ def get_private_bot(request: Request, bot_id: str):
         knowledge=Knowledge(
             source_urls=bot.knowledge.source_urls,
             sitemap_urls=bot.knowledge.sitemap_urls,
+            filenames=bot.knowledge.filenames,
         ),
         sync_status=bot.sync_status,
         sync_status_reason=bot.sync_status_reason,
