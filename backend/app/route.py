@@ -252,9 +252,7 @@ def delete_bot(request: Request, bot_id: str):
     remove_bot_by_id(current_user.id, bot_id)
 
 
-@router.get(
-    "/bot/{bot_id}/{filename}/presigned-url", response_model=BotPresignedUrlOutput
-)
+@router.get("/bot/{bot_id}/presigned-url", response_model=BotPresignedUrlOutput)
 def get_bot_presigned_url(request: Request, bot_id: str, filename: str):
     """Get presigned url for bot"""
     current_user: User = request.state.current_user
