@@ -32,6 +32,7 @@ export interface EmbeddingProps {
 
 export class Embedding extends Construct {
   readonly taskSecurityGroup: ec2.ISecurityGroup;
+  readonly container: ecs.ContainerDefinition;
   constructor(scope: Construct, id: string, props: EmbeddingProps) {
     super(scope, id);
 
@@ -198,5 +199,6 @@ export class Embedding extends Construct {
     });
 
     this.taskSecurityGroup = taskSg;
+    this.container = container;
   }
 }

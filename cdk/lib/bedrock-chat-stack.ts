@@ -103,11 +103,17 @@ export class BedrockChatStack extends cdk.Stack {
       database: database.table,
       dbConfig,
       tableAccessRole: database.tableAccessRole,
+      documentBucket,
     });
+    documentBucket.grantRead(embedding.container.taskDefinition.taskRole);
+
     vectorStore.allowFrom(embedding.taskSecurityGroup);
     vectorStore.allowFrom(backendApi.handler);
     vectorStore.allowFrom(websocket.handler);
 
+    new CfnOutput(this, "DocumentBucketName", {
+      value: documentBucket.bucketName,
+    });
     new CfnOutput(this, "FrontendURL", {
       value: `https://${frontend.cloudFrontWebDistribution.distributionDomainName}`,
     });
