@@ -1,4 +1,6 @@
-from app.repositories.common import RecordNotFoundError
+import os
+
+from app.repositories.common import RecordNotFoundError, _compose_bot_id
 from app.repositories.custom_bot import (
     delete_alias_by_id,
     delete_bot_by_id,
@@ -22,7 +24,9 @@ from app.route_schema import (
     BotSummaryOutput,
     Knowledge,
 )
-from app.utils import get_current_time
+from app.utils import generate_presigned_url, get_current_time
+
+DOCUMENT_BUCKET = os.environ.get("DOCUMENT_BUCKET", "bedrock-documents")
 
 
 def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
@@ -212,3 +216,10 @@ def modify_bot_last_used_time(user_id: str, bot_id: str):
         return update_alias_last_used_time(user_id, bot_id)
     except RecordNotFoundError:
         raise RecordNotFoundError(f"Bot {bot_id} is neither owned nor alias.")
+
+
+def issue_presigned_url(user_id: str, bot_id: str, filename: str) -> str:
+    response = generate_presigned_url(
+        DOCUMENT_BUCKET, f"{_compose_bot_id(user_id,bot_id)}/{filename}", expiration=60
+    )
+    return response

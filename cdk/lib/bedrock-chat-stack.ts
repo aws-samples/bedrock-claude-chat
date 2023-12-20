@@ -56,6 +56,15 @@ export class BedrockChatStack extends cdk.Stack {
       autoDeleteObjects: true,
     });
 
+    const documentBucket = new Bucket(this, "DocumentBucket", {
+      encryption: BucketEncryption.S3_MANAGED,
+      blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+      enforceSSL: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      objectOwnership: ObjectOwnership.OBJECT_WRITER,
+      autoDeleteObjects: true,
+    });
+
     const auth = new Auth(this, "Auth");
     const database = new Database(this, "Database");
 
@@ -66,7 +75,9 @@ export class BedrockChatStack extends cdk.Stack {
       bedrockRegion: props.bedrockRegion,
       tableAccessRole: database.tableAccessRole,
       dbConfig,
+      documentBucket,
     });
+    documentBucket.grantReadWrite(backendApi.handler);
 
     // For streaming response
     const websocket = new WebSocket(this, "WebSocket", {

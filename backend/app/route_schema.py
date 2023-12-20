@@ -153,6 +153,10 @@ class BotPinnedInput(BaseSchema):
     pinned: bool
 
 
+class BotPresignedUrlOutput(BaseSchema):
+    url: str
+
+
 class User(BaseSchema):
     id: str
     name: str

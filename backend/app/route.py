@@ -19,6 +19,7 @@ from app.route_schema import (
     BotModifyInput,
     BotOutput,
     BotPinnedInput,
+    BotPresignedUrlOutput,
     BotSummaryOutput,
     BotSwitchVisibilityInput,
     ChatInput,
@@ -36,6 +37,7 @@ from app.usecases.bot import (
     create_new_bot,
     fetch_bot,
     fetch_bot_summary,
+    issue_presigned_url,
     modify_owned_bot,
     modify_pin_status,
     remove_bot_by_id,
@@ -247,6 +249,16 @@ def delete_bot(request: Request, bot_id: str):
     """
     current_user: User = request.state.current_user
     remove_bot_by_id(current_user.id, bot_id)
+
+
+@router.get(
+    "/bot/{bot_id}/{filename}/presigned-url", response_model=BotPresignedUrlOutput
+)
+def get_bot_presigned_url(request: Request, bot_id: str, filename: str):
+    """Get presigned url for bot"""
+    current_user: User = request.state.current_user
+    url = issue_presigned_url(current_user.id, bot_id, filename)
+    return BotPresignedUrlOutput(url=url)
 
 
 @router.get("/bot/{bot_id}/search")

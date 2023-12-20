@@ -20,6 +20,7 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as path from "path";
 import { DbConfig } from "./embedding";
+import { IBucket } from "aws-cdk-lib/aws-s3";
 
 export interface ApiProps {
   readonly vpc: ec2.IVpc;
@@ -29,6 +30,7 @@ export interface ApiProps {
   readonly auth: Auth;
   readonly bedrockRegion: string;
   readonly tableAccessRole: iam.IRole;
+  readonly documentBucket: IBucket;
 }
 
 export class Api extends Construct {
@@ -91,6 +93,7 @@ export class Api extends Construct {
         DB_USER: props.dbConfig.username,
         DB_PASSWORD: props.dbConfig.password,
         DB_PORT: props.dbConfig.port.toString(),
+        DOCUMENT_BUCKET: props.documentBucket.bucketName,
       },
       role: handlerRole,
     });

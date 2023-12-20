@@ -21,17 +21,6 @@ CHUNK_SIZE = int(os.environ.get("CHUNK_SIZE", 1000))
 CHUNK_OVERLAP = int(os.environ.get("CHUNK_OVERLAP", 100))
 
 
-# def test_lcel(urls: list[str]):
-#     loader = UnstructuredURLLoader(urls)
-#     text_splitter = RecursiveCharacterTextSplitter(
-#         chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP, length_function=len
-#     )
-#     embeddings_model = BedrockEmbeddings(
-#         client=boto3.client("bedrock-runtime", BEDROCK_REGION), model_id=MODEL_ID
-#     )
-#     chain = loader | text_splitter | embeddings_model
-
-
 if __name__ == "__main__":
     # with open("sitemap_example.xml", "r") as f:
     #     sitemap_xml = f.read()
@@ -48,13 +37,15 @@ if __name__ == "__main__":
     # print(model_ids)
 
     # loader = SitemapLoader(web_path="https://python.langchain.com/sitemap.xml")
-    # print(loader.load())
-
-    urls = [
-        " https://pages.awscloud.com/rs/112-TZM-766/images/AWS-Black-Belt_2023_AmazonMSK_0430_v1.pdf"
-    ]
-    loader = UnstructuredURLLoader(urls)
+    loader = SitemapLoader(web_path="https://www.anthropic.com/sitemaps-1-sitemap.xml")
+    loader.requests_per_second = 1
     documents = loader.load()
+
+    # urls = [
+    #     " https://pages.awscloud.com/rs/112-TZM-766/images/AWS-Black-Belt_2023_AmazonMSK_0430_v1.pdf"
+    # ]
+    # loader = UnstructuredURLLoader(urls)
+    # documents = loader.load()
 
     print(documents)
 
@@ -71,12 +62,12 @@ if __name__ == "__main__":
     print(f"first source: {texts[0].metadata['source']}")
     print(f"first contents: {texts[0].page_content}")
 
-    embeddings_model = BedrockEmbeddings(
-        client=boto3.client("bedrock-runtime", BEDROCK_REGION), model_id=MODEL_ID
-    )
-    print("Embedding...")
-    embeddings = embeddings_model.embed_documents([t.page_content for t in texts])
-    print("Done embedding.")
-    print(f"length of embeddings: {len(embeddings)}")
-    print(f"length of vector: {len(embeddings[0])}")
-    print(f"first embedding: {embeddings[0]}")
+    # embeddings_model = BedrockEmbeddings(
+    #     client=boto3.client("bedrock-runtime", BEDROCK_REGION), model_id=MODEL_ID
+    # )
+    # print("Embedding...")
+    # embeddings = embeddings_model.embed_documents([t.page_content for t in texts])
+    # print("Done embedding.")
+    # print(f"length of embeddings: {len(embeddings)}")
+    # print(f"length of vector: {len(embeddings[0])}")
+    # print(f"first embedding: {embeddings[0]}")
