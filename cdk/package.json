@@ -8,7 +8,8 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "cdk": "cdk",
+    "postinstall": "npm install --prefix custom-resources/setup-pgvector"
   },
   "devDependencies": {
     "@types/jest": "^29.5.3",
