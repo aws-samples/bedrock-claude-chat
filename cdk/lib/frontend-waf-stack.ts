@@ -42,7 +42,7 @@ export class FrontendWafStack extends Stack {
 
     const webAcl = new wafv2.CfnWebACL(this, "WebAcl", {
       defaultAction: { block: {} },
-      name: `${cdk.Stack.of(this).stackName}WebAcl`,
+      name: "FrontendWebAcl",
       scope: "CLOUDFRONT",
       visibilityConfig: {
         cloudWatchMetricsEnabled: true,

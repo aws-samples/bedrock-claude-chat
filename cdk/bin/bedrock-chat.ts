@@ -14,13 +14,10 @@ const ALLOWED_IP_V6_ADDRESS_RANGES: string[] = app.node.tryGetContext(
   "allowedIpV6AddressRanges"
 );
 
-// Stack post fix e.g. Dev, Prod (if needed)
-const postFix = "";
-
 // WAF for frontend
 // 2023/9: Currently, the WAF for CloudFront needs to be created in the North America region (us-east-1), so the stacks are separated
 // https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-wafv2-webacl.html
-const waf = new FrontendWafStack(app, `FrontendWafStack${postFix}`, {
+const waf = new FrontendWafStack(app, `FrontendWafStack`, {
   env: {
     region: "us-east-1",
   },
@@ -28,7 +25,7 @@ const waf = new FrontendWafStack(app, `FrontendWafStack${postFix}`, {
   allowedIpV6AddressRanges: ALLOWED_IP_V6_ADDRESS_RANGES,
 });
 
-new BedrockChatStack(app, `BedrockChatStack${postFix}`, {
+new BedrockChatStack(app, `BedrockChatStack`, {
   env: {
     region: process.env.CDK_DEFAULT_REGION,
   },
