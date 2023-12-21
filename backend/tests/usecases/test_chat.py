@@ -549,24 +549,6 @@ class TestInsertKnowledge(unittest.TestCase):
                 },
             ]
         ]
-
-        bot = BotModel(
-            id="bot1",
-            title="Test Bot",
-            description="Test Bot Description",
-            instruction="いついかなる時も、俺様風の口調で返答してください。日本語以外の言語は認めません。",
-            create_time=1627984879.9,
-            last_used_time=1627984879.9,
-            is_pinned=True,
-            public_bot_id=None,
-            knowledge=KnowledgeModel(
-                source_urls=[],
-                sitemap_urls=[],
-                filenames=[],
-            ),
-            sync_status="SUCCEEDED",
-            sync_status_reason="",
-        )
         conversation = ConversationModel(
             id="conversation1",
             create_time=1627984879.9,
@@ -598,7 +580,7 @@ class TestInsertKnowledge(unittest.TestCase):
             bot_id="bot1",
             last_message_id="1-user",
         )
-        conversation_with_context = insert_knowledge(bot, conversation, results)
+        conversation_with_context = insert_knowledge(conversation, results)
         print(conversation_with_context.message_map["instruction"])
 
 

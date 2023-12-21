@@ -202,7 +202,7 @@ def trace_to_root(
 
 
 def insert_knowledge(
-    bot: BotModel, conversation: ConversationModel, search_results: list[SearchResult]
+    conversation: ConversationModel, search_results: list[SearchResult]
 ) -> ConversationModel:
     """Insert knowledge to the conversation."""
     if len(search_results) == 0:
@@ -244,7 +244,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         logger.debug(f"Search results from vector store: {results}")
 
         # Insert contexts to instruction
-        conversation_with_context = insert_knowledge(bot, conversation, results)
+        conversation_with_context = insert_knowledge(conversation, results)
         message_map = conversation_with_context.message_map
 
     messages = trace_to_root(

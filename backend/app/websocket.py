@@ -86,7 +86,7 @@ def handler(event, context):
         logger.debug(f"Search results from vector store: {results}")
 
         # Insert contexts to instruction
-        conversation_with_context = insert_knowledge(bot, conversation, results)
+        conversation_with_context = insert_knowledge(conversation, results)
         message_map = conversation_with_context.message_map
 
     payload = get_invoke_payload(message_map, chat_input)
