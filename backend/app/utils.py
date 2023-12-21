@@ -66,3 +66,19 @@ def generate_presigned_url(bucket: str, key: str, expiration=3600):
     )
 
     return response
+
+
+def delete_file_from_s3(bucket: str, key: str):
+    client = boto3.client("s3")
+
+    # Check if the file exists
+    try:
+        client.head_object(Bucket=bucket, Key=key)
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "404":
+            raise FileNotFoundError(f"The file does not exist in bucket.")
+        else:
+            raise
+
+    response = client.delete_object(Bucket=bucket, Key=key)
+    return response

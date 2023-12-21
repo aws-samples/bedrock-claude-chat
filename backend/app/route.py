@@ -41,6 +41,7 @@ from app.usecases.bot import (
     modify_owned_bot,
     modify_pin_status,
     remove_bot_by_id,
+    remove_uploaded_file,
 )
 from app.usecases.chat import chat, fetch_conversation, propose_conversation_title
 from app.utils import get_current_time
@@ -259,6 +260,13 @@ def get_bot_presigned_url(request: Request, bot_id: str, filename: str):
     current_user: User = request.state.current_user
     url = issue_presigned_url(current_user.id, bot_id, filename)
     return BotPresignedUrlOutput(url=url)
+
+
+@router.delete("/bot/{bot_id}/uploaded-file")
+def delete_bot_uploaded_file(request: Request, bot_id: str, filename: str):
+    """Delete uploaded file for bot"""
+    current_user: User = request.state.current_user
+    remove_uploaded_file(current_user.id, bot_id, filename)
 
 
 @router.get("/bot/{bot_id}/search")

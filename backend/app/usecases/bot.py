@@ -23,7 +23,7 @@ from app.route_schema import (
     BotSummaryOutput,
     Knowledge,
 )
-from app.utils import generate_presigned_url, get_current_time
+from app.utils import delete_file_from_s3, generate_presigned_url, get_current_time
 
 DOCUMENT_BUCKET = os.environ.get("DOCUMENT_BUCKET", "bedrock-documents")
 
@@ -229,3 +229,8 @@ def issue_presigned_url(user_id: str, bot_id: str, filename: str) -> str:
         DOCUMENT_BUCKET, f"{user_id}/{bot_id}/{filename}", expiration=3600
     )
     return response
+
+
+def remove_uploaded_file(user_id: str, bot_id: str, filename: str):
+    delete_file_from_s3(DOCUMENT_BUCKET, f"{user_id}/{bot_id}/{filename}")
+    return

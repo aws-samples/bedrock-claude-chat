@@ -46,6 +46,7 @@ def error_handler_factory(status_code: int) -> Callable[[Exception], JSONRespons
 
 
 app.add_exception_handler(RecordNotFoundError, error_handler_factory(404))
+app.add_exception_handler(FileNotFoundError, error_handler_factory(404))
 app.add_exception_handler(RecordAccessNotAllowedError, error_handler_factory(403))
 app.add_exception_handler(ValueError, error_handler_factory(400))
 app.add_exception_handler(TypeError, error_handler_factory(400))
