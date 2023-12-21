@@ -13,7 +13,7 @@ const PromptSample: React.FC<PromptSampleProps> = (props) => {
   return (
     <div>
       <div>{props.title}</div>
-      <div className="rounded bg-gray-200 p-2 text-aws-font-color">
+      <div className="bg-light-gray rounded p-2 text-aws-font-color">
         {props.prompt.split('\n').map((s, idx) => (
           <div key={idx}>{s}</div>
         ))}

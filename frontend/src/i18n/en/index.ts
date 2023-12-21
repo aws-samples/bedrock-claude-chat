@@ -11,6 +11,7 @@ const translation = {
       label: {
         myBots: 'My Bots',
         recentlyUsedBots: 'Recently Used Shared Bots',
+        knowledge: 'Knowledge',
         loadingBot: 'Loading...',
         normalChat: 'Chat',
         notAvailableBot: '[NOT Available]',
@@ -30,6 +31,11 @@ const translation = {
           'Bots operate according to predefined instructions. Chat does not work as intended unless the context is defined in the message, but with bots, there is no need to define the context.',
         instructions:
           'Define how the bot should behave. Giving ambiguous instructions may lead to unpredictable movements, so provide clear and specific instructions.',
+        knowledge: {
+          overview:
+            'By providing external knowledge to the bot, it becomes able to handle data that it has not been pre-trained on.',
+          url: 'The information from the specified URL will be used as Knowledge.',
+        },
       },
       samples: {
         title: 'Instructions Samples',
@@ -113,6 +119,7 @@ How would you categorize this email?`,
       regenerate: 'Regenerate',
       delete: 'Delete',
       deleteAll: 'Delete All',
+      remove: 'Remove',
       done: 'Done',
       ok: 'OK',
       cancel: 'Cancel',
@@ -122,6 +129,7 @@ How would you categorize this email?`,
       clearConversation: 'Delete ALL conversations',
       signOut: 'Sign out',
       close: 'Close',
+      add: 'Add',
     },
     error: {
       answerResponse: 'An error occurred while responding.',

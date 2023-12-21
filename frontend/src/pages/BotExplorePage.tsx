@@ -34,7 +34,9 @@ const ItemBot: React.FC<ItemBotProps> = (props) => {
   return (
     <div
       key={props.bot.id}
-      className={`${props.className ?? ''} flex justify-between border-b`}>
+      className={`${
+        props.className ?? ''
+      } flex justify-between border-b border-light-gray`}>
       <div
         className={`h-full w-full bg-aws-paper p-2 ${
           props.bot.available
@@ -54,7 +56,7 @@ const ItemBot: React.FC<ItemBotProps> = (props) => {
               : t('bot.label.notAvailable')}
           </div>
         ) : (
-          <div className="mt-1 text-xs italic text-gray-400">
+          <div className="mt-1 text-xs italic text-gray">
             {t('bot.label.noDescription')}
           </div>
         )}
@@ -174,9 +176,9 @@ const BotExplorePage: React.FC = () => {
                 {t('bot.button.newBot')}
               </Button>
             </div>
-            <div className="mt-2 border-b"></div>
+            <div className="mt-2 border-b border-gray"></div>
 
-            <div className="h-4/5 overflow-x-hidden overflow-y-scroll border-b  pr-1 scrollbar-thin scrollbar-thumb-aws-font-color/20 ">
+            <div className="h-4/5 overflow-x-hidden overflow-y-scroll border-b border-gray pr-1 scrollbar-thin scrollbar-thumb-aws-font-color/20 ">
               {myBots?.length === 0 && (
                 <div className="flex h-full w-full items-center justify-center italic">
                   {t('bot.label.noBots')}
@@ -242,7 +244,7 @@ const BotExplorePage: React.FC = () => {
                       </PopoverItem>
 
                       <PopoverItem
-                        className="font-bold text-red-600"
+                        className="font-bold text-red"
                         onClick={() => {
                           onClickDelete(bot);
                         }}>
@@ -259,8 +261,8 @@ const BotExplorePage: React.FC = () => {
             <div className="text-xl font-bold">
               {t('bot.label.recentlyUsedBots')}
             </div>
-            <div className="mt-2 border-b"></div>
-            <div className="h-4/5 overflow-y-scroll border-b pr-1 scrollbar-thin scrollbar-thumb-aws-font-color/20">
+            <div className="mt-2 border-b border-gray"></div>
+            <div className="h-4/5 overflow-y-scroll border-b border-gray  pr-1 scrollbar-thin scrollbar-thumb-aws-font-color/20">
               {recentlyUsedSharedBots?.length === 0 && (
                 <div className="flex h-full w-full items-center justify-center italic">
                   {t('bot.label.noBotsRecentlyUsed')}
@@ -290,7 +292,7 @@ const BotExplorePage: React.FC = () => {
                     </ButtonIcon>
                   )}
                   <ButtonIcon
-                    className="text-red-600"
+                    className="text-red"
                     onClick={() => {
                       deleteRecentlyUsedBot(bot.id);
                     }}>

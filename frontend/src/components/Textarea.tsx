@@ -52,12 +52,12 @@ const Textarea: React.FC<Props> = (props) => {
         }}
       />
       {props.label && (
-        <div className="order-first text-sm text-gray-500 peer-focus:font-semibold peer-focus:italic peer-focus:text-aws-font-color">
+        <div className="order-first text-sm text-dark-gray peer-focus:font-semibold peer-focus:italic peer-focus:text-aws-font-color">
           {props.label}
         </div>
       )}
       {props.hint && (
-        <div className="mt-0.5 text-xs text-gray-400">{props.hint}</div>
+        <div className="mt-0.5 text-xs text-gray">{props.hint}</div>
       )}
     </div>
   );

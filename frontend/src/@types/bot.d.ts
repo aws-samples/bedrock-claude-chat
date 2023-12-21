@@ -11,12 +11,23 @@ export type BotMeta = {
   owned: boolean;
 };
 
+export type BotKnowledge = {
+  sourceUrls: string[];
+  sitemapUrls: string[];
+  filenames: string[];
+};
+
+export type BotSyncStatus = 'QUEUED' | 'RUNNING' | 'SUCCEEDED' | 'FAILED';
+
 export type BotMetaWithAvailable = BotMeta & {
   available: boolean;
 };
 
 export type BotDetails = BotMeta & {
   instruction: string;
+  knowledge: BotKnowledge;
+  syncStatus: BotSyncStatus;
+  syncStatusReason: string;
 };
 
 export type RegisterBotRequest = {
@@ -24,14 +35,16 @@ export type RegisterBotRequest = {
   title: string;
   instruction: string;
   description?: string;
+  knowledge?: BotKnowledge;
 };
 
-export type RegisterBotResponse = BotMeta;
+export type RegisterBotResponse = BotDetails;
 
 export type UpdateBotRequest = {
   title: string;
   instruction: string;
   description?: string;
+  knowledge?: BotKnowledge;
 };
 
 export type UpdateBotResponse = {
@@ -39,6 +52,7 @@ export type UpdateBotResponse = {
   title: string;
   instruction: string;
   description: string;
+  knowledge?: BotKnowledge;
 };
 
 export type UpdateBotPinnedRequest = {

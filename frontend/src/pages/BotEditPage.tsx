@@ -4,9 +4,10 @@ import InputText from '../components/InputText';
 import Button from '../components/Button';
 import useBot from '../hooks/useBot';
 import { useNavigate, useParams } from 'react-router-dom';
-import { PiCaretLeft, PiNote } from 'react-icons/pi';
+import { PiCaretLeft, PiNote, PiPlus, PiTrash } from 'react-icons/pi';
 import Textarea from '../components/Textarea';
 import DialogInstructionsSamples from '../components/DialogInstructionsSamples';
+import ButtonIcon from '../components/ButtonIcon';
 
 const BotEditPage: React.FC = () => {
   const { t } = useTranslation();
@@ -120,6 +121,41 @@ const BotEditPage: React.FC = () => {
                   value={instruction}
                   onChange={setInstruction}
                 />
+              </div>
+
+              <div className="mt-3">
+                <div className="text-lg font-bold">
+                  {t('bot.label.knowledge')}
+                </div>
+                <div className="text-sm text-aws-font-color/50">
+                  {t('bot.help.knowledge.overview')}
+                </div>
+
+                <div className="mt-2">
+                  <div className="font-semibold">URL</div>
+                  <div className="text-sm text-aws-font-color/50">
+                    {t('bot.help.knowledge.url')}
+                  </div>
+                  <div className="mt-2 w-full">
+                    <div className="flex w-full gap-2">
+                      <InputText
+                        className="w-full"
+                        type="url"
+                        disabled={isLoading}
+                        value={description}
+                        onChange={setDescription}
+                      />
+                      <ButtonIcon className="text-red" onClick={() => {}}>
+                        <PiTrash />
+                      </ButtonIcon>
+                    </div>
+                  </div>
+                  <div className="mt-2">
+                    <Button outlined icon={<PiPlus />} onClick={() => {}}>
+                      {t('button.add')}
+                    </Button>
+                  </div>
+                </div>
               </div>
 
               <div className="flex justify-between">

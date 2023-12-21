@@ -52,9 +52,9 @@ const InputChatContent: React.FC<Props> = (props) => {
   return (
     <div
       id="input-chat-content"
-      className="relative mb-7 flex w-11/12 items-end rounded-xl border border-black/10 bg-white shadow-[0_0_30px_7px] shadow-gray-400/50 md:w-10/12 lg:w-4/6 xl:w-3/6">
+      className="relative mb-7 flex w-11/12 items-end rounded-xl border border-black/10 bg-white shadow-[0_0_30px_7px] shadow-light-gray md:w-10/12 lg:w-4/6 xl:w-3/6">
       <Textarea
-        className="m-1 -mr-16 bg-transparent pr-6 scrollbar-thin scrollbar-thumb-gray-200 "
+        className="m-1 -mr-16 bg-transparent pr-6 scrollbar-thin scrollbar-thumb-light-gray "
         placeholder={props.placeholder ?? t('app.inputMessage')}
         disabled={props.disabled}
         noBorder

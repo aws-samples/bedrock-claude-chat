@@ -132,9 +132,7 @@ const ChatMessage: React.FC<Props> = (props) => {
           {chatContent?.role === 'assistant' && !props.loading && (
             <Markdown>{chatContent.content.body}</Markdown>
           )}
-          {props.loading && (
-            <div className="animate-pulse text-gray-400">▍</div>
-          )}
+          {props.loading && <div className="animate-pulse text-gray">▍</div>}
         </div>
       </div>
 
@@ -142,7 +140,7 @@ const ChatMessage: React.FC<Props> = (props) => {
         <div className="flex">
           {chatContent?.role === 'user' && !props.loading && !isEdit && (
             <ButtonIcon
-              className="mr-0.5 text-gray-400"
+              className="mr-0.5 text-gray"
               onClick={() => {
                 setChangedContent(chatContent.content.body);
                 setIsEdit(true);
@@ -153,7 +151,7 @@ const ChatMessage: React.FC<Props> = (props) => {
           {chatContent?.role === 'assistant' && !props.loading && (
             <>
               <ButtonCopy
-                className="mr-0.5 text-gray-400"
+                className="mr-0.5 text-gray"
                 text={chatContent.content.body}
               />
             </>

@@ -90,7 +90,7 @@ const App: React.FC = () => {
             </header>
 
             <div
-              className="h-full overflow-hidden overflow-y-auto text-gray-700"
+              className="h-full overflow-hidden overflow-y-auto  text-aws-font-color"
               id="main">
               <SnackbarProvider>
                 <Outlet />

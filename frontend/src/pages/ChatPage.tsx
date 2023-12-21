@@ -230,7 +230,7 @@ const ChatPage: React.FC = () => {
           )}
         </div>
         {getPostedModel() ? (
-          <div className="absolute right-3 top-8 text-sm text-gray-500">
+          <div className="absolute right-3 top-8 text-sm text-dark-gray">
             model: {getPostedModel()}
           </div>
         ) : (
@@ -241,11 +241,11 @@ const ChatPage: React.FC = () => {
           />
         )}
       </div>
-      <hr className="w-full border-t border-gray-300" />
+      <hr className="w-full border-t border-gray" />
       <div className="pb-52 lg:pb-40">
         {messages.length === 0 ? (
           <>
-            <div className="mx-3 my-32 flex items-center justify-center text-4xl font-bold text-gray-500/20">
+            <div className="mx-3 my-32 flex items-center justify-center text-4xl font-bold text-gray">
               {t('app.name')}
             </div>
           </>
@@ -271,7 +271,7 @@ const ChatPage: React.FC = () => {
         )}
         {hasError && (
           <div className="mb-12 mt-2 flex flex-col items-center">
-            <div className="flex items-center font-bold text-red-500">
+            <div className="flex items-center font-bold text-red">
               <PiWarningCircleFill className="mr-1 text-2xl" />
               {t('error.answerResponse')}
             </div>
