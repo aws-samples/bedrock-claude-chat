@@ -12,6 +12,7 @@ import { CfnPipe } from "aws-cdk-lib/aws-pipes";
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as logs from "aws-cdk-lib/aws-logs";
 import { IBucket } from "aws-cdk-lib/aws-s3";
+import { platform } from "os";
 
 export interface DbConfig {
   readonly host: string;
@@ -76,6 +77,7 @@ export class Embedding extends Construct {
         path.join(__dirname, "../../../backend"),
         {
           file: "embedding.Dockerfile",
+          platform: Platform.LINUX_AMD64,
         }
       ),
       logging: ecs.LogDriver.awsLogs({
