@@ -21,7 +21,7 @@ const SwitchBedrockModel: React.FC<Props> = (props) => {
       <Button
         className={`${buttonClass} ${
           props.model === 'claude-instant-v1'
-            ? 'bg-aws-squid-ink/100 text-white'
+            ? ''
             : 'border-light-gray bg-white text-dark-gray'
         }`}
         icon={<AiFillThunderbolt />}
@@ -30,7 +30,7 @@ const SwitchBedrockModel: React.FC<Props> = (props) => {
       <Button
         className={`${buttonClass} ${
           props.model === 'claude-v2'
-            ? 'bg-aws-squid-ink/100 text-white'
+            ? ''
             : 'border-light-gray bg-white text-dark-gray'
         }`}
         icon={<FaBrain />}

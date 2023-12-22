@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { BaseProps } from '../@types/common';
+import { twMerge } from 'tailwind-merge';
 
 type Props = BaseProps & {
   value?: string;
@@ -38,11 +39,12 @@ const Textarea: React.FC<Props> = (props) => {
     <div className={`${props.className ?? ''} flex w-full flex-col`}>
       <textarea
         ref={ref}
-        className={`${
-          props.className ?? ''
-        } peer w-full resize-none rounded p-1.5 outline-none ${
-          isMax ? 'overflow-y-auto' : 'overflow-hidden'
-        } ${props.noBorder ? '' : 'border border-black/30'} `}
+        className={twMerge(
+          'peer w-full resize-none rounded p-1.5 outline-none',
+          isMax ? 'overflow-y-auto' : 'overflow-hidden',
+          props.noBorder ? '' : 'border border-black/30',
+          props.className
+        )}
         rows={props.rows ?? 1}
         placeholder={props.placeholder}
         disabled={props.disabled}

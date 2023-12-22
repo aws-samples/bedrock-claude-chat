@@ -48,6 +48,12 @@ const translation = {
             'By specifying the URL of the sitemap, the information obtained through automatically scraping websites within it will be used as Knowledge.',
         },
       },
+      alert: {
+        sync: {
+          incomplete:
+            'Since Knowledge ingestion has not been completed, this bot will operate on the data that the model was pre-trained on.',
+        },
+      },
       samples: {
         title: 'Instructions Samples',
         reference:

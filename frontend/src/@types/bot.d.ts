@@ -9,6 +9,7 @@ export type BotMeta = {
   isPublic: boolean;
   isPinned: boolean;
   owned: boolean;
+  syncStatus: BotSyncStatus;
 };
 
 export type BotKnowledge = {
@@ -21,13 +22,11 @@ export type BotSyncStatus = 'QUEUED' | 'RUNNING' | 'SUCCEEDED' | 'FAILED';
 
 export type BotListItem = BotMeta & {
   available: boolean;
-  syncStatus: BotSyncStatus;
 };
 
 export type BotDetails = BotMeta & {
   instruction: string;
   knowledge: BotKnowledge;
-  syncStatus: BotSyncStatus;
   syncStatusReason: string;
 };
 

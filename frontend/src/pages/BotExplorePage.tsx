@@ -2,17 +2,14 @@ import React, { ReactNode, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Button from '../components/Button';
 import {
-  PiCheckCircleBold,
   PiLink,
   PiLockKey,
   PiPlus,
-  PiSpinnerBold,
   PiStar,
   PiStarFill,
   PiTrash,
   PiTrashBold,
   PiUsers,
-  PiXCircleBold,
 } from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
 import useBot from '../hooks/useBot';
@@ -25,6 +22,7 @@ import PopoverMenu from '../components/PopoverMenu';
 import PopoverItem from '../components/PopoverItem';
 import useChat from '../hooks/useChat';
 import Help from '../components/Help';
+import StatusSyncBot from '../components/StatusSyncBot';
 
 type ItemBotProps = BaseProps & {
   bot: BotListItem;
@@ -69,34 +67,8 @@ const ItemBot: React.FC<ItemBotProps> = (props) => {
 
       <div className="absolute right-0 flex h-full justify-between ">
         <div className="w-10 bg-gradient-to-r from-transparent to-aws-paper"></div>
-        <div className="flex w-32 items-center justify-start gap-1 bg-aws-paper pr-3">
-          <div>
-            {(props.bot.syncStatus === 'QUEUED' ||
-              props.bot.syncStatus === 'RUNNING') && (
-              <PiSpinnerBold className="animate-spin text-aws-squid-ink" />
-            )}
-            {props.bot.syncStatus === 'SUCCEEDED' && (
-              <PiCheckCircleBold className="text-aws-aqua" />
-            )}
-            {props.bot.syncStatus === 'FAILED' && (
-              <PiXCircleBold className="text-red" />
-            )}
-          </div>
-
-          <div className="whitespace-nowrap text-sm text-dark-gray">
-            {props.bot.syncStatus === 'QUEUED' && (
-              <>{t('bot.label.syncStatus.queue')}</>
-            )}
-            {props.bot.syncStatus === 'RUNNING' && (
-              <>{t('bot.label.syncStatus.running')}</>
-            )}
-            {props.bot.syncStatus === 'SUCCEEDED' && (
-              <>{t('bot.label.syncStatus.success')}</>
-            )}
-            {props.bot.syncStatus === 'FAILED' && (
-              <>{t('bot.label.syncStatus.fail')}</>
-            )}
-          </div>
+        <div className="w-32 bg-aws-paper pr-3">
+          <StatusSyncBot className="h-full" syncStatus={props.bot.syncStatus} />
         </div>
         <div className="flex items-center  gap-2 bg-aws-paper pl-2">
           {props.children}

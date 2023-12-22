@@ -26,6 +26,8 @@ import { copyBotUrl } from '../utils/BotUtils';
 import { produce } from 'immer';
 import ButtonIcon from '../components/ButtonIcon';
 import { BotMeta } from '../@types/bot';
+import StatusSyncBot from '../components/StatusSyncBot';
+import Alert from '../components/Alert';
 
 const ChatPage: React.FC = () => {
   const { t } = useTranslation();
@@ -197,51 +199,54 @@ const ChatPage: React.FC = () => {
 
   return (
     <>
-      <div className="relative flex h-14 justify-center">
-        <div className="flex w-full p-1 px-2">
-          <div>
-            <div className="flex items-center">
-              <div className="mr-10 font-bold">{pageTitle}</div>
-              {isAvailabilityBot && (
-                <>
-                  <ButtonIcon onClick={onClickStar}>
-                    {bot?.isPinned ? (
-                      <PiStarFill className="text-aws-aqua" />
-                    ) : (
-                      <PiStar />
-                    )}
-                  </ButtonIcon>
-                  <ButtonPopover className="ml-1">
-                    {bot?.owned && (
-                      <PopoverItem
-                        onClick={() => {
-                          if (bot) {
-                            onClickBotEdit(bot.id);
-                          }
-                        }}>
-                        <PiPencilLine />
-                        {t('bot.titleSubmenu.edit')}
-                      </PopoverItem>
-                    )}
-                    {bot?.isPublic && (
-                      <PopoverItem
-                        onClick={() => {
-                          if (bot) {
-                            onClickCopyUrl(bot.id);
-                          }
-                        }}>
-                        <PiLink />
-                        {copyLabel}
-                      </PopoverItem>
-                    )}
-                  </ButtonPopover>
-                </>
-              )}
-            </div>
-            <div className="-mt-1 text-xs font-thin text-dark-gray">
+      <div className="relative h-14 w-full">
+        <div className="flex w-full justify-between">
+          <div className="p-2">
+            <div className="mr-10 font-bold">{pageTitle}</div>
+            <div className="text-xs font-thin text-dark-gray">
               {description}
             </div>
           </div>
+
+          {isAvailabilityBot && (
+            <div className="absolute right-0 flex h-full items-center">
+              <div className="h-full w-5 bg-gradient-to-r from-transparent to-aws-paper"></div>
+              <div className="flex items-center bg-aws-paper">
+                {bot?.owned && <StatusSyncBot syncStatus={bot.syncStatus} />}
+                <ButtonIcon onClick={onClickStar}>
+                  {bot?.isPinned ? (
+                    <PiStarFill className="text-aws-aqua" />
+                  ) : (
+                    <PiStar />
+                  )}
+                </ButtonIcon>
+                <ButtonPopover className="mx-1" target="bottom-right">
+                  {bot?.owned && (
+                    <PopoverItem
+                      onClick={() => {
+                        if (bot) {
+                          onClickBotEdit(bot.id);
+                        }
+                      }}>
+                      <PiPencilLine />
+                      {t('bot.titleSubmenu.edit')}
+                    </PopoverItem>
+                  )}
+                  {bot?.isPublic && (
+                    <PopoverItem
+                      onClick={() => {
+                        if (bot) {
+                          onClickCopyUrl(bot.id);
+                        }
+                      }}>
+                      <PiLink />
+                      {copyLabel}
+                    </PopoverItem>
+                  )}
+                </ButtonPopover>
+              </div>
+            </div>
+          )}
         </div>
         {getPostedModel() && (
           <div className="absolute right-3 top-8 text-sm text-dark-gray">
@@ -306,7 +311,12 @@ const ChatPage: React.FC = () => {
         )}
       </div>
 
-      <div className="absolute bottom-0 z-0 flex w-full justify-center">
+      <div className="absolute bottom-0 z-0 flex w-full flex-col items-center justify-center">
+        {bot && bot.syncStatus !== 'SUCCEEDED' && (
+          <div className="mb-8 w-1/2">
+            <Alert>{t('bot.alert.sync.incomplete')}</Alert>
+          </div>
+        )}
         <InputChatContent
           content={content}
           disabledSend={postingMessage}
