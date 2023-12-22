@@ -53,14 +53,16 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 - [Amazon CloudFront](https://aws.amazon.com/cloudfront/) + [S3](https://aws.amazon.com/s3/): Frontend application delivery ([React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/))
 - [AWS WAF](https://aws.amazon.com/waf/): IP address restriction
 - [Amazon Cognito](https://aws.amazon.com/cognito/): User authentication
-- [Amazon Bedrock](https://aws.amazon.com/bedrock/): Managed service to utilize foundational models via APIs. We use Claude for chat response and Cohere for vector embedding
-- [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): Receive event from DynamoDB stream and pass to ECS
-- [Amazon Elastic Container Service](https://aws.amazon.com/ecs/): Run vector embedding task
+- [Amazon Bedrock](https://aws.amazon.com/bedrock/): Managed service to utilize foundational models via APIs. Claude is used for chat response and Cohere for vector embedding
+- [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): Receiving event from DynamoDB stream and passing to ECS
+- [Amazon Elastic Container Service](https://aws.amazon.com/ecs/): Run crawling, parsing and embedding tasks using [LangChain](https://www.langchain.com/)
 - [Amazon Aurora PostgreSQL](https://aws.amazon.com/rds/aurora/): Vector store ([pgvector](https://github.com/pgvector/pgvector))
 
 ![](docs/imgs/arch.png)
 
 ## Features and Roadmap
+
+### Basic chat features
 
 - [x] Authentication (Sign-up, Sign-in)
 - [x] Creation, storage, and deletion of conversations
@@ -73,11 +75,24 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 - [x] Edit message & re-send
 - [x] I18n
 - [x] Model switch (Claude Instant / Claude)
+- [ ] Feedback (Thumbs up and down)
+
+### Customized bot features
+
 - [x] Customized bot creation
 - [x] Customized bot sharing
-- [x] Web retriever
-- [ ] File upload / retriever
-- [ ] Admin console
+
+### RAG features
+
+- [x] Web (html)
+- [x] Text data (txt, csv, markdown and etc)
+- [x] PDF
+- [x] Microsoft office files (pptx, docx, xlsx)
+- [x] Youtube transcript
+
+### Admin features
+
+- [ ] Admin console to analyze user usage
 
 ## Deploy using CDK
 

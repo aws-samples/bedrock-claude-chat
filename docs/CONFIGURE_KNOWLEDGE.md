@@ -70,7 +70,7 @@ print(f"number of splitted documents: {len(splitted)}")
 insert_to_postgres(bot_id, contents, sources, embeddings)
 ```
 
-## Search configuration
+## Search (Query) configuration
 
 Edit [vector_search.py](../backend/app/vector_search.py).
 
@@ -97,3 +97,13 @@ SEARCH_CONFIG = {
     "max_results": 5,
 }
 ```
+
+## Playwright configuration
+
+If want to specify delay seconds to wait for the page to render by JavaScript, open [mix_loader.py](../backend/embedding/mix_loader.py) and set value for `DELAY_SEC`.
+
+```py
+DELAY_SEC = 2
+```
+
+Also see [PlaywrightURLLoader](https://python.langchain.com/docs/integrations/document_loaders/url#playwright-url-loader), which can accept `PlaywrightEvaluator` to define Playwright behavior.
