@@ -53,6 +53,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             else KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[]),
             sync_status="QUEUED",
             sync_status_reason="",
+            sync_last_exec_id="",
         ),
     )
     return BotOutput(
@@ -74,6 +75,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         else Knowledge(source_urls=[], sitemap_urls=[], filenames=[]),
         sync_status="QUEUED",
         sync_status_reason="",
+        sync_last_exec_id="",
     )
 
 

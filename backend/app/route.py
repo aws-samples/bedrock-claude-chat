@@ -233,6 +233,7 @@ def get_private_bot(request: Request, bot_id: str):
         ),
         sync_status=bot.sync_status,
         sync_status_reason=bot.sync_status_reason,
+        sync_last_exec_id=bot.sync_last_exec_id,
     )
     return output
 

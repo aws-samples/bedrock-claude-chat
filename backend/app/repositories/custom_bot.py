@@ -41,6 +41,7 @@ def store_bot(user_id: str, custom_bot: BotModel):
         "Knowledge": custom_bot.knowledge.model_dump(),
         "SyncStatus": custom_bot.sync_status,
         "SyncStatusReason": custom_bot.sync_status_reason,
+        "LastExecId": custom_bot.sync_last_exec_id,
     }
 
     response = table.put_item(Item=item)
@@ -393,6 +394,7 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
         knowledge=KnowledgeModel(**item["Knowledge"]),
         sync_status=item["SyncStatus"],
         sync_status_reason=item["SyncStatusReason"],
+        sync_last_exec_id=item["LastExecId"],
     )
 
     logger.debug(f"Found bot: {bot}")
@@ -423,6 +425,7 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
         knowledge=KnowledgeModel(**item["Knowledge"]),
         sync_status=item["SyncStatus"],
         sync_status_reason=item["SyncStatusReason"],
+        sync_last_exec_id=item["LastExecId"],
     )
     logger.debug(f"Found public bot: {bot}")
     return bot

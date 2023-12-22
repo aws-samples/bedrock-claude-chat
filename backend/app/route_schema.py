@@ -122,6 +122,7 @@ class BotOutput(BaseSchema):
     knowledge: Knowledge
     sync_status: type_sync_status
     sync_status_reason: str
+    sync_last_exec_id: str
 
 
 class BotMetaOutput(BaseSchema):

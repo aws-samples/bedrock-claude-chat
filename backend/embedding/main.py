@@ -3,24 +3,18 @@ import json
 import os
 
 import boto3
-import nest_asyncio
 import pg8000
 import requests
 from app.config import EMBEDDING_CONFIG
 from app.repositories.common import _get_table_client
 from app.repositories.custom_bot import _compose_bot_id, _decompose_bot_id
 from app.route_schema import type_sync_status
-from langchain.document_loaders import (
-    S3FileLoader,
-    SitemapLoader,
-    UnstructuredURLLoader,
-)
+from embedding.mix_loader import MixLoader
+from langchain.document_loaders import S3FileLoader, SitemapLoader
 from langchain.embeddings.bedrock import BedrockEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders.base import BaseLoader
 from ulid import ULID
-
-nest_asyncio.apply()
 
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
 MODEL_ID = EMBEDDING_CONFIG["model_id"]
@@ -38,6 +32,12 @@ METADATA_URI = os.environ.get("ECS_CONTAINER_METADATA_URI_V4")
 
 
 def get_exec_id() -> str:
+    response = requests.get(f"{METADATA_URI}/task")
+    data = response.json()
+    task_arn = data.get("TaskARN", "")
+    task_id = task_arn.split("/")[-1]
+    return task_id
+
     # Ref: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-metadata-endpoint-v4.html#task-metadata-endpoint-v4-enable
     if METADATA_URI:
         response = requests.get(f"{METADATA_URI}/task")
@@ -147,8 +147,7 @@ def main(
     try:
         exec_id = get_exec_id()
     except Exception as e:
-        print("[ERROR] Failed to get exec_id.")
-        print(e)
+        print(f"[ERROR] Failed to get exec_id: {e}")
 
     update_sync_status(
         user_id,
@@ -177,7 +176,7 @@ def main(
         embeddings = []
 
         if len(source_urls) > 0:
-            embed(UnstructuredURLLoader(source_urls), contents, sources, embeddings)
+            embed(MixLoader(source_urls), contents, sources, embeddings)
         if len(sitemap_urls) > 0:
             for sitemap_url in sitemap_urls:
                 loader = SitemapLoader(web_path=sitemap_url)
