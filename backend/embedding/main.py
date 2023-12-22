@@ -5,6 +5,7 @@ import os
 import boto3
 import nest_asyncio
 import pg8000
+import requests
 from app.config import EMBEDDING_CONFIG
 from app.repositories.common import _get_table_client
 from app.repositories.custom_bot import _compose_bot_id, _decompose_bot_id
@@ -32,6 +33,27 @@ DB_USER = os.environ.get("DB_USER", "postgres")
 DB_PASSWORD = os.environ.get("DB_PASSWORD", "password")
 DB_PORT = int(os.environ.get("DB_PORT", 5432))
 DOCUMENT_BUCKET = os.environ.get("DOCUMENT_BUCKET", "langchain-documents")
+
+METADATA_URI = os.environ.get("ECS_CONTAINER_METADATA_URI_V4")
+
+
+def get_exec_id() -> str:
+    # Ref: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-metadata-endpoint-v4.html#task-metadata-endpoint-v4-enable
+    if METADATA_URI:
+        response = requests.get(f"{METADATA_URI}/task")
+        if response.status_code == 200:
+            data = response.json()
+            task_arn = data.get("TaskARN", "")
+            task_id = task_arn.split("/")[-1] if task_arn else None
+
+            if task_id:
+                return task_id
+            else:
+                raise Exception("TaskARN not found in the metadata.")
+        else:
+            raise Exception(f"Failed to get metadata: {response.status_code}")
+    else:
+        raise Exception("ECS_CONTAINER_METADATA_URI_V4 is not set.")
 
 
 def insert_to_postgres(
@@ -71,15 +93,20 @@ def insert_to_postgres(
 
 
 def update_sync_status(
-    user_id: str, bot_id: str, sync_status: type_sync_status, sync_status_reason: str
+    user_id: str,
+    bot_id: str,
+    sync_status: type_sync_status,
+    sync_status_reason: str,
+    last_exec_id: str,
 ):
     table = _get_table_client(user_id)
     table.update_item(
         Key={"PK": user_id, "SK": _compose_bot_id(user_id, bot_id)},
-        UpdateExpression="SET SyncStatus = :sync_status, SyncStatusReason = :sync_status_reason",
+        UpdateExpression="SET SyncStatus = :sync_status, SyncStatusReason = :sync_status_reason, LastExecId = :last_exec_id",
         ExpressionAttributeValues={
             ":sync_status": sync_status,
             ":sync_status_reason": sync_status_reason,
+            ":last_exec_id": last_exec_id,
         },
     )
 
@@ -116,11 +143,19 @@ def main(
     source_urls: list[str],
     filenames: list[str],
 ):
+    exec_id = ""
+    try:
+        exec_id = get_exec_id()
+    except Exception as e:
+        print("[ERROR] Failed to get exec_id.")
+        print(e)
+
     update_sync_status(
         user_id,
         bot_id,
         "RUNNING",
         "",
+        exec_id,
     )
 
     status_reason = ""
@@ -132,6 +167,7 @@ def main(
                 bot_id,
                 "SUCCEEDED",
                 status_reason,
+                exec_id,
             )
             return
 
@@ -166,7 +202,13 @@ def main(
     except Exception as e:
         print("[ERROR] Failed to embed.")
         print(e)
-        update_sync_status(user_id, bot_id, "FAILED", f"{e}")
+        update_sync_status(
+            user_id,
+            bot_id,
+            "FAILED",
+            f"{e}",
+            exec_id,
+        )
         return
 
     update_sync_status(
@@ -174,6 +216,7 @@ def main(
         bot_id,
         "SUCCEEDED",
         status_reason,
+        exec_id,
     )
 
 
