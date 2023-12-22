@@ -47,6 +47,8 @@ const useBot = () => {
             isPinned: false,
             isPublic: false,
             owned: true,
+            // FIXME: あとで直す
+            syncStatus: 'QUEUED',
           });
         }),
         {

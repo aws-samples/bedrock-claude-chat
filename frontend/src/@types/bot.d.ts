@@ -19,8 +19,9 @@ export type BotKnowledge = {
 
 export type BotSyncStatus = 'QUEUED' | 'RUNNING' | 'SUCCEEDED' | 'FAILED';
 
-export type BotMetaWithAvailable = BotMeta & {
+export type BotListItem = BotMeta & {
   available: boolean;
+  syncStatus: BotSyncStatus;
 };
 
 export type BotDetails = BotMeta & {
@@ -81,7 +82,7 @@ export type GetBotsRequest =
       pinned: boolean;
     };
 
-export type GetBotsResponse = BotMetaWithAvailable[];
+export type GetBotsResponse = BotListItem[];
 
 export type GetMyBotResponse = BotDetails;
 

@@ -12,6 +12,9 @@ const translation = {
         myBots: 'My Bots',
         recentlyUsedBots: 'Recently Used Shared Bots',
         knowledge: 'Knowledge',
+        url: 'URL',
+        sitemap: 'Sitemap URL',
+        file: 'File',
         loadingBot: 'Loading...',
         normalChat: 'Chat',
         notAvailableBot: '[NOT Available]',
@@ -20,6 +23,12 @@ const translation = {
         notAvailable: 'This bot is NOT available.',
         noBots: 'No Bots.',
         noBotsRecentlyUsed: 'No Recently Used Shared Bots.',
+        syncStatus: {
+          queue: 'Waiting Sync',
+          running: 'Syncing',
+          success: 'Completed Sync',
+          fail: 'Failed Sync',
+        },
       },
       titleSubmenu: {
         edit: 'Edit',
@@ -35,6 +44,8 @@ const translation = {
           overview:
             'By providing external knowledge to the bot, it becomes able to handle data that it has not been pre-trained on.',
           url: 'The information from the specified URL will be used as Knowledge.',
+          sitemap:
+            'By specifying the URL of the sitemap, the information obtained through automatically scraping websites within it will be used as Knowledge.',
         },
       },
       samples: {

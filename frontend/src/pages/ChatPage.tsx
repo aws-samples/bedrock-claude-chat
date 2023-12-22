@@ -44,6 +44,7 @@ const ChatPage: React.FC = () => {
     setCurrentMessageId,
     regenerate,
     getPostedModel,
+    loadingConversation,
   } = useChat();
 
   const { getBotId } = useConversation();
@@ -89,6 +90,16 @@ const ChatPage: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [botId]);
+
+  const description = useMemo<string>(() => {
+    if (!bot) {
+      return '';
+    } else if (bot.description === '') {
+      return t('bot.label.noDescription');
+    } else {
+      return bot.description;
+    }
+  }, [bot, t]);
 
   const disabledInput = useMemo(() => {
     return botId !== null && !isAvailabilityBot && !isLoadingBot;
@@ -187,68 +198,72 @@ const ChatPage: React.FC = () => {
   return (
     <>
       <div className="relative flex h-14 justify-center">
-        <div className="absolute left-3 top-3 flex font-bold">
+        <div className="flex w-full p-1 px-2">
           <div>
-            <div>{pageTitle}</div>
-            <div className="text-xs font-thin">{bot?.description}</div>
-          </div>
-
-          {isAvailabilityBot && (
-            <div className="ml-6 flex items-start">
-              <ButtonIcon onClick={onClickStar}>
-                {bot?.isPinned ? (
-                  <PiStarFill className="text-aws-aqua" />
-                ) : (
-                  <PiStar />
-                )}
-              </ButtonIcon>
-              <ButtonPopover className="ml-1">
-                {bot?.owned && (
-                  <PopoverItem
-                    onClick={() => {
-                      if (bot) {
-                        onClickBotEdit(bot.id);
-                      }
-                    }}>
-                    <PiPencilLine />
-                    {t('bot.titleSubmenu.edit')}
-                  </PopoverItem>
-                )}
-                {bot?.isPublic && (
-                  <PopoverItem
-                    onClick={() => {
-                      if (bot) {
-                        onClickCopyUrl(bot.id);
-                      }
-                    }}>
-                    <PiLink />
-                    {copyLabel}
-                  </PopoverItem>
-                )}
-              </ButtonPopover>
+            <div className="flex items-center">
+              <div className="mr-10 font-bold">{pageTitle}</div>
+              {isAvailabilityBot && (
+                <>
+                  <ButtonIcon onClick={onClickStar}>
+                    {bot?.isPinned ? (
+                      <PiStarFill className="text-aws-aqua" />
+                    ) : (
+                      <PiStar />
+                    )}
+                  </ButtonIcon>
+                  <ButtonPopover className="ml-1">
+                    {bot?.owned && (
+                      <PopoverItem
+                        onClick={() => {
+                          if (bot) {
+                            onClickBotEdit(bot.id);
+                          }
+                        }}>
+                        <PiPencilLine />
+                        {t('bot.titleSubmenu.edit')}
+                      </PopoverItem>
+                    )}
+                    {bot?.isPublic && (
+                      <PopoverItem
+                        onClick={() => {
+                          if (bot) {
+                            onClickCopyUrl(bot.id);
+                          }
+                        }}>
+                        <PiLink />
+                        {copyLabel}
+                      </PopoverItem>
+                    )}
+                  </ButtonPopover>
+                </>
+              )}
             </div>
-          )}
+            <div className="-mt-1 text-xs font-thin text-dark-gray">
+              {description}
+            </div>
+          </div>
         </div>
-        {getPostedModel() ? (
+        {getPostedModel() && (
           <div className="absolute right-3 top-8 text-sm text-dark-gray">
             model: {getPostedModel()}
           </div>
-        ) : (
-          <SwitchBedrockModel
-            className="my-auto"
-            model={model}
-            setModel={setModel}
-          />
         )}
       </div>
       <hr className="w-full border-t border-gray" />
       <div className="pb-52 lg:pb-40">
         {messages.length === 0 ? (
-          <>
-            <div className="mx-3 my-32 flex items-center justify-center text-4xl font-bold text-gray">
+          <div className="relative flex w-full justify-center">
+            {!loadingConversation && (
+              <SwitchBedrockModel
+                className="mt-3 w-min"
+                model={model}
+                setModel={setModel}
+              />
+            )}
+            <div className="absolute mx-3 my-20 flex items-center justify-center text-4xl font-bold text-gray">
               {t('app.name')}
             </div>
-          </>
+          </div>
         ) : (
           messages.map((message, idx) =>
             message.content.body !== '' ? (

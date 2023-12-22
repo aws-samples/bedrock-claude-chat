@@ -8,6 +8,7 @@ import { PiCaretLeft, PiNote, PiPlus, PiTrash } from 'react-icons/pi';
 import Textarea from '../components/Textarea';
 import DialogInstructionsSamples from '../components/DialogInstructionsSamples';
 import ButtonIcon from '../components/ButtonIcon';
+import { produce } from 'immer';
 
 const BotEditPage: React.FC = () => {
   const { t } = useTranslation();
@@ -20,6 +21,8 @@ const BotEditPage: React.FC = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [instruction, setInstruction] = useState('');
+  const [urls, setUrls] = useState<string[]>(['']);
+  const [sitemaps, setSitemaps] = useState<string[]>(['']);
 
   useEffect(() => {
     if (botId) {
@@ -29,6 +32,16 @@ const BotEditPage: React.FC = () => {
           setTitle(bot.title);
           setDescription(bot.description);
           setInstruction(bot.instruction);
+          setUrls(
+            bot.knowledge.sourceUrls.length === 0
+              ? ['']
+              : bot.knowledge.sourceUrls
+          );
+          setSitemaps(
+            bot.knowledge.sitemapUrls.length === 0
+              ? ['']
+              : bot.knowledge.sitemapUrls
+          );
         })
         .finally(() => {
           setIsLoading(false);
@@ -36,6 +49,66 @@ const BotEditPage: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [botId]);
+
+  const onChangeUrl = useCallback(
+    (url: string, idx: number) => {
+      setUrls(
+        produce(urls, (draft) => {
+          draft[idx] = url;
+        })
+      );
+    },
+    [urls]
+  );
+
+  const onClickAddUrl = useCallback(() => {
+    setUrls([...urls, '']);
+  }, [urls]);
+
+  const onClickRemoveUrl = useCallback(
+    (idx: number) => {
+      setUrls(
+        produce(urls, (draft) => {
+          draft.splice(idx, 1);
+          if (draft.length === 0) {
+            draft.push('');
+          }
+          return;
+        })
+      );
+    },
+    [urls]
+  );
+
+  const onChangeSitemap = useCallback(
+    (url: string, idx: number) => {
+      setSitemaps(
+        produce(sitemaps, (draft) => {
+          draft[idx] = url;
+        })
+      );
+    },
+    [sitemaps]
+  );
+
+  const onClickAddSitemap = useCallback(() => {
+    setSitemaps([...sitemaps, '']);
+  }, [sitemaps]);
+
+  const onClickRemoveSitemap = useCallback(
+    (idx: number) => {
+      setSitemaps(
+        produce(sitemaps, (draft) => {
+          draft.splice(idx, 1);
+          if (draft.length === 0) {
+            draft.push('');
+          }
+          return;
+        })
+      );
+    },
+    [sitemaps]
+  );
 
   const onClickBack = useCallback(() => {
     history.back();
@@ -47,6 +120,11 @@ const BotEditPage: React.FC = () => {
       title,
       description,
       instruction,
+      knowledge: {
+        sourceUrls: urls.filter((s) => s !== ''),
+        sitemapUrls: sitemaps.filter((s) => s !== ''),
+        filenames: [],
+      },
     })
       .then(() => {
         navigate('/bot/explore');
@@ -54,7 +132,7 @@ const BotEditPage: React.FC = () => {
       .catch(() => {
         setIsLoading(false);
       });
-  }, [description, instruction, navigate, registerBot, title]);
+  }, [description, instruction, navigate, registerBot, sitemaps, title, urls]);
 
   const onClickEdit = useCallback(() => {
     if (botId) {
@@ -83,7 +161,7 @@ const BotEditPage: React.FC = () => {
           setIsOpenSamples(false);
         }}
       />
-      <div className="flex justify-center">
+      <div className="mb-6 flex justify-center">
         <div className="w-2/3">
           <div className="mt-5 w-full">
             <div className="text-xl font-bold">
@@ -124,34 +202,82 @@ const BotEditPage: React.FC = () => {
               </div>
 
               <div className="mt-3">
-                <div className="text-lg font-bold">
-                  {t('bot.label.knowledge')}
+                <div className="flex items-center gap-1">
+                  <div className="text-lg font-bold">
+                    {t('bot.label.knowledge')}
+                  </div>
                 </div>
+
                 <div className="text-sm text-aws-font-color/50">
                   {t('bot.help.knowledge.overview')}
                 </div>
 
                 <div className="mt-2">
-                  <div className="font-semibold">URL</div>
+                  <div className="font-semibold">{t('bot.label.url')}</div>
                   <div className="text-sm text-aws-font-color/50">
                     {t('bot.help.knowledge.url')}
                   </div>
-                  <div className="mt-2 w-full">
-                    <div className="flex w-full gap-2">
-                      <InputText
-                        className="w-full"
-                        type="url"
-                        disabled={isLoading}
-                        value={description}
-                        onChange={setDescription}
-                      />
-                      <ButtonIcon className="text-red" onClick={() => {}}>
-                        <PiTrash />
-                      </ButtonIcon>
-                    </div>
+                  <div className="mt-2 flex w-full flex-col gap-1">
+                    {urls.map((url, idx) => (
+                      <div className="flex w-full gap-2" key={idx}>
+                        <InputText
+                          className="w-full"
+                          type="url"
+                          disabled={isLoading}
+                          value={url}
+                          onChange={(s) => {
+                            onChangeUrl(s, idx);
+                          }}
+                        />
+                        <ButtonIcon
+                          className="text-red"
+                          onClick={() => {
+                            onClickRemoveUrl(idx);
+                          }}>
+                          <PiTrash />
+                        </ButtonIcon>
+                      </div>
+                    ))}
                   </div>
                   <div className="mt-2">
-                    <Button outlined icon={<PiPlus />} onClick={() => {}}>
+                    <Button outlined icon={<PiPlus />} onClick={onClickAddUrl}>
+                      {t('button.add')}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="mt-2">
+                  <div className="font-semibold">{t('bot.label.sitemap')}</div>
+                  <div className="text-sm text-aws-font-color/50">
+                    {t('bot.help.knowledge.sitemap')}
+                  </div>
+                  <div className="mt-2 flex w-full flex-col gap-1">
+                    {sitemaps.map((sitemap, idx) => (
+                      <div className="flex w-full gap-2" key={idx}>
+                        <InputText
+                          className="w-full"
+                          type="url"
+                          disabled={isLoading}
+                          value={sitemap}
+                          onChange={(s) => {
+                            onChangeSitemap(s, idx);
+                          }}
+                        />
+                        <ButtonIcon
+                          className="text-red"
+                          onClick={() => {
+                            onClickRemoveSitemap(idx);
+                          }}>
+                          <PiTrash />
+                        </ButtonIcon>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-2">
+                    <Button
+                      outlined
+                      icon={<PiPlus />}
+                      onClick={onClickAddSitemap}>
                       {t('button.add')}
                     </Button>
                   </div>
