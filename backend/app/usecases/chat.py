@@ -213,12 +213,15 @@ def insert_knowledge(
         context_prompt += f"<context>\n{result.content}</context>\n"
 
     instruction_prompt = conversation.message_map["instruction"].content.body
-    inserted_prompt = """{}
-In addition to the previous instruction, you must respond based on the following contexts:
+    inserted_prompt = """You must respond based on given contexts. Also, you must follow the rule below:
+<rule>
+{}
+</rule>
+The contexts are as follows:
 <contexts>
 {}
 </contexts>
-Remember, *YOU MUST NEVER GUESS*. If you are not sure, just say "I don't know".
+Remember, *RESPOND BASED ON THE GIVEN CONTEXTS. YOU MUST NEVER GUESS*. If you cannot find source from the contexts, just say "I don't know".
 """.format(
         instruction_prompt, context_prompt
     )
