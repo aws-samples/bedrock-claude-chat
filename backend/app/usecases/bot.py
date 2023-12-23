@@ -33,6 +33,12 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
     Bot is created as private and not pinned.
     """
     current_time = get_current_time()
+    has_knowledge = bot_input.knowledge and (
+        len(bot_input.knowledge.source_urls) > 0
+        or len(bot_input.knowledge.sitemap_urls) > 0
+        or len(bot_input.knowledge.filenames) > 0
+    )
+    sync_status = "QUEUED" if has_knowledge else "SUCCEEDED"
     store_bot(
         user_id,
         BotModel(
@@ -51,7 +57,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             )
             if bot_input.knowledge
             else KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[]),
-            sync_status="QUEUED",
+            sync_status=sync_status,
             sync_status_reason="",
             sync_last_exec_id="",
         ),
@@ -73,7 +79,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         )
         if bot_input.knowledge
         else Knowledge(source_urls=[], sitemap_urls=[], filenames=[]),
-        sync_status="QUEUED",
+        sync_status=sync_status,
         sync_status_reason="",
         sync_last_exec_id="",
     )
