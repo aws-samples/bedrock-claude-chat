@@ -348,8 +348,8 @@ def find_all_bots_by_user_id(
                         original_bot_id=item["OriginalBotId"],
                         create_time=float(item["CreateTime"]),
                         last_used_time=float(item["LastBotUsed"]),
-                        is_pinned=True,
-                        sync_status=item["SyncStatus"],
+                        is_pinned=item["IsPinned"],
+                        sync_status=bot.sync_status,
                         has_knowledge=(
                             len(bot.knowledge.source_urls) > 0
                             or len(bot.knowledge.sitemap_urls) > 0
