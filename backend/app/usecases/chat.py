@@ -43,6 +43,9 @@ def prepare_conversation(
         if chat_input.message.parent_message_id == "system" and chat_input.bot_id:
             # The case editing first user message and use bot
             parent_id = "instruction"
+        if chat_input.bot_id:
+            logger.info("Bot id is provided. Fetching bot.")
+            owned, bot = fetch_bot(user_id, chat_input.bot_id)
     except RecordNotFoundError:
         # The case for new conversation. Note that editing first user message is not considered as new conversation.
         logger.info(
