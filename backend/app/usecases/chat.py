@@ -222,17 +222,18 @@ def insert_knowledge(
         context_prompt += f"<context>\n{result.content}</context>\n"
 
     instruction_prompt = conversation.message_map["instruction"].content.body
-    inserted_prompt = """You must respond based on given contexts. Also, you must follow the rule below:
-<rule>
-{}
-</rule>
+    inserted_prompt = """You must respond based on given contexts.
 The contexts are as follows:
 <contexts>
 {}
 </contexts>
 Remember, *RESPOND BASED ON THE GIVEN CONTEXTS. YOU MUST NEVER GUESS*. If you cannot find source from the contexts, just say "I don't know".
+In addition, *YOU MUST OBEY THE FOLLOWING RULE*:
+<rule>
+{}
+</rule>
 """.format(
-        instruction_prompt, context_prompt
+        context_prompt, instruction_prompt
     )
     logger.info(f"Inserted prompt: {inserted_prompt}")
 

@@ -69,7 +69,13 @@ def handler(event, context):
             return {"statusCode": 400, "body": "Invalid request."}
 
     message_map = conversation.message_map
-    if bot:
+    if (
+        bot
+        and len(bot.knowledge.source_urls)
+        + len(bot.knowledge.sitemap_urls)
+        + len(bot.knowledge.filenames)
+        > 0
+    ):
         gatewayapi.post_to_connection(
             ConnectionId=connection_id,
             Data=json.dumps(
