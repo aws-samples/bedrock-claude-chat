@@ -197,6 +197,10 @@ const ChatPage: React.FC = () => {
     [t]
   );
 
+  const onClickSyncError = useCallback(() => {
+    navigate(`/bot/edit/${bot?.id}`);
+  }, [bot?.id, navigate]);
+
   return (
     <>
       <div className="relative h-14 w-full">
@@ -209,10 +213,15 @@ const ChatPage: React.FC = () => {
           </div>
 
           {isAvailabilityBot && (
-            <div className="absolute right-0 flex h-full items-center">
+            <div className="absolute -top-1 right-0 flex h-full items-center">
               <div className="h-full w-5 bg-gradient-to-r from-transparent to-aws-paper"></div>
               <div className="flex items-center bg-aws-paper">
-                {bot?.owned && <StatusSyncBot syncStatus={bot.syncStatus} />}
+                {bot?.owned && (
+                  <StatusSyncBot
+                    syncStatus={bot.syncStatus}
+                    onClickError={onClickSyncError}
+                  />
+                )}
                 <ButtonIcon onClick={onClickStar}>
                   {bot?.isPinned ? (
                     <PiStarFill className="text-aws-aqua" />
@@ -249,7 +258,7 @@ const ChatPage: React.FC = () => {
           )}
         </div>
         {getPostedModel() && (
-          <div className="absolute right-3 top-8 text-sm text-dark-gray">
+          <div className="absolute right-2 top-10 text-xs text-dark-gray">
             model: {getPostedModel()}
           </div>
         )}
@@ -314,7 +323,11 @@ const ChatPage: React.FC = () => {
       <div className="absolute bottom-0 z-0 flex w-full flex-col items-center justify-center">
         {bot && bot.syncStatus !== 'SUCCEEDED' && (
           <div className="mb-8 w-1/2">
-            <Alert>{t('bot.alert.sync.incomplete')}</Alert>
+            <Alert
+              severity="warning"
+              title={t('bot.alert.sync.incomplete.title')}>
+              {t('bot.alert.sync.incomplete.body')}
+            </Alert>
           </div>
         )}
         <InputChatContent

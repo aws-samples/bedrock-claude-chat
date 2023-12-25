@@ -31,6 +31,7 @@ type ItemBotProps = BaseProps & {
 };
 
 const ItemBot: React.FC<ItemBotProps> = (props) => {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   return (
     <div
@@ -68,7 +69,13 @@ const ItemBot: React.FC<ItemBotProps> = (props) => {
       <div className="absolute right-0 flex h-full justify-between ">
         <div className="w-10 bg-gradient-to-r from-transparent to-aws-paper"></div>
         <div className="w-32 bg-aws-paper pr-3">
-          <StatusSyncBot className="h-full" syncStatus={props.bot.syncStatus} />
+          <StatusSyncBot
+            className="h-full"
+            syncStatus={props.bot.syncStatus}
+            onClickError={() => {
+              navigate(`/bot/edit/${props.bot.id}`);
+            }}
+          />
         </div>
         <div className="flex items-center  gap-2 bg-aws-paper pl-2">
           {props.children}

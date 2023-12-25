@@ -50,8 +50,14 @@ const translation = {
       },
       alert: {
         sync: {
-          incomplete:
-            'Since Knowledge ingestion has not been completed, this bot will operate on the data that the model was pre-trained on.',
+          error: {
+            title: 'Knowledge Sync Error',
+            body: 'An error occurred while synchronizing Knowledge. Please check the following message:',
+          },
+          incomplete: {
+            title: 'NOT Ready',
+            body: 'Since Knowledge ingestion has not been completed, this bot will operate on the data that the model was pre-trained on.',
+          },
         },
       },
       samples: {

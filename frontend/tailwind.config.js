@@ -24,6 +24,7 @@ export default {
         'aws-font-color-white': '#ffffff',
         'aws-paper': '#f1f3f3',
         red: '#dc2626',
+        'light-red': '#fca5a5',
         'dark-gray': '#6b7280',
         gray: '#9ca3af',
         'light-gray': '#e5e7eb',

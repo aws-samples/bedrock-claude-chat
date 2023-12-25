@@ -9,6 +9,7 @@ import Textarea from '../components/Textarea';
 import DialogInstructionsSamples from '../components/DialogInstructionsSamples';
 import ButtonIcon from '../components/ButtonIcon';
 import { produce } from 'immer';
+import Alert from '../components/Alert';
 
 const BotEditPage: React.FC = () => {
   const { t } = useTranslation();
@@ -23,6 +24,7 @@ const BotEditPage: React.FC = () => {
   const [instruction, setInstruction] = useState('');
   const [urls, setUrls] = useState<string[]>(['']);
   const [sitemaps, setSitemaps] = useState<string[]>(['']);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     if (botId) {
@@ -42,6 +44,9 @@ const BotEditPage: React.FC = () => {
               ? ['']
               : bot.knowledge.sitemapUrls
           );
+          if (bot.syncStatus === 'FAILED') {
+            setErrorMessage(bot.syncStatusReason);
+          }
         })
         .finally(() => {
           setIsLoading(false);
@@ -141,6 +146,11 @@ const BotEditPage: React.FC = () => {
         title,
         description,
         instruction,
+        knowledge: {
+          sourceUrls: urls.filter((s) => s !== ''),
+          sitemapUrls: sitemaps.filter((s) => s !== ''),
+          filenames: [],
+        },
       })
         .then(() => {
           navigate('/bot/explore');
@@ -149,7 +159,16 @@ const BotEditPage: React.FC = () => {
           setIsLoading(false);
         });
     }
-  }, [botId, description, instruction, navigate, title, updateBot]);
+  }, [
+    botId,
+    description,
+    instruction,
+    navigate,
+    sitemaps,
+    title,
+    updateBot,
+    urls,
+  ]);
 
   const [isOpenSamples, setIsOpenSamples] = useState(false);
 
@@ -211,6 +230,22 @@ const BotEditPage: React.FC = () => {
                 <div className="text-sm text-aws-font-color/50">
                   {t('bot.help.knowledge.overview')}
                 </div>
+
+                {errorMessage !== '' && (
+                  <Alert
+                    className="mt-2"
+                    severity="error"
+                    title={t('bot.alert.sync.error.title')}>
+                    <>
+                      <div className="mb-1 text-sm text-dark-gray">
+                        {t('bot.alert.sync.error.body')}
+                      </div>
+                      <div className="rounded border bg-light-gray p-2 text-dark-gray">
+                        {errorMessage}
+                      </div>
+                    </>
+                  </Alert>
+                )}
 
                 <div className="mt-2">
                   <div className="font-semibold">{t('bot.label.url')}</div>

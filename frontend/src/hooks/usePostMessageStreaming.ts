@@ -26,6 +26,7 @@ const usePostMessageStreaming = create<{
       };
 
       ws.onmessage = (message) => {
+        console.log(message.data);
         try {
           if (message.data === '') {
             return;
@@ -43,6 +44,8 @@ const usePostMessageStreaming = create<{
             if (data.stop_reason) {
               ws.close();
             }
+          } else if (data.status) {
+            dispatch('▍');
           } else {
             ws.close();
             console.error(data);

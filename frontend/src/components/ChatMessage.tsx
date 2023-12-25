@@ -132,7 +132,11 @@ const ChatMessage: React.FC<Props> = (props) => {
           {chatContent?.role === 'assistant' && !props.loading && (
             <Markdown>{chatContent.content.body}</Markdown>
           )}
-          {props.loading && <div className="animate-pulse text-gray">▍</div>}
+          {/* FIXME:Knowldgeの設定有無で表示を変える */}
+          {/* {props.loading && <div className="animate-pulse text-gray">▍</div>} */}
+          {props.loading && (
+            <div className="text-gray">Retriving Knowledge...</div>
+          )}
         </div>
       </div>
 

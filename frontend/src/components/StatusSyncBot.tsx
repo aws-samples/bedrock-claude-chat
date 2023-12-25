@@ -11,6 +11,7 @@ import { twMerge } from 'tailwind-merge';
 
 type Props = BaseProps & {
   syncStatus: BotSyncStatus;
+  onClickError?: () => void;
 };
 
 const StatusSyncBot: React.FC<Props> = (props) => {
@@ -39,7 +40,19 @@ const StatusSyncBot: React.FC<Props> = (props) => {
         {props.syncStatus === 'SUCCEEDED' && (
           <>{t('bot.label.syncStatus.success')}</>
         )}
-        {props.syncStatus === 'FAILED' && <>{t('bot.label.syncStatus.fail')}</>}
+        {props.syncStatus === 'FAILED' && (
+          <>
+            {props.onClickError ? (
+              <a
+                className="flex cursor-pointer items-center gap-0.5 border-b font-semibold text-aws-sea-blue hover:font-bold"
+                onClick={props.onClickError}>
+                {t('bot.label.syncStatus.fail')}
+              </a>
+            ) : (
+              <>{t('bot.label.syncStatus.fail')}</>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
