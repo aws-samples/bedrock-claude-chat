@@ -37,6 +37,7 @@ class TestCustomBotRepository(unittest.TestCase):
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
+            sync_last_exec_id="",
         )
         store_bot("user1", bot)
 
@@ -88,6 +89,7 @@ class TestCustomBotRepository(unittest.TestCase):
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
+            sync_last_exec_id="",
         )
         store_bot("user1", bot)
         update_bot_last_used_time("user1", "1")
@@ -115,6 +117,7 @@ class TestCustomBotRepository(unittest.TestCase):
             ),
             sync_status="FAILED",
             sync_status_reason="error",
+            sync_last_exec_id="",
         )
         store_bot("user1", bot)
         update_bot(
@@ -164,6 +167,7 @@ class TestFindAllBots(unittest.TestCase):
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
+            sync_last_exec_id="",
         )
         bot2 = BotModel(
             id="2",
@@ -182,6 +186,7 @@ class TestFindAllBots(unittest.TestCase):
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
+            sync_last_exec_id="",
         )
         bot3 = BotModel(
             id="3",
@@ -200,6 +205,7 @@ class TestFindAllBots(unittest.TestCase):
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
+            sync_last_exec_id="",
         )
         bot4 = BotModel(
             id="4",
@@ -218,6 +224,7 @@ class TestFindAllBots(unittest.TestCase):
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
+            sync_last_exec_id="",
         )
         public_bot1 = BotModel(
             id="public1",
@@ -235,6 +242,7 @@ class TestFindAllBots(unittest.TestCase):
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
+            sync_last_exec_id="",
         )
         public_bot2 = BotModel(
             id="public2",
@@ -252,6 +260,7 @@ class TestFindAllBots(unittest.TestCase):
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
+            sync_last_exec_id="",
         )
         alias1 = BotAliasModel(
             id="alias1",
@@ -264,6 +273,7 @@ class TestFindAllBots(unittest.TestCase):
             # Pinned
             is_pinned=True,
             sync_status="RUNNING",
+            has_knowledge=True,
         )
         alias2 = BotAliasModel(
             id="alias2",
@@ -275,6 +285,7 @@ class TestFindAllBots(unittest.TestCase):
             # Not Pinned
             is_pinned=False,
             sync_status="RUNNING",
+            has_knowledge=True,
         )
         store_bot("user1", bot1)
         store_bot("user1", bot2)
@@ -368,6 +379,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
+            sync_last_exec_id="",
         )
         bot2 = BotModel(
             id="2",
@@ -385,6 +397,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
+            sync_last_exec_id="",
         )
         public1 = BotModel(
             id="public1",
@@ -402,6 +415,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
+            sync_last_exec_id="",
         )
         alias1 = BotAliasModel(
             id="4",
@@ -412,6 +426,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             create_time=1627984879.9,
             is_pinned=True,
             sync_status="RUNNING",
+            has_knowledge=True,
         )
         store_bot("user1", bot1)
         store_bot("user1", bot2)

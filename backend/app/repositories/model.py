@@ -58,6 +58,7 @@ class BotAliasModel(BaseModel):
     last_used_time: float
     is_pinned: bool
     sync_status: type_sync_status
+    has_knowledge: bool
 
 
 class ConversationMeta(BaseModel):

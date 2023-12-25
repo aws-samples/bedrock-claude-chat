@@ -102,6 +102,12 @@ def prepare_conversation(
                             last_used_time=current_time,
                             is_pinned=False,
                             sync_status=bot.sync_status,
+                            has_knowledge=bot.knowledge
+                            and (
+                                len(bot.knowledge.source_urls) > 0
+                                or len(bot.knowledge.sitemap_urls) > 0
+                                or len(bot.knowledge.filenames) > 0
+                            ),
                         ),
                     )
 

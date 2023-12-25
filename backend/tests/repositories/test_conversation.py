@@ -230,6 +230,7 @@ class TestConversationBotRepository(unittest.TestCase):
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
+            sync_last_exec_id="",
         )
         bot2 = BotModel(
             id="2",
@@ -247,6 +248,7 @@ class TestConversationBotRepository(unittest.TestCase):
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
+            sync_last_exec_id="",
         )
 
         store_conversation("user", conversation1)

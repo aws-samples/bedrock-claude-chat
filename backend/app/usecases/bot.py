@@ -152,6 +152,11 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
             is_public=True if bot.public_bot_id else False,
             owned=True,
             sync_status=bot.sync_status,
+            has_knowledge=(
+                len(bot.knowledge.source_urls) > 0
+                or len(bot.knowledge.sitemap_urls) > 0
+                or len(bot.knowledge.filenames) > 0
+            ),
         )
 
     except RecordNotFoundError:
@@ -169,6 +174,7 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
             is_public=True,
             owned=False,
             sync_status=alias.sync_status,
+            has_knowledge=alias.has_knowledge,
         )
     except RecordNotFoundError:
         pass
@@ -186,6 +192,11 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
             is_public=True,
             owned=False,
             sync_status=bot.sync_status,
+            has_knowledge=(
+                len(bot.knowledge.source_urls) > 0
+                or len(bot.knowledge.sitemap_urls) > 0
+                or len(bot.knowledge.filenames) > 0
+            ),
         )
     except RecordNotFoundError:
         raise RecordNotFoundError(

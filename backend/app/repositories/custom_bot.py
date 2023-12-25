@@ -102,6 +102,7 @@ def store_alias(user_id: str, alias: BotAliasModel):
         "LastBotUsed": decimal(alias.last_used_time),
         "IsPinned": alias.is_pinned,
         "SyncStatus": alias.sync_status,
+        "HasKnowledge": alias.has_knowledge,
     }
 
     response = table.put_item(Item=item)
@@ -329,6 +330,12 @@ def find_all_bots_by_user_id(
                 bot.title != item["Title"]
                 or bot.description != item["Description"]
                 or bot.sync_status != item["SyncStatus"]
+                or (
+                    len(bot.knowledge.source_urls) > 0
+                    or len(bot.knowledge.sitemap_urls) > 0
+                    or len(bot.knowledge.filenames) > 0
+                )
+                != item["HasKnowledge"]
             ):
                 # Update alias to the latest original bot
                 store_alias(
@@ -343,6 +350,11 @@ def find_all_bots_by_user_id(
                         last_used_time=float(item["LastBotUsed"]),
                         is_pinned=True,
                         sync_status=item["SyncStatus"],
+                        has_knowledge=(
+                            len(bot.knowledge.source_urls) > 0
+                            or len(bot.knowledge.sitemap_urls) > 0
+                            or len(bot.knowledge.filenames) > 0
+                        ),
                     ),
                 )
 
@@ -452,6 +464,7 @@ def find_alias_by_id(user_id: str, alias_id: str) -> BotAliasModel:
         last_used_time=float(item["LastBotUsed"]),
         is_pinned=item["IsPinned"],
         sync_status=item["SyncStatus"],
+        has_knowledge=item["HasKnowledge"],
     )
 
     logger.debug(f"Found alias: {bot}")

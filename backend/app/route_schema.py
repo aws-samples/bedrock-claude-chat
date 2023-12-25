@@ -150,6 +150,7 @@ class BotSummaryOutput(BaseSchema):
     is_public: bool
     owned: bool
     sync_status: type_sync_status
+    has_knowledge: bool
 
 
 class BotSwitchVisibilityInput(BaseSchema):
