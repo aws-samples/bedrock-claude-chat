@@ -31,7 +31,7 @@ sts_client = boto3.client("sts")
 
 
 def store_conversation(user_id: str, conversation: ConversationModel):
-    logger.debug(f"Storing conversation: {conversation.model_dump_json()}")
+    logger.info(f"Storing conversation: {conversation.model_dump_json()}")
     table = _get_table_client(user_id)
 
     item_params = {
@@ -54,7 +54,7 @@ def store_conversation(user_id: str, conversation: ConversationModel):
 
 
 def find_conversation_by_user_id(user_id: str) -> list[ConversationMeta]:
-    logger.debug(f"Finding conversations for user: {user_id}")
+    logger.info(f"Finding conversations for user: {user_id}")
     table = _get_table_client(user_id)
 
     query_params = {
@@ -104,12 +104,12 @@ def find_conversation_by_user_id(user_id: str) -> list[ConversationMeta]:
             logger.warning(f"Query count exceeded {MAX_QUERY_COUNT}")
             break
 
-    logger.debug(f"Found conversations: {conversations}")
+    logger.info(f"Found conversations: {conversations}")
     return conversations
 
 
 def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationModel:
-    logger.debug(f"Finding conversation: {conversation_id}")
+    logger.info(f"Finding conversation: {conversation_id}")
     table = _get_table_client(user_id)
     response = table.query(
         IndexName="SKIndex",
@@ -141,12 +141,12 @@ def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationM
         last_message_id=item["LastMessageId"],
         bot_id=item["BotId"] if "BotId" in item else None,
     )
-    logger.debug(f"Found conversation: {conv}")
+    logger.info(f"Found conversation: {conv}")
     return conv
 
 
 def delete_conversation_by_id(user_id: str, conversation_id: str):
-    logger.debug(f"Deleting conversation: {conversation_id}")
+    logger.info(f"Deleting conversation: {conversation_id}")
     table = _get_table_client(user_id)
 
     try:
@@ -166,7 +166,7 @@ def delete_conversation_by_id(user_id: str, conversation_id: str):
 
 
 def delete_conversation_by_user_id(user_id: str):
-    logger.debug(f"Deleting ALL conversations for user: {user_id}")
+    logger.info(f"Deleting ALL conversations for user: {user_id}")
     table = _get_table_client(user_id)
 
     query_params = {
@@ -207,7 +207,7 @@ def delete_conversation_by_user_id(user_id: str):
 
 
 def change_conversation_title(user_id: str, conversation_id: str, new_title: str):
-    logger.debug(f"Updating conversation title: {conversation_id} to {new_title}")
+    logger.info(f"Updating conversation title: {conversation_id} to {new_title}")
     table = _get_table_client(user_id)
 
     try:
@@ -229,6 +229,6 @@ def change_conversation_title(user_id: str, conversation_id: str, new_title: str
         else:
             raise e
 
-    logger.debug(f"Updated conversation title response: {response}")
+    logger.info(f"Updated conversation title response: {response}")
 
     return response

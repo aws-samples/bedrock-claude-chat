@@ -47,7 +47,7 @@ def handler(event, context):
     gatewayapi = boto3.client("apigatewaymanagementapi", endpoint_url=endpoint_url)
 
     chat_input = ChatInputWithToken(**json.loads(message))
-    logger.debug(f"Received chat input: {chat_input}")
+    logger.info(f"Received chat input: {chat_input}")
 
     try:
         # Verify JWT token
@@ -83,7 +83,7 @@ def handler(event, context):
         results = search_related_docs(
             bot_id=bot.id, limit=SEARCH_CONFIG["max_results"], query=query
         )
-        logger.debug(f"Search results from vector store: {results}")
+        logger.info(f"Search results from vector store: {results}")
 
         # Insert contexts to instruction
         conversation_with_context = insert_knowledge(conversation, results)
@@ -136,7 +136,7 @@ def handler(event, context):
 
     # Update bot last used time
     if chat_input.bot_id:
-        logger.debug("Bot id is provided. Updating bot last used time.")
+        logger.info("Bot id is provided. Updating bot last used time.")
         modify_bot_last_used_time(user_id, chat_input.bot_id)
 
     return {"statusCode": 200, "body": json.dumps({"conversationId": conversation.id})}

@@ -33,7 +33,7 @@ def search_related_docs(bot_id: str, limit: int, query: str) -> list[SearchResul
         list[SearchResult]: list of search results
     """
     query_embedding = calculate_query_embedding(query)
-    logger.debug(f"query_embedding: {query_embedding}")
+    logger.info(f"query_embedding: {query_embedding}")
 
     conn = pg8000.connect(
         database=DB_NAME,
@@ -64,7 +64,7 @@ LIMIT %s
     finally:
         conn.close()
 
-    logger.debug(f"{len(results)} records found.")
+    logger.info(f"{len(results)} records found.")
 
     # NOTE: results should be:
     # [

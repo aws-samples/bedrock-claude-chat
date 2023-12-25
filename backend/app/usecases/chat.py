@@ -38,14 +38,14 @@ def prepare_conversation(
     try:
         # Fetch existing conversation
         conversation = find_conversation_by_id(user_id, chat_input.conversation_id)
-        logger.debug(f"Found conversation: {conversation}")
+        logger.info(f"Found conversation: {conversation}")
         parent_id = chat_input.message.parent_message_id
         if chat_input.message.parent_message_id == "system" and chat_input.bot_id:
             # The case editing first user message and use bot
             parent_id = "instruction"
     except RecordNotFoundError:
         # The case for new conversation. Note that editing first user message is not considered as new conversation.
-        logger.debug(
+        logger.info(
             f"No conversation found with id: {chat_input.conversation_id}. Creating new conversation."
         )
 
@@ -65,7 +65,7 @@ def prepare_conversation(
         }
         parent_id = "system"
         if chat_input.bot_id:
-            logger.debug("Bot id is provided. Fetching bot.")
+            logger.info("Bot id is provided. Fetching bot.")
             parent_id = "instruction"
             # Fetch bot and append instruction
             owned, bot = fetch_bot(user_id, chat_input.bot_id)
@@ -87,7 +87,7 @@ def prepare_conversation(
                     # Check alias is already created
                     find_alias_by_id(user_id, chat_input.bot_id)
                 except RecordNotFoundError:
-                    logger.debug(
+                    logger.info(
                         "Bot is not owned by the user. Creating alias to shared bot."
                     )
                     # Create alias item
@@ -231,7 +231,7 @@ Remember, *RESPOND BASED ON THE GIVEN CONTEXTS. YOU MUST NEVER GUESS*. If you ca
 """.format(
         instruction_prompt, context_prompt
     )
-    logger.debug(f"Inserted prompt: {inserted_prompt}")
+    logger.info(f"Inserted prompt: {inserted_prompt}")
 
     conversation_with_context = deepcopy(conversation)
     conversation_with_context.message_map["instruction"].content.body = inserted_prompt
@@ -250,7 +250,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         results = search_related_docs(
             bot_id=bot.id, limit=SEARCH_CONFIG["max_results"], query=query
         )
-        logger.debug(f"Search results from vector store: {results}")
+        logger.info(f"Search results from vector store: {results}")
 
         # Insert contexts to instruction
         conversation_with_context = insert_knowledge(conversation, results)
@@ -287,7 +287,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     store_conversation(user_id, conversation)
     # Update bot last used time
     if chat_input.bot_id:
-        logger.debug("Bot id is provided. Updating bot last used time.")
+        logger.info("Bot id is provided. Updating bot last used time.")
         # Update bot last used time
         modify_bot_last_used_time(user_id, chat_input.bot_id)
 
