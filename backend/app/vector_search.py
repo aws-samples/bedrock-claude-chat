@@ -30,8 +30,7 @@ def search_related_docs(bot_id: str, limit: int, query: str) -> list[SearchResul
         limit (int): number of results to return
         query (str): query string
     Returns:
-        list[tuple]: list of tuples containing (id, botid, source, embedding)
-        for each result. embedding is a list of floats.
+        list[SearchResult]: list of search results
     """
     query_embedding = calculate_query_embedding(query)
     logger.debug(f"query_embedding: {query_embedding}")
@@ -48,6 +47,7 @@ def search_related_docs(bot_id: str, limit: int, query: str) -> list[SearchResul
         with conn.cursor() as cursor:
             # NOTE: <-> is the KNN by L2 distance in pgvector.
             # If you want to use inner product or cosine distance, use <#> or <=> respectively.
+            # It's important to choose the same distance metric as the one used for indexing.
             # Ref: https://github.com/pgvector/pgvector?tab=readme-ov-file#getting-started
             search_query = """
 SELECT id, botid, content, source, embedding 

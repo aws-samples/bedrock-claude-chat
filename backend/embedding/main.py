@@ -32,28 +32,13 @@ METADATA_URI = os.environ.get("ECS_CONTAINER_METADATA_URI_V4")
 
 
 def get_exec_id() -> str:
+    # Get task id from ECS metadata
+    # Ref: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-metadata-endpoint-v4.html#task-metadata-endpoint-v4-enable
     response = requests.get(f"{METADATA_URI}/task")
     data = response.json()
     task_arn = data.get("TaskARN", "")
     task_id = task_arn.split("/")[-1]
     return task_id
-
-    # Ref: https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-metadata-endpoint-v4.html#task-metadata-endpoint-v4-enable
-    if METADATA_URI:
-        response = requests.get(f"{METADATA_URI}/task")
-        if response.status_code == 200:
-            data = response.json()
-            task_arn = data.get("TaskARN", "")
-            task_id = task_arn.split("/")[-1] if task_arn else None
-
-            if task_id:
-                return task_id
-            else:
-                raise Exception("TaskARN not found in the metadata.")
-        else:
-            raise Exception(f"Failed to get metadata: {response.status_code}")
-    else:
-        raise Exception("ECS_CONTAINER_METADATA_URI_V4 is not set.")
 
 
 def insert_to_postgres(

@@ -1,3 +1,4 @@
+import time
 from typing import Literal
 
 import requests
@@ -16,7 +17,7 @@ def get_loader(loader_type: str, urls: list[str]) -> BaseLoader:
         "web": PlaywrightURLLoader(
             urls=urls, evaluator=DelayUnstructuredHtmlEvaluator(delay_sec=DELAY_SEC)
         ),
-        "unstructured": UnstructuredURLLoader(urls),
+        "unstructured": UnstructuredURLLoader(urls, request_timeout=30),
         "youtube": YoutubeLoaderWithLangDetection(urls),
     }
     return map[loader_type]
@@ -26,7 +27,7 @@ def check_content_type(url) -> Literal["web", "unstructured", "youtube"]:
     if is_url_youtube(url):
         return "youtube"
 
-    response = requests.head(url)
+    response = requests.head(url, timeout=30)
     response.raise_for_status()
 
     content_type = response.headers.get("Content-Type", "").lower()
@@ -46,6 +47,8 @@ def group_urls_by_content_type(urls: list[str]) -> dict:
     for url in urls:
         content_type = check_content_type(url)
         res[content_type].append(url)
+
+        time.sleep(1)
 
     return res
 

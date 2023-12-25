@@ -19,8 +19,12 @@ const setUp = async (dbConfig) => {
                          content text,
                          source text,
                          embedding vector(1024));`);
+    // `lists` parameter controls the nubmer of clusters created during index building.
+    // Also it's important to choose the same index method as the one used in the query.
+    // Here we use L2 distance for the index method.
+    // See: https://txt.cohere.com/introducing-embed-v3/
     await client.query(`CREATE INDEX ON items 
-                         USING ivfflat (embedding vector_l2_ops) WITH (lists = 5000);`);
+                         USING ivfflat (embedding vector_l2_ops) WITH (lists = 100);`);
     await client.query(`CREATE INDEX ON items (botid);`);
 
     console.log("SQL execution successful.");
