@@ -13,13 +13,13 @@ from app.repositories.custom_bot import (
     find_private_bots_by_user_id,
     update_bot_visibility,
 )
-from app.repositories.model import BotModel
 from app.route_schema import (
     BotInput,
     BotMetaOutput,
     BotModifyInput,
     BotOutput,
     BotPinnedInput,
+    BotPresignedUrlOutput,
     BotSummaryOutput,
     BotSwitchVisibilityInput,
     ChatInput,
@@ -27,6 +27,7 @@ from app.route_schema import (
     Content,
     Conversation,
     ConversationMetaOutput,
+    Knowledge,
     MessageOutput,
     NewTitleInput,
     ProposedTitle,
@@ -36,12 +37,15 @@ from app.usecases.bot import (
     create_new_bot,
     fetch_bot,
     fetch_bot_summary,
+    issue_presigned_url,
     modify_owned_bot,
     modify_pin_status,
     remove_bot_by_id,
+    remove_uploaded_file,
 )
 from app.usecases.chat import chat, fetch_conversation, propose_conversation_title
 from app.utils import get_current_time
+from app.vector_search import search_related_docs
 from fastapi import APIRouter, Request
 
 router = APIRouter()
@@ -199,6 +203,7 @@ def get_all_bots(
             available=bot.available,
             description=bot.description,
             is_public=bot.is_public,
+            sync_status=bot.sync_status,
         )
         for bot in bots
     ]
@@ -221,6 +226,14 @@ def get_private_bot(request: Request, bot_id: str):
         is_public=True if bot.public_bot_id else False,
         is_pinned=bot.is_pinned,
         owned=True,
+        knowledge=Knowledge(
+            source_urls=bot.knowledge.source_urls,
+            sitemap_urls=bot.knowledge.sitemap_urls,
+            filenames=bot.knowledge.filenames,
+        ),
+        sync_status=bot.sync_status,
+        sync_status_reason=bot.sync_status_reason,
+        sync_last_exec_id=bot.sync_last_exec_id,
     )
     return output
 
@@ -240,3 +253,29 @@ def delete_bot(request: Request, bot_id: str):
     """
     current_user: User = request.state.current_user
     remove_bot_by_id(current_user.id, bot_id)
+
+
+@router.get("/bot/{bot_id}/presigned-url", response_model=BotPresignedUrlOutput)
+def get_bot_presigned_url(request: Request, bot_id: str, filename: str):
+    """Get presigned url for bot"""
+    current_user: User = request.state.current_user
+    url = issue_presigned_url(current_user.id, bot_id, filename)
+    return BotPresignedUrlOutput(url=url)
+
+
+@router.delete("/bot/{bot_id}/uploaded-file")
+def delete_bot_uploaded_file(request: Request, bot_id: str, filename: str):
+    """Delete uploaded file for bot"""
+    current_user: User = request.state.current_user
+    remove_uploaded_file(current_user.id, bot_id, filename)
+
+
+@router.get("/bot/{bot_id}/search")
+def search_knowledge(request: Request, bot_id: str, query: str):
+    """Search knowledge
+    TODO: remove when release (debug purpose)
+    """
+    current_user: User = request.state.current_user
+    results = search_related_docs(bot_id, 10, query)
+
+    return results

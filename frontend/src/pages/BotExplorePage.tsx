@@ -13,7 +13,7 @@ import {
 } from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
 import useBot from '../hooks/useBot';
-import { BotMeta, BotMetaWithAvailable } from '../@types/bot';
+import { BotMeta, BotListItem } from '../@types/bot';
 import DialogConfirmDeleteBot from '../components/DialogConfirmDeleteBot';
 import DialogConfirmShareBot from '../components/DialogShareBot';
 import ButtonIcon from '../components/ButtonIcon';
@@ -22,21 +22,25 @@ import PopoverMenu from '../components/PopoverMenu';
 import PopoverItem from '../components/PopoverItem';
 import useChat from '../hooks/useChat';
 import Help from '../components/Help';
+import StatusSyncBot from '../components/StatusSyncBot';
 
 type ItemBotProps = BaseProps & {
-  bot: BotMetaWithAvailable;
+  bot: BotListItem;
   onClick: (botId: string) => void;
   children: ReactNode;
 };
 
 const ItemBot: React.FC<ItemBotProps> = (props) => {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   return (
     <div
       key={props.bot.id}
-      className={`${props.className ?? ''} flex justify-between border-b`}>
+      className={`${
+        props.className ?? ''
+      } relative flex w-full justify-between border-b border-light-gray`}>
       <div
-        className={`h-full w-full bg-aws-paper p-2 ${
+        className={`h-full grow bg-aws-paper p-2 ${
           props.bot.available
             ? 'cursor-pointer hover:brightness-90'
             : 'text-aws-font-color/30'
@@ -46,21 +50,37 @@ const ItemBot: React.FC<ItemBotProps> = (props) => {
             props.onClick(props.bot.id);
           }
         }}>
-        <div className="text-sm font-semibold">{props.bot.title}</div>
+        <div className="w-full overflow-hidden text-ellipsis text-sm font-semibold">
+          {props.bot.title}
+        </div>
         {props.bot.description ? (
-          <div className="mt-1 text-xs">
+          <div className="mt-1 overflow-hidden text-ellipsis text-xs">
             {props.bot.available
               ? props.bot.description
               : t('bot.label.notAvailable')}
           </div>
         ) : (
-          <div className="mt-1 text-xs italic text-gray-400">
+          <div className="mt-1 overflow-hidden text-ellipsis text-xs italic text-gray">
             {t('bot.label.noDescription')}
           </div>
         )}
       </div>
 
-      <div className="ml-2 flex items-center gap-2">{props.children}</div>
+      <div className="absolute right-0 flex h-full justify-between ">
+        <div className="w-10 bg-gradient-to-r from-transparent to-aws-paper"></div>
+        <div className="w-32 bg-aws-paper pr-3">
+          <StatusSyncBot
+            className="h-full"
+            syncStatus={props.bot.syncStatus}
+            onClickError={() => {
+              navigate(`/bot/edit/${props.bot.id}`);
+            }}
+          />
+        </div>
+        <div className="flex items-center  gap-2 bg-aws-paper pl-2">
+          {props.children}
+        </div>
+      </div>
     </div>
   );
 };
@@ -174,11 +194,11 @@ const BotExplorePage: React.FC = () => {
                 {t('bot.button.newBot')}
               </Button>
             </div>
-            <div className="mt-2 border-b"></div>
+            <div className="mt-2 border-b border-gray"></div>
 
-            <div className="h-4/5 overflow-x-hidden overflow-y-scroll border-b  pr-1 scrollbar-thin scrollbar-thumb-aws-font-color/20 ">
+            <div className="h-4/5 overflow-x-hidden overflow-y-scroll border-b border-gray pr-1 scrollbar-thin scrollbar-thumb-aws-font-color/20 ">
               {myBots?.length === 0 && (
-                <div className="flex h-full w-full items-center justify-center italic">
+                <div className="flex h-full w-full items-center justify-center italic text-dark-gray">
                   {t('bot.label.noBots')}
                 </div>
               )}
@@ -242,7 +262,7 @@ const BotExplorePage: React.FC = () => {
                       </PopoverItem>
 
                       <PopoverItem
-                        className="font-bold text-red-600"
+                        className="font-bold text-red"
                         onClick={() => {
                           onClickDelete(bot);
                         }}>
@@ -259,10 +279,10 @@ const BotExplorePage: React.FC = () => {
             <div className="text-xl font-bold">
               {t('bot.label.recentlyUsedBots')}
             </div>
-            <div className="mt-2 border-b"></div>
-            <div className="h-4/5 overflow-y-scroll border-b pr-1 scrollbar-thin scrollbar-thumb-aws-font-color/20">
+            <div className="mt-2 border-b border-gray"></div>
+            <div className="h-4/5 overflow-y-scroll border-b border-gray  pr-1 scrollbar-thin scrollbar-thumb-aws-font-color/20">
               {recentlyUsedSharedBots?.length === 0 && (
-                <div className="flex h-full w-full items-center justify-center italic">
+                <div className="flex h-full w-full items-center justify-center italic text-dark-gray">
                   {t('bot.label.noBotsRecentlyUsed')}
                 </div>
               )}
@@ -290,7 +310,7 @@ const BotExplorePage: React.FC = () => {
                     </ButtonIcon>
                   )}
                   <ButtonIcon
-                    className="text-red-600"
+                    className="text-red"
                     onClick={() => {
                       deleteRecentlyUsedBot(bot.id);
                     }}>

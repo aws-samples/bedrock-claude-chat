@@ -15,7 +15,8 @@ from app.repositories.common import (
     _get_table_client,
     _get_table_public_client,
 )
-from app.repositories.model import BotAliasModel, BotMeta, BotModel
+from app.repositories.model import BotAliasModel, BotMeta, BotModel, KnowledgeModel
+from app.route_schema import type_sync_status
 from app.utils import get_current_time
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
@@ -26,7 +27,7 @@ sts_client = boto3.client("sts")
 
 def store_bot(user_id: str, custom_bot: BotModel):
     table = _get_table_client(user_id)
-    logger.debug(f"Storing bot: {custom_bot}")
+    logger.info(f"Storing bot: {custom_bot}")
 
     item = {
         "PK": user_id,
@@ -37,6 +38,10 @@ def store_bot(user_id: str, custom_bot: BotModel):
         "CreateTime": decimal(custom_bot.create_time),
         "LastBotUsed": decimal(custom_bot.last_used_time),
         "IsPinned": custom_bot.is_pinned,
+        "Knowledge": custom_bot.knowledge.model_dump(),
+        "SyncStatus": custom_bot.sync_status,
+        "SyncStatusReason": custom_bot.sync_status_reason,
+        "LastExecId": custom_bot.sync_last_exec_id,
     }
 
     response = table.put_item(Item=item)
@@ -44,22 +49,32 @@ def store_bot(user_id: str, custom_bot: BotModel):
 
 
 def update_bot(
-    user_id: str, bot_id: str, title: str, description: str, instruction: str
+    user_id: str,
+    bot_id: str,
+    title: str,
+    description: str,
+    instruction: str,
+    knowledge: KnowledgeModel,
+    sync_status: type_sync_status,
+    sync_status_reason: str,
 ):
     """Update bot title, description, and instruction.
     NOTE: Use `update_bot_visibility` to update visibility.
     """
     table = _get_table_client(user_id)
-    logger.debug(f"Updating bot: {bot_id}")
+    logger.info(f"Updating bot: {bot_id}")
 
     try:
         response = table.update_item(
             Key={"PK": user_id, "SK": _compose_bot_id(user_id, bot_id)},
-            UpdateExpression="SET Title = :title, Description = :description, Instruction = :instruction",
+            UpdateExpression="SET Title = :title, Description = :description, Instruction = :instruction, Knowledge = :knowledge, SyncStatus = :sync_status, SyncStatusReason = :sync_status_reason",
             ExpressionAttributeValues={
                 ":title": title,
                 ":description": description,
                 ":instruction": instruction,
+                ":knowledge": knowledge.model_dump(),
+                ":sync_status": sync_status,
+                ":sync_status_reason": sync_status_reason,
             },
             ReturnValues="ALL_NEW",
             ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
@@ -75,7 +90,7 @@ def update_bot(
 
 def store_alias(user_id: str, alias: BotAliasModel):
     table = _get_table_client(user_id)
-    logger.debug(f"Storing alias: {alias}")
+    logger.info(f"Storing alias: {alias}")
 
     item = {
         "PK": user_id,
@@ -86,6 +101,8 @@ def store_alias(user_id: str, alias: BotAliasModel):
         "CreateTime": decimal(alias.create_time),
         "LastBotUsed": decimal(alias.last_used_time),
         "IsPinned": alias.is_pinned,
+        "SyncStatus": alias.sync_status,
+        "HasKnowledge": alias.has_knowledge,
     }
 
     response = table.put_item(Item=item)
@@ -95,7 +112,7 @@ def store_alias(user_id: str, alias: BotAliasModel):
 def update_bot_last_used_time(user_id: str, bot_id: str):
     """Update last used time for bot."""
     table = _get_table_client(user_id)
-    logger.debug(f"Updating last used time for bot: {bot_id}")
+    logger.info(f"Updating last used time for bot: {bot_id}")
     try:
         response = table.update_item(
             Key={"PK": user_id, "SK": _compose_bot_id(user_id, bot_id)},
@@ -114,7 +131,7 @@ def update_bot_last_used_time(user_id: str, bot_id: str):
 def update_alias_last_used_time(user_id: str, alias_id: str):
     """Update last used time for alias."""
     table = _get_table_client(user_id)
-    logger.debug(f"Updating last used time for alias: {alias_id}")
+    logger.info(f"Updating last used time for alias: {alias_id}")
     try:
         response = table.update_item(
             Key={"PK": user_id, "SK": _compose_bot_alias_id(user_id, alias_id)},
@@ -133,7 +150,7 @@ def update_alias_last_used_time(user_id: str, alias_id: str):
 def update_bot_pin_status(user_id: str, bot_id: str, pinned: bool):
     """Update pin status for bot."""
     table = _get_table_client(user_id)
-    logger.debug(f"Updating pin status for bot: {bot_id}")
+    logger.info(f"Updating pin status for bot: {bot_id}")
     try:
         response = table.update_item(
             Key={"PK": user_id, "SK": _compose_bot_id(user_id, bot_id)},
@@ -152,7 +169,7 @@ def update_bot_pin_status(user_id: str, bot_id: str, pinned: bool):
 def update_alias_pin_status(user_id: str, alias_id: str, pinned: bool):
     """Update pin status for alias."""
     table = _get_table_client(user_id)
-    logger.debug(f"Updating pin status for alias: {alias_id}")
+    logger.info(f"Updating pin status for alias: {alias_id}")
     try:
         response = table.update_item(
             Key={"PK": user_id, "SK": _compose_bot_alias_id(user_id, alias_id)},
@@ -176,7 +193,7 @@ def find_private_bots_by_user_id(
     The order is descending by `last_used_time`.
     """
     table = _get_table_client(user_id)
-    logger.debug(f"Finding bots for user: {user_id}")
+    logger.info(f"Finding bots for user: {user_id}")
 
     query_params = {
         "IndexName": "LastBotUsedIndex",
@@ -199,6 +216,7 @@ def find_private_bots_by_user_id(
             is_pinned=item["IsPinned"],
             description=item["Description"],
             is_public="PublicBotId" in item,
+            sync_status=item["SyncStatus"],
         )
         for item in response["Items"]
     ]
@@ -220,6 +238,7 @@ def find_private_bots_by_user_id(
                     is_pinned=item["IsPinned"],
                     description=item["Description"],
                     is_public="PublicBotId" in item,
+                    sync_status=item["SyncStatus"],
                 )
                 for item in response["Items"]
             ]
@@ -236,7 +255,7 @@ def find_private_bots_by_user_id(
     if limit:
         bots = bots[:limit]
 
-    logger.debug(f"Found all private bots: {bots}")
+    logger.info(f"Found all private bots: {bots}")
     return bots
 
 
@@ -254,7 +273,7 @@ def find_all_bots_by_user_id(
         raise ValueError("Limit must be between 0 and 100")
 
     table = _get_table_client(user_id)
-    logger.debug(f"Finding pinned bots for user: {user_id}")
+    logger.info(f"Finding pinned bots for user: {user_id}")
 
     # Fetch all pinned bots
     query_params = {
@@ -276,7 +295,7 @@ def find_all_bots_by_user_id(
             is_original_available = True
             try:
                 bot = find_public_bot_by_id(item["OriginalBotId"])
-                logger.debug(f"Found original bot: {bot.id}")
+                logger.info(f"Found original bot: {bot.id}")
                 meta = BotMeta(
                     id=bot.id,
                     title=bot.title,
@@ -287,11 +306,12 @@ def find_all_bots_by_user_id(
                     available=True,
                     description=bot.description,
                     is_public=True,
+                    sync_status=bot.sync_status,
                 )
             except RecordNotFoundError:
                 # Original bot is removed
                 is_original_available = False
-                logger.debug(f"Original bot {item['OriginalBotId']} has been removed")
+                logger.info(f"Original bot {item['OriginalBotId']} has been removed")
                 meta = BotMeta(
                     id=item["OriginalBotId"],
                     title=item["Title"],
@@ -303,12 +323,21 @@ def find_all_bots_by_user_id(
                     available=False,
                     description="This item is no longer available",
                     is_public=False,
+                    sync_status="ORIGINAL_NOT_FOUND",
                 )
 
             if is_original_available and (
-                bot.title != item["Title"] or bot.description != item["Description"]
+                bot.title != item["Title"]
+                or bot.description != item["Description"]
+                or bot.sync_status != item["SyncStatus"]
+                or (
+                    len(bot.knowledge.source_urls) > 0
+                    or len(bot.knowledge.sitemap_urls) > 0
+                    or len(bot.knowledge.filenames) > 0
+                )
+                != item["HasKnowledge"]
             ):
-                # Replace alias to the latest
+                # Update alias to the latest original bot
                 store_alias(
                     user_id,
                     BotAliasModel(
@@ -319,7 +348,13 @@ def find_all_bots_by_user_id(
                         original_bot_id=item["OriginalBotId"],
                         create_time=float(item["CreateTime"]),
                         last_used_time=float(item["LastBotUsed"]),
-                        is_pinned=True,
+                        is_pinned=item["IsPinned"],
+                        sync_status=bot.sync_status,
+                        has_knowledge=(
+                            len(bot.knowledge.source_urls) > 0
+                            or len(bot.knowledge.sitemap_urls) > 0
+                            or len(bot.knowledge.filenames) > 0
+                        ),
                     ),
                 )
 
@@ -337,6 +372,7 @@ def find_all_bots_by_user_id(
                     available=True,
                     description=item["Description"],
                     is_public="PublicBotId" in item,
+                    sync_status=item["SyncStatus"],
                 )
             )
 
@@ -346,7 +382,7 @@ def find_all_bots_by_user_id(
 def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
     """Find private bot."""
     table = _get_table_client(user_id)
-    logger.debug(f"Finding bot with id: {bot_id}")
+    logger.info(f"Finding bot with id: {bot_id}")
     response = table.query(
         IndexName="SKIndex",
         KeyConditionExpression=Key("SK").eq(_compose_bot_id(user_id, bot_id)),
@@ -367,16 +403,20 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
         last_used_time=float(item["LastBotUsed"]),
         is_pinned=item["IsPinned"],
         public_bot_id=None if "PublicBotId" not in item else item["PublicBotId"],
+        knowledge=KnowledgeModel(**item["Knowledge"]),
+        sync_status=item["SyncStatus"],
+        sync_status_reason=item["SyncStatusReason"],
+        sync_last_exec_id=item["LastExecId"],
     )
 
-    logger.debug(f"Found bot: {bot}")
+    logger.info(f"Found bot: {bot}")
     return bot
 
 
 def find_public_bot_by_id(bot_id: str) -> BotModel:
     """Find public bot by id."""
     table = _get_table_public_client()  # Use public client
-    logger.debug(f"Finding public bot with id: {bot_id}")
+    logger.info(f"Finding public bot with id: {bot_id}")
     response = table.query(
         IndexName="PublicBotIdIndex",
         KeyConditionExpression=Key("PublicBotId").eq(bot_id),
@@ -394,15 +434,19 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
         last_used_time=float(item["LastBotUsed"]),
         is_pinned=item["IsPinned"],
         public_bot_id=item["PublicBotId"],
+        knowledge=KnowledgeModel(**item["Knowledge"]),
+        sync_status=item["SyncStatus"],
+        sync_status_reason=item["SyncStatusReason"],
+        sync_last_exec_id=item["LastExecId"],
     )
-    logger.debug(f"Found public bot: {bot}")
+    logger.info(f"Found public bot: {bot}")
     return bot
 
 
 def find_alias_by_id(user_id: str, alias_id: str) -> BotAliasModel:
     """Find alias bot by id."""
     table = _get_table_client(user_id)
-    logger.debug(f"Finding alias bot with id: {alias_id}")
+    logger.info(f"Finding alias bot with id: {alias_id}")
     response = table.query(
         IndexName="SKIndex",
         KeyConditionExpression=Key("SK").eq(_compose_bot_alias_id(user_id, alias_id)),
@@ -419,16 +463,18 @@ def find_alias_by_id(user_id: str, alias_id: str) -> BotAliasModel:
         create_time=float(item["CreateTime"]),
         last_used_time=float(item["LastBotUsed"]),
         is_pinned=item["IsPinned"],
+        sync_status=item["SyncStatus"],
+        has_knowledge=item["HasKnowledge"],
     )
 
-    logger.debug(f"Found alias: {bot}")
+    logger.info(f"Found alias: {bot}")
     return bot
 
 
 def update_bot_visibility(user_id: str, bot_id: str, visible: bool):
     """Update bot visibility."""
     table = _get_table_client(user_id)
-    logger.debug(f"Making bot public: {bot_id}")
+    logger.info(f"Making bot public: {bot_id}")
 
     response = table.query(
         IndexName="SKIndex",
@@ -465,7 +511,7 @@ def update_bot_visibility(user_id: str, bot_id: str, visible: bool):
 
 def delete_bot_by_id(user_id: str, bot_id: str):
     table = _get_table_client(user_id)
-    logger.debug(f"Deleting bot with id: {bot_id}")
+    logger.info(f"Deleting bot with id: {bot_id}")
 
     try:
         response = table.delete_item(
@@ -483,7 +529,7 @@ def delete_bot_by_id(user_id: str, bot_id: str):
 
 def delete_alias_by_id(user_id: str, bot_id: str):
     table = _get_table_client(user_id)
-    logger.debug(f"Deleting alias with id: {bot_id}")
+    logger.info(f"Deleting alias with id: {bot_id}")
 
     try:
         response = table.delete_item(

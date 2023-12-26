@@ -375,7 +375,7 @@ const ChatListDrawer: React.FC<Props> = (props) => {
           <PiX />
         </ButtonIcon>
         <div
-          className="fixed z-40 h-screen w-screen bg-gray-900/90"
+          className="fixed z-40 h-screen w-screen bg-dark-gray/90"
           onClick={switchOpen}></div>
       </div>
     </>

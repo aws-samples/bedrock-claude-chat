@@ -23,6 +23,7 @@ from app.repositories.model import (
     BotModel,
     ContentModel,
     ConversationModel,
+    KnowledgeModel,
     MessageModel,
 )
 from boto3.dynamodb.conditions import Key
@@ -222,6 +223,14 @@ class TestConversationBotRepository(unittest.TestCase):
             last_used_time=1627984879.9,
             public_bot_id="1",
             is_pinned=False,
+            knowledge=KnowledgeModel(
+                source_urls=["https://aws.amazon.com/"],
+                sitemap_urls=["https://aws.amazon.sitemap.xml"],
+                filenames=["aws.pdf"],
+            ),
+            sync_status="RUNNING",
+            sync_status_reason="reason",
+            sync_last_exec_id="",
         )
         bot2 = BotModel(
             id="2",
@@ -232,6 +241,14 @@ class TestConversationBotRepository(unittest.TestCase):
             last_used_time=1627984879.9,
             public_bot_id="2",
             is_pinned=False,
+            knowledge=KnowledgeModel(
+                source_urls=["https://aws.amazon.com/"],
+                sitemap_urls=["https://aws.amazon.sitemap.xml"],
+                filenames=["aws.pdf"],
+            ),
+            sync_status="RUNNING",
+            sync_status_reason="reason",
+            sync_last_exec_id="",
         )
 
         store_conversation("user", conversation1)

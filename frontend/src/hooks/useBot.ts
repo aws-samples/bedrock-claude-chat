@@ -47,6 +47,8 @@ const useBot = () => {
             isPinned: false,
             isPublic: false,
             owned: true,
+            // FIXME: あとで直す
+            syncStatus: 'QUEUED',
           });
         }),
         {
@@ -212,6 +214,19 @@ const useBot = () => {
       return api.deleteBot(botId).finally(() => {
         mutateRecentlyUsedBots();
       });
+    },
+    uploadFile: (
+      botId: string,
+      file: File,
+      onProgress?: (progress: number) => void
+    ) => {
+      return api.getPresignedUrl(botId, file.name).then(({ data }) => {
+        data.url;
+        return api.uploadFile(data.url, file, onProgress);
+      });
+    },
+    deleteUploadedFile: (botId: string, filename: string) => {
+      return api.deleteUploadedFile(botId, filename);
     },
   };
 };

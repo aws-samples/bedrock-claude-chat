@@ -20,7 +20,7 @@ from starlette.types import ASGIApp, Message
 
 CORS_ALLOW_ORIGINS = os.environ.get("CORS_ALLOW_ORIGINS", "*")
 
-logging.basicConfig(level=logging.DEBUG, format="%(levelname)s:%(name)s - %(message)s")
+logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s - %(message)s")
 logger = logging.getLogger(__name__)
 app = FastAPI()
 
@@ -46,6 +46,7 @@ def error_handler_factory(status_code: int) -> Callable[[Exception], JSONRespons
 
 
 app.add_exception_handler(RecordNotFoundError, error_handler_factory(404))
+app.add_exception_handler(FileNotFoundError, error_handler_factory(404))
 app.add_exception_handler(RecordAccessNotAllowedError, error_handler_factory(403))
 app.add_exception_handler(ValueError, error_handler_factory(400))
 app.add_exception_handler(TypeError, error_handler_factory(400))
@@ -88,12 +89,12 @@ def add_current_user_to_request(request: Request, call_next: ASGIApp):
 
 @app.middleware("http")
 async def add_log_requests(request: Request, call_next: ASGIApp):
-    logger.debug(f"Request path: {request.url.path}")
-    logger.debug(f"Request method: {request.method}")
-    logger.debug(f"Request headers: {request.headers}")
+    logger.info(f"Request path: {request.url.path}")
+    logger.info(f"Request method: {request.method}")
+    logger.info(f"Request headers: {request.headers}")
 
     body = await request.body()
-    logger.debug(f"Request body: {body}")
+    logger.info(f"Request body: {body}")
 
     # Avoid application blocking
     # See: https://github.com/tiangolo/fastapi/issues/394

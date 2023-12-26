@@ -21,6 +21,7 @@ export TABLE_NAME=BedrockChatStack-DatabaseConversationTablexxxx
 export ACCOUNT=yyyy
 export REGION=ap-northeast-1
 export BEDROCK_REGION=us-east-1
+export DOCUMENT_BUCKET=bedrockchatstack-documentbucketxxxxxxx
 ```
 
 ## Launch local server
