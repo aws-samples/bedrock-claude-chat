@@ -30,6 +30,10 @@ export type BotDetails = BotMeta & {
   syncStatusReason: string;
 };
 
+export type BotSummary = BotMeta & {
+  hasKnowledge: boolean;
+};
+
 export type RegisterBotRequest = {
   id: string;
   title: string;
@@ -85,4 +89,8 @@ export type GetBotsResponse = BotListItem[];
 
 export type GetMyBotResponse = BotDetails;
 
-export type GetBotSummaryResponse = BotMeta;
+export type GetBotSummaryResponse = BotSummary;
+
+export type GetPresignedUrlResponse = {
+  url: string;
+};

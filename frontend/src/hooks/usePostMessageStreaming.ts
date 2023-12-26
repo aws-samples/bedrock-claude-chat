@@ -6,70 +6,74 @@ import i18next from 'i18next';
 const WS_ENDPOINT: string = import.meta.env.VITE_APP_WS_ENDPOINT;
 
 const usePostMessageStreaming = create<{
-  post: (
-    input: PostMessageRequest,
-    dispatch: (completion: string) => void
-  ) => Promise<void>;
+  post: (params: {
+    input: PostMessageRequest;
+    hasKnowledge?: boolean;
+    dispatch: (completion: string) => void;
+  }) => Promise<void>;
 }>(() => {
-  const post = async (
-    input: PostMessageRequest,
-    dispatch: (completion: string) => void
-  ) => {
-    const token = (await Auth.currentSession()).getIdToken().getJwtToken();
+  return {
+    post: async ({ input, dispatch, hasKnowledge }) => {
+      if (hasKnowledge) {
+        dispatch(i18next.t('bot.label.retrivingKnowledge'));
+      } else {
+        dispatch(i18next.t('app.chatWaitingSymbol'));
+      }
 
-    return new Promise<void>((resolve, reject) => {
-      const ws = new WebSocket(WS_ENDPOINT);
-      let completion = '';
+      const token = (await Auth.currentSession()).getIdToken().getJwtToken();
 
-      ws.onopen = () => {
-        ws.send(JSON.stringify({ ...input, token }));
-      };
+      return new Promise<void>((resolve, reject) => {
+        const ws = new WebSocket(WS_ENDPOINT);
+        let completion = '';
 
-      ws.onmessage = (message) => {
-        console.log(message.data);
-        try {
-          if (message.data === '') {
-            return;
-          }
+        ws.onopen = () => {
+          ws.send(JSON.stringify({ ...input, token }));
+        };
 
-          const data = JSON.parse(message.data);
-
-          if (data.completion || data.completion === '') {
-            if (completion.endsWith('▍')) {
-              completion = completion.slice(0, -1);
+        ws.onmessage = (message) => {
+          try {
+            if (message.data === '') {
+              return;
             }
 
-            completion += data.completion + (data.stop_reason ? '' : '▍');
-            dispatch(completion);
-            if (data.stop_reason) {
+            const data = JSON.parse(message.data);
+
+            if (data.completion || data.completion === '') {
+              if (completion.endsWith(i18next.t('app.chatWaitingSymbol'))) {
+                completion = completion.slice(0, -1);
+              }
+
+              completion +=
+                data.completion +
+                (data.stop_reason ? '' : i18next.t('app.chatWaitingSymbol'));
+              dispatch(completion);
+              if (data.stop_reason) {
+                ws.close();
+              }
+            } else if (data.status) {
+              dispatch(i18next.t('app.chatWaitingSymbol'));
+            } else {
               ws.close();
+              console.error(data);
+              throw new Error(i18next.t('error.predict.invalidResponse'));
             }
-          } else if (data.status) {
-            dispatch('▍');
-          } else {
-            ws.close();
-            console.error(data);
-            throw new Error(i18next.t('error.predict.invalidResponse'));
+          } catch (e) {
+            console.error(e);
+            reject(i18next.t('error.predict.general'));
           }
-        } catch (e) {
+        };
+
+        ws.onerror = (e) => {
+          ws.close();
           console.error(e);
           reject(i18next.t('error.predict.general'));
-        }
-      };
-
-      ws.onerror = (e) => {
-        ws.close();
-        console.error(e);
-        reject(i18next.t('error.predict.general'));
-      };
-      ws.onclose = () => {
-        resolve();
-      };
-    });
-  };
-
-  return {
-    post,
+        };
+        ws.onclose = () => {
+          resolve();
+        };
+      });
+    },
   };
 });
+
 export default usePostMessageStreaming;

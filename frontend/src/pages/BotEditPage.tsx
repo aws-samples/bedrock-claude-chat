@@ -10,6 +10,7 @@ import DialogInstructionsSamples from '../components/DialogInstructionsSamples';
 import ButtonIcon from '../components/ButtonIcon';
 import { produce } from 'immer';
 import Alert from '../components/Alert';
+import KnowledgeFileUploader from '../components/KnowledgeFileUploader';
 
 const BotEditPage: React.FC = () => {
   const { t } = useTranslation();
@@ -24,6 +25,8 @@ const BotEditPage: React.FC = () => {
   const [instruction, setInstruction] = useState('');
   const [urls, setUrls] = useState<string[]>(['']);
   const [sitemaps, setSitemaps] = useState<string[]>(['']);
+  // const [filepaths, setFilepaths] = useState<string[]>([]);
+
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
@@ -315,6 +318,19 @@ const BotEditPage: React.FC = () => {
                       onClick={onClickAddSitemap}>
                       {t('button.add')}
                     </Button>
+                  </div>
+                </div>
+
+                <div className="mt-2">
+                  <div className="font-semibold">{t('bot.label.file')}</div>
+                  <div className="text-sm text-aws-font-color/50">
+                    {/* {t('bot.help.knowledge.file')} */}
+                  </div>
+                  <div className="mt-2 flex w-full flex-col gap-1">
+                    <KnowledgeFileUploader
+                      className="h-48"
+                      botId={botId ?? ''}
+                    />
                   </div>
                 </div>
               </div>

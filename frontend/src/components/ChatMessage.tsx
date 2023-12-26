@@ -12,7 +12,6 @@ import { useTranslation } from 'react-i18next';
 
 type Props = BaseProps & {
   chatContent?: MessageContentWithChildren;
-  loading?: boolean;
   onChangeMessageId?: (messageId: string) => void;
   onSubmit?: (messageId: string, content: string) => void;
 };
@@ -23,20 +22,6 @@ const ChatMessage: React.FC<Props> = (props) => {
   const [changedContent, setChangedContent] = useState('');
 
   const chatContent = useMemo<MessageContentWithChildren | undefined>(() => {
-    if (props.loading) {
-      return {
-        model: 'claude-v2',
-        content: {
-          body: '',
-          contentType: 'text',
-        },
-        role: 'assistant',
-        id: '',
-        parent: null,
-        children: [],
-        sibling: [],
-      };
-    }
     return props.chatContent;
   }, [props]);
 
@@ -128,21 +113,15 @@ const ChatMessage: React.FC<Props> = (props) => {
               </div>
             </div>
           )}
-
-          {chatContent?.role === 'assistant' && !props.loading && (
+          {chatContent?.role === 'assistant' && (
             <Markdown>{chatContent.content.body}</Markdown>
-          )}
-          {/* FIXME:Knowldgeの設定有無で表示を変える */}
-          {/* {props.loading && <div className="animate-pulse text-gray">▍</div>} */}
-          {props.loading && (
-            <div className="text-gray">Retriving Knowledge...</div>
           )}
         </div>
       </div>
 
       <div className="col-start-11">
         <div className="flex">
-          {chatContent?.role === 'user' && !props.loading && !isEdit && (
+          {chatContent?.role === 'user' && !isEdit && (
             <ButtonIcon
               className="mr-0.5 text-gray"
               onClick={() => {
@@ -152,7 +131,7 @@ const ChatMessage: React.FC<Props> = (props) => {
               <PiNotePencil />
             </ButtonIcon>
           )}
-          {chatContent?.role === 'assistant' && !props.loading && (
+          {chatContent?.role === 'assistant' && (
             <>
               <ButtonCopy
                 className="mr-0.5 text-gray"

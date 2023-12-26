@@ -1,8 +1,10 @@
+import axios from 'axios';
 import {
   GetBotSummaryResponse,
   GetBotsRequest,
   GetBotsResponse,
   GetMyBotResponse,
+  GetPresignedUrlResponse,
   RegisterBotRequest,
   RegisterBotResponse,
   UpdateBotPinnedRequest,
@@ -47,6 +49,30 @@ const useBotApi = () => {
     },
     deleteBot: (botId: string) => {
       return http.delete(`bot/${botId}`);
+    },
+    getPresignedUrl: (botId: string, filename: string) => {
+      return http.getOnce<GetPresignedUrlResponse>(
+        `bot/${botId}/presigned-url`,
+        {
+          filename,
+        }
+      );
+    },
+    uploadFile: (presignedUrl: string, file: File) => {
+      // presignedURL contains credential.
+      return axios.put(presignedUrl, file, {
+        headers: {
+          'Content-Type': file.type,
+        },
+        onUploadProgress: (e) => {
+          console.log(e.progress, e.estimated, e.total, e.bytes);
+        },
+      });
+    },
+    deleteUploadedFile: (botId: string, filename: string) => {
+      return http.delete(`bot/${botId}/uploaded-file`, {
+        filename,
+      });
     },
   };
 };

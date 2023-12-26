@@ -25,7 +25,7 @@ import PopoverItem from '../components/PopoverItem';
 import { copyBotUrl } from '../utils/BotUtils';
 import { produce } from 'immer';
 import ButtonIcon from '../components/ButtonIcon';
-import { BotMeta } from '../@types/bot';
+import { BotSummary } from '../@types/bot';
 import StatusSyncBot from '../components/StatusSyncBot';
 import Alert from '../components/Alert';
 
@@ -62,7 +62,7 @@ const ChatPage: React.FC = () => {
   }, [conversationId, getBotId, paramBotId]);
 
   const [pageTitle, setPageTitle] = useState('');
-  const [bot, setBot] = useState<BotMeta>();
+  const [bot, setBot] = useState<BotSummary>();
   const [isAvailabilityBot, setIsAvailabilityBot] = useState(false);
   const [isLoadingBot, setIsLoadingBot] = useState(false);
   useEffect(() => {
@@ -112,10 +112,19 @@ const ChatPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paramConversationId]);
 
+  const inputBotParams = useMemo(() => {
+    return botId
+      ? {
+          botId: botId,
+          hasKnowledge: bot?.hasKnowledge ?? false,
+        }
+      : undefined;
+  }, [bot?.hasKnowledge, botId]);
+
   const onSend = useCallback(() => {
-    postChat(content, model, botId ?? undefined);
+    postChat(content, model, inputBotParams);
     setContent('');
-  }, [botId, content, model, postChat]);
+  }, [content, inputBotParams, model, postChat]);
 
   const onChangeCurrentMessageId = useCallback(
     (messageId: string) => {
@@ -127,19 +136,26 @@ const ChatPage: React.FC = () => {
   const onSubmitEditedContent = useCallback(
     (messageId: string, content: string) => {
       if (hasError) {
-        retryPostChat({ content, botId: botId ?? undefined });
+        retryPostChat({
+          content,
+          bot: inputBotParams,
+        });
       } else {
-        regenerate({ messageId, content, botId: botId ?? undefined });
+        regenerate({
+          messageId,
+          content,
+          bot: inputBotParams,
+        });
       }
     },
-    [botId, hasError, regenerate, retryPostChat]
+    [hasError, inputBotParams, regenerate, retryPostChat]
   );
 
   const onRegenerate = useCallback(() => {
     regenerate({
-      botId: botId ?? undefined,
+      bot: inputBotParams,
     });
-  }, [botId, regenerate]);
+  }, [inputBotParams, regenerate]);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -279,24 +295,20 @@ const ChatPage: React.FC = () => {
             </div>
           </div>
         ) : (
-          messages.map((message, idx) =>
-            message.content.body !== '' ? (
-              <div
-                key={idx}
-                className={`${
-                  message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
-                }`}>
-                <ChatMessage
-                  chatContent={message}
-                  onChangeMessageId={onChangeCurrentMessageId}
-                  onSubmit={onSubmitEditedContent}
-                />
-                <div className="w-full border-b border-aws-squid-ink/10"></div>
-              </div>
-            ) : (
-              <ChatMessage key={idx} loading />
-            )
-          )
+          messages.map((message, idx) => (
+            <div
+              key={idx}
+              className={`${
+                message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
+              }`}>
+              <ChatMessage
+                chatContent={message}
+                onChangeMessageId={onChangeCurrentMessageId}
+                onSubmit={onSubmitEditedContent}
+              />
+              <div className="w-full border-b border-aws-squid-ink/10"></div>
+            </div>
+          ))
         )}
         {hasError && (
           <div className="mb-12 mt-2 flex flex-col items-center">
@@ -311,7 +323,7 @@ const ChatPage: React.FC = () => {
               outlined
               onClick={() => {
                 retryPostChat({
-                  botId: botId ?? undefined,
+                  bot: inputBotParams,
                 });
               }}>
               {t('button.resend')}

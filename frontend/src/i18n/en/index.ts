@@ -6,6 +6,7 @@ const translation = {
       starredBots: 'Starred Bots',
       recentlyUsedBots: 'Recently Used Bots',
       conversationHistory: 'History',
+      chatWaitingSymbol: '▍',
     },
     bot: {
       label: {
@@ -23,6 +24,7 @@ const translation = {
         notAvailable: 'This bot is NOT available.',
         noBots: 'No Bots.',
         noBotsRecentlyUsed: 'No Recently Used Shared Bots.',
+        retrivingKnowledge: '[Retriving Knowledge...]',
         syncStatus: {
           queue: 'Waiting Sync',
           running: 'Syncing',
