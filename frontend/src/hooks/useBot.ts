@@ -215,6 +215,19 @@ const useBot = () => {
         mutateRecentlyUsedBots();
       });
     },
+    uploadFile: (
+      botId: string,
+      file: File,
+      onProgress?: (progress: number) => void
+    ) => {
+      return api.getPresignedUrl(botId, file.name).then(({ data }) => {
+        data.url;
+        return api.uploadFile(data.url, file, onProgress);
+      });
+    },
+    deleteUploadedFile: (botId: string, filename: string) => {
+      return api.deleteUploadedFile(botId, filename);
+    },
   };
 };
 

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import InputText from '../components/InputText';
 import Button from '../components/Button';
@@ -11,6 +11,7 @@ import ButtonIcon from '../components/ButtonIcon';
 import { produce } from 'immer';
 import Alert from '../components/Alert';
 import KnowledgeFileUploader from '../components/KnowledgeFileUploader';
+import { BotFile } from '../@types/bot';
 
 const BotEditPage: React.FC = () => {
   const { t } = useTranslation();
@@ -25,7 +26,7 @@ const BotEditPage: React.FC = () => {
   const [instruction, setInstruction] = useState('');
   const [urls, setUrls] = useState<string[]>(['']);
   const [sitemaps, setSitemaps] = useState<string[]>(['']);
-  // const [filepaths, setFilepaths] = useState<string[]>([]);
+  const [files, setFiles] = useState<BotFile[]>([]);
 
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -175,6 +176,10 @@ const BotEditPage: React.FC = () => {
 
   const [isOpenSamples, setIsOpenSamples] = useState(false);
 
+  const disabledRegister = useMemo(() => {
+    return title === '' || files.findIndex((f) => f.status !== 'UPLOADED') > -1;
+  }, [files, title]);
+
   return (
     <>
       <DialogInstructionsSamples
@@ -183,7 +188,7 @@ const BotEditPage: React.FC = () => {
           setIsOpenSamples(false);
         }}
       />
-      <div className="mb-6 flex justify-center">
+      <div className="mb-20 flex justify-center">
         <div className="w-2/3">
           <div className="mt-5 w-full">
             <div className="text-xl font-bold">
@@ -196,6 +201,7 @@ const BotEditPage: React.FC = () => {
                 disabled={isLoading}
                 value={title}
                 onChange={setTitle}
+                hint={t('input.hint.required')}
               />
               <InputText
                 label={t('bot.item.description')}
@@ -324,12 +330,14 @@ const BotEditPage: React.FC = () => {
                 <div className="mt-2">
                   <div className="font-semibold">{t('bot.label.file')}</div>
                   <div className="text-sm text-aws-font-color/50">
-                    {/* {t('bot.help.knowledge.file')} */}
+                    {t('bot.help.knowledge.file')}
                   </div>
                   <div className="mt-2 flex w-full flex-col gap-1">
                     <KnowledgeFileUploader
                       className="h-48"
                       botId={botId ?? ''}
+                      files={files}
+                      onChange={setFiles}
                     />
                   </div>
                 </div>
@@ -341,11 +349,17 @@ const BotEditPage: React.FC = () => {
                 </Button>
 
                 {botId ? (
-                  <Button onClick={onClickEdit} loading={isLoading}>
+                  <Button
+                    onClick={onClickEdit}
+                    loading={isLoading}
+                    disabled={disabledRegister}>
                     {t('bot.button.edit')}
                   </Button>
                 ) : (
-                  <Button onClick={onClickCreate} loading={isLoading}>
+                  <Button
+                    onClick={onClickCreate}
+                    loading={isLoading}
+                    disabled={disabledRegister}>
                     {t('bot.button.create')}
                   </Button>
                 )}

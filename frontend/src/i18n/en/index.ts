@@ -25,11 +25,19 @@ const translation = {
         noBots: 'No Bots.',
         noBotsRecentlyUsed: 'No Recently Used Shared Bots.',
         retrivingKnowledge: '[Retriving Knowledge...]',
+        dndFileUpload:
+          'You can upload files by drag and drop.\nSupported files: {{fileExtensions}}',
+        uploadError: 'Error Message',
         syncStatus: {
           queue: 'Waiting Sync',
           running: 'Syncing',
           success: 'Completed Sync',
           fail: 'Failed Sync',
+        },
+        fileUploadStatus: {
+          uploading: 'Uploading...',
+          uploaded: 'Uploaded',
+          error: 'ERROR',
         },
       },
       titleSubmenu: {
@@ -45,9 +53,10 @@ const translation = {
         knowledge: {
           overview:
             'By providing external knowledge to the bot, it becomes able to handle data that it has not been pre-trained on.',
-          url: 'The information from the specified URL will be used as Knowledge.',
+          url: 'The information from the specified URL will be used as Knowledge. If you set the URL of a YouTube video, the transcript of that video will be used as Knowledge.',
           sitemap:
             'By specifying the URL of the sitemap, the information obtained through automatically scraping websites within it will be used as Knowledge.',
+          file: 'The uploaded files will be used as Knowledge.',
         },
       },
       alert: {
@@ -108,6 +117,7 @@ How would you categorize this email?`,
         copy: 'Copy',
         copied: 'Copied',
         instructionsSamples: 'Samples',
+        chooseFiles: 'Choose files',
       },
       deleteDialog: {
         title: 'Delete?',
@@ -123,6 +133,9 @@ How would you categorize this email?`,
           content:
             'Link sharing is on, so ALL users can use this link to conversation.',
         },
+      },
+      error: {
+        notSupportedFile: 'This file is not supported.',
       },
     },
     deleteDialog: {
@@ -155,6 +168,11 @@ How would you categorize this email?`,
       signOut: 'Sign out',
       close: 'Close',
       add: 'Add',
+    },
+    input: {
+      hint: {
+        required: '* Required',
+      },
     },
     error: {
       answerResponse: 'An error occurred while responding.',

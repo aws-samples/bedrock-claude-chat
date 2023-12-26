@@ -6,6 +6,7 @@ type Props = {
   type?: HTMLInputTypeAttribute;
   value: string;
   disabled?: boolean;
+  hint?: string;
   onChange: (s: string) => void;
 };
 
@@ -25,6 +26,9 @@ const InputText: React.FC<Props> = (props) => {
         <div className="order-first text-sm text-dark-gray peer-focus:font-semibold peer-focus:italic peer-focus:text-aws-font-color">
           {props.label}
         </div>
+      )}
+      {props.hint && (
+        <div className="mt-0.5 text-xs text-gray">{props.hint}</div>
       )}
     </div>
   );

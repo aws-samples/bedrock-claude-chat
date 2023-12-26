@@ -58,14 +58,18 @@ const useBotApi = () => {
         }
       );
     },
-    uploadFile: (presignedUrl: string, file: File) => {
+    uploadFile: (
+      presignedUrl: string,
+      file: File,
+      onProgress?: (progress: number) => void
+    ) => {
       // presignedURL contains credential.
       return axios.put(presignedUrl, file, {
         headers: {
           'Content-Type': file.type,
         },
         onUploadProgress: (e) => {
-          console.log(e.progress, e.estimated, e.total, e.bytes);
+          onProgress ? onProgress(Math.floor((e.progress ?? 0) * 100)) : null;
         },
       });
     },

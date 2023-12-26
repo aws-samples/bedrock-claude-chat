@@ -34,6 +34,13 @@ export type BotSummary = BotMeta & {
   hasKnowledge: boolean;
 };
 
+export type BotFile = {
+  filename: string;
+  status: 'UPLOADING' | 'UPLOADED' | 'ERROR';
+  errorMessage?: string;
+  progress?: number;
+};
+
 export type RegisterBotRequest = {
   id: string;
   title: string;
