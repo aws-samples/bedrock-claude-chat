@@ -70,3 +70,22 @@ def calculate_query_embedding(question: str) -> list[float]:
     embedding = output.get("embeddings")[0]
 
     return embedding
+
+
+def calculate_document_embeddings(documents: list[str]) -> list[list[float]]:
+    model_id = EMBEDDING_CONFIG["model_id"]
+
+    # Currently only supports "cohere.embed-multilingual-v3"
+    assert model_id == "cohere.embed-multilingual-v3"
+
+    payload = json.dumps({"texts": documents, "input_type": "search_document"})
+    accept = "application/json"
+    content_type = "application/json"
+
+    response = client.invoke_model(
+        accept=accept, contentType=content_type, body=payload, modelId=model_id
+    )
+    output = json.loads(response.get("body").read())
+    embeddings = output.get("embeddings")
+
+    return embeddings

@@ -5,15 +5,15 @@ import os
 import boto3
 import pg8000
 import requests
+from app.bedrock import calculate_document_embeddings
 from app.config import EMBEDDING_CONFIG
 from app.repositories.common import _get_table_client
 from app.repositories.custom_bot import _compose_bot_id, _decompose_bot_id
 from app.route_schema import type_sync_status
-from embedding.mix_loader import MixLoader
-from langchain.document_loaders import S3FileLoader, SitemapLoader
-from langchain.embeddings.bedrock import BedrockEmbeddings
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders.base import BaseLoader
+from embedding.loaders import MixLoader
+from embedding.loaders.base import BaseLoader
+from embedding.wrapper import DocumentSplitter, Embedder
+from llama_index.node_parser import SentenceSplitter
 from ulid import ULID
 
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
@@ -102,23 +102,22 @@ def embed(
     sources: list[str],
     embeddings: list[list[float]],
 ):
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP, length_function=len
+    splitter = DocumentSplitter(
+        splitter=SentenceSplitter(
+            paragraph_separator=r"\n\n\n",
+            chunk_size=CHUNK_SIZE,
+            chunk_overlap=CHUNK_OVERLAP,
+        )
     )
-    embeddings_model = BedrockEmbeddings(
-        client=boto3.client("bedrock-runtime", BEDROCK_REGION), model_id=MODEL_ID
-    )
+    embedder = Embedder(verbose=True)
+
     documents = loader.load()
-    splitted = text_splitter.split_documents(documents)
+    splitted = splitter.split_documents(documents)
+    splitted_embeddings = embedder.embed_documents(splitted)
 
     contents.extend([t.page_content for t in splitted])
     sources.extend([t.metadata["source"] for t in splitted])
-
-    print("Embedding...")
-    embeddings.extend(
-        embeddings_model.embed_documents([t.page_content for t in splitted])
-    )
-    print("Done embedding.")
+    embeddings.extend(splitted_embeddings)
 
 
 def main(
@@ -133,6 +132,7 @@ def main(
         exec_id = get_exec_id()
     except Exception as e:
         print(f"[ERROR] Failed to get exec_id: {e}")
+        exec_id = "FAILED_TO_GET_ECS_EXEC_ID"
 
     update_sync_status(
         user_id,
@@ -164,10 +164,14 @@ def main(
             embed(MixLoader(source_urls), contents, sources, embeddings)
         if len(sitemap_urls) > 0:
             for sitemap_url in sitemap_urls:
-                loader = SitemapLoader(web_path=sitemap_url)
-                loader.requests_per_second = 1
-                embed(loader, contents, sources, embeddings)
+                raise NotImplementedError()
+                # TODO
+                # loader = SitemapLoader(web_path=sitemap_url)
+                # loader.requests_per_second = 1
+                # embed(loader, contents, sources, embeddings)
         if len(filenames) > 0:
+            raise NotImplementedError()
+            # TODO
             for filename in filenames:
                 embed(
                     S3FileLoader(

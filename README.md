@@ -2,6 +2,8 @@
 
 ![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/test.yml/badge.svg)
 
+> [!Tip] > **🔔 RAG Feature released**. See [Release](TODO) for the detail.
+
 > [!Warning]
 > The current version (`v0.3.x`) has no compatibility with ex version (`v0.1.0`, `v0.2.x`) due to the change of DynamoDB table schema. **Please note that UPDATE (i.e. `cdk deploy`) FROM `v0.2.x` TO `v0.3.x` WILL DESTROY ALL OF EXISTING CONVERSATION.**
 
@@ -54,6 +56,9 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 - [AWS WAF](https://aws.amazon.com/waf/): IP address restriction
 - [Amazon Cognito](https://aws.amazon.com/cognito/): User authentication
 - [Amazon Bedrock](https://aws.amazon.com/bedrock/): Managed service to utilize foundational models via APIs. Claude is used for chat response and Cohere for vector embedding
+
+TODO
+
 - [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): Receiving event from DynamoDB stream and passing to ECS
 - [Amazon Elastic Container Service](https://aws.amazon.com/ecs/): Run crawling, parsing and embedding tasks using [LangChain](https://www.langchain.com/)
 - [Amazon Aurora PostgreSQL](https://aws.amazon.com/rds/aurora/): Vector store ([pgvector](https://github.com/pgvector/pgvector))
@@ -214,16 +219,9 @@ Thank you for considering contribution on this repository! We welcome for bug fi
 - [Local Development](./docs/LOCAL_DEVELOPMENT.md)
 - [CONTRIBUTING](./CONTRIBUTING.md)
 
-### RAG using vector store
+### RAG (Retrieval Augmented Generation)
 
-In this example, we've implemented the RAG feature using [pgvector](https://github.com/pgvector/pgvector), a PostgreSQL extension that facilitates vector search. We've chosen to run pgvector on [Amazon Aurora Serverless v2](https://aws.amazon.com/rds/aurora/serverless/) due to its cost-effectiveness compared to alternatives like [OpenSearch](https://opensearch.org/) and [Amazon Kendra](https://aws.amazon.com/kendra/), especially when dealing with a smaller user base. This approach allows for a more budget-friendly start.  
-Please note that this example implements only simple logic. If you want to customize, also see: [CONFIGURE_KNOWLEDGE](./docs/CONFIGURE_KNOWLEDGE.md).
-
-If interested in RAG using Kendra, also refer following samples:
-
-- [generative-ai-use-cases-jp](https://github.com/aws-samples/generative-ai-use-cases-jp) (In Japanese)
-- [simple-lex-kendra-jp](https://github.com/aws-samples/simple-lex-kendra-jp) (In Japanese)
-- [jp-rag-sample](https://github.com/aws-samples/jp-rag-sample) (In Japanese)
+See [here](./docs/RAG.md).
 
 ## Authors
 

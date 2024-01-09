@@ -2,11 +2,14 @@ import time
 from typing import Literal
 
 import requests
-from embedding.playwright_delay_evaluator import DelayUnstructuredHtmlEvaluator
-from embedding.youtube_loader import YoutubeLoaderWithLangDetection, is_url_youtube
-from langchain.document_loaders import PlaywrightURLLoader, UnstructuredURLLoader
-from langchain.document_loaders.base import BaseLoader
-from langchain_core.documents import Document
+from embedding.loaders.base import BaseLoader, Document
+
+# from embedding.loaders.playwright import (
+#     DelayUnstructuredHtmlEvaluator,
+#     PlaywrightURLLoader,
+# )
+from embedding.loaders.url import UnstructuredURLLoader
+from embedding.loaders.youtube import YoutubeLoaderWithLangDetection, _parse_video_id
 
 # Delay seconds to wait for the page to render by JavaScript.
 DELAY_SEC = 2
@@ -14,9 +17,10 @@ DELAY_SEC = 2
 
 def get_loader(loader_type: str, urls: list[str]) -> BaseLoader:
     map = {
-        "web": PlaywrightURLLoader(
-            urls=urls, evaluator=DelayUnstructuredHtmlEvaluator(delay_sec=DELAY_SEC)
-        ),
+        # "web": PlaywrightURLLoader(
+        #     urls=urls, evaluator=DelayUnstructuredHtmlEvaluator(delay_sec=DELAY_SEC)
+        # ),
+        "web": UnstructuredURLLoader(urls, request_timeout=30),
         "unstructured": UnstructuredURLLoader(urls, request_timeout=30),
         "youtube": YoutubeLoaderWithLangDetection(urls),
     }
@@ -24,7 +28,7 @@ def get_loader(loader_type: str, urls: list[str]) -> BaseLoader:
 
 
 def check_content_type(url) -> Literal["web", "unstructured", "youtube"]:
-    if is_url_youtube(url):
+    if _parse_video_id(url):
         return "youtube"
 
     response = requests.head(url, timeout=30)

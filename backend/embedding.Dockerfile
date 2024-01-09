@@ -1,11 +1,18 @@
-FROM public.ecr.aws/docker/library/python:3.11.6-slim-bullseye
+FROM public.ecr.aws/docker/library/python:3.11.6-slim-bookworm
+
+ENV PYTHONPATH="${PYTHONPATH}:/src"
 
 RUN apt-get update && apt-get install -y \
-    # https://github.com/langchain-ai/langchain/issues/3002
+    build-essential cmake \
+    # opencv package requirements
+    libgl1 \
+    libglib2.0-0 \
+    # unstructured package requirements for file type detection
     libmagic-mgc libmagic1 \
-    # https://stackoverflow.com/questions/55313610/importerror-libgl-so-1-cannot-open-shared-object-file-no-such-file-or-directo
-    ffmpeg libsm6 libxext6 \
-    # Playwright dependencies
+    && rm -rf /var/lib/apt/lists/*
+
+# Playwright dependencies
+RUN apt-get update && apt-get install -y \
     libglib2.0-0 \
     libnss3 \
     libnspr4 \
@@ -28,8 +35,6 @@ RUN apt-get update && apt-get install -y \
     libcairo2 \
     libasound2 \
     && rm -rf /var/lib/apt/lists/*
-    
-ENV PYTHONPATH="${PYTHONPATH}:/src"
 
 WORKDIR /src
 COPY ./embedding.requirements.txt ./requirements.txt

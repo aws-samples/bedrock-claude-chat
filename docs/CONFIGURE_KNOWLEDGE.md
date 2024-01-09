@@ -1,8 +1,10 @@
-# Configure knowledge (RAG)
+# Configure RAG Parameters
+
+TODO
 
 ## Aurora serverless
 
-Edit [vectorstore.ts](../cdk/lib/constructs/vectorstore.ts) to customize cluster.
+Edit [vectorstore.ts](../cdk/lib/constructs/vectorstore.ts) to customize the cluster.
 
 ```ts
 const cluster = new rds.DatabaseCluster(this, "Cluster", {
@@ -27,7 +29,7 @@ const cluster = new rds.DatabaseCluster(this, "Cluster", {
 
 ## PostgreSQL table definition
 
-If you want to customize ivfflat parameter, edit [index.js](../cdk/custom-resources/setup-pgvector/index.js).
+If you want to customize ivfflat parameter, edit [index.js](../cdk/custom-resources/setup-pgvector/index.js). Also see [blog](https://www.timescale.com/blog/nearest-neighbor-indexes-what-are-ivfflat-indexes-in-pgvector-and-how-do-they-work/) to check the recommended parameters.
 
 ```js
 await client.query(`CREATE TABLE IF NOT EXISTS items(
