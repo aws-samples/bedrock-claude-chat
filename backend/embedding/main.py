@@ -10,8 +10,9 @@ from app.config import EMBEDDING_CONFIG
 from app.repositories.common import _get_table_client
 from app.repositories.custom_bot import _compose_bot_id, _decompose_bot_id
 from app.route_schema import type_sync_status
-from embedding.loaders import MixLoader
+from embedding.loaders import UrlLoader
 from embedding.loaders.base import BaseLoader
+from embedding.loaders.s3 import S3FileLoader
 from embedding.wrapper import DocumentSplitter, Embedder
 from llama_index.node_parser import SentenceSplitter
 from ulid import ULID
@@ -161,17 +162,14 @@ def main(
         embeddings = []
 
         if len(source_urls) > 0:
-            embed(MixLoader(source_urls), contents, sources, embeddings)
+            embed(UrlLoader(source_urls), contents, sources, embeddings)
         if len(sitemap_urls) > 0:
             for sitemap_url in sitemap_urls:
                 raise NotImplementedError()
-                # TODO
                 # loader = SitemapLoader(web_path=sitemap_url)
                 # loader.requests_per_second = 1
                 # embed(loader, contents, sources, embeddings)
         if len(filenames) > 0:
-            raise NotImplementedError()
-            # TODO
             for filename in filenames:
                 embed(
                     S3FileLoader(

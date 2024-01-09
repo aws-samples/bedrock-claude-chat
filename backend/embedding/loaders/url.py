@@ -1,83 +1,73 @@
-"""Loader that uses unstructured to load HTML files."""
-import logging
-from typing import Any, List
+import time
+from typing import Literal
 
+import requests
 from embedding.loaders.base import BaseLoader, Document
+from embedding.loaders.playwright import (
+    DelayUnstructuredHtmlEvaluator,
+    PlaywrightURLLoader,
+)
+from embedding.loaders.unstructured import UnstructuredURLLoader
+from embedding.loaders.youtube import YoutubeLoaderWithLangDetection, _parse_video_id
 
-logger = logging.getLogger(__name__)
+# Delay seconds to wait for the page to render by JavaScript.
+DELAY_SEC = 2
 
 
-class UnstructuredURLLoader(BaseLoader):
-    """Load files from remote URLs using `Unstructured`.
-    Reference: `langchain_community.document_loaders.UnstructuredURLLoader` class
-    """
+def get_loader(loader_type: str, urls: list[str]) -> BaseLoader:
+    map = {
+        "web": PlaywrightURLLoader(
+            urls=urls, evaluator=DelayUnstructuredHtmlEvaluator(delay_sec=DELAY_SEC)
+        ),
+        "unstructured": UnstructuredURLLoader(urls, request_timeout=30),
+        "youtube": YoutubeLoaderWithLangDetection(urls),
+    }
+    return map[loader_type]
 
-    def __init__(
-        self,
-        urls: List[str],
-        continue_on_failure: bool = True,
-        mode: str = "single",
-        show_progress_bar: bool = False,
-        **unstructured_kwargs: Any,
-    ):
-        """Initialize with file path."""
-        self._validate_mode(mode)
-        self.mode = mode
 
-        headers = unstructured_kwargs.pop("headers", {})
-        self.urls = urls
-        self.continue_on_failure = continue_on_failure
-        self.headers = headers
-        self.unstructured_kwargs = unstructured_kwargs
-        self.show_progress_bar = show_progress_bar
+def check_content_type(url) -> Literal["web", "unstructured", "youtube"]:
+    if _parse_video_id(url):
+        return "youtube"
 
-    def _validate_mode(self, mode: str) -> None:
-        _valid_modes = {"single", "elements"}
-        if mode not in _valid_modes:
-            raise ValueError(
-                f"Got {mode} for `mode`, but should be one of `{_valid_modes}`"
-            )
+    response = requests.head(url, timeout=30)
+    response.raise_for_status()
 
-    def load(self) -> List[Document]:
-        """Load file."""
-        from unstructured.partition.auto import partition
-        from unstructured.partition.html import partition_html
+    content_type = response.headers.get("Content-Type", "").lower()
 
-        docs: List[Document] = list()
-        if self.show_progress_bar:
-            try:
-                from tqdm import tqdm
-            except ImportError as e:
-                raise ImportError(
-                    "Package tqdm must be installed if show_progress_bar=True. "
-                    "Please install with 'pip install tqdm' or set "
-                    "show_progress_bar=False."
-                ) from e
+    if "text/html" in content_type:
+        return "web"
+    else:
+        return "unstructured"
 
-            urls = tqdm(self.urls)
-        else:
-            urls = self.urls
 
-        for url in urls:
-            try:
-                elements = partition(
-                    url=url, headers=self.headers, **self.unstructured_kwargs
-                )
-            except Exception as e:
-                if self.continue_on_failure:
-                    logger.error(f"Error fetching or processing {url}, exception: {e}")
-                    continue
-                else:
-                    raise e
+def group_urls_by_content_type(urls: list[str]) -> dict:
+    res = {
+        "web": [],
+        "unstructured": [],
+        "youtube": [],
+    }
+    for url in urls:
+        content_type = check_content_type(url)
+        res[content_type].append(url)
 
-            if self.mode == "single":
-                text = "\n\n".join([str(el) for el in elements])
-                metadata = {"source": url}
-                docs.append(Document(page_content=text, metadata=metadata))
-            elif self.mode == "elements":
-                for element in elements:
-                    metadata = element.metadata.to_dict()
-                    metadata["category"] = element.category
-                    docs.append(Document(page_content=str(element), metadata=metadata))
+        # Wait for 1 sec for friendly crawling.
+        time.sleep(1)
 
-        return docs
+    return res
+
+
+class UrlLoader(BaseLoader):
+    """Loads a document from a URL."""
+
+    def __init__(self, urls: list[str]):
+        self._urls = urls
+
+    def load(self) -> list[Document]:
+        res = []
+        categorized_urls = group_urls_by_content_type(self._urls)
+        for loader_type, urls in categorized_urls.items():
+            loader = get_loader(loader_type, urls)
+            documents = loader.load()
+            res.extend(documents)
+
+        return res

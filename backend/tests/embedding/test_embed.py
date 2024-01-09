@@ -1,6 +1,6 @@
 import unittest
 
-from embedding.loaders import MixLoader
+from embedding.loaders import UrlLoader
 from embedding.loaders.base import BaseLoader
 from embedding.main import embed
 from embedding.wrapper import DocumentSplitter, Embedder
@@ -12,7 +12,7 @@ class TestEmbed(unittest.TestCase):
         source_urls = [
             "https://github.com/aws-samples/bedrock-claude-chat",
         ]
-        loader = MixLoader(source_urls)
+        loader = UrlLoader(source_urls)
         documents = loader.load()
         print(documents)
 
