@@ -2,7 +2,8 @@
 
 ![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/test.yml/badge.svg)
 
-> [!Tip] > **🔔 RAG Feature released**. See [Release](TODO) for the detail.
+> [!Tip]
+> **🔔 RAG Feature released**. See [Release](TODO) for the detail.
 
 > [!Warning]
 > The current version (`v0.3.x`) has no compatibility with ex version (`v0.1.0`, `v0.2.x`) due to the change of DynamoDB table schema. **Please note that UPDATE (i.e. `cdk deploy`) FROM `v0.2.x` TO `v0.3.x` WILL DESTROY ALL OF EXISTING CONVERSATION.**
