@@ -243,9 +243,14 @@ def modify_bot_last_used_time(user_id: str, bot_id: str):
         raise RecordNotFoundError(f"Bot {bot_id} is neither owned nor alias.")
 
 
-def issue_presigned_url(user_id: str, bot_id: str, filename: str) -> str:
+def issue_presigned_url(
+    user_id: str, bot_id: str, filename: str, content_type: str
+) -> str:
     response = generate_presigned_url(
-        DOCUMENT_BUCKET, f"{user_id}/{bot_id}/{filename}", expiration=3600
+        DOCUMENT_BUCKET,
+        f"{user_id}/{bot_id}/{filename}",
+        content_type=content_type,
+        expiration=3600,
     )
     return response
 

@@ -88,7 +88,7 @@ export class Frontend extends Construct {
         VITE_APP_USER_POOL_ID: props.auth.userPool.userPoolId,
         VITE_APP_USER_POOL_CLIENT_ID: props.auth.client.userPoolClientId,
         VITE_APP_REGION: Stack.of(props.auth.userPool).region,
-        VITE_APP_USE_STREAMING: "true"
+        VITE_APP_USE_STREAMING: "true",
       },
       destinationBucket: assetBucket,
       distribution,
@@ -96,5 +96,9 @@ export class Frontend extends Construct {
     });
 
     this.cloudFrontWebDistribution = distribution;
+  }
+
+  getOrigin(): string {
+    return `https://${this.cloudFrontWebDistribution.distributionDomainName}`;
   }
 }

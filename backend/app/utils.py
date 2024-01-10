@@ -4,6 +4,7 @@ from typing import List
 
 import boto3
 from app.repositories.model import MessageModel
+from botocore.client import Config
 from botocore.exceptions import ClientError
 
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
@@ -57,11 +58,11 @@ def get_current_time():
     return int(datetime.now().timestamp() * 1000)
 
 
-def generate_presigned_url(bucket: str, key: str, expiration=3600):
-    client = boto3.client("s3")
+def generate_presigned_url(bucket: str, key: str, content_type: str, expiration=3600):
+    client = boto3.client("s3", config=Config(signature_version="s3v4"))
     response = client.generate_presigned_url(
         "put_object",
-        Params={"Bucket": bucket, "Key": key},
+        Params={"Bucket": bucket, "Key": key, "ContentType": content_type},
         ExpiresIn=expiration,
     )
 

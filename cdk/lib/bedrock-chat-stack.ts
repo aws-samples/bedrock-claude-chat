@@ -64,15 +64,6 @@ export class BedrockChatStack extends cdk.Stack {
       removalPolicy: RemovalPolicy.DESTROY,
       objectOwnership: ObjectOwnership.OBJECT_WRITER,
       autoDeleteObjects: true,
-      cors: [
-        {
-          allowedMethods: [HttpMethods.PUT],
-          // TODO: restrict origin
-          allowedOrigins: ["*"],
-          allowedHeaders: ["*"],
-          maxAge: 3000,
-        },
-      ],
     });
 
     const auth = new Auth(this, "Auth");
@@ -106,6 +97,12 @@ export class BedrockChatStack extends cdk.Stack {
       accessLogBucket,
       webAclId: props.webAclId,
     });
+    documentBucket.addCorsRule({
+      allowedMethods: [HttpMethods.PUT],
+      allowedOrigins: [frontend.getOrigin()],
+      allowedHeaders: ["*"],
+      maxAge: 3000,
+    });
 
     const embedding = new Embedding(this, "Embedding", {
       vpc,
@@ -126,7 +123,7 @@ export class BedrockChatStack extends cdk.Stack {
       value: documentBucket.bucketName,
     });
     new CfnOutput(this, "FrontendURL", {
-      value: `https://${frontend.cloudFrontWebDistribution.distributionDomainName}`,
+      value: frontend.getOrigin(),
     });
   }
 }
