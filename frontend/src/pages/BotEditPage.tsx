@@ -132,7 +132,7 @@ const BotEditPage: React.FC = () => {
       knowledge: {
         sourceUrls: urls.filter((s) => s !== ''),
         sitemapUrls: sitemaps.filter((s) => s !== ''),
-        filenames: [],
+        filenames: files.map((f) => f.filename),
       },
     })
       .then(() => {
@@ -141,7 +141,16 @@ const BotEditPage: React.FC = () => {
       .catch(() => {
         setIsLoading(false);
       });
-  }, [description, instruction, navigate, registerBot, sitemaps, title, urls]);
+  }, [
+    description,
+    instruction,
+    navigate,
+    registerBot,
+    sitemaps,
+    title,
+    urls,
+    files,
+  ]);
 
   const onClickEdit = useCallback(() => {
     if (botId) {
@@ -153,7 +162,7 @@ const BotEditPage: React.FC = () => {
         knowledge: {
           sourceUrls: urls.filter((s) => s !== ''),
           sitemapUrls: sitemaps.filter((s) => s !== ''),
-          filenames: [],
+          filenames: files.map((f) => f.filename),
         },
       })
         .then(() => {
@@ -172,6 +181,7 @@ const BotEditPage: React.FC = () => {
     title,
     updateBot,
     urls,
+    files,
   ]);
 
   const [isOpenSamples, setIsOpenSamples] = useState(false);

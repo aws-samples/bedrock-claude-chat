@@ -220,7 +220,7 @@ const useBot = () => {
       file: File,
       onProgress?: (progress: number) => void
     ) => {
-      return api.getPresignedUrl(botId, file.name).then(({ data }) => {
+      return api.getPresignedUrl(botId, file).then(({ data }) => {
         data.url;
         return api.uploadFile(data.url, file, onProgress);
       });

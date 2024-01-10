@@ -50,11 +50,12 @@ const useBotApi = () => {
     deleteBot: (botId: string) => {
       return http.delete(`bot/${botId}`);
     },
-    getPresignedUrl: (botId: string, filename: string) => {
+    getPresignedUrl: (botId: string, file: File) => {
       return http.getOnce<GetPresignedUrlResponse>(
         `bot/${botId}/presigned-url`,
         {
-          filename,
+          filename: file.name,
+          contentType: file.type,
         }
       );
     },
