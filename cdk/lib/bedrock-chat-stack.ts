@@ -108,6 +108,7 @@ export class BedrockChatStack extends cdk.Stack {
     documentBucket.grantRead(embedding.container.taskDefinition.taskRole);
 
     vectorStore.allowFrom(embedding.taskSecurityGroup);
+    vectorStore.allowFrom(embedding.removalHandler);
     vectorStore.allowFrom(backendApi.handler);
     vectorStore.allowFrom(websocket.handler);
 

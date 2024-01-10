@@ -9,6 +9,13 @@ import { CfnPipe } from "aws-cdk-lib/aws-pipes";
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as logs from "aws-cdk-lib/aws-logs";
 import { IBucket } from "aws-cdk-lib/aws-s3";
+import * as lambda from "aws-cdk-lib/aws-lambda";
+import {
+  DockerImageCode,
+  DockerImageFunction,
+  IFunction,
+} from "aws-cdk-lib/aws-lambda";
+import { DynamoEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 
 export interface DbConfig {
   readonly host: string;
@@ -30,6 +37,7 @@ export interface EmbeddingProps {
 export class Embedding extends Construct {
   readonly taskSecurityGroup: ec2.ISecurityGroup;
   readonly container: ecs.ContainerDefinition;
+  readonly removalHandler: IFunction;
   constructor(scope: Construct, id: string, props: EmbeddingProps) {
     super(scope, id);
 
@@ -196,7 +204,47 @@ export class Embedding extends Construct {
       roleArn: pipeRole.roleArn,
     });
 
+    /**
+     * Removal handler
+     */
+    const removalHandler = new DockerImageFunction(this, "BotRemovalHandler", {
+      code: DockerImageCode.fromImageAsset(
+        path.join(__dirname, "../../../backend"),
+        {
+          platform: Platform.LINUX_AMD64,
+          file: "websocket.Dockerfile",
+          cmd: ["app.bot_remove.handler"],
+        }
+      ),
+      vpc: props.vpc,
+      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
+      timeout: Duration.minutes(1),
+      environment: {
+        DB_HOST: props.dbConfig.host,
+        DB_PORT: props.dbConfig.port.toString(),
+        DB_USER: props.dbConfig.username,
+        DB_PASSWORD: props.dbConfig.password,
+        DB_NAME: props.dbConfig.database,
+        DOCUMENT_BUCKET: props.documentBucket.bucketName,
+      },
+    });
+    props.database.grantStreamRead(removalHandler);
+    props.documentBucket.grantReadWrite(removalHandler);
+    removalHandler.addEventSource(
+      new DynamoEventSource(props.database, {
+        startingPosition: lambda.StartingPosition.TRIM_HORIZON,
+        batchSize: 1,
+        retryAttempts: 2,
+        filters: [
+          {
+            pattern: '{"eventName":["REMOVE"]}',
+          },
+        ],
+      })
+    );
+
     this.taskSecurityGroup = taskSg;
     this.container = container;
+    this.removalHandler = removalHandler;
   }
 }

@@ -1,5 +1,6 @@
 import argparse
 import json
+import logging
 import os
 
 import boto3
@@ -17,6 +18,8 @@ from embedding.wrapper import DocumentSplitter, Embedder
 from llama_index.node_parser import SentenceSplitter
 from ulid import ULID
 
+logging.basicConfig(level=logging.INFO)
+
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
 MODEL_ID = EMBEDDING_CONFIG["model_id"]
 CHUNK_SIZE = EMBEDDING_CONFIG["chunk_size"]
@@ -27,7 +30,7 @@ DB_HOST = os.environ.get("DB_HOST", "")
 DB_USER = os.environ.get("DB_USER", "postgres")
 DB_PASSWORD = os.environ.get("DB_PASSWORD", "password")
 DB_PORT = int(os.environ.get("DB_PORT", 5432))
-DOCUMENT_BUCKET = os.environ.get("DOCUMENT_BUCKET", "langchain-documents")
+DOCUMENT_BUCKET = os.environ.get("DOCUMENT_BUCKET", "documents")
 
 METADATA_URI = os.environ.get("ECS_CONTAINER_METADATA_URI_V4")
 
@@ -166,9 +169,6 @@ def main(
         if len(sitemap_urls) > 0:
             for sitemap_url in sitemap_urls:
                 raise NotImplementedError()
-                # loader = SitemapLoader(web_path=sitemap_url)
-                # loader.requests_per_second = 1
-                # embed(loader, contents, sources, embeddings)
         if len(filenames) > 0:
             for filename in filenames:
                 embed(

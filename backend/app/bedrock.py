@@ -73,19 +73,29 @@ def calculate_query_embedding(question: str) -> list[float]:
 
 
 def calculate_document_embeddings(documents: list[str]) -> list[list[float]]:
+    def _calculate_document_embeddings(documents: list[str]) -> list[list[float]]:
+        payload = json.dumps({"texts": documents, "input_type": "search_document"})
+        accept = "application/json"
+        content_type = "application/json"
+
+        response = client.invoke_model(
+            accept=accept, contentType=content_type, body=payload, modelId=model_id
+        )
+        output = json.loads(response.get("body").read())
+        embeddings = output.get("embeddings")
+
+        return embeddings
+
+    BATCH_SIZE = 10
     model_id = EMBEDDING_CONFIG["model_id"]
 
     # Currently only supports "cohere.embed-multilingual-v3"
     assert model_id == "cohere.embed-multilingual-v3"
 
-    payload = json.dumps({"texts": documents, "input_type": "search_document"})
-    accept = "application/json"
-    content_type = "application/json"
-
-    response = client.invoke_model(
-        accept=accept, contentType=content_type, body=payload, modelId=model_id
-    )
-    output = json.loads(response.get("body").read())
-    embeddings = output.get("embeddings")
+    embeddings = []
+    for i in range(0, len(documents), BATCH_SIZE):
+        # Split documents into batches to avoid exceeding the payload size limit
+        batch = documents[i : i + BATCH_SIZE]
+        embeddings += _calculate_document_embeddings(batch)
 
     return embeddings

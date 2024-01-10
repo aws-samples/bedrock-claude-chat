@@ -1,4 +1,4 @@
-import time
+import logging
 from typing import Literal
 
 import requests
@@ -9,6 +9,8 @@ from embedding.loaders.playwright import (
 )
 from embedding.loaders.unstructured import UnstructuredURLLoader
 from embedding.loaders.youtube import YoutubeLoaderWithLangDetection, _parse_video_id
+
+logger = logging.getLogger(__name__)
 
 # Delay seconds to wait for the page to render by JavaScript.
 DELAY_SEC = 2
@@ -50,9 +52,6 @@ def group_urls_by_content_type(urls: list[str]) -> dict:
         content_type = check_content_type(url)
         res[content_type].append(url)
 
-        # Wait for 1 sec for friendly crawling.
-        time.sleep(1)
-
     return res
 
 
@@ -65,6 +64,8 @@ class UrlLoader(BaseLoader):
     def load(self) -> list[Document]:
         res = []
         categorized_urls = group_urls_by_content_type(self._urls)
+        logger.info(f"URLs are categorized as: {categorized_urls}")
+
         for loader_type, urls in categorized_urls.items():
             loader = get_loader(loader_type, urls)
             documents = loader.load()

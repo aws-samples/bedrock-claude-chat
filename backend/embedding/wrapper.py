@@ -1,6 +1,10 @@
+import logging
+
 from app.bedrock import calculate_document_embeddings
 from embedding.loaders.base import BaseLoader, Document
 from llama_index.node_parser import TextSplitter
+
+logger = logging.getLogger(__name__)
 
 
 class DocumentSplitter:
@@ -26,8 +30,8 @@ class Embedder:
 
     def embed_documents(self, documents: list[Document]) -> list[list[float]]:
         if self.verbose:
-            print("Embedding...")
+            logger.info(f"Embedding {len(documents)} documents.")
         embeddings = calculate_document_embeddings([d.page_content for d in documents])
         if self.verbose:
-            print("Done embedding.")
+            logger.info("Done embedding.")
         return embeddings

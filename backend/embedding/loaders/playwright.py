@@ -170,36 +170,3 @@ class PlaywrightURLLoader(BaseLoader):
                         raise e
             browser.close()
         return docs
-
-    async def aload(self) -> List[Document]:
-        """Load the specified URLs with Playwright and create Documents asynchronously.
-        Use this function when in a jupyter notebook environment.
-
-        Returns:
-            List[Document]: A list of Document instances with loaded content.
-        """
-        from playwright.async_api import async_playwright
-
-        docs: List[Document] = list()
-
-        async with async_playwright() as p:
-            browser = await p.chromium.launch(headless=self.headless)
-            for url in self.urls:
-                try:
-                    page = await browser.new_page()
-                    response = await page.goto(url)
-                    if response is None:
-                        raise ValueError(f"page.goto() returned None for url {url}")
-
-                    text = await self.evaluator.evaluate_async(page, browser, response)
-                    metadata = {"source": url}
-                    docs.append(Document(page_content=text, metadata=metadata))
-                except Exception as e:
-                    if self.continue_on_failure:
-                        logger.error(
-                            f"Error fetching or processing {url}, exception: {e}"
-                        )
-                    else:
-                        raise e
-            await browser.close()
-        return docs
