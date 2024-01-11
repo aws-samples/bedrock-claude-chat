@@ -155,6 +155,7 @@ export class Embedding extends Construct {
         dynamoDbStreamParameters: {
           batchSize: 1,
           startingPosition: "LATEST",
+          maximumRetryAttempts: 1, // Avoid infinite retry which causes stuck
         },
         filterCriteria: {
           // Trigger when bot is created or updated
