@@ -14,6 +14,10 @@ const translation = {
       label: {
         myBots: '自分のボット',
         recentlyUsedBots: '最近使用した公開ボット',
+        knowledge: 'ナレッジ',
+        url: 'URL',
+        sitemap: 'サイトマップURL',
+        file: 'ファイル',
         loadingBot: 'Loading...',
         normalChat: 'チャット',
         notAvailableBot: '[このボットは利用できません]',
@@ -22,12 +26,34 @@ const translation = {
         notAvailable: 'このボットは利用できません。',
         noBots: 'ボットが登録されていません。',
         noBotsRecentlyUsed: '最近利用した公開ボットはありません。',
+        dndFileUpload:
+          'ファイルをドラッグ＆ドロップでアップロードできます。\n対応ファイル: {{fileExtensions}}',
+        uploadError: 'エラーメッセージ',
+        syncStatus: {
+          queue: '同期待ち',
+          running: '同期中',
+          success: '同期完了',
+          fail: '同期エラー',
+        },
+        fileUploadStatus: {
+          uploading: 'アップロード中...',
+          uploaded: 'アップロード完了',
+          error: 'エラー',
+        },
       },
       help: {
         overview:
           'ボットはあらかじめ定義したインストラクションに従って動作します。チャットではメッセージ内にコンテキストを定義しなければ意図した振る舞いをしませんが、ボットを利用すればコンテキストの定義が不要になります。',
         instructions:
           'ボットがどのように振る舞うか定義します。曖昧な指示をすると予測できない動きをすることがあるので、具体的に指示をしてください。',
+        knowledge: {
+          overview:
+            '外部の知識をボットに提供することで、事前に学習していないデータを扱えるようになります。',
+          url: 'URLを指定すると、そのURLの情報が知識として利用されます。YouTubeの動画のURLを設定すると、その動画の字幕が知識として利用されます。',
+          sitemap:
+            'サイトマップのURLを指定すると、そのサイトマップ内のサイトを自動的にスクレイピングして得られた情報が知識として利用されます。',
+          file: 'アップロードしたファイルが知識として利用されます。',
+        },
       },
       titleSubmenu: {
         edit: 'ボットを編集',
