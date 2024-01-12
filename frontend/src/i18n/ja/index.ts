@@ -41,6 +41,11 @@ const translation = {
           error: 'エラー',
         },
       },
+      titleSubmenu: {
+        edit: 'ボットを編集',
+        copyLink: '共有リンクをコピー',
+        copiedLink: 'コピーしました',
+      },
       help: {
         overview:
           'ボットはあらかじめ定義したインストラクションに従って動作します。チャットではメッセージ内にコンテキストを定義しなければ意図した振る舞いをしませんが、ボットを利用すればコンテキストの定義が不要になります。',
@@ -55,10 +60,17 @@ const translation = {
           file: 'アップロードしたファイルが知識として利用されます。',
         },
       },
-      titleSubmenu: {
-        edit: 'ボットを編集',
-        copyLink: '共有リンクをコピー',
-        copiedLink: 'コピーしました',
+      alert: {
+        sync: {
+          error: {
+            title: '同期エラー',
+            body: '同期中にエラーが発生しました。',
+          },
+          incomplete: {
+            title: '同期が未完了です',
+            body: 'Knowledge の取り込みが完了していないため、このボットは以前の学習データで動作します。',
+          },
+        },
       },
       samples: {
         title: 'インストラクションのサンプル',

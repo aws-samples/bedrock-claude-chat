@@ -2,15 +2,22 @@
 
 ![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/test.yml/badge.svg)
 
-> [!Tip]
-> **🔔 RAG Feature released**. See [Release](TODO) for the detail.
+> [!Tip] > **🔔 RAG Feature released**. See [Release](TODO) for the detail.
 
 > [!Warning]
 > The current version (`v0.3.x`) has no compatibility with ex version (`v0.1.0`, `v0.2.x`) due to the change of DynamoDB table schema. **Please note that UPDATE (i.e. `cdk deploy`) FROM `v0.2.x` TO `v0.3.x` WILL DESTROY ALL OF EXISTING CONVERSATION.**
 
 This repository is a sample chatbot using the Anthropic company's LLM [Claude 2](https://www.anthropic.com/index/claude-2), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI.
 
+### Basic Conversation
+
 ![](./docs/imgs/demo1.gif)
+
+### Bot Personalization
+
+Add your own instruction and give external knowledge as URL or files (i.e. [RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/)). The bot can be shared among application users.
+
+TODO
 ![](./docs/imgs/bot1.png)
 
 ## 📚 Supported Languages
@@ -22,7 +29,15 @@ This repository is a sample chatbot using the Anthropic company's LLM [Claude 2]
 
 ## 🚀 Super-easy Deployment
 
-- Open [Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Edit` > Check `Claude` and `Save changes`
+- Open [Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > Check `Anthropic / Claude`, `Anthropic / Claude Instant` and `Cohere / Embed Multilingual` then `Save changes`.
+
+<details>
+<summary>Screenshot</summary>
+
+![](./docs/imgs/model_screenshot.png)
+
+</details>
+
 - Open [CloudShell](https://console.aws.amazon.com/cloudshell/home)
 - Run deployment via following commands
 
@@ -33,7 +48,7 @@ chmod +x bin.sh
 ./bin.sh
 ```
 
-- After about 20 minutes, you will get the following output, which you can access from your browser
+- After about 30 minutes, you will get the following output, which you can access from your browser
 
 ```
 Frontend URL: https://xxxxxxxxx.cloudfront.net
@@ -57,12 +72,9 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 - [AWS WAF](https://aws.amazon.com/waf/): IP address restriction
 - [Amazon Cognito](https://aws.amazon.com/cognito/): User authentication
 - [Amazon Bedrock](https://aws.amazon.com/bedrock/): Managed service to utilize foundational models via APIs. Claude is used for chat response and Cohere for vector embedding
-
-TODO
-
-- [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): Receiving event from DynamoDB stream and passing to ECS
-- [Amazon Elastic Container Service](https://aws.amazon.com/ecs/): Run crawling, parsing and embedding tasks using [LangChain](https://www.langchain.com/)
-- [Amazon Aurora PostgreSQL](https://aws.amazon.com/rds/aurora/): Vector store ([pgvector](https://github.com/pgvector/pgvector))
+- [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): Receiving event from DynamoDB stream and launching ECS task
+- [Amazon Elastic Container Service](https://aws.amazon.com/ecs/): Run crawling, parsing and embedding tasks. Embedding model is [Cohere Multilingual](https://txt.cohere.com/multilingual/)
+- [Amazon Aurora PostgreSQL](https://aws.amazon.com/rds/aurora/): Scalable vector store with [pgvector](https://github.com/pgvector/pgvector) plugin
 
 ![](docs/imgs/arch.png)
 
@@ -87,6 +99,7 @@ TODO
 
 - [x] Customized bot creation
 - [x] Customized bot sharing
+- [ ] Publishing api
 
 ### RAG features
 
@@ -184,7 +197,7 @@ If using cli and CDK, please `cdk destroy`. If not, access to [CloudFormation](h
 
 ### Language Settings
 
-This asset automatically detects the language using [i18next-browser-languageDetector](https://github.com/i18next/i18next-browser-languageDetector).You can switch languages from the application menu. Alternatively, you can use Query String to set the language as shown below.
+This asset automatically detects the language using [i18next-browser-languageDetector](https://github.com/i18next/i18next-browser-languageDetector). You can switch languages from the application menu. Alternatively, you can use Query String to set the language as shown below.
 
 > `https://example.com?lng=ja`
 

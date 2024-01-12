@@ -23,9 +23,9 @@ const setUp = async (dbConfig) => {
     // Also it's important to choose the same index method as the one used in the query.
     // Here we use L2 distance for the index method.
     // See: https://txt.cohere.com/introducing-embed-v3/
-    await client.query(`CREATE INDEX ON items 
+    await client.query(`CREATE INDEX idx_items_embedding ON items 
                          USING ivfflat (embedding vector_l2_ops) WITH (lists = 100);`);
-    await client.query(`CREATE INDEX ON items (botid);`);
+    await client.query(`CREATE INDEX idx_items_botid ON items (botid);`);
 
     console.log("SQL execution successful.");
   } catch (err) {

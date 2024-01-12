@@ -1,7 +1,8 @@
 import logging
+import urllib.error
+import urllib.request
 from typing import Literal
 
-import requests
 from embedding.loaders.base import BaseLoader, Document
 from embedding.loaders.playwright import (
     DelayUnstructuredHtmlEvaluator,
@@ -31,10 +32,24 @@ def check_content_type(url) -> Literal["web", "unstructured", "youtube"]:
     if _parse_video_id(url):
         return "youtube"
 
-    response = requests.head(url, timeout=30)
-    response.raise_for_status()
+    # Using urllib.request instead of requests to avoid 403
+    # Ref: https://stackoverflow.com/questions/74446830/how-to-fix-403-forbidden-errors-with-python-requests-even-with-user-agent-head
+    req = urllib.request.Request(url, method="HEAD")
+    req.add_header(
+        "User-Agent",
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:106.0) Gecko/20100101 Firefox/106.0",
+    )
+    req.add_header("Accept", "*/*")
+    req.add_header("Accept-Language", "*")
 
-    content_type = response.headers.get("Content-Type", "").lower()
+    try:
+        with urllib.request.urlopen(req, timeout=30) as response:
+            content_type = response.headers.get("Content-Type", "").lower()
+    except Exception as e:
+        logger.warning(
+            f"Failed to get content type of {url}: {e}. Use unstructured to load."
+        )
+        return "unstructured"
 
     if "text/html" in content_type:
         return "web"
