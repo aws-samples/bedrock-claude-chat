@@ -1,8 +1,8 @@
 import { Construct } from "constructs";
 import { ArnFormat, CfnOutput, Duration } from "aws-cdk-lib";
 import { ITable } from "aws-cdk-lib/aws-dynamodb";
-import { HttpLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
-import { HttpUserPoolAuthorizer } from "@aws-cdk/aws-apigatewayv2-authorizers-alpha";
+import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
+import { HttpUserPoolAuthorizer } from "aws-cdk-lib/aws-apigatewayv2-authorizers";
 import {
   DockerImageCode,
   DockerImageFunction,
@@ -12,7 +12,7 @@ import {
   CorsHttpMethod,
   HttpApi,
   HttpMethod,
-} from "@aws-cdk/aws-apigatewayv2-alpha";
+} from "aws-cdk-lib/aws-apigatewayv2";
 import { Auth } from "./auth";
 import { Platform } from "aws-cdk-lib/aws-ecr-assets";
 import { Stack } from "aws-cdk-lib";

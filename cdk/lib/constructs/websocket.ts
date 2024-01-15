@@ -1,6 +1,6 @@
 import { Construct } from "constructs";
-import * as apigwv2 from "@aws-cdk/aws-apigatewayv2-alpha";
-import { WebSocketLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
+import * as apigwv2 from "aws-cdk-lib/aws-apigatewayv2";
+import { WebSocketLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import * as python from "@aws-cdk/aws-lambda-python-alpha";
 import {
   DockerImageCode,

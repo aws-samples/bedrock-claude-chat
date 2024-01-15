@@ -21,9 +21,7 @@
     "typescript": "~5.1.6"
   },
   "dependencies": {
-    "@aws-cdk/aws-apigatewayv2-alpha": "^2.114.0-alpha.0",
-    "@aws-cdk/aws-apigatewayv2-authorizers-alpha": "^2.114.0-alpha.0",
-    "@aws-cdk/aws-apigatewayv2-integrations-alpha": "^2.114.0-alpha.0",
+    "@aws-cdk/aws-glue-alpha": "^2.121.1-alpha.0",
     "@aws-cdk/aws-lambda-python-alpha": "^2.114.0-alpha.0",
     "aws-cdk-lib": "^2.114.0",
     "constructs": "^10.0.0",
