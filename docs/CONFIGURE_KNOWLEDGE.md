@@ -2,7 +2,7 @@
 
 ## Aurora serverless
 
-Edit [vectorstore.ts](../cdk/lib/constructs/vectorstore.ts) to customize the cluster.
+Edit [vectorstore.ts](../cdk/lib/constructs/vectorstore.ts) to customize the cluster. This sample utilizes writer instance only.
 
 ```ts
 const cluster = new rds.DatabaseCluster(this, "Cluster", {
@@ -67,7 +67,7 @@ cursor.execute(search_query, (bot_id, json.dumps(query_embedding), limit))
 results = cursor.fetchall()
 ```
 
-If you want to change the number of chunks for contexts, edit [config.py](../backend/app/config.py).
+To change the number of chunks for contexts, edit [config.py](../backend/app/config.py).
 
 ```py
 # Configure search parameter to fetch relevant documents from vector store.
@@ -78,7 +78,7 @@ SEARCH_CONFIG = {
 
 ## Playwright configuration
 
-If want to change delay seconds to wait for the page to render by JavaScript, open [url.py](../backend/embedding/loaders/url.py) and set value for `DELAY_SEC`.
+To change delay seconds to wait for the page to render by Playwright, open [url.py](../backend/embedding/loaders/url.py) and set value for `DELAY_SEC`.
 
 ```py
 DELAY_SEC = 2

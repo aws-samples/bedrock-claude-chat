@@ -14,7 +14,7 @@ You can configure some parameters (See [Configure RAG Parameters](./CONFIGURE_KN
 
 ## Dependencies
 
-We utilize [Unstructured](https://github.com/Unstructured-IO) for parsing documents and [Llamaindex](https://www.llamaindex.ai/) for splitting them into chunks.
+We utilize [Unstructured](https://github.com/Unstructured-IO) for parsing documents and [Llamaindex](https://www.llamaindex.ai/) for splitting them into chunks. [Playwright](https://playwright.dev/) is used to render content whose `Content-Type` corresponds to `text/html`.
 
 ## Note
 
@@ -24,7 +24,7 @@ As described in this [blog](https://www.timescale.com/blog/nearest-neighbor-inde
 REINDEX INDEX CONCURRENTLY idx_items_embedding;
 ```
 
-Please be aware that this sample does not include the execution of the above re-indexing.
+Please be aware that this sample does not include the execution of the above re-indexing. We recommend to add periodical runner for production environment.
 
 ## RAG by Amazon Kendra
 
