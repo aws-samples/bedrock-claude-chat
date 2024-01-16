@@ -12,11 +12,12 @@ import { produce } from 'immer';
 import Alert from '../components/Alert';
 import KnowledgeFileUploader from '../components/KnowledgeFileUploader';
 import { BotFile } from '../@types/bot';
+import { ulid } from 'ulid';
 
 const BotEditPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { botId } = useParams();
+  const { botId: paramsBotId } = useParams();
   const { getMyBot, registerBot, updateBot } = useBot();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -25,13 +26,20 @@ const BotEditPage: React.FC = () => {
   const [description, setDescription] = useState('');
   const [instruction, setInstruction] = useState('');
   const [urls, setUrls] = useState<string[]>(['']);
-  const [sitemaps, setSitemaps] = useState<string[]>(['']);
   const [files, setFiles] = useState<BotFile[]>([]);
 
   const [errorMessage, setErrorMessage] = useState('');
 
+  const isNewBot = useMemo(() => {
+    return paramsBotId ? false : true;
+  }, [paramsBotId]);
+
+  const botId = useMemo(() => {
+    return isNewBot ? ulid() : paramsBotId ?? '';
+  }, [isNewBot, paramsBotId]);
+
   useEffect(() => {
-    if (botId) {
+    if (!isNewBot) {
       setIsLoading(true);
       getMyBot(botId)
         .then((bot) => {
@@ -43,10 +51,11 @@ const BotEditPage: React.FC = () => {
               ? ['']
               : bot.knowledge.sourceUrls
           );
-          setSitemaps(
-            bot.knowledge.sitemapUrls.length === 0
-              ? ['']
-              : bot.knowledge.sitemapUrls
+          setFiles(
+            bot.knowledge.filenames.map((filename) => ({
+              filename,
+              status: 'UPLOADED',
+            }))
           );
           if (bot.syncStatus === 'FAILED') {
             setErrorMessage(bot.syncStatusReason);
@@ -57,7 +66,7 @@ const BotEditPage: React.FC = () => {
         });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [botId]);
+  }, [isNewBot, botId]);
 
   const onChangeUrl = useCallback(
     (url: string, idx: number) => {
@@ -89,36 +98,6 @@ const BotEditPage: React.FC = () => {
     [urls]
   );
 
-  const onChangeSitemap = useCallback(
-    (url: string, idx: number) => {
-      setSitemaps(
-        produce(sitemaps, (draft) => {
-          draft[idx] = url;
-        })
-      );
-    },
-    [sitemaps]
-  );
-
-  const onClickAddSitemap = useCallback(() => {
-    setSitemaps([...sitemaps, '']);
-  }, [sitemaps]);
-
-  const onClickRemoveSitemap = useCallback(
-    (idx: number) => {
-      setSitemaps(
-        produce(sitemaps, (draft) => {
-          draft.splice(idx, 1);
-          if (draft.length === 0) {
-            draft.push('');
-          }
-          return;
-        })
-      );
-    },
-    [sitemaps]
-  );
-
   const onClickBack = useCallback(() => {
     history.back();
   }, []);
@@ -126,12 +105,14 @@ const BotEditPage: React.FC = () => {
   const onClickCreate = useCallback(() => {
     setIsLoading(true);
     registerBot({
+      id: botId,
       title,
       description,
       instruction,
       knowledge: {
         sourceUrls: urls.filter((s) => s !== ''),
-        sitemapUrls: sitemaps.filter((s) => s !== ''),
+        // Sitemap cannot be used yet.
+        sitemapUrls: [],
         filenames: files.map((f) => f.filename),
       },
     })
@@ -142,18 +123,18 @@ const BotEditPage: React.FC = () => {
         setIsLoading(false);
       });
   }, [
+    registerBot,
+    botId,
+    title,
     description,
     instruction,
-    navigate,
-    registerBot,
-    sitemaps,
-    title,
     urls,
     files,
+    navigate,
   ]);
 
   const onClickEdit = useCallback(() => {
-    if (botId) {
+    if (!isNewBot) {
       setIsLoading(true);
       updateBot(botId, {
         title,
@@ -161,7 +142,8 @@ const BotEditPage: React.FC = () => {
         instruction,
         knowledge: {
           sourceUrls: urls.filter((s) => s !== ''),
-          sitemapUrls: sitemaps.filter((s) => s !== ''),
+          // Sitemap cannot be used yet.
+          sitemapUrls: [],
           filenames: files.map((f) => f.filename),
         },
       })
@@ -173,15 +155,15 @@ const BotEditPage: React.FC = () => {
         });
     }
   }, [
+    isNewBot,
+    updateBot,
     botId,
+    title,
     description,
     instruction,
-    navigate,
-    sitemaps,
-    title,
-    updateBot,
     urls,
     files,
+    navigate,
   ]);
 
   const [isOpenSamples, setIsOpenSamples] = useState(false);
@@ -202,7 +184,7 @@ const BotEditPage: React.FC = () => {
         <div className="w-2/3">
           <div className="mt-5 w-full">
             <div className="text-xl font-bold">
-              {botId ? t('bot.edit.pageTitle') : t('bot.create.pageTitle')}
+              {isNewBot ? t('bot.create.pageTitle') : t('bot.edit.pageTitle')}
             </div>
 
             <div className="mt-3 flex flex-col gap-3">
@@ -301,43 +283,6 @@ const BotEditPage: React.FC = () => {
                 </div>
 
                 <div className="mt-2">
-                  <div className="font-semibold">{t('bot.label.sitemap')}</div>
-                  <div className="text-sm text-aws-font-color/50">
-                    {t('bot.help.knowledge.sitemap')}
-                  </div>
-                  <div className="mt-2 flex w-full flex-col gap-1">
-                    {sitemaps.map((sitemap, idx) => (
-                      <div className="flex w-full gap-2" key={idx}>
-                        <InputText
-                          className="w-full"
-                          type="url"
-                          disabled={isLoading}
-                          value={sitemap}
-                          onChange={(s) => {
-                            onChangeSitemap(s, idx);
-                          }}
-                        />
-                        <ButtonIcon
-                          className="text-red"
-                          onClick={() => {
-                            onClickRemoveSitemap(idx);
-                          }}>
-                          <PiTrash />
-                        </ButtonIcon>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-2">
-                    <Button
-                      outlined
-                      icon={<PiPlus />}
-                      onClick={onClickAddSitemap}>
-                      {t('button.add')}
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="mt-2">
                   <div className="font-semibold">{t('bot.label.file')}</div>
                   <div className="text-sm text-aws-font-color/50">
                     {t('bot.help.knowledge.file')}
@@ -345,7 +290,7 @@ const BotEditPage: React.FC = () => {
                   <div className="mt-2 flex w-full flex-col gap-1">
                     <KnowledgeFileUploader
                       className="h-48"
-                      botId={botId ?? ''}
+                      botId={botId}
                       files={files}
                       onChange={setFiles}
                     />
@@ -358,19 +303,19 @@ const BotEditPage: React.FC = () => {
                   {t('button.back')}
                 </Button>
 
-                {botId ? (
-                  <Button
-                    onClick={onClickEdit}
-                    loading={isLoading}
-                    disabled={disabledRegister}>
-                    {t('bot.button.edit')}
-                  </Button>
-                ) : (
+                {isNewBot ? (
                   <Button
                     onClick={onClickCreate}
                     loading={isLoading}
                     disabled={disabledRegister}>
                     {t('bot.button.create')}
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={onClickEdit}
+                    loading={isLoading}
+                    disabled={disabledRegister}>
+                    {t('bot.button.edit')}
                   </Button>
                 )}
               </div>

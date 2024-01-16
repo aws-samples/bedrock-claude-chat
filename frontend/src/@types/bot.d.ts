@@ -14,6 +14,7 @@ export type BotMeta = {
 
 export type BotKnowledge = {
   sourceUrls: string[];
+  // Sitemap cannot be used yet.
   sitemapUrls: string[];
   filenames: string[];
 };

@@ -1,4 +1,3 @@
-import { ulid } from 'ulid';
 import { RegisterBotRequest, UpdateBotRequest } from '../@types/bot';
 import useBotApi from './useBotApi';
 import { produce } from 'immer';
@@ -33,12 +32,11 @@ const useBot = () => {
     getBotSummary: async (botId: string) => {
       return (await api.getBotSummary(botId)).data;
     },
-    registerBot: (params: Omit<RegisterBotRequest, 'id'>) => {
-      const id = ulid();
+    registerBot: (params: RegisterBotRequest) => {
       mutateMyBots(
         produce(myBots, (draft) => {
           draft?.unshift({
-            id,
+            id: params.id,
             title: params.title,
             description: params.description ?? '',
             available: true,
@@ -47,7 +45,6 @@ const useBot = () => {
             isPinned: false,
             isPublic: false,
             owned: true,
-            // FIXME: あとで直す
             syncStatus: 'QUEUED',
           });
         }),
@@ -55,14 +52,9 @@ const useBot = () => {
           revalidate: false,
         }
       );
-      return api
-        .registerBot({
-          id,
-          ...params,
-        })
-        .finally(() => {
-          mutateMyBots();
-        });
+      return api.registerBot(params).finally(() => {
+        mutateMyBots();
+      });
     },
     updateBot: (botId: string, params: UpdateBotRequest) => {
       mutateMyBots(
