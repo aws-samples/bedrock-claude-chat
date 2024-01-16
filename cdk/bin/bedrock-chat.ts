@@ -13,6 +13,9 @@ const ALLOWED_IP_V4_ADDRESS_RANGES: string[] = app.node.tryGetContext(
 const ALLOWED_IP_V6_ADDRESS_RANGES: string[] = app.node.tryGetContext(
   "allowedIpV6AddressRanges"
 );
+const enableUsageAnalysis: boolean = app.node.tryGetContext(
+  "enableUsageAnalysis"
+);
 
 // WAF for frontend
 // 2023/9: Currently, the WAF for CloudFront needs to be created in the North America region (us-east-1), so the stacks are separated
@@ -32,4 +35,5 @@ new BedrockChatStack(app, `BedrockChatStack`, {
   crossRegionReferences: true,
   bedrockRegion: BEDROCK_REGION,
   webAclId: waf.webAclArn.value,
+  enableUsageAnalysis: enableUsageAnalysis,
 });

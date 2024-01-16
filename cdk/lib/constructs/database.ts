@@ -9,7 +9,9 @@ import {
 import { AccountPrincipal, Role } from "aws-cdk-lib/aws-iam";
 import { Construct } from "constructs";
 
-export interface DatabaseProps {}
+export interface DatabaseProps {
+  pointInTimeRecovery?: boolean;
+}
 
 export class Database extends Construct {
   readonly table: Table;
@@ -26,6 +28,7 @@ export class Database extends Construct {
       billingMode: BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY,
       stream: StreamViewType.NEW_IMAGE,
+      pointInTimeRecovery: props?.pointInTimeRecovery,
     });
     table.addGlobalSecondaryIndex({
       // Used to fetch conversation or bot by id

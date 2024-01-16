@@ -16,10 +16,12 @@ import * as cdk from "aws-cdk-lib";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { Embedding } from "./constructs/embedding";
 import { VectorStore } from "./constructs/vectorstore";
+import { UsageAnalysis } from "./constructs/usage-analysis";
 
 export interface BedrockChatStackProps extends StackProps {
   readonly bedrockRegion: string;
   readonly webAclId: string;
+  readonly enableUsageAnalysis: boolean;
 }
 
 export class BedrockChatStack extends cdk.Stack {
@@ -67,7 +69,10 @@ export class BedrockChatStack extends cdk.Stack {
     });
 
     const auth = new Auth(this, "Auth");
-    const database = new Database(this, "Database");
+    const database = new Database(this, "Database", {
+      // Enable PITR to export data to s3 if usage analysis is enabled
+      pointInTimeRecovery: props.enableUsageAnalysis,
+    });
 
     const backendApi = new Api(this, "BackendApi", {
       vpc,
@@ -118,6 +123,12 @@ export class BedrockChatStack extends cdk.Stack {
     vectorStore.allowFrom(embedding.removalHandler);
     vectorStore.allowFrom(backendApi.handler);
     vectorStore.allowFrom(websocket.handler);
+
+    if (props.enableUsageAnalysis) {
+      new UsageAnalysis(this, "UsageAnalysis", {
+        sourceDatabase: database,
+      });
+    }
 
     new CfnOutput(this, "DocumentBucketName", {
       value: documentBucket.bucketName,
