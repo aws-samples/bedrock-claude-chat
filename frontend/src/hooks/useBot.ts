@@ -2,19 +2,24 @@ import { RegisterBotRequest, UpdateBotRequest } from '../@types/bot';
 import useBotApi from './useBotApi';
 import { produce } from 'immer';
 
-const useBot = () => {
+const useBot = (shouldAutoRefreshMyBots?: boolean) => {
   const api = useBotApi();
 
   const { data: myBots, mutate: mutateMyBots } = api.bots(
     {
       kind: 'private',
     },
-    (data) => {
-      const index = data.findIndex(
-        (bot) => bot.syncStatus === 'QUEUED' || bot.syncStatus === 'RUNNING'
-      );
-      return index > -1 ? 5000 : 0;
-    }
+    shouldAutoRefreshMyBots
+      ? (data) => {
+          if (!data) {
+            return 0;
+          }
+          const index = data.findIndex(
+            (bot) => bot.syncStatus === 'QUEUED' || bot.syncStatus === 'RUNNING'
+          );
+          return index > -1 ? 5000 : 0;
+        }
+      : undefined
   );
 
   const { data: starredBots, mutate: mutateStarredBots } = api.bots({
@@ -36,9 +41,6 @@ const useBot = () => {
     recentlyUsedSharedBots: recentlyUsedBots?.filter((bot) => !bot.owned),
     getMyBot: async (botId: string) => {
       return (await api.getMyBot(botId)).data;
-    },
-    getBotSummary: async (botId: string) => {
-      return (await api.getBotSummary(botId)).data;
     },
     registerBot: (params: RegisterBotRequest) => {
       mutateMyBots(

@@ -93,7 +93,7 @@ const BotExplorePage: React.FC = () => {
     updateBotSharing,
     updateMyBotStarred,
     updateSharedBotStarred,
-  } = useBot();
+  } = useBot(true);
 
   const targetShareBot = useMemo(() => {
     if (myBots) {

@@ -18,16 +18,15 @@ import SwitchBedrockModel from '../components/SwitchBedrockModel';
 import { Model } from '../@types/conversation';
 import useBot from '../hooks/useBot';
 import useConversation from '../hooks/useConversation';
-import { AxiosError } from 'axios';
 import ButtonPopover from '../components/PopoverMenu';
 import PopoverItem from '../components/PopoverItem';
 
 import { copyBotUrl } from '../utils/BotUtils';
 import { produce } from 'immer';
 import ButtonIcon from '../components/ButtonIcon';
-import { BotSummary } from '../@types/bot';
 import StatusSyncBot from '../components/StatusSyncBot';
 import Alert from '../components/Alert';
+import useBotSummary from '../hooks/useBotSummary';
 
 const ChatPage: React.FC = () => {
   const { t } = useTranslation();
@@ -50,7 +49,6 @@ const ChatPage: React.FC = () => {
   } = useChat();
 
   const { getBotId } = useConversation();
-  const { getBotSummary } = useBot();
 
   const { scrollToBottom, scrollToTop } = useScroll();
 
@@ -61,37 +59,30 @@ const ChatPage: React.FC = () => {
     return paramBotId ?? getBotId(conversationId);
   }, [conversationId, getBotId, paramBotId]);
 
+  const {
+    data: bot,
+    error: botError,
+    isLoading: isLoadingBot,
+    mutate: mutateBot,
+  } = useBotSummary(botId ?? undefined);
+
   const [pageTitle, setPageTitle] = useState('');
-  const [bot, setBot] = useState<BotSummary>();
   const [isAvailabilityBot, setIsAvailabilityBot] = useState(false);
-  const [isLoadingBot, setIsLoadingBot] = useState(false);
+
   useEffect(() => {
     setIsAvailabilityBot(false);
-    if (botId) {
-      setPageTitle(t('bot.label.loadingBot'));
-      setBot(undefined);
-      setIsLoadingBot(true);
-      getBotSummary(botId)
-        .then((bot) => {
-          setIsAvailabilityBot(true);
-          setPageTitle(bot.title);
-          setBot(bot);
-        })
-        .catch((err: AxiosError) => {
-          if (err.response?.status === 404) {
-            setPageTitle(t('bot.label.notAvailableBot'));
-            setBot(undefined);
-          }
-        })
-        .finally(() => {
-          setIsLoadingBot(false);
-        });
+    if (bot) {
+      setIsAvailabilityBot(true);
+      setPageTitle(bot.title);
     } else {
       setPageTitle(t('bot.label.normalChat'));
-      setBot(undefined);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [botId]);
+    if (botError) {
+      if (botError.response?.status === 404) {
+        setPageTitle(t('bot.label.notAvailableBot'));
+      }
+    }
+  }, [bot, botError, t]);
 
   const description = useMemo<string>(() => {
     if (!bot) {
@@ -178,10 +169,13 @@ const ChatPage: React.FC = () => {
       return;
     }
     const isStarred = !bot.isPinned;
-    setBot(
+    mutateBot(
       produce(bot, (draft) => {
         draft.isPinned = isStarred;
-      })
+      }),
+      {
+        revalidate: false,
+      }
     );
 
     try {
@@ -190,16 +184,10 @@ const ChatPage: React.FC = () => {
       } else {
         updateSharedBotStarred(bot.id, isStarred);
       }
-    } catch {
-      setBot(
-        produce(bot, (draft) => {
-          if (draft) {
-            draft.isPinned = !isStarred;
-          }
-        })
-      );
+    } finally {
+      mutateBot();
     }
-  }, [bot, updateMyBotStarred, updateSharedBotStarred]);
+  }, [bot, mutateBot, updateMyBotStarred, updateSharedBotStarred]);
 
   const [copyLabel, setCopyLabel] = useState(t('bot.titleSubmenu.copyLink'));
   const onClickCopyUrl = useCallback(

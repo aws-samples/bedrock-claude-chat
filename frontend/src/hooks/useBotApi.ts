@@ -22,7 +22,7 @@ const useBotApi = () => {
   return {
     bots: (
       req: GetBotsRequest,
-      refreshIntervalFunction?: (data: GetBotsResponse) => number
+      refreshIntervalFunction?: (data?: GetBotsResponse) => number
     ) => {
       return http.get<GetBotsResponse>(['bot', req], {
         refreshInterval: refreshIntervalFunction,
@@ -31,8 +31,21 @@ const useBotApi = () => {
     getMyBot: (botId: string) => {
       return http.getOnce<GetMyBotResponse>(`bot/private/${botId}`);
     },
-    getBotSummary: (botId: string) => {
-      return http.getOnce<GetBotSummaryResponse>(`bot/summary/${botId}`);
+    botSummary: (botId?: string) => {
+      return http.get<GetBotSummaryResponse>(
+        botId ? `bot/summary/${botId}` : null,
+        {
+          refreshInterval: (data?: GetBotSummaryResponse) => {
+            if (
+              data?.syncStatus === 'QUEUED' ||
+              data?.syncStatus === 'RUNNING'
+            ) {
+              return 5000;
+            }
+            return 0;
+          },
+        }
+      );
     },
     registerBot: (params: RegisterBotRequest) => {
       return http.post<RegisterBotResponse>('bot', params);
