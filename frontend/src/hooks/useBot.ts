@@ -5,9 +5,17 @@ import { produce } from 'immer';
 const useBot = () => {
   const api = useBotApi();
 
-  const { data: myBots, mutate: mutateMyBots } = api.bots({
-    kind: 'private',
-  });
+  const { data: myBots, mutate: mutateMyBots } = api.bots(
+    {
+      kind: 'private',
+    },
+    (data) => {
+      const index = data.findIndex(
+        (bot) => bot.syncStatus === 'QUEUED' || bot.syncStatus === 'RUNNING'
+      );
+      return index > -1 ? 5000 : 0;
+    }
+  );
 
   const { data: starredBots, mutate: mutateStarredBots } = api.bots({
     kind: 'mixed',

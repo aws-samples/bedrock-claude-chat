@@ -20,8 +20,13 @@ const useBotApi = () => {
   const http = useHttp();
 
   return {
-    bots: (req: GetBotsRequest) => {
-      return http.get<GetBotsResponse>(['bot', req]);
+    bots: (
+      req: GetBotsRequest,
+      refreshIntervalFunction?: (data: GetBotsResponse) => number
+    ) => {
+      return http.get<GetBotsResponse>(['bot', req], {
+        refreshInterval: refreshIntervalFunction,
+      });
     },
     getMyBot: (botId: string) => {
       return http.getOnce<GetMyBotResponse>(`bot/private/${botId}`);

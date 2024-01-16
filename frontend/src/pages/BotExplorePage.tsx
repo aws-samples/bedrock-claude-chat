@@ -31,7 +31,6 @@ type ItemBotProps = BaseProps & {
 };
 
 const ItemBot: React.FC<ItemBotProps> = (props) => {
-  const navigate = useNavigate();
   const { t } = useTranslation();
   return (
     <div
@@ -68,15 +67,6 @@ const ItemBot: React.FC<ItemBotProps> = (props) => {
 
       <div className="absolute right-0 flex h-full justify-between ">
         <div className="w-10 bg-gradient-to-r from-transparent to-aws-paper"></div>
-        <div className="w-32 bg-aws-paper pr-3">
-          <StatusSyncBot
-            className="h-full"
-            syncStatus={props.bot.syncStatus}
-            onClickError={() => {
-              navigate(`/bot/edit/${props.bot.id}`);
-            }}
-          />
-        </div>
         <div className="flex items-center  gap-2 bg-aws-paper pl-2">
           {props.children}
         </div>
@@ -208,68 +198,84 @@ const BotExplorePage: React.FC = () => {
                   bot={bot}
                   onClick={onClickBot}
                   className="last:border-b-0">
-                  {bot.isPublic ? (
-                    <div className="flex items-center">
-                      <PiUsers className="mr-1" />
-                      <ButtonIcon
-                        className="mr-2"
-                        onClick={() => {
-                          onClickShare(idx);
-                        }}>
-                        <PiLink />
-                      </ButtonIcon>
-                    </div>
-                  ) : (
-                    <PiLockKey className="mr-4" />
-                  )}
-
-                  <div className="mr-4">
-                    {bot.isPinned ? (
-                      <ButtonIcon
-                        disabled={!bot.available}
-                        onClick={() => {
-                          updateMyBotStarred(bot.id, false);
-                        }}>
-                        <PiStarFill className="text-aws-aqua" />
-                      </ButtonIcon>
-                    ) : (
-                      <ButtonIcon
-                        disabled={!bot.available}
-                        onClick={() => {
-                          updateMyBotStarred(bot.id, true);
-                        }}>
-                        <PiStar />
-                      </ButtonIcon>
+                  <div className="flex items-center">
+                    {bot.owned && (
+                      <StatusSyncBot
+                        className="mr-5"
+                        syncStatus={bot.syncStatus}
+                        onClickError={() => {
+                          navigate(`/bot/edit/${bot.id}`);
+                        }}
+                      />
                     )}
-                  </div>
 
-                  <Button
-                    className="h-8 text-sm font-semibold"
-                    outlined
-                    onClick={() => {
-                      onClickEditBot(bot.id);
-                    }}>
-                    {t('bot.button.edit')}
-                  </Button>
-                  <div className="relative">
-                    <PopoverMenu className="h-8" target="bottom-right">
-                      <PopoverItem
-                        onClick={() => {
-                          onClickShare(idx);
-                        }}>
-                        <PiUsers />
-                        {t('bot.button.share')}
-                      </PopoverItem>
+                    <div className="mr-5 flex justify-end">
+                      {bot.isPublic ? (
+                        <div className="flex items-center">
+                          <PiUsers className="mr-1" />
+                          <ButtonIcon
+                            className="-mr-3"
+                            onClick={() => {
+                              onClickShare(idx);
+                            }}>
+                            <PiLink />
+                          </ButtonIcon>
+                        </div>
+                      ) : (
+                        <div className="ml-7">
+                          <PiLockKey />
+                        </div>
+                      )}
+                    </div>
 
-                      <PopoverItem
-                        className="font-bold text-red"
-                        onClick={() => {
-                          onClickDelete(bot);
-                        }}>
-                        <PiTrashBold />
-                        {t('bot.button.delete')}
-                      </PopoverItem>
-                    </PopoverMenu>
+                    <div className="mr-5">
+                      {bot.isPinned ? (
+                        <ButtonIcon
+                          disabled={!bot.available}
+                          onClick={() => {
+                            updateMyBotStarred(bot.id, false);
+                          }}>
+                          <PiStarFill className="text-aws-aqua" />
+                        </ButtonIcon>
+                      ) : (
+                        <ButtonIcon
+                          disabled={!bot.available}
+                          onClick={() => {
+                            updateMyBotStarred(bot.id, true);
+                          }}>
+                          <PiStar />
+                        </ButtonIcon>
+                      )}
+                    </div>
+
+                    <Button
+                      className="mr-2 h-8 text-sm font-semibold"
+                      outlined
+                      onClick={() => {
+                        onClickEditBot(bot.id);
+                      }}>
+                      {t('bot.button.edit')}
+                    </Button>
+                    <div className="relative">
+                      <PopoverMenu className="h-8" target="bottom-right">
+                        <PopoverItem
+                          onClick={() => {
+                            onClickShare(idx);
+                          }}>
+                          <PiUsers />
+                          {t('bot.button.share')}
+                        </PopoverItem>
+
+                        <PopoverItem
+                          className="font-bold text-red"
+                          onClick={() => {
+                            onClickDelete(bot);
+                          }}>
+                          <PiTrashBold />
+                          {t('bot.button.delete')}
+                        </PopoverItem>
+                      </PopoverMenu>
+                    </div>
                   </div>
                 </ItemBot>
               ))}

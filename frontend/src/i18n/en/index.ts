@@ -136,6 +136,7 @@ How would you categorize this email?`,
       },
       error: {
         notSupportedFile: 'This file is not supported.',
+        duplicatedFile: 'A file with the same name has been uploaded.',
       },
     },
     deleteDialog: {

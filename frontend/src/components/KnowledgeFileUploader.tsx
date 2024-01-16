@@ -36,9 +36,15 @@ const KnowledgeFileUploader: React.FC<Props> = (props) => {
       const originalLength = props.files.length;
       let tmpFiles = produce(props.files, (draft) => {
         for (let i = 0; i < files.length; i++) {
-          if (
-            SUPPORTED_FILES.includes('.' + files[i].name.split('.').slice(-1))
-          ) {
+          const isSupportedFile = SUPPORTED_FILES.includes(
+            '.' + files[i].name.split('.').slice(-1)
+          );
+          const isDuplicatedFile =
+            props.files.findIndex(
+              (botFile) => botFile.filename === files[i].name
+            ) > -1;
+
+          if (isSupportedFile && !isDuplicatedFile) {
             draft.push({
               filename: files[i].name,
               status: 'UPLOADING',
@@ -47,7 +53,9 @@ const KnowledgeFileUploader: React.FC<Props> = (props) => {
             draft.push({
               filename: files[i].name,
               status: 'ERROR',
-              errorMessage: t('bot.error.notSupportedFile'),
+              errorMessage: isDuplicatedFile
+                ? t('bot.error.duplicatedFile')
+                : t('bot.error.notSupportedFile'),
             });
           }
         }
