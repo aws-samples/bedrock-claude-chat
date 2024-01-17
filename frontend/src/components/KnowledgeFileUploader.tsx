@@ -32,61 +32,70 @@ const KnowledgeFileUploader: React.FC<Props> = (props) => {
   const { uploadFile, deleteUploadedFile } = useBot();
 
   const uploadFiles = useCallback(
-    (files: FileList) => {
+    (targetFiles: FileList) => {
       const originalLength = props.files.length;
+
+      // Normalize file names that contain certain Japanese characters to avoid errors in the ECS Task.
+      const renamedFiles: File[] = [];
+      for (let i = 0; i < targetFiles.length; i++) {
+        renamedFiles.push(
+          new File([targetFiles[i]], targetFiles[i].name.normalize('NFC'), {
+            type: targetFiles[i].type,
+          })
+        );
+      }
+
       let tmpFiles = produce(props.files, (draft) => {
-        for (let i = 0; i < files.length; i++) {
+        renamedFiles.forEach((file) => {
           const isSupportedFile = SUPPORTED_FILES.includes(
-            '.' + files[i].name.split('.').slice(-1)
+            '.' + file.name.split('.').slice(-1)
           );
           const isDuplicatedFile =
-            props.files.findIndex(
-              (botFile) => botFile.filename === files[i].name
-            ) > -1;
+            props.files.findIndex((botFile) => botFile.filename === file.name) >
+            -1;
 
           if (isSupportedFile && !isDuplicatedFile) {
             draft.push({
-              filename: files[i].name,
+              filename: file.name,
               status: 'UPLOADING',
             });
           } else {
             draft.push({
-              filename: files[i].name,
+              filename: file.name,
               status: 'ERROR',
               errorMessage: isDuplicatedFile
                 ? t('bot.error.duplicatedFile')
                 : t('bot.error.notSupportedFile'),
             });
           }
-        }
-        return;
+        });
       });
       props.onChange(tmpFiles);
 
-      for (let i = 0; i < files.length; i++) {
-        if (tmpFiles[originalLength + i].status === 'UPLOADING') {
-          uploadFile(props.botId, files[i], (progress) => {
+      renamedFiles.forEach((file, idx) => {
+        if (tmpFiles[originalLength + idx].status === 'UPLOADING') {
+          uploadFile(props.botId, file, (progress) => {
             tmpFiles = produce(tmpFiles, (draft) => {
-              draft[originalLength + i].progress = progress;
+              draft[originalLength + idx].progress = progress;
             });
             props.onChange(tmpFiles);
           })
             .then(() => {
               tmpFiles = produce(tmpFiles, (draft) => {
-                draft[originalLength + i].status = 'UPLOADED';
+                draft[originalLength + idx].status = 'UPLOADED';
               });
               props.onChange(tmpFiles);
             })
             .catch((e: AxiosError) => {
               console.error(e);
               tmpFiles = produce(tmpFiles, (draft) => {
-                draft[originalLength + i].status = 'ERROR';
-                draft[originalLength + i].errorMessage = e.message;
+                draft[originalLength + idx].status = 'ERROR';
+                draft[originalLength + idx].errorMessage = e.message;
               });
               props.onChange(tmpFiles);
             });
         }
-      }
+      });
     },
     [props, t, uploadFile]
   );
