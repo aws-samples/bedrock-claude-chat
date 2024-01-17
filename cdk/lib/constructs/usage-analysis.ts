@@ -48,7 +48,7 @@ export class UsageAnalysis extends Construct {
       },
       {
         name: "MessageMap",
-        type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]),
+        type: glue.Schema.STRING,
       },
       {
         name: "PK",
@@ -60,6 +60,10 @@ export class UsageAnalysis extends Construct {
       },
       {
         name: "Title",
+        type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]),
+      },
+      {
+        name: "BotId",
         type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]),
       },
       {

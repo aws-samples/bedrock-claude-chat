@@ -13,7 +13,7 @@ const ALLOWED_IP_V4_ADDRESS_RANGES: string[] = app.node.tryGetContext(
 const ALLOWED_IP_V6_ADDRESS_RANGES: string[] = app.node.tryGetContext(
   "allowedIpV6AddressRanges"
 );
-const enableUsageAnalysis: boolean = app.node.tryGetContext(
+const ENABLE_USAGE_ANALYSIS: boolean = app.node.tryGetContext(
   "enableUsageAnalysis"
 );
 
@@ -35,5 +35,5 @@ new BedrockChatStack(app, `BedrockChatStack`, {
   crossRegionReferences: true,
   bedrockRegion: BEDROCK_REGION,
   webAclId: waf.webAclArn.value,
-  enableUsageAnalysis: enableUsageAnalysis,
+  enableUsageAnalysis: ENABLE_USAGE_ANALYSIS,
 });

@@ -1,10 +1,12 @@
 # RAG (Retrieval Augmented Generation)
 
+[RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/) (Retrieval Augmented Generation) is a technique that enables more accurate and detailed answer generation by linking external knowledge sources to LLM. By referring to external knowledge sources, it makes possible to prevent incorrect answers (hallucinations) that are likely to occur when using LLM alone.
+
 In this example, we've implemented the RAG feature using [pgvector](https://github.com/pgvector/pgvector), a PostgreSQL extension that facilitates vector search. We've chosen to run pgvector on [Amazon Aurora Serverless v2](https://aws.amazon.com/rds/aurora/serverless/) due to its cost-effectiveness compared to alternatives like [OpenSearch](https://opensearch.org/) and [Amazon Kendra](https://aws.amazon.com/kendra/), especially when dealing with a smaller user base. This approach allows for a more budget-friendly start.
 
 ## RAG Logic
 
-Please note that this example implements a simple logic as described in the following diagram:
+This example implements a simple logic as described in the following diagram:
 
 ![](./imgs/rag.png)
 

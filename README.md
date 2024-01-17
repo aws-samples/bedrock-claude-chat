@@ -2,7 +2,7 @@
 
 ![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/test.yml/badge.svg)
 
-> [!Tip] > **🔔 RAG Feature released**. See [Release](TODO) for the detail.
+> [!Tip] **🔔 RAG (Retrieval Augmented Generation) Feature released**. See [Release](TODO) for the detail.
 
 > [!Warning]
 > The current version (`v0.3.x`) has no compatibility with ex version (`v0.1.0`, `v0.2.x`) due to the change of DynamoDB table schema. **Please note that UPDATE (i.e. `cdk deploy`) FROM `v0.2.x` TO `v0.3.x` WILL DESTROY ALL OF EXISTING CONVERSATION.**
@@ -15,7 +15,7 @@ This repository is a sample chatbot using the Anthropic company's LLM [Claude 2]
 
 ### Bot Personalization
 
-Add your own instruction and give external knowledge as URL or files (i.e. [RAG](https://aws.amazon.com/what-is/retrieval-augmented-generation/)). The bot can be shared among application users.
+Add your own instruction and give external knowledge as URL or files (a.k.a [RAG](./docs/RAG.md)). The bot can be shared among application users.
 
 TODO
 ![](./docs/imgs/bot1.png)
@@ -72,8 +72,8 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 - [AWS WAF](https://aws.amazon.com/waf/): IP address restriction
 - [Amazon Cognito](https://aws.amazon.com/cognito/): User authentication
 - [Amazon Bedrock](https://aws.amazon.com/bedrock/): Managed service to utilize foundational models via APIs. Claude is used for chat response and Cohere for vector embedding
-- [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): Receiving event from DynamoDB stream and launching ECS task
-- [Amazon Elastic Container Service](https://aws.amazon.com/ecs/): Run crawling, parsing and embedding tasks. Embedding model is [Cohere Multilingual](https://txt.cohere.com/multilingual/)
+- [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): Receiving event from DynamoDB stream and launching ECS task to embed external knowledge
+- [Amazon Elastic Container Service](https://aws.amazon.com/ecs/): Run crawling, parsing and embedding tasks. [Cohere Multilingual](https://txt.cohere.com/multilingual/) is the model used for embedding.
 - [Amazon Aurora PostgreSQL](https://aws.amazon.com/rds/aurora/): Scalable vector store with [pgvector](https://github.com/pgvector/pgvector) plugin
 
 ![](docs/imgs/arch.png)
