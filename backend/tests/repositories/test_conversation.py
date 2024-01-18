@@ -4,9 +4,9 @@ import unittest
 sys.path.append(".")
 from app.repositories.conversation import (
     RecordNotFoundError,
-    _compose_conv_id,
     _get_table_client,
     change_conversation_title,
+    compose_conv_id,
     delete_conversation_by_id,
     delete_conversation_by_user_id,
     find_conversation_by_id,
@@ -73,7 +73,7 @@ from botocore.exceptions import ClientError
 
 #         table.query(
 #             KeyConditionExpression=Key("PK").eq(
-#                 _compose_conv_id("user1", self.conversation_user_1.id)
+#                 compose_conv_id("user1", self.conversation_user_1.id)
 #             )
 #         )
 
@@ -81,7 +81,7 @@ from botocore.exceptions import ClientError
 #             # Raise `AccessDeniedException` because user1 cannot access user2's data
 #             table.query(
 #                 KeyConditionExpression=Key("PK").eq(
-#                     _compose_conv_id("user2", self.conversation_user_2.id)
+#                     compose_conv_id("user2", self.conversation_user_2.id)
 #                 )
 #             )
 
@@ -92,7 +92,7 @@ from botocore.exceptions import ClientError
 #         table.query(
 #             IndexName="SKIndex",
 #             KeyConditionExpression=Key("SK").eq(
-#                 _compose_conv_id("user1", self.conversation_user_1.id)
+#                 compose_conv_id("user1", self.conversation_user_1.id)
 #             ),
 #         )
 #         with self.assertRaises(ClientError):
@@ -100,7 +100,7 @@ from botocore.exceptions import ClientError
 #             table.query(
 #                 IndexName="SKIndex",
 #                 KeyConditionExpression=Key("SK").eq(
-#                     _compose_conv_id("user2", self.conversation_user_2.id)
+#                     compose_conv_id("user2", self.conversation_user_2.id)
 #                 ),
 #             )
 

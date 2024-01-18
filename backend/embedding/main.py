@@ -9,8 +9,9 @@ import requests
 from app.bedrock import calculate_document_embeddings
 from app.config import EMBEDDING_CONFIG
 from app.repositories.common import _get_table_client
-from app.repositories.custom_bot import _compose_bot_id, _decompose_bot_id
+from app.repositories.custom_bot import compose_bot_id, decompose_bot_id
 from app.route_schema import type_sync_status
+from app.utils import compose_upload_document_s3_path
 from embedding.loaders import UrlLoader
 from embedding.loaders.base import BaseLoader
 from embedding.loaders.s3 import S3FileLoader
@@ -90,7 +91,7 @@ def update_sync_status(
 ):
     table = _get_table_client(user_id)
     table.update_item(
-        Key={"PK": user_id, "SK": _compose_bot_id(user_id, bot_id)},
+        Key={"PK": user_id, "SK": compose_bot_id(user_id, bot_id)},
         UpdateExpression="SET SyncStatus = :sync_status, SyncStatusReason = :sync_status_reason, LastExecId = :last_exec_id",
         ExpressionAttributeValues={
             ":sync_status": sync_status,
@@ -173,7 +174,8 @@ def main(
             for filename in filenames:
                 embed(
                     S3FileLoader(
-                        bucket=DOCUMENT_BUCKET, key=f"{user_id}/{bot_id}/{filename}"
+                        bucket=DOCUMENT_BUCKET,
+                        key=compose_upload_document_s3_path(user_id, bot_id, filename),
                     ),
                     contents,
                     sources,
@@ -220,7 +222,7 @@ if __name__ == "__main__":
     filenames = [x["S"] for x in knowledge["filenames"]["L"]]
 
     sk = new_image["SK"]["S"]
-    bot_id = _decompose_bot_id(sk)
+    bot_id = decompose_bot_id(sk)
 
     pk = new_image["PK"]["S"]
     user_id = pk

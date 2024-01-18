@@ -10,11 +10,11 @@ from app.repositories.common import (
     TABLE_NAME,
     TRANSACTION_BATCH_SIZE,
     RecordNotFoundError,
-    _compose_bot_id,
-    _compose_conv_id,
-    _decompose_conv_id,
     _get_dynamodb_client,
     _get_table_client,
+    compose_bot_id,
+    compose_conv_id,
+    decompose_conv_id,
 )
 from app.repositories.model import (
     ContentModel,
@@ -36,7 +36,7 @@ def store_conversation(user_id: str, conversation: ConversationModel):
 
     item_params = {
         "PK": user_id,
-        "SK": _compose_conv_id(user_id, conversation.id),
+        "SK": compose_conv_id(user_id, conversation.id),
         "Title": conversation.title,
         "CreateTime": decimal(conversation.create_time),
         "MessageMap": json.dumps(
@@ -67,7 +67,7 @@ def find_conversation_by_user_id(user_id: str) -> list[ConversationMeta]:
     response = table.query(**query_params)
     conversations = [
         ConversationMeta(
-            id=_decompose_conv_id(item["SK"]),
+            id=decompose_conv_id(item["SK"]),
             create_time=float(item["CreateTime"]),
             title=item["Title"],
             # NOTE: all message has the same model
@@ -90,7 +90,7 @@ def find_conversation_by_user_id(user_id: str) -> list[ConversationMeta]:
         conversations.extend(
             [
                 ConversationMeta(
-                    id=_decompose_conv_id(item["SK"]),
+                    id=decompose_conv_id(item["SK"]),
                     create_time=float(item["CreateTime"]),
                     title=item["Title"],
                     model=model,
@@ -113,7 +113,7 @@ def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationM
     table = _get_table_client(user_id)
     response = table.query(
         IndexName="SKIndex",
-        KeyConditionExpression=Key("SK").eq(_compose_conv_id(user_id, conversation_id)),
+        KeyConditionExpression=Key("SK").eq(compose_conv_id(user_id, conversation_id)),
     )
     if len(response["Items"]) == 0:
         raise RecordNotFoundError(f"No conversation found with id: {conversation_id}")
@@ -121,7 +121,7 @@ def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationM
     # NOTE: conversation is unique
     item = response["Items"][0]
     conv = ConversationModel(
-        id=_decompose_conv_id(item["SK"]),
+        id=decompose_conv_id(item["SK"]),
         create_time=float(item["CreateTime"]),
         title=item["Title"],
         message_map={
@@ -151,7 +151,7 @@ def delete_conversation_by_id(user_id: str, conversation_id: str):
 
     try:
         response = table.delete_item(
-            Key={"PK": user_id, "SK": _compose_conv_id(user_id, conversation_id)},
+            Key={"PK": user_id, "SK": compose_conv_id(user_id, conversation_id)},
             ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
         )
     except ClientError as e:
@@ -214,7 +214,7 @@ def change_conversation_title(user_id: str, conversation_id: str, new_title: str
         response = table.update_item(
             Key={
                 "PK": user_id,
-                "SK": _compose_conv_id(user_id, conversation_id),
+                "SK": compose_conv_id(user_id, conversation_id),
             },
             UpdateExpression="set Title=:t",
             ExpressionAttributeValues={":t": new_title},

@@ -8,12 +8,12 @@ import boto3
 from app.repositories.common import (
     RecordAccessNotAllowedError,
     RecordNotFoundError,
-    _compose_bot_alias_id,
-    _compose_bot_id,
-    _decompose_bot_alias_id,
-    _decompose_bot_id,
     _get_table_client,
     _get_table_public_client,
+    compose_bot_alias_id,
+    compose_bot_id,
+    decompose_bot_alias_id,
+    decompose_bot_id,
 )
 from app.repositories.model import BotAliasModel, BotMeta, BotModel, KnowledgeModel
 from app.route_schema import type_sync_status
@@ -31,7 +31,7 @@ def store_bot(user_id: str, custom_bot: BotModel):
 
     item = {
         "PK": user_id,
-        "SK": _compose_bot_id(user_id, custom_bot.id),
+        "SK": compose_bot_id(user_id, custom_bot.id),
         "Title": custom_bot.title,
         "Description": custom_bot.description,
         "Instruction": custom_bot.instruction,
@@ -66,7 +66,7 @@ def update_bot(
 
     try:
         response = table.update_item(
-            Key={"PK": user_id, "SK": _compose_bot_id(user_id, bot_id)},
+            Key={"PK": user_id, "SK": compose_bot_id(user_id, bot_id)},
             UpdateExpression="SET Title = :title, Description = :description, Instruction = :instruction, Knowledge = :knowledge, SyncStatus = :sync_status, SyncStatusReason = :sync_status_reason",
             ExpressionAttributeValues={
                 ":title": title,
@@ -94,7 +94,7 @@ def store_alias(user_id: str, alias: BotAliasModel):
 
     item = {
         "PK": user_id,
-        "SK": _compose_bot_alias_id(user_id, alias.id),
+        "SK": compose_bot_alias_id(user_id, alias.id),
         "Title": alias.title,
         "Description": alias.description,
         "OriginalBotId": alias.original_bot_id,
@@ -115,7 +115,7 @@ def update_bot_last_used_time(user_id: str, bot_id: str):
     logger.info(f"Updating last used time for bot: {bot_id}")
     try:
         response = table.update_item(
-            Key={"PK": user_id, "SK": _compose_bot_id(user_id, bot_id)},
+            Key={"PK": user_id, "SK": compose_bot_id(user_id, bot_id)},
             UpdateExpression="SET LastBotUsed = :val",
             ExpressionAttributeValues={":val": decimal(get_current_time())},
             ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
@@ -134,7 +134,7 @@ def update_alias_last_used_time(user_id: str, alias_id: str):
     logger.info(f"Updating last used time for alias: {alias_id}")
     try:
         response = table.update_item(
-            Key={"PK": user_id, "SK": _compose_bot_alias_id(user_id, alias_id)},
+            Key={"PK": user_id, "SK": compose_bot_alias_id(user_id, alias_id)},
             UpdateExpression="SET LastBotUsed = :val",
             ExpressionAttributeValues={":val": decimal(get_current_time())},
             ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
@@ -153,7 +153,7 @@ def update_bot_pin_status(user_id: str, bot_id: str, pinned: bool):
     logger.info(f"Updating pin status for bot: {bot_id}")
     try:
         response = table.update_item(
-            Key={"PK": user_id, "SK": _compose_bot_id(user_id, bot_id)},
+            Key={"PK": user_id, "SK": compose_bot_id(user_id, bot_id)},
             UpdateExpression="SET IsPinned = :val",
             ExpressionAttributeValues={":val": pinned},
             ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
@@ -172,7 +172,7 @@ def update_alias_pin_status(user_id: str, alias_id: str, pinned: bool):
     logger.info(f"Updating pin status for alias: {alias_id}")
     try:
         response = table.update_item(
-            Key={"PK": user_id, "SK": _compose_bot_alias_id(user_id, alias_id)},
+            Key={"PK": user_id, "SK": compose_bot_alias_id(user_id, alias_id)},
             UpdateExpression="SET IsPinned = :val",
             ExpressionAttributeValues={":val": pinned},
             ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
@@ -207,7 +207,7 @@ def find_private_bots_by_user_id(
     response = table.query(**query_params)
     bots = [
         BotMeta(
-            id=_decompose_bot_id(item["SK"]),
+            id=decompose_bot_id(item["SK"]),
             title=item["Title"],
             create_time=float(item["CreateTime"]),
             last_used_time=float(item["LastBotUsed"]),
@@ -229,7 +229,7 @@ def find_private_bots_by_user_id(
         bots.extend(
             [
                 BotMeta(
-                    id=_decompose_bot_id(item["SK"]),
+                    id=decompose_bot_id(item["SK"]),
                     title=item["Title"],
                     create_time=float(item["CreateTime"]),
                     last_used_time=float(item["LastBotUsed"]),
@@ -341,7 +341,7 @@ def find_all_bots_by_user_id(
                 store_alias(
                     user_id,
                     BotAliasModel(
-                        id=_decompose_bot_alias_id(item["SK"]),
+                        id=decompose_bot_alias_id(item["SK"]),
                         # Update title and description
                         title=bot.title,
                         description=bot.description,
@@ -363,7 +363,7 @@ def find_all_bots_by_user_id(
             # Private bots
             bots.append(
                 BotMeta(
-                    id=_decompose_bot_id(item["SK"]),
+                    id=decompose_bot_id(item["SK"]),
                     title=item["Title"],
                     create_time=float(item["CreateTime"]),
                     last_used_time=float(item["LastBotUsed"]),
@@ -385,7 +385,7 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
     logger.info(f"Finding bot with id: {bot_id}")
     response = table.query(
         IndexName="SKIndex",
-        KeyConditionExpression=Key("SK").eq(_compose_bot_id(user_id, bot_id)),
+        KeyConditionExpression=Key("SK").eq(compose_bot_id(user_id, bot_id)),
     )
     if len(response["Items"]) == 0:
         raise RecordNotFoundError(f"Bot with id {bot_id} not found")
@@ -395,7 +395,7 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
         raise RecordNotFoundError(f"Bot with id {bot_id} is alias")
 
     bot = BotModel(
-        id=_decompose_bot_id(item["SK"]),
+        id=decompose_bot_id(item["SK"]),
         title=item["Title"],
         description=item["Description"],
         instruction=item["Instruction"],
@@ -426,7 +426,7 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
 
     item = response["Items"][0]
     bot = BotModel(
-        id=_decompose_bot_id(item["SK"]),
+        id=decompose_bot_id(item["SK"]),
         title=item["Title"],
         description=item["Description"],
         instruction=item["Instruction"],
@@ -449,14 +449,14 @@ def find_alias_by_id(user_id: str, alias_id: str) -> BotAliasModel:
     logger.info(f"Finding alias bot with id: {alias_id}")
     response = table.query(
         IndexName="SKIndex",
-        KeyConditionExpression=Key("SK").eq(_compose_bot_alias_id(user_id, alias_id)),
+        KeyConditionExpression=Key("SK").eq(compose_bot_alias_id(user_id, alias_id)),
     )
     if len(response["Items"]) == 0:
         raise RecordNotFoundError(f"Alias bot with id {alias_id} not found")
     item = response["Items"][0]
 
     bot = BotAliasModel(
-        id=_decompose_bot_alias_id(item["SK"]),
+        id=decompose_bot_alias_id(item["SK"]),
         title=item["Title"],
         description=item["Description"],
         original_bot_id=item["OriginalBotId"],
@@ -478,7 +478,7 @@ def update_bot_visibility(user_id: str, bot_id: str, visible: bool):
 
     response = table.query(
         IndexName="SKIndex",
-        KeyConditionExpression=Key("SK").eq(_compose_bot_id(user_id, bot_id)),
+        KeyConditionExpression=Key("SK").eq(compose_bot_id(user_id, bot_id)),
     )
     if len(response["Items"]) == 0:
         raise RecordNotFoundError(f"Bot with id {bot_id} not found")
@@ -487,7 +487,7 @@ def update_bot_visibility(user_id: str, bot_id: str, visible: bool):
         if visible:
             # To visible (open to public)
             response = table.update_item(
-                Key={"PK": user_id, "SK": _compose_bot_id(user_id, bot_id)},
+                Key={"PK": user_id, "SK": compose_bot_id(user_id, bot_id)},
                 UpdateExpression="SET PublicBotId = :val",
                 ExpressionAttributeValues={":val": bot_id},
                 ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
@@ -495,7 +495,7 @@ def update_bot_visibility(user_id: str, bot_id: str, visible: bool):
         else:
             # To hide (close to private)
             response = table.update_item(
-                Key={"PK": user_id, "SK": _compose_bot_id(user_id, bot_id)},
+                Key={"PK": user_id, "SK": compose_bot_id(user_id, bot_id)},
                 UpdateExpression="REMOVE PublicBotId",
                 ReturnValues="ALL_NEW",
                 ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
@@ -515,7 +515,7 @@ def delete_bot_by_id(user_id: str, bot_id: str):
 
     try:
         response = table.delete_item(
-            Key={"PK": user_id, "SK": _compose_bot_id(user_id, bot_id)},
+            Key={"PK": user_id, "SK": compose_bot_id(user_id, bot_id)},
             ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
         )
     except ClientError as e:
@@ -533,7 +533,7 @@ def delete_alias_by_id(user_id: str, bot_id: str):
 
     try:
         response = table.delete_item(
-            Key={"PK": user_id, "SK": _compose_bot_alias_id(user_id, bot_id)},
+            Key={"PK": user_id, "SK": compose_bot_alias_id(user_id, bot_id)},
             ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
         )
     except ClientError as e:

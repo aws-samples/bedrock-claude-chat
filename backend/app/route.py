@@ -35,7 +35,6 @@ from app.route_schema import (
 )
 from app.usecases.bot import (
     create_new_bot,
-    fetch_bot,
     fetch_bot_summary,
     issue_presigned_url,
     modify_owned_bot,

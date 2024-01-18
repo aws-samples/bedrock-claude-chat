@@ -19,30 +19,30 @@ class RecordAccessNotAllowedError(Exception):
     pass
 
 
-def _compose_conv_id(user_id: str, conversation_id: str):
+def compose_conv_id(user_id: str, conversation_id: str):
     # Add user_id prefix for row level security to match with `LeadingKeys` condition
     return f"{user_id}#CONV#{conversation_id}"
 
 
-def _decompose_conv_id(conv_id: str):
+def decompose_conv_id(conv_id: str):
     return conv_id.split("#")[-1]
 
 
-def _compose_bot_id(user_id: str, bot_id: str):
+def compose_bot_id(user_id: str, bot_id: str):
     # Add user_id prefix for row level security to match with `LeadingKeys` condition
     return f"{user_id}#BOT#{bot_id}"
 
 
-def _decompose_bot_id(composed_bot_id: str):
+def decompose_bot_id(composed_bot_id: str):
     return composed_bot_id.split("#")[-1]
 
 
-def _compose_bot_alias_id(user_id: str, alias_id: str):
+def compose_bot_alias_id(user_id: str, alias_id: str):
     # Add user_id prefix for row level security to match with `LeadingKeys` condition
     return f"{user_id}#BOT_ALIAS#{alias_id}"
 
 
-def _decompose_bot_alias_id(composed_alias_id: str):
+def decompose_bot_alias_id(composed_alias_id: str):
     return composed_alias_id.split("#")[-1]
 
 

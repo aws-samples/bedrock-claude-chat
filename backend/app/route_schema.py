@@ -27,6 +27,15 @@ class Knowledge(BaseSchema):
     filenames: list[str]
 
 
+class KnowledgeDiffInput(BaseSchema):
+    source_urls: list[str]
+    sitemap_urls: list[str]
+    added_filenames: list[str]
+    # updated_filenames: list[str]
+    deleted_filenames: list[str]
+    unchanged_filenames: list[str]
+
+
 class MessageInput(BaseSchema):
     role: str
     content: Content
@@ -97,7 +106,7 @@ class BotModifyInput(BaseSchema):
     title: str
     instruction: str
     description: str | None
-    knowledge: Knowledge | None
+    knowledge: KnowledgeDiffInput | None
 
 
 class BotModifyOutput(BaseSchema):

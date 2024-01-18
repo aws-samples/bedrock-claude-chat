@@ -3,7 +3,7 @@ import os
 
 import boto3
 import pg8000
-from app.repositories.common import _decompose_bot_id
+from app.repositories.common import decompose_bot_id
 
 DB_HOST = os.environ.get("DB_HOST", "")
 DB_USER = os.environ.get("DB_USER", "postgres")
@@ -83,7 +83,7 @@ def handler(event, context):
         return
 
     user_id = pk
-    bot_id = _decompose_bot_id(sk)
+    bot_id = decompose_bot_id(sk)
 
     delete_from_postgres(bot_id)
     delete_from_s3(user_id, bot_id)
