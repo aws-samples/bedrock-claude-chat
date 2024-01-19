@@ -20,7 +20,7 @@ const Toggle: React.FC<Props> = (props) => {
             props.onChange(!props.value);
           }}
         />
-        <div className="peer h-6 w-11 rounded-full bg-light-gray after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray after:bg-white after:transition-all after:content-[''] peer-checked:bg-aws-aqua peer-checked:after:translate-x-full peer-checked:after:border-white rtl:peer-checked:after:-translate-x-full"></div>
+        <div className="peer h-6 w-11 rounded-full bg-light-gray after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray after:bg-white after:transition-all after:content-[''] peer-checked:bg-aws-sea-blue peer-checked:after:translate-x-full peer-checked:after:border-white rtl:peer-checked:after:-translate-x-full"></div>
         <span className="ml-1 text-xs font-medium">{props.label}</span>
       </label>
     </div>

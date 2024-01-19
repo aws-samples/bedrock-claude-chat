@@ -9,6 +9,7 @@ import ButtonIcon from './ButtonIcon';
 import { AxiosError } from 'axios';
 import Progress from './Progress';
 import useBot from '../hooks/useBot';
+import { create } from 'zustand';
 
 type Props = BaseProps & {
   botId: string;
@@ -29,9 +30,29 @@ const SUPPORTED_FILES = [
   '.csv',
 ];
 
+const KnowledgeFileUploaderState = create<{
+  files: BotFile[];
+  getFiles: () => BotFile[];
+  setFiles: (f: BotFile[]) => void;
+}>((set, get) => {
+  return {
+    files: [],
+    getFiles: () => get().files,
+    setFiles: (f) => {
+      set(() => {
+        return {
+          files: f,
+        };
+      });
+    },
+  };
+});
+
 const KnowledgeFileUploader: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const { uploadFile } = useBot();
+  const { getFiles: _getFiles, setFiles: _setFiles } =
+    KnowledgeFileUploaderState();
 
   const uploadFiles = useCallback(
     (targetFiles: FileList) => {
@@ -47,61 +68,69 @@ const KnowledgeFileUploader: React.FC<Props> = (props) => {
         );
       }
 
-      let tmpFiles = produce(props.files, (draft) => {
-        renamedFiles.forEach((file) => {
-          const isSupportedFile = SUPPORTED_FILES.includes(
-            '.' + file.name.split('.').slice(-1)
-          );
-          const isDuplicatedFile =
-            props.files.findIndex((botFile) => botFile.filename === file.name) >
-            -1;
+      _setFiles(
+        produce(props.files, (draft) => {
+          renamedFiles.forEach((file) => {
+            const isSupportedFile = SUPPORTED_FILES.includes(
+              '.' + file.name.split('.').slice(-1)
+            );
+            const isDuplicatedFile =
+              props.files.findIndex(
+                (botFile) => botFile.filename === file.name
+              ) > -1;
 
-          if (isSupportedFile && !isDuplicatedFile) {
-            draft.push({
-              filename: file.name,
-              status: 'UPLOADING',
-            });
-          } else {
-            draft.push({
-              filename: file.name,
-              status: 'ERROR',
-              errorMessage: isDuplicatedFile
-                ? t('bot.error.duplicatedFile')
-                : t('bot.error.notSupportedFile'),
-            });
-          }
-        });
-      });
-      props.onAdd(tmpFiles);
+            if (isSupportedFile && !isDuplicatedFile) {
+              draft.push({
+                filename: file.name,
+                status: 'UPLOADING',
+              });
+            } else {
+              draft.push({
+                filename: file.name,
+                status: 'ERROR',
+                errorMessage: isDuplicatedFile
+                  ? t('bot.error.duplicatedFile')
+                  : t('bot.error.notSupportedFile'),
+              });
+            }
+          });
+        })
+      );
+      props.onAdd(_getFiles());
 
       renamedFiles.forEach((file, idx) => {
-        if (tmpFiles[originalLength + idx].status === 'UPLOADING') {
+        if (_getFiles()[originalLength + idx].status === 'UPLOADING') {
           uploadFile(props.botId, file, (progress) => {
-            tmpFiles = produce(tmpFiles, (draft) => {
-              draft[originalLength + idx].progress = progress;
-            });
-            console.log('uploading', tmpFiles);
-            props.onUpdate(tmpFiles);
+            _setFiles(
+              produce(_getFiles(), (draft) => {
+                draft[originalLength + idx].progress = progress;
+              })
+            );
+
+            props.onUpdate(_getFiles());
           })
             .then(() => {
-              tmpFiles = produce(tmpFiles, (draft) => {
-                draft[originalLength + idx].status = 'UPLOADED';
-              });
-              console.log('uploaded', tmpFiles);
-              props.onUpdate(tmpFiles);
+              _setFiles(
+                produce(_getFiles(), (draft) => {
+                  draft[originalLength + idx].status = 'UPLOADED';
+                })
+              );
+              props.onUpdate(_getFiles());
             })
             .catch((e: AxiosError) => {
               console.error(e);
-              tmpFiles = produce(tmpFiles, (draft) => {
-                draft[originalLength + idx].status = 'ERROR';
-                draft[originalLength + idx].errorMessage = e.message;
-              });
-              props.onUpdate(tmpFiles);
+              _setFiles(
+                produce(_getFiles(), (draft) => {
+                  draft[originalLength + idx].status = 'ERROR';
+                  draft[originalLength + idx].errorMessage = e.message;
+                })
+              );
+              props.onUpdate(_getFiles());
             });
         }
       });
     },
-    [props, t, uploadFile]
+    [_getFiles, _setFiles, props, t, uploadFile]
   );
 
   const onClickChooseFiles: React.ChangeEventHandler<HTMLInputElement> =
@@ -179,39 +208,41 @@ const KnowledgeFileUploader: React.FC<Props> = (props) => {
       <div className="flex flex-col gap-1">
         {props.files.map((file, idx) => (
           <div key={idx} className="rounded border border-gray bg-white p-1 ">
-            <div className="flex items-center justify-between ">
-              <div className="flex items-center gap-2 px-1">
-                <PiFile />
-                {file.filename}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 break-all px-1">
+                <PiFile className="w-5" />
+                <div>{file.filename}</div>
               </div>
-              <div className="ml-auto w-32">
-                {file.status === 'UPLOADING' && (
-                  <div className="text-sm text-dark-gray">
-                    {t('bot.label.fileUploadStatus.uploading')}
-                    <Progress progress={file.progress ?? 0} />
-                  </div>
-                )}
-                {file.status === 'UPLOADED' && (
-                  <div className="text-sm font-bold text-dark-gray">
-                    {t('bot.label.fileUploadStatus.uploaded')}
-                  </div>
-                )}
-                {file.status === 'ERROR' && (
-                  <div className="flex items-center gap-1 text-sm font-bold text-red">
-                    <PiWarningCircleFill />
-                    {t('bot.label.fileUploadStatus.error')}
-                  </div>
-                )}
-              </div>
-              <div>
-                <ButtonIcon
-                  className="text-red"
-                  disabled={file.status === 'UPLOADING'}
-                  onClick={() => {
-                    onDeleteFile(idx);
-                  }}>
-                  <PiTrash />
-                </ButtonIcon>
+              <div className="flex items-center gap-2">
+                <div className="ml-auto whitespace-nowrap">
+                  {file.status === 'UPLOADING' && (
+                    <div className="text-sm text-dark-gray">
+                      {t('bot.label.fileUploadStatus.uploading')}
+                      <Progress progress={file.progress ?? 0} />
+                    </div>
+                  )}
+                  {file.status === 'UPLOADED' && (
+                    <div className="text-sm font-bold text-dark-gray">
+                      {t('bot.label.fileUploadStatus.uploaded')}
+                    </div>
+                  )}
+                  {file.status === 'ERROR' && (
+                    <div className="flex items-center gap-1 text-sm font-bold text-red">
+                      <PiWarningCircleFill />
+                      {t('bot.label.fileUploadStatus.error')}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <ButtonIcon
+                    className="text-red"
+                    disabled={file.status === 'UPLOADING'}
+                    onClick={() => {
+                      onDeleteFile(idx);
+                    }}>
+                    <PiTrash />
+                  </ButtonIcon>
+                </div>
               </div>
             </div>
             {file.errorMessage && (

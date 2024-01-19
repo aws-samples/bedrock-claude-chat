@@ -174,7 +174,6 @@ const BotEditPage: React.FC = () => {
   );
 
   const onUpdateFiles = useCallback((botFiles: BotFile[]) => {
-    console.log(botFiles);
     setFiles(botFiles);
   }, []);
 
@@ -382,10 +381,6 @@ const BotEditPage: React.FC = () => {
                     </Button>
                   </div>
                 </div>
-
-                <div>ADD:{JSON.stringify(addedFilenames)}</div>
-                <div>DELETE:{JSON.stringify(deletedFilenames)}</div>
-                <div>UNCHANGE:{JSON.stringify(unchangedFilenames)}</div>
 
                 <div className="mt-2">
                   <div className="font-semibold">{t('bot.label.file')}</div>

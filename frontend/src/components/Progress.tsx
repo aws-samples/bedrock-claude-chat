@@ -8,7 +8,7 @@ const Progress: React.FC<Props> = (props) => {
   return (
     <div className="h-2.5 w-full rounded-full bg-gray transition-all">
       <div
-        className={`h-2.5 rounded-full bg-blue-600`}
+        className={`h-2.5 rounded-full bg-aws-aqua`}
         style={{ width: `${props.progress}%` }}></div>
     </div>
   );
