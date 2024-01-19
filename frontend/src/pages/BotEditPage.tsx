@@ -27,6 +27,9 @@ const BotEditPage: React.FC = () => {
   const [instruction, setInstruction] = useState('');
   const [urls, setUrls] = useState<string[]>(['']);
   const [files, setFiles] = useState<BotFile[]>([]);
+  const [addedFilenames, setAddedFilenames] = useState<string[]>([]);
+  const [unchangedFilenames, setUnchangedFilenames] = useState<string[]>([]);
+  const [deletedFilenames, setDeletedFilenames] = useState<string[]>([]);
 
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -57,6 +60,7 @@ const BotEditPage: React.FC = () => {
               status: 'UPLOADED',
             }))
           );
+          setUnchangedFilenames([...bot.knowledge.filenames]);
           if (bot.syncStatus === 'FAILED') {
             setErrorMessage(bot.syncStatusReason);
           }
@@ -96,6 +100,99 @@ const BotEditPage: React.FC = () => {
       );
     },
     [urls]
+  );
+
+  const removeUnchangedFilenames = useCallback(
+    (filename: string) => {
+      const idx = unchangedFilenames.findIndex(
+        (unchangedFilename) => unchangedFilename === filename
+      );
+      if (idx > -1) {
+        setUnchangedFilenames(
+          produce(unchangedFilenames, (draft) => {
+            draft.splice(idx, 1);
+            return;
+          })
+        );
+      }
+    },
+    [unchangedFilenames]
+  );
+
+  const removeAddedFilenames = useCallback(
+    (filename: string) => {
+      const idx = addedFilenames.findIndex(
+        (addedFilename) => addedFilename === filename
+      );
+      if (idx > -1) {
+        setAddedFilenames(
+          produce(addedFilenames, (draft) => {
+            draft.splice(idx, 1);
+            return;
+          })
+        );
+      }
+    },
+    [addedFilenames]
+  );
+
+  const removeDeletedFilenames = useCallback(
+    (filename: string) => {
+      const idx = deletedFilenames.findIndex(
+        (deletedFilename) => deletedFilename === filename
+      );
+      if (idx > -1) {
+        setDeletedFilenames(
+          produce(deletedFilenames, (draft) => {
+            draft.splice(idx, 1);
+          })
+        );
+      }
+    },
+    [deletedFilenames]
+  );
+
+  const onAddFiles = useCallback(
+    (botFiles: BotFile[]) => {
+      setFiles(botFiles);
+
+      botFiles.forEach((file) => {
+        if (file.status === 'UPLOADING') {
+          if (!addedFilenames.includes(file.filename)) {
+            setAddedFilenames(
+              produce(addedFilenames, (draft) => {
+                draft.push(file.filename);
+              })
+            );
+          }
+          removeUnchangedFilenames(file.filename);
+          removeDeletedFilenames(file.filename);
+        }
+      });
+    },
+    [addedFilenames, removeDeletedFilenames, removeUnchangedFilenames]
+  );
+
+  const onUpdateFiles = useCallback((botFiles: BotFile[]) => {
+    console.log(botFiles);
+    setFiles(botFiles);
+  }, []);
+
+  const onDeleteFiles = useCallback(
+    (botFiles: BotFile[], deletedFilename: string) => {
+      setFiles(botFiles);
+
+      if (!deletedFilenames.includes(deletedFilename)) {
+        setDeletedFilenames(
+          produce(deletedFilenames, (draft) => {
+            draft.push(deletedFilename);
+          })
+        );
+      }
+      removeAddedFilenames(deletedFilename);
+      removeUnchangedFilenames(deletedFilename);
+    },
+    [deletedFilenames, removeAddedFilenames, removeUnchangedFilenames]
   );
 
   const onClickBack = useCallback(() => {
@@ -144,7 +241,9 @@ const BotEditPage: React.FC = () => {
           sourceUrls: urls.filter((s) => s !== ''),
           // Sitemap cannot be used yet.
           sitemapUrls: [],
-          filenames: files.map((f) => f.filename),
+          addedFilenames,
+          deletedFilenames,
+          unchangedFilenames,
         },
       })
         .then(() => {
@@ -162,7 +261,9 @@ const BotEditPage: React.FC = () => {
     description,
     instruction,
     urls,
-    files,
+    addedFilenames,
+    deletedFilenames,
+    unchangedFilenames,
     navigate,
   ]);
 
@@ -282,6 +383,10 @@ const BotEditPage: React.FC = () => {
                   </div>
                 </div>
 
+                <div>ADD:{JSON.stringify(addedFilenames)}</div>
+                <div>DELETE:{JSON.stringify(deletedFilenames)}</div>
+                <div>UNCHANGE:{JSON.stringify(unchangedFilenames)}</div>
+
                 <div className="mt-2">
                   <div className="font-semibold">{t('bot.label.file')}</div>
                   <div className="text-sm text-aws-font-color/50">
@@ -292,7 +397,9 @@ const BotEditPage: React.FC = () => {
                       className="h-48"
                       botId={botId}
                       files={files}
-                      onChange={setFiles}
+                      onAdd={onAddFiles}
+                      onUpdate={onUpdateFiles}
+                      onDelete={onDeleteFiles}
                     />
                   </div>
                 </div>

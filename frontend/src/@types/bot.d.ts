@@ -19,6 +19,15 @@ export type BotKnowledge = {
   filenames: string[];
 };
 
+export type BotKnowledgeDiff = {
+  sourceUrls: string[];
+  // Sitemap cannot be used yet.
+  sitemapUrls: string[];
+  addedFilenames: string[];
+  deletedFilenames: string[];
+  unchangedFilenames: string[];
+};
+
 export type BotSyncStatus = 'QUEUED' | 'RUNNING' | 'SUCCEEDED' | 'FAILED';
 
 export type BotListItem = BotMeta & {
@@ -56,7 +65,7 @@ export type UpdateBotRequest = {
   title: string;
   instruction: string;
   description?: string;
-  knowledge?: BotKnowledge;
+  knowledge?: BotKnowledgeDiff;
 };
 
 export type UpdateBotResponse = {

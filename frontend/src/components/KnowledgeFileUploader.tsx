@@ -13,7 +13,9 @@ import useBot from '../hooks/useBot';
 type Props = BaseProps & {
   botId: string;
   files: BotFile[];
-  onChange: (files: BotFile[]) => void;
+  onAdd: (files: BotFile[]) => void;
+  onUpdate: (files: BotFile[]) => void;
+  onDelete: (files: BotFile[], deletedFilename: string) => void;
 };
 
 const SUPPORTED_FILES = [
@@ -29,7 +31,7 @@ const SUPPORTED_FILES = [
 
 const KnowledgeFileUploader: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const { uploadFile, deleteUploadedFile } = useBot();
+  const { uploadFile } = useBot();
 
   const uploadFiles = useCallback(
     (targetFiles: FileList) => {
@@ -70,7 +72,7 @@ const KnowledgeFileUploader: React.FC<Props> = (props) => {
           }
         });
       });
-      props.onChange(tmpFiles);
+      props.onAdd(tmpFiles);
 
       renamedFiles.forEach((file, idx) => {
         if (tmpFiles[originalLength + idx].status === 'UPLOADING') {
@@ -78,13 +80,15 @@ const KnowledgeFileUploader: React.FC<Props> = (props) => {
             tmpFiles = produce(tmpFiles, (draft) => {
               draft[originalLength + idx].progress = progress;
             });
-            props.onChange(tmpFiles);
+            console.log('uploading', tmpFiles);
+            props.onUpdate(tmpFiles);
           })
             .then(() => {
               tmpFiles = produce(tmpFiles, (draft) => {
                 draft[originalLength + idx].status = 'UPLOADED';
               });
-              props.onChange(tmpFiles);
+              console.log('uploaded', tmpFiles);
+              props.onUpdate(tmpFiles);
             })
             .catch((e: AxiosError) => {
               console.error(e);
@@ -92,7 +96,7 @@ const KnowledgeFileUploader: React.FC<Props> = (props) => {
                 draft[originalLength + idx].status = 'ERROR';
                 draft[originalLength + idx].errorMessage = e.message;
               });
-              props.onChange(tmpFiles);
+              props.onUpdate(tmpFiles);
             });
         }
       });
@@ -127,17 +131,14 @@ const KnowledgeFileUploader: React.FC<Props> = (props) => {
 
   const onDeleteFile = useCallback(
     (idx: number) => {
-      if (props.files[idx].status === 'UPLOADED') {
-        deleteUploadedFile(props.botId, props.files[idx].filename);
-      }
-
-      props.onChange(
+      props.onDelete(
         produce(props.files, (draft) => {
           draft.splice(idx, 1);
-        })
+        }),
+        props.files[idx].filename
       );
     },
-    [deleteUploadedFile, props]
+    [props]
   );
 
   return (
@@ -168,6 +169,7 @@ const KnowledgeFileUploader: React.FC<Props> = (props) => {
           <input
             type="file"
             hidden
+            multiple
             onChange={onClickChooseFiles}
             accept={SUPPORTED_FILES.join(',')}
           />
