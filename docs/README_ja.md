@@ -2,7 +2,8 @@
 
 ![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/test.yml/badge.svg)
 
-> [!Tip] > **🔔 RAG 機能をリリースしました。**。詳細は [Release](https://github.com/aws-samples/bedrock-claude-chat/releases/tag/v0.4.0) をご覧ください。
+> [!Tip]
+> **🔔 RAG 機能をリリースしました。** 詳細は [Release](https://github.com/aws-samples/bedrock-claude-chat/releases/tag/v0.4.0) をご覧ください。
 
 > [!Warning]
 > 現在のバージョン(v0.4.x)は、DynamoDB テーブルスキーマの変更のため、過去バージョン(~v0.3.0)とは互換性がありません。**以前のバージョンから v0.4.x へアップデートすると、既存の対話記録は全て破棄されますので注意が必要です。**
