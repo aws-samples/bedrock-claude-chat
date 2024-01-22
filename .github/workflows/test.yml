@@ -13,5 +13,8 @@ jobs:
           node-version: "18.x"
       - run: |
           cd cdk
+          cd custom-resources/setup-pgvector
+          npm ci
+          cd ../..
           npm ci
           npx cdk synth

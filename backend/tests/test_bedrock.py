@@ -5,7 +5,7 @@ sys.path.append(".")
 import unittest
 from pprint import pprint
 
-from app.bedrock import client, invoke
+from app.bedrock import calculate_query_embedding, client, invoke
 from app.repositories.model import ContentModel, MessageModel
 from app.utils import get_buffer_string
 
@@ -56,6 +56,14 @@ class TestBedrock(unittest.TestCase):
 
         reply_txt = invoke(prompt, model)
         print(reply_txt)
+
+    def test_calculate_query_embedding(self):
+        question = "こんにちは"
+        embeddings = calculate_query_embedding(question)
+        # NOTE: cohere outputs a list of 1024 floats
+        self.assertEqual(len(embeddings), 1024)
+        self.assertEqual(type(embeddings), list)
+        self.assertEqual(type(embeddings[0]), float)
 
 
 if __name__ == "__main__":

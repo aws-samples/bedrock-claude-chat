@@ -4,11 +4,14 @@ import {
   BillingMode,
   Table,
   ProjectionType,
+  StreamViewType,
 } from "aws-cdk-lib/aws-dynamodb";
 import { AccountPrincipal, Role } from "aws-cdk-lib/aws-iam";
 import { Construct } from "constructs";
 
-export interface DatabaseProps {}
+export interface DatabaseProps {
+  pointInTimeRecovery?: boolean;
+}
 
 export class Database extends Construct {
   readonly table: Table;
@@ -24,6 +27,8 @@ export class Database extends Construct {
       sortKey: { name: "SK", type: AttributeType.STRING },
       billingMode: BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY,
+      stream: StreamViewType.NEW_IMAGE,
+      pointInTimeRecovery: props?.pointInTimeRecovery,
     });
     table.addGlobalSecondaryIndex({
       // Used to fetch conversation or bot by id
@@ -35,21 +40,14 @@ export class Database extends Construct {
       indexName: "PublicBotIdIndex",
       partitionKey: { name: "PublicBotId", type: AttributeType.STRING },
       // TODO: add `nonKeyAttributes` for efficiency
+      // For now we project all attributes to keep future compatibility
     });
     table.addLocalSecondaryIndex({
       // Used to fetch all bots for a user. Sorted by bot used time
       indexName: "LastBotUsedIndex",
       sortKey: { name: "LastBotUsed", type: AttributeType.NUMBER },
-      projectionType: ProjectionType.INCLUDE,
-      nonKeyAttributes: [
-        "Title",
-        "CreateTime",
-        "LastBotUsed",
-        "OriginalBotId",
-        "IsPinned",
-        "Description",
-        "PublicBotId",
-      ],
+      // TODO: add `nonKeyAttributes` for efficiency
+      // For now we project all attributes to keep future compatibility
     });
 
     const tableAccessRole = new Role(this, "TableAccessRole", {

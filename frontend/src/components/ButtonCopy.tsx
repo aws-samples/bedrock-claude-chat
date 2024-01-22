@@ -22,7 +22,7 @@ const ButtonCopy: React.FC<Props> = (props) => {
 
   return (
     <ButtonIcon
-      className={`${props.className ?? ''}`}
+      className={props.className}
       onClick={() => {
         copyMessage(props.text);
       }}>

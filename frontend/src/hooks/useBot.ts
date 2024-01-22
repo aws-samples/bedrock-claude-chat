@@ -1,14 +1,26 @@
-import { ulid } from 'ulid';
 import { RegisterBotRequest, UpdateBotRequest } from '../@types/bot';
 import useBotApi from './useBotApi';
 import { produce } from 'immer';
 
-const useBot = () => {
+const useBot = (shouldAutoRefreshMyBots?: boolean) => {
   const api = useBotApi();
 
-  const { data: myBots, mutate: mutateMyBots } = api.bots({
-    kind: 'private',
-  });
+  const { data: myBots, mutate: mutateMyBots } = api.bots(
+    {
+      kind: 'private',
+    },
+    shouldAutoRefreshMyBots
+      ? (data) => {
+          if (!data) {
+            return 0;
+          }
+          const index = data.findIndex(
+            (bot) => bot.syncStatus === 'QUEUED' || bot.syncStatus === 'RUNNING'
+          );
+          return index > -1 ? 5000 : 0;
+        }
+      : undefined
+  );
 
   const { data: starredBots, mutate: mutateStarredBots } = api.bots({
     kind: 'mixed',
@@ -30,15 +42,11 @@ const useBot = () => {
     getMyBot: async (botId: string) => {
       return (await api.getMyBot(botId)).data;
     },
-    getBotSummary: async (botId: string) => {
-      return (await api.getBotSummary(botId)).data;
-    },
-    registerBot: (params: Omit<RegisterBotRequest, 'id'>) => {
-      const id = ulid();
+    registerBot: (params: RegisterBotRequest) => {
       mutateMyBots(
         produce(myBots, (draft) => {
           draft?.unshift({
-            id,
+            id: params.id,
             title: params.title,
             description: params.description ?? '',
             available: true,
@@ -47,20 +55,16 @@ const useBot = () => {
             isPinned: false,
             isPublic: false,
             owned: true,
+            syncStatus: 'QUEUED',
           });
         }),
         {
           revalidate: false,
         }
       );
-      return api
-        .registerBot({
-          id,
-          ...params,
-        })
-        .finally(() => {
-          mutateMyBots();
-        });
+      return api.registerBot(params).finally(() => {
+        mutateMyBots();
+      });
     },
     updateBot: (botId: string, params: UpdateBotRequest) => {
       mutateMyBots(
@@ -212,6 +216,19 @@ const useBot = () => {
       return api.deleteBot(botId).finally(() => {
         mutateRecentlyUsedBots();
       });
+    },
+    uploadFile: (
+      botId: string,
+      file: File,
+      onProgress?: (progress: number) => void
+    ) => {
+      return api.getPresignedUrl(botId, file).then(({ data }) => {
+        data.url;
+        return api.uploadFile(data.url, file, onProgress);
+      });
+    },
+    deleteUploadedFile: (botId: string, filename: string) => {
+      return api.deleteUploadedFile(botId, filename);
     },
   };
 };

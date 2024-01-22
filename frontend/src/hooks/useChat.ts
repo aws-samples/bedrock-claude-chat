@@ -21,6 +21,11 @@ type ChatStateType = {
   [id: string]: MessageMap;
 };
 
+type BotInputType = {
+  botId: string;
+  hasKnowledge: boolean;
+};
+
 const NEW_MESSAGE_ID = {
   USER: 'new-message',
   ASSISTANT: 'new-message-assistant',
@@ -268,7 +273,7 @@ const useChat = () => {
     );
   };
 
-  const postChat = (content: string, model: Model, botId?: string) => {
+  const postChat = (content: string, model: Model, bot?: BotInputType) => {
     const isNewChat = conversationId ? false : true;
     const newConversationId = ulid();
 
@@ -299,7 +304,7 @@ const useChat = () => {
         parentMessageId: parentMessageId,
       },
       stream: true,
-      botId,
+      botId: bot?.botId,
     };
     const createNewConversation = () => {
       // 画面のチラつき防止のために、Stateをコピーする
@@ -324,8 +329,12 @@ const useChat = () => {
 
     const postPromise: Promise<void> = new Promise((resolve, reject) => {
       if (USE_STREAMING) {
-        postStreaming(input, (c: string) => {
-          editMessage(conversationId ?? '', NEW_MESSAGE_ID.ASSISTANT, c);
+        postStreaming({
+          input,
+          hasKnowledge: bot?.hasKnowledge,
+          dispatch: (c: string) => {
+            editMessage(conversationId ?? '', NEW_MESSAGE_ID.ASSISTANT, c);
+          },
         })
           .then(() => {
             resolve();
@@ -375,7 +384,7 @@ const useChat = () => {
   const regenerate = (props?: {
     content?: string;
     messageId?: string;
-    botId?: string;
+    bot?: BotInputType;
   }) => {
     let index: number = -1;
     // messageIdが指定されている場合は、指定されたメッセージをベースにする
@@ -408,7 +417,7 @@ const useChat = () => {
         parentMessageId: parentMessage.parent,
       },
       stream: true,
-      botId: props?.botId,
+      botId: props?.bot?.botId,
     };
 
     if (input.message.parentMessageId === null) {
@@ -438,8 +447,11 @@ const useChat = () => {
 
     setCurrentMessageId(NEW_MESSAGE_ID.ASSISTANT);
 
-    postStreaming(input, (c: string) => {
-      editMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT, c);
+    postStreaming({
+      input,
+      dispatch: (c: string) => {
+        editMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT, c);
+      },
     })
       .then(() => {
         mutate();
@@ -474,7 +486,7 @@ const useChat = () => {
     regenerate,
     getPostedModel,
     // エラーのリトライ
-    retryPostChat: (params: { content?: string; botId?: string }) => {
+    retryPostChat: (params: { content?: string; bot?: BotInputType }) => {
       const length_ = messages.length;
       if (length_ === 0) {
         return;
@@ -487,13 +499,18 @@ const useChat = () => {
         postChat(
           params.content ?? latestMessage.content.body,
           getPostedModel(),
-          params.botId
+          params.bot
+            ? {
+                botId: params.bot.botId,
+                hasKnowledge: params.bot.hasKnowledge,
+              }
+            : undefined
         );
       } else {
         // 再生成時
         regenerate({
           content: params.content ?? latestMessage.content.body,
-          botId: params.botId,
+          bot: params.bot,
         });
       }
     },

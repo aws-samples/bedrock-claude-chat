@@ -1,11 +1,18 @@
 from typing import Literal
 
+from app.route_schema import type_sync_status
 from pydantic import BaseModel
 
 
 class ContentModel(BaseModel):
     content_type: Literal["text"]
     body: str
+
+
+class KnowledgeModel(BaseModel):
+    source_urls: list[str]
+    sitemap_urls: list[str]
+    filenames: list[str]
 
 
 class MessageModel(BaseModel):
@@ -36,6 +43,10 @@ class BotModel(BaseModel):
     # This can be used as the bot is public or not. Also used for GSI PK
     public_bot_id: str | None
     is_pinned: bool
+    knowledge: KnowledgeModel
+    sync_status: type_sync_status
+    sync_status_reason: str
+    sync_last_exec_id: str
 
 
 class BotAliasModel(BaseModel):
@@ -46,6 +57,8 @@ class BotAliasModel(BaseModel):
     create_time: float
     last_used_time: float
     is_pinned: bool
+    sync_status: type_sync_status
+    has_knowledge: bool
 
 
 class ConversationMeta(BaseModel):
@@ -69,3 +82,4 @@ class BotMeta(BaseModel):
     # Whether the bot is available or not.
     # This can be `False` if the bot is not owned by the user and original bot is removed.
     available: bool
+    sync_status: type_sync_status

@@ -10,11 +10,11 @@ from app.repositories.common import (
     TABLE_NAME,
     TRANSACTION_BATCH_SIZE,
     RecordNotFoundError,
-    _compose_bot_id,
-    _compose_conv_id,
-    _decompose_conv_id,
     _get_dynamodb_client,
     _get_table_client,
+    compose_bot_id,
+    compose_conv_id,
+    decompose_conv_id,
 )
 from app.repositories.model import (
     ContentModel,
@@ -31,12 +31,12 @@ sts_client = boto3.client("sts")
 
 
 def store_conversation(user_id: str, conversation: ConversationModel):
-    logger.debug(f"Storing conversation: {conversation.model_dump_json()}")
+    logger.info(f"Storing conversation: {conversation.model_dump_json()}")
     table = _get_table_client(user_id)
 
     item_params = {
         "PK": user_id,
-        "SK": _compose_conv_id(user_id, conversation.id),
+        "SK": compose_conv_id(user_id, conversation.id),
         "Title": conversation.title,
         "CreateTime": decimal(conversation.create_time),
         "MessageMap": json.dumps(
@@ -54,7 +54,7 @@ def store_conversation(user_id: str, conversation: ConversationModel):
 
 
 def find_conversation_by_user_id(user_id: str) -> list[ConversationMeta]:
-    logger.debug(f"Finding conversations for user: {user_id}")
+    logger.info(f"Finding conversations for user: {user_id}")
     table = _get_table_client(user_id)
 
     query_params = {
@@ -67,7 +67,7 @@ def find_conversation_by_user_id(user_id: str) -> list[ConversationMeta]:
     response = table.query(**query_params)
     conversations = [
         ConversationMeta(
-            id=_decompose_conv_id(item["SK"]),
+            id=decompose_conv_id(item["SK"]),
             create_time=float(item["CreateTime"]),
             title=item["Title"],
             # NOTE: all message has the same model
@@ -90,7 +90,7 @@ def find_conversation_by_user_id(user_id: str) -> list[ConversationMeta]:
         conversations.extend(
             [
                 ConversationMeta(
-                    id=_decompose_conv_id(item["SK"]),
+                    id=decompose_conv_id(item["SK"]),
                     create_time=float(item["CreateTime"]),
                     title=item["Title"],
                     model=model,
@@ -104,16 +104,16 @@ def find_conversation_by_user_id(user_id: str) -> list[ConversationMeta]:
             logger.warning(f"Query count exceeded {MAX_QUERY_COUNT}")
             break
 
-    logger.debug(f"Found conversations: {conversations}")
+    logger.info(f"Found conversations: {conversations}")
     return conversations
 
 
 def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationModel:
-    logger.debug(f"Finding conversation: {conversation_id}")
+    logger.info(f"Finding conversation: {conversation_id}")
     table = _get_table_client(user_id)
     response = table.query(
         IndexName="SKIndex",
-        KeyConditionExpression=Key("SK").eq(_compose_conv_id(user_id, conversation_id)),
+        KeyConditionExpression=Key("SK").eq(compose_conv_id(user_id, conversation_id)),
     )
     if len(response["Items"]) == 0:
         raise RecordNotFoundError(f"No conversation found with id: {conversation_id}")
@@ -121,7 +121,7 @@ def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationM
     # NOTE: conversation is unique
     item = response["Items"][0]
     conv = ConversationModel(
-        id=_decompose_conv_id(item["SK"]),
+        id=decompose_conv_id(item["SK"]),
         create_time=float(item["CreateTime"]),
         title=item["Title"],
         message_map={
@@ -141,17 +141,17 @@ def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationM
         last_message_id=item["LastMessageId"],
         bot_id=item["BotId"] if "BotId" in item else None,
     )
-    logger.debug(f"Found conversation: {conv}")
+    logger.info(f"Found conversation: {conv}")
     return conv
 
 
 def delete_conversation_by_id(user_id: str, conversation_id: str):
-    logger.debug(f"Deleting conversation: {conversation_id}")
+    logger.info(f"Deleting conversation: {conversation_id}")
     table = _get_table_client(user_id)
 
     try:
         response = table.delete_item(
-            Key={"PK": user_id, "SK": _compose_conv_id(user_id, conversation_id)},
+            Key={"PK": user_id, "SK": compose_conv_id(user_id, conversation_id)},
             ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
         )
     except ClientError as e:
@@ -166,7 +166,7 @@ def delete_conversation_by_id(user_id: str, conversation_id: str):
 
 
 def delete_conversation_by_user_id(user_id: str):
-    logger.debug(f"Deleting ALL conversations for user: {user_id}")
+    logger.info(f"Deleting ALL conversations for user: {user_id}")
     table = _get_table_client(user_id)
 
     query_params = {
@@ -207,14 +207,14 @@ def delete_conversation_by_user_id(user_id: str):
 
 
 def change_conversation_title(user_id: str, conversation_id: str, new_title: str):
-    logger.debug(f"Updating conversation title: {conversation_id} to {new_title}")
+    logger.info(f"Updating conversation title: {conversation_id} to {new_title}")
     table = _get_table_client(user_id)
 
     try:
         response = table.update_item(
             Key={
                 "PK": user_id,
-                "SK": _compose_conv_id(user_id, conversation_id),
+                "SK": compose_conv_id(user_id, conversation_id),
             },
             UpdateExpression="set Title=:t",
             ExpressionAttributeValues={":t": new_title},
@@ -229,6 +229,6 @@ def change_conversation_title(user_id: str, conversation_id: str, new_title: str
         else:
             raise e
 
-    logger.debug(f"Updated conversation title response: {response}")
+    logger.info(f"Updated conversation title response: {response}")
 
     return response

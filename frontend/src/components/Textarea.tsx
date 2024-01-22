@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { BaseProps } from '../@types/common';
+import { twMerge } from 'tailwind-merge';
 
 type Props = BaseProps & {
   value?: string;
@@ -38,11 +39,12 @@ const Textarea: React.FC<Props> = (props) => {
     <div className={`${props.className ?? ''} flex w-full flex-col`}>
       <textarea
         ref={ref}
-        className={`${
-          props.className ?? ''
-        } peer w-full resize-none rounded p-1.5 outline-none ${
-          isMax ? 'overflow-y-auto' : 'overflow-hidden'
-        } ${props.noBorder ? '' : 'border border-black/30'} `}
+        className={twMerge(
+          'peer w-full resize-none rounded p-1.5 outline-none',
+          isMax ? 'overflow-y-auto' : 'overflow-hidden',
+          props.noBorder ? '' : 'border border-black/30',
+          props.className
+        )}
         rows={props.rows ?? 1}
         placeholder={props.placeholder}
         disabled={props.disabled}
@@ -52,12 +54,12 @@ const Textarea: React.FC<Props> = (props) => {
         }}
       />
       {props.label && (
-        <div className="order-first text-sm text-gray-500 peer-focus:font-semibold peer-focus:italic peer-focus:text-aws-font-color">
+        <div className="order-first text-sm text-dark-gray peer-focus:font-semibold peer-focus:italic peer-focus:text-aws-font-color">
           {props.label}
         </div>
       )}
       {props.hint && (
-        <div className="mt-0.5 text-xs text-gray-400">{props.hint}</div>
+        <div className="mt-0.5 text-xs text-gray">{props.hint}</div>
       )}
     </div>
   );

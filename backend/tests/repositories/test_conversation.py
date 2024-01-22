@@ -4,9 +4,9 @@ import unittest
 sys.path.append(".")
 from app.repositories.conversation import (
     RecordNotFoundError,
-    _compose_conv_id,
     _get_table_client,
     change_conversation_title,
+    compose_conv_id,
     delete_conversation_by_id,
     delete_conversation_by_user_id,
     find_conversation_by_id,
@@ -23,6 +23,7 @@ from app.repositories.model import (
     BotModel,
     ContentModel,
     ConversationModel,
+    KnowledgeModel,
     MessageModel,
 )
 from boto3.dynamodb.conditions import Key
@@ -72,7 +73,7 @@ from botocore.exceptions import ClientError
 
 #         table.query(
 #             KeyConditionExpression=Key("PK").eq(
-#                 _compose_conv_id("user1", self.conversation_user_1.id)
+#                 compose_conv_id("user1", self.conversation_user_1.id)
 #             )
 #         )
 
@@ -80,7 +81,7 @@ from botocore.exceptions import ClientError
 #             # Raise `AccessDeniedException` because user1 cannot access user2's data
 #             table.query(
 #                 KeyConditionExpression=Key("PK").eq(
-#                     _compose_conv_id("user2", self.conversation_user_2.id)
+#                     compose_conv_id("user2", self.conversation_user_2.id)
 #                 )
 #             )
 
@@ -91,7 +92,7 @@ from botocore.exceptions import ClientError
 #         table.query(
 #             IndexName="SKIndex",
 #             KeyConditionExpression=Key("SK").eq(
-#                 _compose_conv_id("user1", self.conversation_user_1.id)
+#                 compose_conv_id("user1", self.conversation_user_1.id)
 #             ),
 #         )
 #         with self.assertRaises(ClientError):
@@ -99,7 +100,7 @@ from botocore.exceptions import ClientError
 #             table.query(
 #                 IndexName="SKIndex",
 #                 KeyConditionExpression=Key("SK").eq(
-#                     _compose_conv_id("user2", self.conversation_user_2.id)
+#                     compose_conv_id("user2", self.conversation_user_2.id)
 #                 ),
 #             )
 
@@ -222,6 +223,14 @@ class TestConversationBotRepository(unittest.TestCase):
             last_used_time=1627984879.9,
             public_bot_id="1",
             is_pinned=False,
+            knowledge=KnowledgeModel(
+                source_urls=["https://aws.amazon.com/"],
+                sitemap_urls=["https://aws.amazon.sitemap.xml"],
+                filenames=["aws.pdf"],
+            ),
+            sync_status="RUNNING",
+            sync_status_reason="reason",
+            sync_last_exec_id="",
         )
         bot2 = BotModel(
             id="2",
@@ -232,6 +241,14 @@ class TestConversationBotRepository(unittest.TestCase):
             last_used_time=1627984879.9,
             public_bot_id="2",
             is_pinned=False,
+            knowledge=KnowledgeModel(
+                source_urls=["https://aws.amazon.com/"],
+                sitemap_urls=["https://aws.amazon.sitemap.xml"],
+                filenames=["aws.pdf"],
+            ),
+            sync_status="RUNNING",
+            sync_status_reason="reason",
+            sync_last_exec_id="",
         )
 
         store_conversation("user", conversation1)

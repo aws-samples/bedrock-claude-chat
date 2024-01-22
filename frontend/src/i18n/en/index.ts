@@ -6,11 +6,16 @@ const translation = {
       starredBots: 'Starred Bots',
       recentlyUsedBots: 'Recently Used Bots',
       conversationHistory: 'History',
+      chatWaitingSymbol: '▍',
     },
     bot: {
       label: {
         myBots: 'My Bots',
         recentlyUsedBots: 'Recently Used Shared Bots',
+        knowledge: 'Knowledge',
+        url: 'URL',
+        sitemap: 'Sitemap URL',
+        file: 'File',
         loadingBot: 'Loading...',
         normalChat: 'Chat',
         notAvailableBot: '[NOT Available]',
@@ -19,6 +24,21 @@ const translation = {
         notAvailable: 'This bot is NOT available.',
         noBots: 'No Bots.',
         noBotsRecentlyUsed: 'No Recently Used Shared Bots.',
+        retrivingKnowledge: '[Retriving Knowledge...]',
+        dndFileUpload:
+          'You can upload files by drag and drop.\nSupported files: {{fileExtensions}}',
+        uploadError: 'Error Message',
+        syncStatus: {
+          queue: 'Waiting Sync',
+          running: 'Syncing',
+          success: 'Completed Sync',
+          fail: 'Failed Sync',
+        },
+        fileUploadStatus: {
+          uploading: 'Uploading...',
+          uploaded: 'Uploaded',
+          error: 'ERROR',
+        },
       },
       titleSubmenu: {
         edit: 'Edit',
@@ -30,6 +50,26 @@ const translation = {
           'Bots operate according to predefined instructions. Chat does not work as intended unless the context is defined in the message, but with bots, there is no need to define the context.',
         instructions:
           'Define how the bot should behave. Giving ambiguous instructions may lead to unpredictable movements, so provide clear and specific instructions.',
+        knowledge: {
+          overview:
+            'By providing external knowledge to the bot, it becomes able to handle data that it has not been pre-trained on.',
+          url: 'The information from the specified URL will be used as Knowledge. If you set the URL of a YouTube video, the transcript of that video will be used as Knowledge.',
+          sitemap:
+            'By specifying the URL of the sitemap, the information obtained through automatically scraping websites within it will be used as Knowledge.',
+          file: 'The uploaded files will be used as Knowledge.',
+        },
+      },
+      alert: {
+        sync: {
+          error: {
+            title: 'Knowledge Sync Error',
+            body: 'An error occurred while synchronizing Knowledge. Please check the following message:',
+          },
+          incomplete: {
+            title: 'NOT Ready',
+            body: 'This bot has not completed the knowledge synchronization, so the knowledge before the update is used.',
+          },
+        },
       },
       samples: {
         title: 'Instructions Samples',
@@ -77,6 +117,7 @@ How would you categorize this email?`,
         copy: 'Copy',
         copied: 'Copied',
         instructionsSamples: 'Samples',
+        chooseFiles: 'Choose files',
       },
       deleteDialog: {
         title: 'Delete?',
@@ -92,6 +133,10 @@ How would you categorize this email?`,
           content:
             'Link sharing is on, so ALL users can use this link to conversation.',
         },
+      },
+      error: {
+        notSupportedFile: 'This file is not supported.',
+        duplicatedFile: 'A file with the same name has been uploaded.',
       },
     },
     deleteDialog: {
@@ -122,6 +167,12 @@ How would you categorize this email?`,
       clearConversation: 'Delete ALL conversations',
       signOut: 'Sign out',
       close: 'Close',
+      add: 'Add',
+    },
+    input: {
+      hint: {
+        required: '* Required',
+      },
     },
     error: {
       answerResponse: 'An error occurred while responding.',

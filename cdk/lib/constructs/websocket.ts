@@ -1,8 +1,12 @@
 import { Construct } from "constructs";
-import * as apigwv2 from "@aws-cdk/aws-apigatewayv2-alpha";
-import { WebSocketLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
+import * as apigwv2 from "aws-cdk-lib/aws-apigatewayv2";
+import { WebSocketLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import * as python from "@aws-cdk/aws-lambda-python-alpha";
-import { DockerImageCode, DockerImageFunction } from "aws-cdk-lib/aws-lambda";
+import {
+  DockerImageCode,
+  DockerImageFunction,
+  IFunction,
+} from "aws-cdk-lib/aws-lambda";
 import * as path from "path";
 import { Runtime } from "aws-cdk-lib/aws-lambda";
 import * as iam from "aws-cdk-lib/aws-iam";
@@ -13,9 +17,13 @@ import { SnsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { Auth } from "./auth";
 import { ITable } from "aws-cdk-lib/aws-dynamodb";
 import { CfnRouteResponse } from "aws-cdk-lib/aws-apigatewayv2";
+import * as ec2 from "aws-cdk-lib/aws-ec2";
+import { DbConfig } from "./embedding";
 
 export interface WebSocketProps {
+  readonly vpc: ec2.IVpc;
   readonly database: ITable;
+  readonly dbConfig: DbConfig;
   readonly auth: Auth;
   readonly bedrockRegion: string;
   readonly tableAccessRole: iam.IRole;
@@ -23,6 +31,7 @@ export interface WebSocketProps {
 
 export class WebSocket extends Construct {
   readonly webSocketApi: apigwv2.IWebSocketApi;
+  readonly handler: IFunction;
   private readonly defaultStageName = "dev";
 
   constructor(scope: Construct, id: string, props: WebSocketProps) {
@@ -59,12 +68,12 @@ export class WebSocket extends Construct {
         resources: ["*"],
       })
     );
-
     handlerRole.addManagedPolicy(
       iam.ManagedPolicy.fromAwsManagedPolicyName(
-        "service-role/AWSLambdaBasicExecutionRole"
+        "service-role/AWSLambdaVPCAccessExecutionRole"
       )
     );
+
     const handler = new DockerImageFunction(this, "Handler", {
       code: DockerImageCode.fromImageAsset(
         path.join(__dirname, "../../../backend"),
@@ -73,6 +82,8 @@ export class WebSocket extends Construct {
           file: "websocket.Dockerfile",
         }
       ),
+      vpc: props.vpc,
+      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
       memorySize: 512,
       timeout: Duration.minutes(15),
       environment: {
@@ -83,6 +94,11 @@ export class WebSocket extends Construct {
         BEDROCK_REGION: props.bedrockRegion,
         TABLE_NAME: database.tableName,
         TABLE_ACCESS_ROLE_ARN: tableAccessRole.roleArn,
+        DB_NAME: props.dbConfig.database,
+        DB_HOST: props.dbConfig.host,
+        DB_USER: props.dbConfig.username,
+        DB_PASSWORD: props.dbConfig.password,
+        DB_PORT: props.dbConfig.port.toString(),
       },
       role: handlerRole,
     });
@@ -120,6 +136,7 @@ export class WebSocket extends Construct {
     });
 
     this.webSocketApi = webSocketApi;
+    this.handler = handler;
 
     new CfnOutput(this, "WebSocketEndpoint", {
       value: this.apiEndpoint,
