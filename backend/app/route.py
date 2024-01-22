@@ -269,14 +269,3 @@ def delete_bot_uploaded_file(request: Request, bot_id: str, filename: str):
     """Delete uploaded file for bot"""
     current_user: User = request.state.current_user
     remove_uploaded_file(current_user.id, bot_id, filename)
-
-
-@router.get("/bot/{bot_id}/search")
-def search_knowledge(request: Request, bot_id: str, query: str):
-    """Search knowledge
-    TODO: remove when release (debug purpose)
-    """
-    current_user: User = request.state.current_user
-    results = search_related_docs(bot_id, 10, query)
-
-    return results

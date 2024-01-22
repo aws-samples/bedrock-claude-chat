@@ -1,19 +1,36 @@
 # Bedrock Claude Chat
 
-TODO: 日本語へ翻訳
+![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/test.yml/badge.svg)
+
+> [!Tip] > **🔔 RAG 機能をリリースしました。**。詳細は [Release](https://github.com/aws-samples/bedrock-claude-chat/releases/tag/v0.4.0) をご覧ください。
 
 > [!Warning]
-> 現在のバージョン(`v0.3.x`)は DynamoDB テーブルの変更により以前のバージョン(`v0.1.0`, `v0.2.x`)との互換性がありません。**`v0.2.x`以前から`v0.3.x`へのアップデート (`cdk deploy`) は、既存の会話履歴の削除を伴いますのでご留意ください。**
+> 現在のバージョン(v0.4.x)は、DynamoDB テーブルスキーマの変更のため、過去バージョン(~v0.3.0)とは互換性がありません。**以前のバージョンから v0.4.x へアップデートすると、既存の対話記録は全て破棄されますので注意が必要です。**
 
 このリポジトリは、生成系 AI を提供する[Amazon Bedrock](https://aws.amazon.com/jp/bedrock/)の基盤モデルの一つである、Anthropic 社製 LLM [Claude 2](https://www.anthropic.com/index/claude-2)を利用したチャットボットのサンプルです。
 
-![](./imgs/demo2.gif)
-![](./imgs/bot2.png)
+### 基本的な会話
+
+![](./imgs/demo_ja.gif)
+
+### ボットのカスタマイズ
+
+外部のナレッジおよび具体的なインストラクションを組み合わせ、ボットをカスタマイズすることが可能です（外部のナレッジを利用した方法は[RAG](./RAG_ja.md)として知られています）。　なお、作成したボットはアプリケーションのユーザー間で共有することができます。
+
+![](./imgs/bot_creation_ja.png)
+![](./imgs/bot_chat_ja.png)
 
 ## 🚀 まずはお試し
 
-- [Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess)を開き、`Edit` > `Claude`をチェックし`Save changes`をクリックします
+- [Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > `Anthropic / Claude`, `Anthropic / Claude Instant`, `Cohere / Embed Multilingual`をチェックし、`Save changes`をクリックします
 - [CloudShell](https://console.aws.amazon.com/cloudshell/home)を開きます
+
+<details>
+<summary>スクリーンショット</summary>
+
+![](./imgs/model_screenshot.png)
+
+</details>
 
 - 下記のコマンドでデプロイ実行します
 
@@ -24,7 +41,7 @@ chmod +x bin.sh
 ./bin.sh
 ```
 
-- 20 分ほど経過後、下記の出力が得られるのでブラウザからアクセスします
+- 30 分ほど経過後、下記の出力が得られるのでブラウザからアクセスします
 
 ```
 Frontend URL: https://xxxxxxxxx.cloudfront.net
@@ -47,11 +64,16 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 - [Amazon CloudFront](https://aws.amazon.com/jp/cloudfront/) + [S3](https://aws.amazon.com/jp/s3/): フロントエンドアプリケーションの配信 ([React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/))
 - [AWS WAF](https://aws.amazon.com/jp/waf/): IP アドレス制限
 - [Amazon Cognito](https://aws.amazon.com/jp/cognito/): ユーザ認証
-- [Amazon Bedrock](https://aws.amazon.com/jp/bedrock/): 基盤モデルを API 経由で利用できるマネージドサービス
+- [Amazon Bedrock](https://aws.amazon.com/jp/bedrock/): 基盤モデルを API 経由で利用できるマネージドサービス。Claude はチャットの応答に利用され、Cohere は RAG 用のベクトル埋め込みに利用されます
+- [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): DynamoDB からのイベントを受け取り、後続の ECS タスクを起動することで、外部のナレッジをカスタマイズ bot に反映します
+- [Amazon Elastic Container Service](https://aws.amazon.com/ecs/): ナレッジをクロール・パースし、埋め込みベクトルと共に Aurora PostgreSQL へ保存します。[Cohere Multilingual](https://txt.cohere.com/multilingual/)がベクトル計算に利用されます
+- [Amazon Aurora PostgreSQL](https://aws.amazon.com/rds/aurora/): [pgvector](https://github.com/pgvector/pgvector) プラグインを利用したスケーラブルなベクトル DB
 
 ![](imgs/arch.png)
 
 ## 機能・ロードマップ
+
+### 基本
 
 - [x] 認証 (サインアップ・サインイン)
 - [x] 会話の新規作成・保存・削除
@@ -64,13 +86,25 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 - [x] メッセージの編集と再送
 - [x] I18n
 - [x] モデルの切り替え (Claude Instant / Claude)
-- [x] カスタマイズされたボットの作成
-- [x] カスタマイズされたボットのシェア
-- [ ] ファイルのアップロードと取得
-- [ ] Web 情報の取得
-- [ ] 管理者用コンソール
 
-### Deploy using CDK
+### カスタマイズボット
+
+- [x] カスタマイズボットの作成
+- [x] カスタマイズボットのシェア
+
+### RAG
+
+- [x] Web (html)
+- [x] テキストデータ (txt, csv, markdown and etc)
+- [x] PDF
+- [x] Microsoft オフィス (pptx, docx, xlsx)
+- [x] Youtube 字幕
+
+### 管理者用機能
+
+- [] ユーザーの利用状況分析
+
+## Deploy using CDK
 
 上記 Easy Deployment は[AWS CodeBuild](https://aws.amazon.com/jp/codebuild/)を利用し、内部で CDK によるデプロイを実行しています。ここでは直接 CDK によりデプロイする手順を記載します。
 
@@ -191,10 +225,6 @@ const userPool = new UserPool(this, "UserPool", {
 - [ローカル環境での開発](./LOCAL_DEVELOPMENT_ja.md)
 - [CONTRIBUTING](../CONTRIBUTING.md)
 
-### Kendra を利用した RAG について
+### RAG (Retrieval Augmented Generation, 検索拡張生成)
 
-本サンプルでは Kendra を利用した RAG は実装しておりません。実導入する場合、アクセスコントロールポリシーやデータコネクタの有無、接続先データソースの認証・認可方法は組織により多様なため、シンプルに一般化することが難しいためです。実用するにはレイテンシーの低下やトークン消費量の増加などのデメリットや、検索精度を検証するための PoC が必須であることを考慮する必要があるため、以下のアセットを活用した PoC をおすすめします。
-
-- [generative-ai-use-cases-jp](https://github.com/aws-samples/generative-ai-use-cases-jp) (In Japanese)
-- [simple-lex-kendra-jp](https://github.com/aws-samples/simple-lex-kendra-jp) (In Japanese)
-- [jp-rag-sample](https://github.com/aws-samples/jp-rag-sample) (In Japanese)
+[こちら](./RAG_ja.md)を参照

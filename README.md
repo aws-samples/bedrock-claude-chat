@@ -2,23 +2,24 @@
 
 ![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/test.yml/badge.svg)
 
-> [!Tip] **🔔 RAG (Retrieval Augmented Generation) Feature released**. See [Release](TODO) for the detail.
+> [!Tip]
+> **🔔 RAG (Retrieval Augmented Generation) Feature released**. See [Release](https://github.com/aws-samples/bedrock-claude-chat/releases/tag/v0.4.0) for the detail.
 
 > [!Warning]
-> The current version (`v0.3.x`) has no compatibility with ex version (`v0.1.0`, `v0.2.x`) due to the change of DynamoDB table schema. **Please note that UPDATE (i.e. `cdk deploy`) FROM `v0.2.x` TO `v0.3.x` WILL DESTROY ALL OF EXISTING CONVERSATION.**
+> The current version (`v0.4.x`) has no compatibility with ex version (~`v0.3.0`) due to the change of DynamoDB table schema. **Please note that UPDATE (i.e. `cdk deploy`) FROM EX VERSION TO `v0.4.x` WILL DESTROY ALL OF EXISTING CONVERSATIONS.**
 
 This repository is a sample chatbot using the Anthropic company's LLM [Claude 2](https://www.anthropic.com/index/claude-2), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI.
 
 ### Basic Conversation
 
-![](./docs/imgs/demo1.gif)
+![](./docs/imgs/demo.gif)
 
 ### Bot Personalization
 
 Add your own instruction and give external knowledge as URL or files (a.k.a [RAG](./docs/RAG.md)). The bot can be shared among application users.
 
-TODO
-![](./docs/imgs/bot1.png)
+![](./docs/imgs/bot_creation.png)
+![](./docs/imgs/bot_chat.png)
 
 ## 📚 Supported Languages
 
@@ -93,13 +94,11 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 - [x] Edit message & re-send
 - [x] I18n
 - [x] Model switch (Claude Instant / Claude)
-- [ ] Feedback (Thumbs up and down)
 
 ### Customized bot features
 
 - [x] Customized bot creation
 - [x] Customized bot sharing
-- [ ] Publishing api
 
 ### RAG features
 

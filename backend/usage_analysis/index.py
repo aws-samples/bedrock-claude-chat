@@ -19,7 +19,6 @@ def handler(event, context):
     )
     current_hour = execution_time.replace(minute=0, second=0, microsecond=0)
 
-    # TODO: datehour
     s3_prefix = current_hour.strftime("%Y/%m/%d/%H")
 
     print(f"TABLE_ARN: {TABLE_ARN}")
