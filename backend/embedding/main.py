@@ -112,6 +112,8 @@ def embed(
             paragraph_separator=r"\n\n\n",
             chunk_size=CHUNK_SIZE,
             chunk_overlap=CHUNK_OVERLAP,
+            # Use length of text as token count for cohere-multilingual-v3
+            tokenizer=lambda text: [0] * len(text),
         )
     )
     embedder = Embedder(verbose=True)

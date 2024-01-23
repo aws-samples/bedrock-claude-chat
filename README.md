@@ -3,7 +3,7 @@
 ![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/test.yml/badge.svg)
 
 > [!Tip]
-> **🔔 RAG (Retrieval Augmented Generation) Feature released**. See [Release](https://github.com/aws-samples/bedrock-claude-chat/releases/tag/v0.4.0) for the detail.
+> 🔔**RAG (Retrieval Augmented Generation) Feature released**. See [Release](https://github.com/aws-samples/bedrock-claude-chat/releases/tag/v0.4.0) for the detail.
 
 > [!Warning]
 > The current version (`v0.4.x`) has no compatibility with ex version (~`v0.3.0`) due to the change of DynamoDB table schema. **Please note that UPDATE (i.e. `cdk deploy`) FROM EX VERSION TO `v0.4.x` WILL DESTROY ALL OF EXISTING CONVERSATIONS.**
