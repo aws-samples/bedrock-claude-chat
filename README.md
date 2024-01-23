@@ -30,7 +30,7 @@ Add your own instruction and give external knowledge as URL or files (a.k.a [RAG
 
 ## 🚀 Super-easy Deployment
 
-- Open [Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > Check `Anthropic / Claude`, `Anthropic / Claude Instant` and `Cohere / Embed Multilingual` then `Save changes`.
+- On us-east-1 region, open [Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > Check `Anthropic / Claude`, `Anthropic / Claude Instant` and `Cohere / Embed Multilingual` then `Save changes`.
 
 <details>
 <summary>Screenshot</summary>

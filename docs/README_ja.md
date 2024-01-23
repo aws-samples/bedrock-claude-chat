@@ -23,7 +23,7 @@
 
 ## 🚀 まずはお試し
 
-- [Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > `Anthropic / Claude`, `Anthropic / Claude Instant`, `Cohere / Embed Multilingual`をチェックし、`Save changes`をクリックします
+- us-east-1リージョンにて、[Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > `Anthropic / Claude`, `Anthropic / Claude Instant`, `Cohere / Embed Multilingual`をチェックし、`Save changes`をクリックします
 <details>
 <summary>スクリーンショット</summary>
 
