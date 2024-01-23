@@ -3,7 +3,7 @@
 ![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/test.yml/badge.svg)
 
 > [!Tip]
-> **🔔 RAG 機能をリリースしました。** 詳細は [Release](https://github.com/aws-samples/bedrock-claude-chat/releases/tag/v0.4.0) をご覧ください。
+> 🔔**RAG 機能をリリースしました。** 詳細は [Release](https://github.com/aws-samples/bedrock-claude-chat/releases/tag/v0.4.0) をご覧ください。
 
 > [!Warning]
 > 現在のバージョン(v0.4.x)は、DynamoDB テーブルスキーマの変更のため、過去バージョン(~v0.3.0)とは互換性がありません。**以前のバージョンから v0.4.x へアップデートすると、既存の対話記録は全て破棄されますので注意が必要です。**
@@ -16,7 +16,7 @@
 
 ### ボットのカスタマイズ
 
-外部のナレッジおよび具体的なインストラクションを組み合わせ、ボットをカスタマイズすることが可能です（外部のナレッジを利用した方法は[RAG](./RAG_ja.md)として知られています）。　なお、作成したボットはアプリケーションのユーザー間で共有することができます。
+外部のナレッジおよび具体的なインストラクションを組み合わせ、ボットをカスタマイズすることが可能です（外部のナレッジを利用した方法は[RAG](./RAG_ja.md)として知られています）。なお、作成したボットはアプリケーションのユーザー間で共有することができます。
 
 ![](./imgs/bot_creation_ja.png)
 ![](./imgs/bot_chat_ja.png)
@@ -24,14 +24,13 @@
 ## 🚀 まずはお試し
 
 - [Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > `Anthropic / Claude`, `Anthropic / Claude Instant`, `Cohere / Embed Multilingual`をチェックし、`Save changes`をクリックします
-- [CloudShell](https://console.aws.amazon.com/cloudshell/home)を開きます
-
 <details>
 <summary>スクリーンショット</summary>
 
 ![](./imgs/model_screenshot.png)
 
 </details>
+- [CloudShell](https://console.aws.amazon.com/cloudshell/home)を開きます
 
 - 下記のコマンドでデプロイ実行します
 
@@ -103,7 +102,7 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 
 ### 管理者用機能
 
-- [] ユーザーの利用状況分析
+- [ ] ユーザーの利用状況分析
 
 ## Deploy using CDK
 

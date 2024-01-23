@@ -28,9 +28,16 @@ class Embedder:
     def __init__(self, verbose=False):
         self.verbose = verbose
 
+    def print_documents_summary(self, documents: list[Document]):
+        for i, d in enumerate(documents):
+            logger.info(f"{i}th document metadata: {d.metadata}")
+            logger.info(f"{i}th document content length: {len(d.page_content)}")
+            logger.info(f"{i}th document head of content: {d.page_content[:30]}")
+
     def embed_documents(self, documents: list[Document]) -> list[list[float]]:
         if self.verbose:
             logger.info(f"Embedding {len(documents)} documents.")
+            self.print_documents_summary(documents)
         embeddings = calculate_document_embeddings([d.page_content for d in documents])
         if self.verbose:
             logger.info("Done embedding.")

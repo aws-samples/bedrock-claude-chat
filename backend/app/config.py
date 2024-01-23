@@ -13,6 +13,7 @@ GENERATION_CONFIG = {
 EMBEDDING_CONFIG = {
     # DO NOT change `model_id` (currently other models are not supported)
     "model_id": "cohere.embed-multilingual-v3",
+    # NOTE: consider that cohere allows up to 2048 tokens per request
     "chunk_size": 1000,
     "chunk_overlap": 200,
 }

@@ -18,16 +18,6 @@ You can configure some parameters (See [Configure RAG Parameters](./CONFIGURE_KN
 
 We utilize [Unstructured](https://github.com/Unstructured-IO) for parsing documents and [Llamaindex](https://www.llamaindex.ai/) for splitting them into chunks. [Playwright](https://playwright.dev/) is used to render content whose `Content-Type` corresponds to `text/html`.
 
-## Note
-
-As described in this [blog](https://www.timescale.com/blog/nearest-neighbor-indexes-what-are-ivfflat-indexes-in-pgvector-and-how-do-they-work/), the pgvector index should be updated as the data evolves. To rebuild the index, execute following sql:
-
-```
-REINDEX INDEX CONCURRENTLY idx_items_embedding;
-```
-
-Please be aware that this sample does not include the execution of the above re-indexing. We recommend to add periodical runner for production environment.
-
 ## RAG by Amazon Kendra
 
 If interested in RAG using [Amazon Kendra](https://aws.amazon.com/kendra/), also refer following samples:

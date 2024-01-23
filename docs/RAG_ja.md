@@ -18,16 +18,6 @@
 
 ドキュメントの解析には[Unstructured](https://github.com/Unstructured-IO)を、ドキュメントのチャンク分割には[Llamaindex](https://www.llamaindex.ai/)を使用しています。`Content-Type`が`text/html`のコンテンツのレンダリングには[Playwright](https://playwright.dev/)を使用しています。
 
-## 留意事項
-
-この[blog](https://www.timescale.com/blog/nearest-neighbor-indexes-what-are-ivfflat-indexes-in-pgvector-and-how-do-they-work/)に記載されているように、データが増加するにつれて pgvector インデックスを更新する必要があります。インデックスを再構築するには、次の SQL を実行します：
-
-```
-REINDEX INDEX CONCURRENTLY idx_items_embedding;
-```
-
-上記の再インデックスの実行はこのサンプルには含まれていないことに注意してください。本番環境では定期的な実行を追加することをお勧めします。
-
 ## Amazon Kendra による RAG
 
 Amazon Kendra を使用した RAG に興味がある場合は、以下のサンプルも参照してください。
