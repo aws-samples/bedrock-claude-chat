@@ -39,7 +39,7 @@ Add your own instruction and give external knowledge as URL or files (a.k.a [RAG
 
 </details>
 
-- Open [CloudShell](https://console.aws.amazon.com/cloudshell/home)
+- Open [CloudShell](https://console.aws.amazon.com/cloudshell/home) at the region where you want to deploy
 - Run deployment via following commands
 
 ```sh
@@ -117,6 +117,10 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 Super-easy Deployment uses [AWS CodeBuild](https://aws.amazon.com/codebuild/) to perform deployment by CDK internally. This section describes the procedure for deploying directly with CDK.
 
 - Please have UNIX, Docker and a Node.js runtime environment. If not, you can also use [Cloud9](https://github.com/aws-samples/cloud9-setup-for-prototyping)
+
+> [!Important]
+> If there is insufficient storage space in the local environment during deployment, CDK bootstrapping may result in an error. If you are running in Cloud9 etc., we recommend expanding the volume size of the instance before deploying.
+
 - Clone this repository
 
 ```
