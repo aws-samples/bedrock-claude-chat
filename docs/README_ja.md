@@ -23,14 +23,14 @@
 
 ## 🚀 まずはお試し
 
-- us-east-1リージョンにて、[Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > `Anthropic / Claude`, `Anthropic / Claude Instant`, `Cohere / Embed Multilingual`をチェックし、`Save changes`をクリックします
+- us-east-1 リージョンにて、[Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > `Anthropic / Claude`, `Anthropic / Claude Instant`, `Cohere / Embed Multilingual`をチェックし、`Save changes`をクリックします
 <details>
 <summary>スクリーンショット</summary>
 
 ![](./imgs/model_screenshot.png)
 
 </details>
-- [CloudShell](https://console.aws.amazon.com/cloudshell/home)を開きます
+- [CloudShell](https://console.aws.amazon.com/cloudshell/home)をデプロイしたいリージョン (ap-northeast-1など) で開きます
 
 - 下記のコマンドでデプロイ実行します
 
@@ -108,7 +108,10 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 
 上記 Easy Deployment は[AWS CodeBuild](https://aws.amazon.com/jp/codebuild/)を利用し、内部で CDK によるデプロイを実行しています。ここでは直接 CDK によりデプロイする手順を記載します。
 
-- お手元に UNIX コマンドおよび Node.js, Docker 実行環境を用意してください。もし無い場合、[Cloud9](https://github.com/aws-samples/cloud9-setup-for-prototyping)をご利用いただくことも可能です
+- お手元に UNIX コマンドおよび Node.js, Docker 実行環境を用意してください。もし無い場合、[Cloud9](https://github.com/aws-samples/cloud9-setup-for-prototyping)をご利用いただくことも可能です。
+
+> [!Note]
+> デプロイ時にローカル環境のストレージ容量が不足すると CDK のブートストラップがエラーとなってしまう可能性があります。Cloud9 等で実行される場合は、インスタンスのボリュームサイズを拡張のうえデプロイ実施されることをお勧めします。
 
 - このリポジトリをクローンします
 
