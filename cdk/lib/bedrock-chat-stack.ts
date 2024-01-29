@@ -26,7 +26,10 @@ export interface BedrockChatStackProps extends StackProps {
 
 export class BedrockChatStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: BedrockChatStackProps) {
-    super(scope, id, props);
+    super(scope, id, {
+      description: "Bedrock Chat Stack (uksb-1tupboc46)",
+      ...props,
+    });
 
     const vpc = new ec2.Vpc(this, "VPC", {});
     const vectorStore = new VectorStore(this, "VectorStore", {
