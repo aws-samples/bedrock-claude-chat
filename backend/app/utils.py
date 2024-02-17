@@ -47,11 +47,9 @@ def get_buffer_string(conversations: list[MessageModel]) -> str:
     return "\n\n".join(string_messages)
 
 
-def get_bedrock_client():
-    client = boto3.client("bedrock-runtime", BEDROCK_REGION)
-
+def get_bedrock_client(region=BEDROCK_REGION):
+    client = boto3.client("bedrock-runtime", region)
     return client
-
 
 def get_current_time():
     # Get current time as milliseconds epoch time
