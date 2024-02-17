@@ -1,7 +1,5 @@
 import sys
 import unittest
-import inspect
-from pprint import pformat
 import logging
 
 LOGGER = logging.getLogger(__name__)
