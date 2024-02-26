@@ -20,6 +20,7 @@ from app.route_schema import (
     BotOutput,
     BotPinnedInput,
     BotPresignedUrlOutput,
+    BotPublishInput,
     BotSummaryOutput,
     BotSwitchVisibilityInput,
     ChatInput,
@@ -39,11 +40,12 @@ from app.usecases.bot import (
     issue_presigned_url,
     modify_owned_bot,
     modify_pin_status,
+    publish_bot,
     remove_bot_by_id,
     remove_uploaded_file,
 )
 from app.usecases.chat import chat, fetch_conversation, propose_conversation_title
-from app.utils import get_current_time
+from app.utils import get_current_time, is_admin
 from app.vector_search import search_related_docs
 from fastapi import APIRouter, Request
 
@@ -269,3 +271,36 @@ def delete_bot_uploaded_file(request: Request, bot_id: str, filename: str):
     """Delete uploaded file for bot"""
     current_user: User = request.state.current_user
     remove_uploaded_file(current_user.id, bot_id, filename)
+
+
+# TODO: remove
+@router.get("/group-test")
+def group_test(request: Request):
+    current_user: User = request.state.current_user
+    return current_user
+
+
+@router.post("/bot/{bot_id}/publication")
+def bot_publication(request: Request, bot_id: str, bot_publish_input: BotPublishInput):
+    """Publish a bot"""
+    current_user: User = request.state.current_user
+    publish_bot(
+        user_id=current_user.id, bot_id=bot_id, bot_publish_input=bot_publish_input
+    )
+    return
+
+
+@router.get("/admin/published-apis")
+def get_published_apis(request: Request):
+    """Get all published APIs"""
+    current_user: User = request.state.current_user
+    if not is_admin(current_user):
+        raise PermissionError("Only admin can access this API.")
+
+
+@router.get("/admin/published-apis/{bot_id}")
+def get_published_api_detail(request: Request, bot_id: str):
+    """Get all published APIs"""
+    current_user: User = request.state.current_user
+    if not is_admin(current_user):
+        raise PermissionError("Only admin can access this API.")

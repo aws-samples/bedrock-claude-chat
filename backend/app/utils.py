@@ -7,7 +7,12 @@ from app.repositories.model import MessageModel
 from botocore.client import Config
 from botocore.exceptions import ClientError
 
+from backend.app.route_schema import User
+
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
+PUBLISH_API_CODEBUILD_PROJECT_NAME = os.environ.get(
+    "PUBLISH_API_CODEBUILD_PROJECT_NAME", ""
+)
 
 
 def is_running_on_lambda():
@@ -148,3 +153,21 @@ def move_file_in_s3(bucket: str, key: str, new_key: str):
     )
     response = client.delete_object(Bucket=bucket, Key=key)
     return response
+
+
+def start_codebuild_project(environment_variables: dict):
+    environment_variables_override = [
+        {"name": key, "value": value} for key, value in environment_variables.items()
+    ]
+    client = boto3.client("codebuild")
+    response = client.start_build(
+        projectName=PUBLISH_API_CODEBUILD_PROJECT_NAME,
+        environmentVariablesOverride=environment_variables_override,
+    )
+    return response
+
+
+def is_admin(user: User) -> bool:
+    if "admin" in user.groups:
+        return True
+    return False

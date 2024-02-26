@@ -50,6 +50,7 @@ app.add_exception_handler(FileNotFoundError, error_handler_factory(404))
 app.add_exception_handler(RecordAccessNotAllowedError, error_handler_factory(403))
 app.add_exception_handler(ValueError, error_handler_factory(400))
 app.add_exception_handler(TypeError, error_handler_factory(400))
+app.add_exception_handler(PermissionError, error_handler_factory(403))
 app.add_exception_handler(ValidationError, error_handler_factory(422))
 app.add_exception_handler(Exception, error_handler_factory(500))
 
@@ -63,6 +64,7 @@ def get_current_user(token: HTTPAuthorizationCredentials = Depends(security)):
         return User(
             id=decoded["sub"],
             name=decoded["cognito:username"],
+            groups=decoded.get("cognito:groups", []),
         )
     except (IndexError, JWTError):
         raise HTTPException(
@@ -81,7 +83,7 @@ def add_current_user_to_request(request: Request, call_next: ASGIApp):
             token = HTTPAuthorizationCredentials(scheme="Bearer", credentials=token_str)
             request.state.current_user = get_current_user(token)
     else:
-        request.state.current_user = User(id="test_user", name="test_user")
+        request.state.current_user = User(id="test_user", name="test_user", groups=[])
 
     response = call_next(request)
     return response

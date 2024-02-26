@@ -17,6 +17,7 @@ import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { Embedding } from "./constructs/embedding";
 import { VectorStore } from "./constructs/vectorstore";
 import { UsageAnalysis } from "./constructs/usage-analysis";
+import { ApiPublishCodebuild } from "./constructs/api-publish-codebuild";
 
 export interface BedrockChatStackProps extends StackProps {
   readonly bedrockRegion: string;
@@ -35,6 +36,12 @@ export class BedrockChatStack extends cdk.Stack {
     const vectorStore = new VectorStore(this, "VectorStore", {
       vpc: vpc,
     });
+    // CodeBuild is used for api publication
+    const apiPublishCodebuild = new ApiPublishCodebuild(
+      this,
+      "ApiPublishCodebuild",
+      {}
+    );
 
     const dbConfig = {
       host: vectorStore.cluster.clusterEndpoint.hostname,
@@ -85,6 +92,7 @@ export class BedrockChatStack extends cdk.Stack {
       tableAccessRole: database.tableAccessRole,
       dbConfig,
       documentBucket,
+      apiPublishProject: apiPublishCodebuild.project,
     });
     documentBucket.grantReadWrite(backendApi.handler);
 

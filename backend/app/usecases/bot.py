@@ -13,6 +13,7 @@ from app.repositories.custom_bot import (
     update_bot,
     update_bot_last_used_time,
     update_bot_pin_status,
+    update_bot_publication,
 )
 from app.repositories.model import BotModel, KnowledgeModel
 from app.route_schema import (
@@ -20,6 +21,7 @@ from app.route_schema import (
     BotModifyInput,
     BotModifyOutput,
     BotOutput,
+    BotPublishInput,
     BotSummaryOutput,
     Knowledge,
 )
@@ -33,6 +35,7 @@ from app.utils import (
     generate_presigned_url,
     get_current_time,
     move_file_in_s3,
+    start_codebuild_project,
 )
 
 DOCUMENT_BUCKET = os.environ.get("DOCUMENT_BUCKET", "bedrock-documents")
@@ -42,23 +45,12 @@ def _update_s3_documents_by_diff(
     user_id: str,
     bot_id: str,
     added_filenames: list[str],
-    # updated_filenames: list[str],
     deleted_filenames: list[str],
 ):
     for filename in added_filenames:
         tmp_path = compose_upload_temp_s3_path(user_id, bot_id, filename)
         document_path = compose_upload_document_s3_path(user_id, bot_id, filename)
         move_file_in_s3(DOCUMENT_BUCKET, tmp_path, document_path)
-
-        # for filename in updated_filenames:
-        #     tmp_path = compose_upload_temp_s3_path(user_id, bot_id, filename)
-        #     document_path = compose_upload_document_s3_path(user_id, bot_id, filename)
-
-        #     if not check_if_file_exists_in_s3(DOCUMENT_BUCKET, document_path):
-        #         # Check the original file which will be replaced exists or not.
-        #         raise FileNotFoundError(f"File {document_path} does not exist.")
-
-        # move_file_in_s3(DOCUMENT_BUCKET, tmp_path, document_path)
 
     for filename in deleted_filenames:
         document_path = compose_upload_document_s3_path(user_id, bot_id, filename)
@@ -149,7 +141,6 @@ def modify_owned_bot(
             user_id,
             bot_id,
             modify_input.knowledge.added_filenames,
-            # modify_input.knowledge.updated_filenames,
             modify_input.knowledge.deleted_filenames,
         )
         # Delete files from upload temp directory
@@ -159,7 +150,6 @@ def modify_owned_bot(
 
         filenames = (
             modify_input.knowledge.added_filenames
-            # + modify_input.knowledge.updated_filenames
             + modify_input.knowledge.unchanged_filenames
         )
 
@@ -329,4 +319,33 @@ def remove_uploaded_file(user_id: str, bot_id: str, filename: str):
     delete_file_from_s3(
         DOCUMENT_BUCKET, compose_upload_temp_s3_path(user_id, bot_id, filename)
     )
+    return
+
+
+def publish_bot(user_id: str, bot_id: str, bot_publish_input: BotPublishInput):
+    """Publish a bot"""
+    # Check existence and permission of the bot
+    try:
+        bot = find_private_bot_by_id(user_id, bot_id)
+    except RecordNotFoundError:
+        raise RecordNotFoundError(f"Bot {bot_id} is not owned by user {user_id}.")
+
+    # Same value as `bot_id` is used for `public_bot_id`
+    published_api_id = bot_id
+
+    # Create `ApiPublishmentStack` by CodeBuild
+    start_codebuild_project(
+        environment_variables={
+            "PUBLISHED_API_THROTTLE_RATE_LIMIT": bot_publish_input.throttle.rate_limit,
+            "PUBLISHED_API_THROTTLE_BURST_LIMIT": bot_publish_input.throttle.burst_limit,
+            "PUBLISHED_API_QUOTA_LIMIT": bot_publish_input.quota.limit,
+            "PUBLISHED_API_QUOTA_PERIOD": bot_publish_input.quota.period,
+            "PUBLISHED_API_DEPLOYMENT_STAGE": bot_publish_input.stage,
+            "PUBLISHED_API_ID": published_api_id,
+            "PUBLISHED_API_ALLOWED_ORIGINS": str(bot_publish_input.allowed_origins),
+        }
+    )
+
+    # Update bot attribute
+    update_bot_publication(user_id, bot_id, published_api_id=published_api_id)
     return

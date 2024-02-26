@@ -83,3 +83,39 @@ class BotMeta(BaseModel):
     # This can be `False` if the bot is not owned by the user and original bot is removed.
     available: bool
     sync_status: type_sync_status
+
+
+class PublishedApiStackModel(BaseModel):
+    stack_id: str
+    stack_name: str
+    stack_status: str
+    api_id: str
+    api_name: str
+    api_usage_plan_id: str
+    api_allowed_origins: list[str]
+    api_stage: str
+    create_time: int
+
+
+class CognitoUserModel(BaseModel):
+    name: str
+    email: str
+    link: str
+
+
+class ApiUsagePlanQuotaModel(BaseModel):
+    limit: int
+    offset: int
+    period: Literal["DAY", "WEEK", "MONTH"]
+
+
+class ApiUsagePlanThrottleModel(BaseModel):
+    rate_limit: float
+    burst_limit: int
+
+
+class ApiUsagePlanModel(BaseModel):
+    id: str
+    name: str
+    quota: ApiUsagePlanQuotaModel
+    throttle: ApiUsagePlanThrottleModel

@@ -509,6 +509,36 @@ def update_bot_visibility(user_id: str, bot_id: str, visible: bool):
     return response
 
 
+def update_bot_publication(user_id: str, bot_id: str, published_api_id: str):
+    # TODO: remove?
+    table = _get_table_client(user_id)
+    logger.info(f"Updating bot publication: {bot_id}")
+    response = table.query(
+        IndexName="SKIndex",
+        KeyConditionExpression=Key("SK").eq(compose_bot_id(user_id, bot_id)),
+    )
+    if len(response["Items"]) == 0:
+        raise RecordNotFoundError(f"Bot with id {bot_id} not found")
+    try:
+        response = table.update_item(
+            Key={"PK": user_id, "SK": compose_bot_id(user_id, bot_id)},
+            UpdateExpression="SET ApiPublishmentStackName = :val",
+            # NOTE: Stack naming rule: ApiPublishmentStack{published_api_id}.
+            # See bedrock-chat-stack.ts > `ApiPublishmentStack`
+            ExpressionAttributeValues={
+                ":val": f"ApiPublishmentStack{published_api_id}"
+            },
+            ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
+        )
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
+            raise RecordNotFoundError(f"Bot with id {bot_id} not found")
+        else:
+            raise e
+
+    return response
+
+
 def delete_bot_by_id(user_id: str, bot_id: str):
     table = _get_table_client(user_id)
     logger.info(f"Deleting bot with id: {bot_id}")
@@ -543,3 +573,67 @@ def delete_alias_by_id(user_id: str, bot_id: str):
             raise e
 
     return response
+
+
+def find_all_public_bots(limit: int | None = None) -> list[BotMeta]:
+    # TODO: remove?
+    """Find a limited number of public bots.
+    This is used for administrative purposes.
+    """
+    table = _get_table_public_client()
+    logger.info("Fetching public bots with limit")
+
+    # Fetch only public bots
+    query_params = {
+        "IndexName": "PublicBotIdIndex",
+        "ScanIndexForward": False,
+    }
+
+    if limit:
+        query_params["Limit"] = limit
+
+    response = table.query(**query_params)
+    bots = [
+        BotMeta(
+            id=decompose_bot_id(item["SK"]),
+            title=item["Title"],
+            create_time=float(item["CreateTime"]),
+            last_used_time=float(item["LastBotUsed"]),
+            owned=True,
+            available=True,
+            is_pinned=item["IsPinned"],
+            description=item["Description"],
+            is_public="PublicBotId" in item,
+            sync_status=item["SyncStatus"],
+        )
+        for item in response.get("Items", [])
+    ]
+
+    # While loop for handling the limit manually if necessary
+    while "LastEvaluatedKey" in response and (limit is None or len(bots) < limit):
+        query_params["ExclusiveStartKey"] = response["LastEvaluatedKey"]
+        response = table.query(**query_params)
+        bots.extend(
+            [
+                BotMeta(
+                    id=decompose_bot_id(item["SK"]),
+                    title=item["Title"],
+                    create_time=float(item["CreateTime"]),
+                    last_used_time=float(item["LastBotUsed"]),
+                    owned=True,
+                    available=True,
+                    is_pinned=item["IsPinned"],
+                    description=item["Description"],
+                    is_public="PublicBotId" in item,
+                    sync_status=item["SyncStatus"],
+                )
+                for item in response.get("Items", [])
+            ]
+        )
+
+        if limit and len(bots) >= limit:
+            bots = bots[:limit]
+            break
+
+    logger.info(f"Found public bots: {bots}")
+    return bots

@@ -174,6 +174,67 @@ class BotPresignedUrlOutput(BaseSchema):
     url: str
 
 
+class PublishedApiQuota(BaseSchema):
+    limit: Optional[int]
+    offset: Optional[int]
+    period: Optional[Literal["DAY", "WEEK", "MONTH"]]
+
+
+class PublishedApiThrottle(BaseSchema):
+    rate_limit: Optional[float]
+    burst_limit: Optional[int]
+
+
+class BotPublishInput(BaseSchema):
+    stage: Optional[str]  # "dev" | "stg" | "prd" | etc.
+    quota: PublishedApiQuota
+    throttle: PublishedApiThrottle
+    allowed_origins: list[str]
+
+
+class PublishedApiUser(BaseSchema):
+    name: str
+    email: str
+    link: str
+
+
+class PublishedApiBotKnowledge(BaseSchema):
+    source_urls: list[str]
+    sitemap_urls: list[str]
+    file_s3_links: list[str]
+
+
+class PublishedApiBot(BaseSchema):
+    title: str
+    description: str
+    instruction: str
+    knowledge: PublishedApiBotKnowledge
+
+
+class PublishedApiApiGateway(BaseSchema):
+    id: str
+    link: str
+    endpoint: str
+    throttle: PublishedApiThrottle
+    quota: PublishedApiQuota
+    allowed_origins: list[str]
+    # num_published_keys: int
+
+
+class PublishedApi(BaseSchema):
+    bot_id: str
+    user: PublishedApiUser
+    bot: PublishedApiBot
+    create_time: float
+    deployment_status: str
+    cfn_stack_link: str
+    api: PublishedApiApiGateway
+
+
+class PublishedApiMeta(BaseSchema): ...
+
+
 class User(BaseSchema):
     id: str
     name: str
+    groups: list[str]

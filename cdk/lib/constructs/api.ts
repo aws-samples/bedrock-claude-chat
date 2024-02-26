@@ -21,7 +21,7 @@ import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as path from "path";
 import { DbConfig } from "./embedding";
 import { IBucket } from "aws-cdk-lib/aws-s3";
-
+import * as codebuild from "aws-cdk-lib/aws-codebuild";
 export interface ApiProps {
   readonly vpc: ec2.IVpc;
   readonly database: ITable;
@@ -31,6 +31,7 @@ export interface ApiProps {
   readonly bedrockRegion: string;
   readonly tableAccessRole: iam.IRole;
   readonly documentBucket: IBucket;
+  readonly apiPublishProject: codebuild.IProject;
 }
 
 export class Api extends Construct {
@@ -66,6 +67,13 @@ export class Api extends Construct {
         "service-role/AWSLambdaVPCAccessExecutionRole"
       )
     );
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["cognito-idp:AdminGetUser"],
+        resources: [props.auth.userPool.userPoolArn],
+      })
+    );
 
     const handler = new DockerImageFunction(this, "Handler", {
       code: DockerImageCode.fromImageAsset(
@@ -94,6 +102,7 @@ export class Api extends Construct {
         DB_PASSWORD: props.dbConfig.password,
         DB_PORT: props.dbConfig.port.toString(),
         DOCUMENT_BUCKET: props.documentBucket.bucketName,
+        PUBLISH_API_CODEBUILD_PROJECT_NAME: props.apiPublishProject.projectName,
       },
       role: handlerRole,
     });
