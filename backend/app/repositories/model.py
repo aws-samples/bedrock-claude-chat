@@ -47,6 +47,8 @@ class BotModel(BaseModel):
     sync_status: type_sync_status
     sync_status_reason: str
     sync_last_exec_id: str
+    published_api_stack_name: str | None
+    published_api_datetime: int | None
 
 
 class BotAliasModel(BaseModel):
@@ -85,6 +87,12 @@ class BotMeta(BaseModel):
     sync_status: type_sync_status
 
 
+class BotMetaWithOwnerUserId(BotMeta):
+    owner_user_id: str
+    published_api_stack_name: str | None
+    published_api_datetime: int | None
+
+
 class PublishedApiStackModel(BaseModel):
     stack_id: str
     stack_name: str
@@ -119,3 +127,11 @@ class ApiUsagePlanModel(BaseModel):
     name: str
     quota: ApiUsagePlanQuotaModel
     throttle: ApiUsagePlanThrottleModel
+    key_ids: list[str]
+
+
+class ApiKeyModel(BaseModel):
+    id: str
+    value: str
+    enabled: bool
+    created_date: int

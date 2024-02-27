@@ -174,6 +174,24 @@ class BotPresignedUrlOutput(BaseSchema):
     url: str
 
 
+# ----
+
+
+class PublicBotMeta(BaseSchema):
+    id: str
+    title: str
+    description: str
+    is_published: bool
+    published_datetime: int | None
+    owner_user_id: str
+    # TODO: add `price` to the schema
+
+
+class PublicBotMetaOutput(BaseSchema):
+    bots: list[PublicBotMeta]
+    next_token: str | None
+
+
 class PublishedApiQuota(BaseSchema):
     limit: Optional[int]
     offset: Optional[int]
@@ -192,49 +210,60 @@ class BotPublishInput(BaseSchema):
     allowed_origins: list[str]
 
 
-class PublishedApiUser(BaseSchema):
-    name: str
-    email: str
-    link: str
-
-
-class PublishedApiBotKnowledge(BaseSchema):
-    source_urls: list[str]
-    sitemap_urls: list[str]
-    file_s3_links: list[str]
-
-
-class PublishedApiBot(BaseSchema):
-    title: str
-    description: str
-    instruction: str
-    knowledge: PublishedApiBotKnowledge
-
-
-class PublishedApiApiGateway(BaseSchema):
-    id: str
-    link: str
-    endpoint: str
-    throttle: PublishedApiThrottle
+class BotPublishOutput(BaseSchema):
+    stage: str  # "dev" | "stg" | "prd" | etc.
     quota: PublishedApiQuota
+    throttle: PublishedApiThrottle
     allowed_origins: list[str]
-    # num_published_keys: int
+    status: str = Field(..., description="The status of the cloudformation deployment.")
+    endpoint: str | None = Field(..., description="The endpoint of the API Gateway.")
+    api_key_ids: list[str]
 
 
-class PublishedApi(BaseSchema):
-    bot_id: str
-    user: PublishedApiUser
-    bot: PublishedApiBot
-    create_time: float
-    deployment_status: str
-    cfn_stack_link: str
-    api: PublishedApiApiGateway
-
-
-class PublishedApiMeta(BaseSchema): ...
-
-
-class User(BaseSchema):
+class ApiKeyOutput(BaseSchema):
     id: str
-    name: str
-    groups: list[str]
+    value: str
+    enabled: bool
+    created_date: int
+
+
+# class PublishedApiUser(BaseSchema):
+#     name: str
+#     email: str
+#     link: str
+
+
+# class PublishedApiBotKnowledge(BaseSchema):
+#     source_urls: list[str]
+#     sitemap_urls: list[str]
+#     file_s3_links: list[str]
+
+
+# class PublishedApiBot(BaseSchema):
+#     title: str
+#     description: str
+#     instruction: str
+#     knowledge: PublishedApiBotKnowledge
+
+
+# class PublishedApiApiGateway(BaseSchema):
+#     id: str
+#     link: str
+#     endpoint: str
+#     throttle: PublishedApiThrottle
+#     quota: PublishedApiQuota
+#     allowed_origins: list[str]
+#     # num_published_keys: int
+
+
+# class PublishedApi(BaseSchema):
+#     bot_id: str
+#     user: PublishedApiUser
+#     bot: PublishedApiBot
+#     create_time: float
+#     deployment_status: str
+#     cfn_stack_link: str
+#     api: PublishedApiApiGateway
+
+
+# class PublishedApiMeta(BaseSchema): ...

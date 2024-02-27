@@ -4,19 +4,17 @@ from pprint import pprint
 
 sys.path.append(".")
 
-from app.repositories.cloudformation import find_all_published_api_stacks
+from app.repositories.cloudformation import find_stack_by_bot_id
+
+# Edit before running (Need to create a api stack with the bot_id).
+bot_id = "bot3"
 
 
 class TestCloudformationRepository(unittest.TestCase):
-    def test_find_all_published_api_stacks(self):
-        stacks = find_all_published_api_stacks()
-        pprint(stacks)
-        self.assertTrue(len(stacks) > 0)
-
-    def test_find_all_published_api_stacks_with_limit(self):
-        limit = 2
-        stacks = find_all_published_api_stacks(limit=limit)
-        self.assertTrue(len(stacks) <= limit)
+    def test_find_stack_by_bot_id(self):
+        stack = find_stack_by_bot_id(bot_id)
+        pprint(stack)
+        self.assertTrue(stack is not None)
 
 
 if __name__ == "__main__":

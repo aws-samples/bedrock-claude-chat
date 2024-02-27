@@ -1,5 +1,6 @@
 from typing import Literal, Union
 
+from app.repositories.apigateway import find_api_key_by_id
 from app.repositories.conversation import (
     change_conversation_title,
     delete_conversation_by_id,
@@ -9,11 +10,13 @@ from app.repositories.conversation import (
 )
 from app.repositories.custom_bot import (
     find_all_bots_by_user_id,
+    find_all_public_bots,
     find_private_bot_by_id,
     find_private_bots_by_user_id,
     update_bot_visibility,
 )
 from app.route_schema import (
+    ApiKeyOutput,
     BotInput,
     BotMetaOutput,
     BotModifyInput,
@@ -21,6 +24,7 @@ from app.route_schema import (
     BotPinnedInput,
     BotPresignedUrlOutput,
     BotPublishInput,
+    BotPublishOutput,
     BotSummaryOutput,
     BotSwitchVisibilityInput,
     ChatInput,
@@ -32,20 +36,26 @@ from app.route_schema import (
     MessageOutput,
     NewTitleInput,
     ProposedTitle,
-    User,
+    PublicBotMeta,
+    PublicBotMetaOutput,
 )
 from app.usecases.bot import (
+    create_bot_publication,
+    create_new_api_key,
     create_new_bot,
+    fetch_api_key,
+    fetch_bot_publication,
     fetch_bot_summary,
     issue_presigned_url,
     modify_owned_bot,
     modify_pin_status,
-    publish_bot,
+    remove_api_key,
     remove_bot_by_id,
+    remove_bot_publication,
     remove_uploaded_file,
 )
 from app.usecases.chat import chat, fetch_conversation, propose_conversation_title
-from app.utils import get_current_time, is_admin
+from app.user import User
 from app.vector_search import search_related_docs
 from fastapi import APIRouter, Request
 
@@ -273,6 +283,9 @@ def delete_bot_uploaded_file(request: Request, bot_id: str, filename: str):
     remove_uploaded_file(current_user.id, bot_id, filename)
 
 
+# ---
+
+
 # TODO: remove
 @router.get("/group-test")
 def group_test(request: Request):
@@ -281,26 +294,114 @@ def group_test(request: Request):
 
 
 @router.post("/bot/{bot_id}/publication")
-def bot_publication(request: Request, bot_id: str, bot_publish_input: BotPublishInput):
-    """Publish a bot"""
+def post_bot_publication(
+    request: Request, bot_id: str, bot_publish_input: BotPublishInput
+):
+    """Publish a bot.
+    This method is intended to be used by the bot owner.
+    """
     current_user: User = request.state.current_user
-    publish_bot(
+    if not current_user.is_publish_allowed():
+        raise PermissionError("User is not allowed to publish bot.")
+    create_bot_publication(
         user_id=current_user.id, bot_id=bot_id, bot_publish_input=bot_publish_input
     )
     return
 
 
-@router.get("/admin/published-apis")
-def get_published_apis(request: Request):
-    """Get all published APIs"""
+@router.get("/bot/{bot_id}/publication", response_model=BotPublishOutput)
+def get_bot_publication(request: Request, bot_id: str, owner_user_id: str | None):
+    """Get bot publication
+    This can be used by both owner and admin.
+    """
     current_user: User = request.state.current_user
-    if not is_admin(current_user):
-        raise PermissionError("Only admin can access this API.")
+    if not current_user.is_publish_allowed():
+        raise PermissionError("User is not allowed to publish bot.")
+
+    if current_user.is_admin():
+        if owner_user_id is None:
+            raise ValueError("owner_user_id must be specified for admin.")
+        user_id = owner_user_id
+    else:
+        user_id = current_user.id
+
+    publication = fetch_bot_publication(user_id, bot_id)
+    return publication
 
 
-@router.get("/admin/published-apis/{bot_id}")
-def get_published_api_detail(request: Request, bot_id: str):
-    """Get all published APIs"""
+@router.delete("/bot/{bot_id}/publication")
+def delete_bot_publication(request: Request, bot_id: str, owner_user_id: str | None):
+    """Delete bot publication
+    This can be used by both owner and admin.
+    """
     current_user: User = request.state.current_user
-    if not is_admin(current_user):
+    if not current_user.is_publish_allowed():
+        raise PermissionError("User is not allowed to publish bot.")
+
+    if current_user.is_admin():
+        if owner_user_id is None:
+            raise ValueError("owner_user_id must be specified for admin.")
+        user_id = owner_user_id
+    else:
+        user_id = current_user.id
+
+    remove_bot_publication(user_id, bot_id)
+
+
+@router.get(
+    "/bot/{bot_id}/publication/api-key/{api_key_id}", response_model=ApiKeyOutput
+)
+def get_bot_publication_api_key(request: Request, bot_id: str, api_key_id: str):
+    """Get bot publication API key. Only the owner can access the key."""
+    current_user: User = request.state.current_user
+    if not current_user.is_publish_allowed():
+        raise PermissionError("User is not allowed to publish bot.")
+
+    key = fetch_api_key(current_user.id, bot_id, api_key_id)
+    return key
+
+
+@router.post("/bot/{bot_id}/publication/api-key", response_model=ApiKeyOutput)
+def post_bot_publication_api_key(request: Request, bot_id: str):
+    """Create bot publication API key. Only the owner can create the key."""
+    current_user: User = request.state.current_user
+    if not current_user.is_publish_allowed():
+        raise PermissionError("User is not allowed to publish bot.")
+    created_key = create_new_api_key(current_user.id, bot_id)
+    return created_key
+
+
+@router.delete("/bot/{bot_id}/publication/api-key/{api_key_id}")
+def delete_bot_publication_api_key(request: Request, bot_id: str, api_key_id: str):
+    """Delete bot publication API key. Only the owner can delete the key."""
+    current_user: User = request.state.current_user
+    if not current_user.is_publish_allowed():
+        raise PermissionError("User is not allowed to publish bot.")
+    remove_api_key(current_user.id, bot_id, api_key_id)
+
+
+@router.get("/admin/public-bots", response_model=list[PublicBotMetaOutput])
+def get_all_public_bots(
+    request: Request,
+    limit: int = 10,
+    nextToken: str | None = None,
+):
+    """Get all public APIs. This is intended to be used by admin."""
+    current_user: User = request.state.current_user
+    if not current_user.is_admin():
         raise PermissionError("Only admin can access this API.")
+    bots, next_token = find_all_public_bots(limit=limit, next_token=nextToken)
+    return PublicBotMetaOutput(
+        bots=[
+            PublicBotMeta(
+                id=bot.id,
+                title=bot.title,
+                description=bot.description,
+                is_published=True if bot.published_api_stack_name else False,
+                published_datetime=bot.published_api_datetime,
+                owner_user_id=bot.owner_user_id,
+            )
+            for bot in bots
+        ],
+        next_token=next_token,
+    )

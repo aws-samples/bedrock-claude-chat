@@ -2,6 +2,10 @@ import os
 import re
 
 from app.repositories.apigateway import find_usage_plan_by_id
+from app.repositories.cloudformation import (
+    find_all_published_api_stacks,
+    find_stack_by_bot_id,
+)
 from app.repositories.cognito import find_cognito_user_by_user_id
 from app.repositories.custom_bot import find_all_public_bots, find_public_bot_by_id
 from app.route_schema import (
@@ -15,11 +19,6 @@ from app.route_schema import (
     PublishedApiUser,
 )
 from app.utils import compose_upload_document_s3_path
-
-from backend.app.repositories.cloudformation import (
-    find_all_published_api_stacks,
-    find_stack_by_bot_id,
-)
 
 REGION = os.environ["REGION"]
 DOCUMENT_BUCKET = os.environ["DOCUMENT_BUCKET"]
@@ -47,6 +46,7 @@ def _compose_apigw_endpoint(api_id: str, stage: str) -> str:
 
 
 def list_published_apis(limit: int | None = None) -> list[PublishedApi]:
+    # TODO: concurrent fetch
     result = []
     # public_bots = find_all_public_bots(limit=limit)
     stacks = find_all_published_api_stacks(limit=limit)
@@ -104,3 +104,5 @@ def list_published_apis(limit: int | None = None) -> list[PublishedApi]:
                 ),
             )
         )
+
+    return result

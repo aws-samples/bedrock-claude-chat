@@ -6,7 +6,7 @@ from typing import Callable
 from app.auth import verify_token
 from app.repositories.common import RecordAccessNotAllowedError, RecordNotFoundError
 from app.route import router
-from app.route_schema import User
+from app.user import User
 from app.utils import is_running_on_lambda
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError

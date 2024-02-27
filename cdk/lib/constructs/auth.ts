@@ -41,6 +41,15 @@ export class Auth extends Construct {
       userPoolId: userPool.userPoolId,
     });
 
+    const publishAllowedGroup = new CfnUserPoolGroup(
+      this,
+      "PublishAllowedGroup",
+      {
+        groupName: "PublishAllowed",
+        userPoolId: userPool.userPoolId,
+      }
+    );
+
     this.client = client;
     this.userPool = userPool;
 

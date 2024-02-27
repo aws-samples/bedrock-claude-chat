@@ -6,7 +6,9 @@ sys.path.append(".")
 from app.repositories.custom_bot import (
     delete_alias_by_id,
     delete_bot_by_id,
+    delete_bot_publication,
     find_all_bots_by_user_id,
+    find_all_public_bots,
     find_private_bot_by_id,
     find_private_bots_by_user_id,
     store_alias,
@@ -14,6 +16,7 @@ from app.repositories.custom_bot import (
     update_alias_last_used_time,
     update_bot,
     update_bot_last_used_time,
+    update_bot_publication,
     update_bot_visibility,
 )
 from app.repositories.model import BotAliasModel, BotModel, KnowledgeModel
@@ -38,6 +41,8 @@ class TestCustomBotRepository(unittest.TestCase):
             sync_status="RUNNING",
             sync_status_reason="reason",
             sync_last_exec_id="",
+            published_api_stack_name="TestApiStack",
+            published_api_datetime=1627984879,
         )
         store_bot("user1", bot)
 
@@ -55,6 +60,9 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(bot.knowledge.filenames, ["test.txt"])
         self.assertEqual(bot.sync_status, "RUNNING")
         self.assertEqual(bot.sync_status_reason, "reason")
+        self.assertEqual(bot.sync_last_exec_id, "")
+        self.assertEqual(bot.published_api_stack_name, "TestApiStack")
+        self.assertEqual(bot.published_api_datetime, 1627984879)
 
         # Assert bot is stored in user1's bot list
         bot = find_private_bots_by_user_id("user1")
@@ -90,6 +98,8 @@ class TestCustomBotRepository(unittest.TestCase):
             sync_status="RUNNING",
             sync_status_reason="reason",
             sync_last_exec_id="",
+            published_api_stack_name=None,
+            published_api_datetime=None,
         )
         store_bot("user1", bot)
         update_bot_last_used_time("user1", "1")
@@ -97,6 +107,42 @@ class TestCustomBotRepository(unittest.TestCase):
         bot = find_private_bot_by_id("user1", "1")
         self.assertIsNotNone(bot.last_used_time)
         self.assertNotEqual(bot.last_used_time, 1627984879.9)
+
+        delete_bot_by_id("user1", "1")
+
+    def test_update_delete_bot_publication(self):
+        bot = BotModel(
+            id="1",
+            title="Test Bot",
+            description="Test Bot Description",
+            instruction="Test Bot Prompt",
+            create_time=1627984879.9,
+            last_used_time=1627984879.9,
+            is_pinned=False,
+            public_bot_id=None,
+            knowledge=KnowledgeModel(
+                source_urls=["https://aws.amazon.com/jp"],
+                sitemap_urls=["https://aws.amazon.sitemap.xml/jp"],
+                filenames=["test.txt"],
+            ),
+            sync_status="FAILED",
+            sync_status_reason="error",
+            sync_last_exec_id="",
+            published_api_stack_name=None,
+            published_api_datetime=None,
+        )
+        store_bot("user1", bot)
+        update_bot_publication("user1", "1", "api1")
+
+        bot = find_private_bot_by_id("user1", "1")
+        # NOTE: Stack naming rule: ApiPublishmentStack{published_api_id}.
+        # See bedrock-chat-stack.ts > `ApiPublishmentStack`
+        self.assertEqual(bot.published_api_stack_name, "ApiPublishmentStackapi1")
+
+        delete_bot_publication("user1", "1")
+        bot = find_private_bot_by_id("user1", "1")
+        self.assertIsNone(bot.published_api_stack_name)
+        self.assertIsNone(bot.published_api_datetime)
 
         delete_bot_by_id("user1", "1")
 
@@ -118,6 +164,8 @@ class TestCustomBotRepository(unittest.TestCase):
             sync_status="FAILED",
             sync_status_reason="error",
             sync_last_exec_id="",
+            published_api_stack_name=None,
+            published_api_datetime=None,
         )
         store_bot("user1", bot)
         update_bot(
@@ -168,6 +216,8 @@ class TestFindAllBots(unittest.TestCase):
             sync_status="RUNNING",
             sync_status_reason="reason",
             sync_last_exec_id="",
+            published_api_stack_name=None,
+            published_api_datetime=None,
         )
         bot2 = BotModel(
             id="2",
@@ -187,6 +237,8 @@ class TestFindAllBots(unittest.TestCase):
             sync_status="RUNNING",
             sync_status_reason="reason",
             sync_last_exec_id="",
+            published_api_stack_name=None,
+            published_api_datetime=None,
         )
         bot3 = BotModel(
             id="3",
@@ -206,6 +258,8 @@ class TestFindAllBots(unittest.TestCase):
             sync_status="RUNNING",
             sync_status_reason="reason",
             sync_last_exec_id="",
+            published_api_stack_name=None,
+            published_api_datetime=None,
         )
         bot4 = BotModel(
             id="4",
@@ -225,6 +279,8 @@ class TestFindAllBots(unittest.TestCase):
             sync_status="RUNNING",
             sync_status_reason="reason",
             sync_last_exec_id="",
+            published_api_stack_name=None,
+            published_api_datetime=None,
         )
         public_bot1 = BotModel(
             id="public1",
@@ -243,6 +299,8 @@ class TestFindAllBots(unittest.TestCase):
             sync_status="RUNNING",
             sync_status_reason="reason",
             sync_last_exec_id="",
+            published_api_stack_name=None,
+            published_api_datetime=None,
         )
         public_bot2 = BotModel(
             id="public2",
@@ -261,6 +319,8 @@ class TestFindAllBots(unittest.TestCase):
             sync_status="RUNNING",
             sync_status_reason="reason",
             sync_last_exec_id="",
+            published_api_stack_name=None,
+            published_api_datetime=None,
         )
         alias1 = BotAliasModel(
             id="alias1",
@@ -297,6 +357,7 @@ class TestFindAllBots(unittest.TestCase):
         update_bot_visibility("user2", "public2", True)
         store_alias("user1", alias1)
         store_alias("user1", alias2)
+        update_bot_publication("user2", "public1", "api1")
 
     def tearDown(self) -> None:
         delete_bot_by_id("user1", "1")
@@ -360,6 +421,32 @@ class TestFindAllBots(unittest.TestCase):
         self.assertEqual(bots[4].id, "3")
         self.assertEqual(bots[5].id, "1")
 
+    def test_find_all_public_bots(self):
+        # Test all public bots fetched
+        bots, next_token = find_all_public_bots()
+        self.assertEqual(len(bots), 2)
+        self.assertEqual(next_token, None)
+
+        # Test all public bots fetched with limit
+        bots, next_token = find_all_public_bots(limit=1)
+        self.assertEqual(len(bots), 1)
+        self.assertEqual(bots[0].id, "public1")
+        self.assertEqual(bots[0].owner_user_id, "user2")
+        # public1 is published
+        self.assertEqual(bots[0].published_api_stack_name, "ApiPublishmentStackapi1")
+        self.assertNotEqual(bots[0].published_api_datetime, None)
+        self.assertNotEqual(next_token, None)
+
+        # Next bot should be public2
+        bots, next_token = find_all_public_bots(limit=1, next_token=next_token)
+        self.assertEqual(len(bots), 1)
+        self.assertEqual(bots[0].id, "public2")
+        self.assertEqual(bots[0].owner_user_id, "user2")
+
+        # No more public bots
+        bots, next_token = find_all_public_bots(limit=1, next_token=next_token)
+        self.assertEqual(len(bots), 0)
+
 
 class TestUpdateBotVisibility(unittest.TestCase):
     def setUp(self) -> None:
@@ -380,6 +467,8 @@ class TestUpdateBotVisibility(unittest.TestCase):
             sync_status="RUNNING",
             sync_status_reason="reason",
             sync_last_exec_id="",
+            published_api_stack_name=None,
+            published_api_datetime=None,
         )
         bot2 = BotModel(
             id="2",
@@ -398,6 +487,8 @@ class TestUpdateBotVisibility(unittest.TestCase):
             sync_status="RUNNING",
             sync_status_reason="reason",
             sync_last_exec_id="",
+            published_api_stack_name=None,
+            published_api_datetime=None,
         )
         public1 = BotModel(
             id="public1",
@@ -416,6 +507,8 @@ class TestUpdateBotVisibility(unittest.TestCase):
             sync_status="RUNNING",
             sync_status_reason="reason",
             sync_last_exec_id="",
+            published_api_stack_name=None,
+            published_api_datetime=None,
         )
         alias1 = BotAliasModel(
             id="4",

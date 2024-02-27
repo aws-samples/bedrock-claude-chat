@@ -7,8 +7,6 @@ from app.repositories.model import MessageModel
 from botocore.client import Config
 from botocore.exceptions import ClientError
 
-from backend.app.route_schema import User
-
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
 PUBLISH_API_CODEBUILD_PROJECT_NAME = os.environ.get(
     "PUBLISH_API_CODEBUILD_PROJECT_NAME", ""
@@ -165,9 +163,3 @@ def start_codebuild_project(environment_variables: dict):
         environmentVariablesOverride=environment_variables_override,
     )
     return response
-
-
-def is_admin(user: User) -> bool:
-    if "admin" in user.groups:
-        return True
-    return False
