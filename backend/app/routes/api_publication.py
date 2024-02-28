@@ -129,7 +129,7 @@ def delete_bot_publication_api_key(request: Request, bot_id: str, api_key_id: st
     remove_api_key(current_user.id, bot_id, api_key_id)
 
 
-@router.get("/admin/public-bots", response_model=list[PublicBotMetaOutput])
+@router.get("/admin/public-bots", response_model=PublicBotMetaOutput)
 def get_all_public_bots(
     request: Request,
     limit: int = 10,
