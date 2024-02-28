@@ -85,19 +85,35 @@ export class Api extends Construct {
     handlerRole.addToPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
-        actions: ["cloudformation:DescribeStacks"],
-        resources: [
-          `arn:aws:cloudformation:region:${Stack.of(this).account}:stack/`,
+        actions: [
+          "cloudformation:DescribeStacks",
+          "cloudformation:DescribeStackEvents",
+          "cloudformation:DescribeStackResource",
+          "cloudformation:DescribeStackResources",
+          "cloudformation:DeleteStack",
         ],
+        resources: [`*`],
       })
     );
-    // handlerRole.addToPolicy(
-    //   new iam.PolicyStatement({
-    //     effect: iam.Effect.ALLOW,
-    //     actions: ["apigateway:*"],
-    //     resources: [`arn:aws:apigateway:${Stack.of(this).region}::/apis/*`],
-    //   })
-    // );
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["codebuild:BatchGetBuilds"],
+        resources: [props.apiPublishProject.projectArn],
+      })
+    );
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "apigateway:GET",
+          "apigateway:POST",
+          "apigateway:PUT",
+          "apigateway:DELETE",
+        ],
+        resources: [`arn:aws:apigateway:${Stack.of(this).region}::/*`],
+      })
+    );
 
     const handler = new DockerImageFunction(this, "Handler", {
       code: DockerImageCode.fromImageAsset(

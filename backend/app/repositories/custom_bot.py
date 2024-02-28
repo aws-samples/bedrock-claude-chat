@@ -51,6 +51,7 @@ def store_bot(user_id: str, custom_bot: BotModel):
         "LastExecId": custom_bot.sync_last_exec_id,
         "ApiPublishmentStackName": custom_bot.published_api_stack_name,
         "ApiPublishedDatetime": custom_bot.published_api_datetime,
+        "ApiPublishCodeBuildId": custom_bot.published_api_codebuild_id,
     }
 
     response = table.put_item(Item=item)
@@ -424,6 +425,11 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
         published_api_datetime=(
             None if "ApiPublishedDatetime" not in item else item["ApiPublishedDatetime"]
         ),
+        published_api_codebuild_id=(
+            None
+            if "ApiPublishCodeBuildId" not in item
+            else item["ApiPublishCodeBuildId"]
+        ),
     )
 
     logger.info(f"Found bot: {bot}")
@@ -462,6 +468,11 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
         ),
         published_api_datetime=(
             None if "ApiPublishedDatetime" not in item else item["ApiPublishedDatetime"]
+        ),
+        published_api_codebuild_id=(
+            None
+            if "ApiPublishCodeBuildId" not in item
+            else item["ApiPublishCodeBuildId"]
         ),
     )
     logger.info(f"Found public bot: {bot}")
@@ -534,19 +545,22 @@ def update_bot_visibility(user_id: str, bot_id: str, visible: bool):
     return response
 
 
-def update_bot_publication(user_id: str, bot_id: str, published_api_id: str):
+def update_bot_publication(
+    user_id: str, bot_id: str, published_api_id: str, build_id: str
+):
     table = _get_table_client(user_id)
     current_time = get_current_time()  # epoch time (int) を取得
     logger.info(f"Updating bot publication: {bot_id}")
     try:
         response = table.update_item(
             Key={"PK": user_id, "SK": compose_bot_id(user_id, bot_id)},
-            UpdateExpression="SET ApiPublishmentStackName = :val, ApiPublishedDatetime = :time",
+            UpdateExpression="SET ApiPublishmentStackName = :val, ApiPublishedDatetime = :time, ApiPublishCodeBuildId = :build_id",
             # NOTE: Stack naming rule: ApiPublishmentStack{published_api_id}.
             # See bedrock-chat-stack.ts > `ApiPublishmentStack`
             ExpressionAttributeValues={
                 ":val": f"ApiPublishmentStack{published_api_id}",
                 ":time": current_time,
+                ":build_id": build_id,
             },
             ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
         )
@@ -565,7 +579,7 @@ def delete_bot_publication(user_id: str, bot_id: str):
     try:
         response = table.update_item(
             Key={"PK": user_id, "SK": compose_bot_id(user_id, bot_id)},
-            UpdateExpression="REMOVE ApiPublishmentStackName, ApiPublishedDatetime",
+            UpdateExpression="REMOVE ApiPublishmentStackName, ApiPublishedDatetime, ApiPublishCodeBuildId",
             ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
         )
     except ClientError as e:

@@ -49,6 +49,7 @@ class BotModel(BaseModel):
     sync_last_exec_id: str
     published_api_stack_name: str | None
     published_api_datetime: int | None
+    published_api_codebuild_id: str | None
 
 
 class BotAliasModel(BaseModel):

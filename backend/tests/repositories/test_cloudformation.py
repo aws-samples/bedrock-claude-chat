@@ -7,7 +7,7 @@ sys.path.append(".")
 from app.repositories.cloudformation import find_stack_by_bot_id
 
 # Edit before running (Need to create a api stack with the bot_id).
-bot_id = "bot3"
+bot_id = "01HQPHC27J6K5PD9RMXNZA8QVG"
 
 
 class TestCloudformationRepository(unittest.TestCase):

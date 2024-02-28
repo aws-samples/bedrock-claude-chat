@@ -7,7 +7,12 @@ from app.repositories.apigateway import (
     find_usage_plan_by_id,
 )
 from app.repositories.cloudformation import delete_stack_by_bot_id, find_stack_by_bot_id
-from app.repositories.common import RecordNotFoundError, compose_bot_id
+from app.repositories.codebuild import find_build_status_by_build_id
+from app.repositories.common import (
+    RecordNotFoundError,
+    ResourceConflictError,
+    compose_bot_id,
+)
 from app.repositories.custom_bot import (
     delete_alias_by_id,
     delete_bot_by_id,
@@ -117,6 +122,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             sync_last_exec_id="",
             published_api_stack_name=None,
             published_api_datetime=None,
+            published_api_codebuild_id=None,
         ),
     )
     return BotOutput(
@@ -346,27 +352,63 @@ def create_bot_publication(
     except RecordNotFoundError:
         raise RecordNotFoundError(f"Bot {bot_id} is not owned by user {user_id}.")
 
+    if bot.public_bot_id is None:
+        raise ValueError(f"Bot {bot_id} is not shared. Cannot publish.")
+
+    if bot.published_api_codebuild_id is not None:
+        codebuild_status = find_build_status_by_build_id(bot.published_api_codebuild_id)
+        if codebuild_status not in ["SUCCEEDED", "FAILED"]:
+            raise ResourceConflictError(
+                f"Bot {bot_id} publication is already requested (build id: {bot.published_api_codebuild_id}). Please wait until the previous publication is completed."
+            )
+        else:
+            raise ValueError(
+                f"Bot {bot_id} is already published. Please remove the publication before re-publishing."
+            )
+
     # Same value as `bot_id` is used for `public_bot_id`
     published_api_id = bot_id
 
+    environment_variables = {}
+    environment_variables["PUBLISHED_API_ID"] = published_api_id
+
+    # Set environment variables.
+    # NOTE: default values are set in `cdk/lib/constructs/api-publish-codebuild.ts`
+    if bot_publish_input.throttle.rate_limit is not None:
+        environment_variables["PUBLISHED_API_THROTTLE_RATE_LIMIT"] = str(
+            bot_publish_input.throttle.rate_limit
+        )
+    if bot_publish_input.throttle.burst_limit is not None:
+        environment_variables["PUBLISHED_API_THROTTLE_BURST_LIMIT"] = str(
+            bot_publish_input.throttle.burst_limit
+        )
+    if bot_publish_input.quota.limit is not None:
+        environment_variables["PUBLISHED_API_QUOTA_LIMIT"] = str(
+            bot_publish_input.quota.limit
+        )
+    if bot_publish_input.quota.period is not None:
+        environment_variables["PUBLISHED_API_QUOTA_PERIOD"] = str(
+            bot_publish_input.quota.period
+        )
+    if bot_publish_input.stage is not None:
+        environment_variables["PUBLISHED_API_DEPLOYMENT_STAGE"] = str(
+            bot_publish_input.stage
+        )
+    if bot_publish_input.allowed_origins is not None:
+        environment_variables["PUBLISHED_API_ALLOWED_ORIGINS"] = (
+            str(bot_publish_input.allowed_origins).replace(" ", "").replace("'", '"')
+        )
+
     # Create `ApiPublishmentStack` by CodeBuild
     try:
-        response = start_codebuild_project(
-            environment_variables={
-                "PUBLISHED_API_THROTTLE_RATE_LIMIT": bot_publish_input.throttle.rate_limit,
-                "PUBLISHED_API_THROTTLE_BURST_LIMIT": bot_publish_input.throttle.burst_limit,
-                "PUBLISHED_API_QUOTA_LIMIT": bot_publish_input.quota.limit,
-                "PUBLISHED_API_QUOTA_PERIOD": bot_publish_input.quota.period,
-                "PUBLISHED_API_DEPLOYMENT_STAGE": bot_publish_input.stage,
-                "PUBLISHED_API_ID": published_api_id,
-                "PUBLISHED_API_ALLOWED_ORIGINS": str(bot_publish_input.allowed_origins),
-            }
-        )
+        build_id = start_codebuild_project(environment_variables=environment_variables)
     except Exception as e:
         raise e
 
     # Update bot attribute
-    update_bot_publication(user_id, bot_id, published_api_id=published_api_id)
+    update_bot_publication(
+        user_id, bot_id, published_api_id=published_api_id, build_id=build_id
+    )
     return
 
 
@@ -374,10 +416,28 @@ def fetch_bot_publication(user_id: str, bot_id: str) -> BotPublishOutput:
     """Get published bot by id."""
     # Check existence and permission of the bot
     try:
-        _ = find_private_bot_by_id(user_id, bot_id)
+        bot = find_private_bot_by_id(user_id, bot_id)
     except RecordNotFoundError:
         raise RecordNotFoundError(f"Bot {bot_id} is not owned by user {user_id}.")
 
+    if bot.published_api_codebuild_id is None:
+        raise ValueError(f"Bot {bot_id} is not published.")
+
+    codebuild_status = find_build_status_by_build_id(bot.published_api_codebuild_id)
+    if codebuild_status != "SUCCEEDED":
+        return BotPublishOutput(
+            stage="",
+            quota=PublishedApiQuota(limit=None, offset=None, period=None),
+            throttle=PublishedApiThrottle(rate_limit=None, burst_limit=None),
+            allowed_origins=[],
+            cfn_status="",
+            codebuild_id=bot.published_api_codebuild_id,
+            codebuild_status=codebuild_status,
+            endpoint="",
+            api_key_ids=[],
+        )
+    print("codebuild_status", codebuild_status)
+    print("bot_id", bot_id)
     stack = find_stack_by_bot_id(bot_id)
     usage_plan = find_usage_plan_by_id(stack.api_usage_plan_id)
     return BotPublishOutput(
@@ -392,7 +452,9 @@ def fetch_bot_publication(user_id: str, bot_id: str) -> BotPublishOutput:
             burst_limit=usage_plan.throttle.burst_limit,
         ),
         allowed_origins=stack.api_allowed_origins,
-        status=stack.stack_status,
+        cfn_status=stack.stack_status,
+        codebuild_id=bot.published_api_codebuild_id,
+        codebuild_status=codebuild_status,
         endpoint=f"https://{stack.api_id}.execute-api.ap-northeast-1.amazonaws.com/{stack.api_stage}",
         api_key_ids=usage_plan.key_ids,
     )
@@ -406,8 +468,26 @@ def remove_bot_publication(user_id: str, bot_id: str):
     except RecordNotFoundError:
         raise RecordNotFoundError(f"Bot {bot_id} is not published.")
 
-    # TODO: cascade deletion for api keys?
-    # If so, use `usage_plan.key_ids` to delete api keys
+    if bot.published_api_codebuild_id is None:
+        raise ValueError(f"Bot {bot_id} is not published.")
+
+    # If Codebuild is not succeeded, just delete bot attribute from DDB and return
+    if bot.published_api_codebuild_id is not None:
+        codebuild_status = find_build_status_by_build_id(bot.published_api_codebuild_id)
+        if codebuild_status not in ["SUCCEEDED", "FAILED"]:
+            raise ValueError(
+                f"Bot {bot_id} publication is requested (build id: {bot.published_api_codebuild_id}) but not completed. Wait until the publication is completed."
+            )
+        if codebuild_status == "FAILED":
+            # Delete bot attribute
+            delete_bot_publication(user_id, bot_id)
+            return
+
+    # Before delete cfn stack, delete all api keys
+    stack = find_stack_by_bot_id(bot_id)
+    usage_plan = find_usage_plan_by_id(stack.api_usage_plan_id)
+    for key_id in usage_plan.key_ids:
+        delete_api_key(key_id)
 
     # Delete `ApiPublishmentStack` by CloudFormation
     delete_stack_by_bot_id(bot_id)
@@ -426,6 +506,7 @@ def fetch_api_key(user_id: str, bot_id: str, api_key: str) -> ApiKeyOutput:
     except RecordNotFoundError:
         raise RecordNotFoundError(f"Bot {bot_id} is not owned by user {user_id}.")
 
+    # Check if the API key is associated with the bot and user
     if api_key not in usage_plan.key_ids:
         raise PermissionError(f"API Key {api_key} is not associated with bot {bot_id}.")
 
@@ -461,6 +542,7 @@ def remove_api_key(user_id: str, bot_id: str, api_key_id: str):
     except RecordNotFoundError:
         raise RecordNotFoundError(f"Bot {bot_id} is not owned by user {user_id}.")
 
+    # Check if the API key is associated with the bot and user
     if api_key_id not in usage_plan.key_ids:
         raise PermissionError(
             f"API Key {api_key_id} is not associated with bot {bot_id}."

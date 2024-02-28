@@ -4,8 +4,14 @@ import traceback
 from typing import Callable
 
 from app.auth import verify_token
-from app.repositories.common import RecordAccessNotAllowedError, RecordNotFoundError
-from app.route import router
+from app.repositories.common import (
+    RecordAccessNotAllowedError,
+    RecordNotFoundError,
+    ResourceConflictError,
+)
+from app.routes.api_publication import router as api_publication_router
+from app.routes.bot import router as bot_router
+from app.routes.conversation import router as conversation_router
 from app.user import User
 from app.utils import is_running_on_lambda
 from fastapi import Depends, FastAPI, HTTPException, Request, status
@@ -22,9 +28,17 @@ CORS_ALLOW_ORIGINS = os.environ.get("CORS_ALLOW_ORIGINS", "*")
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s - %(message)s")
 logger = logging.getLogger(__name__)
-app = FastAPI()
+app = FastAPI(
+    openapi_tags=[
+        {"name": "conversation", "description": "Conversation API"},
+        {"name": "bot", "description": "Bot API"},
+        {"name": "api_publication", "description": "API Publication API"},
+    ]
+)
 
-app.include_router(router)
+app.include_router(conversation_router)
+app.include_router(bot_router)
+app.include_router(api_publication_router)
 
 # NOTE: 組織のセキュリティポリシーに従い、適切にCORSを設定してください
 app.add_middleware(
@@ -52,6 +66,7 @@ app.add_exception_handler(ValueError, error_handler_factory(400))
 app.add_exception_handler(TypeError, error_handler_factory(400))
 app.add_exception_handler(PermissionError, error_handler_factory(403))
 app.add_exception_handler(ValidationError, error_handler_factory(422))
+app.add_exception_handler(ResourceConflictError, error_handler_factory(409))
 app.add_exception_handler(Exception, error_handler_factory(500))
 
 security = HTTPBearer()

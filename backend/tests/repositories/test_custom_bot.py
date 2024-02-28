@@ -43,6 +43,7 @@ class TestCustomBotRepository(unittest.TestCase):
             sync_last_exec_id="",
             published_api_stack_name="TestApiStack",
             published_api_datetime=1627984879,
+            published_api_codebuild_id="TestCodeBuildId",
         )
         store_bot("user1", bot)
 
@@ -100,6 +101,7 @@ class TestCustomBotRepository(unittest.TestCase):
             sync_last_exec_id="",
             published_api_stack_name=None,
             published_api_datetime=None,
+            published_api_codebuild_id=None,
         )
         store_bot("user1", bot)
         update_bot_last_used_time("user1", "1")
@@ -130,19 +132,23 @@ class TestCustomBotRepository(unittest.TestCase):
             sync_last_exec_id="",
             published_api_stack_name=None,
             published_api_datetime=None,
+            published_api_codebuild_id=None,
         )
         store_bot("user1", bot)
-        update_bot_publication("user1", "1", "api1")
+        update_bot_publication("user1", "1", "api1", "build1")
 
         bot = find_private_bot_by_id("user1", "1")
         # NOTE: Stack naming rule: ApiPublishmentStack{published_api_id}.
         # See bedrock-chat-stack.ts > `ApiPublishmentStack`
         self.assertEqual(bot.published_api_stack_name, "ApiPublishmentStackapi1")
+        self.assertIsNotNone(bot.published_api_datetime)
+        self.assertEqual(bot.published_api_codebuild_id, "build1")
 
         delete_bot_publication("user1", "1")
         bot = find_private_bot_by_id("user1", "1")
         self.assertIsNone(bot.published_api_stack_name)
         self.assertIsNone(bot.published_api_datetime)
+        self.assertIsNone(bot.published_api_codebuild_id)
 
         delete_bot_by_id("user1", "1")
 
@@ -166,6 +172,7 @@ class TestCustomBotRepository(unittest.TestCase):
             sync_last_exec_id="",
             published_api_stack_name=None,
             published_api_datetime=None,
+            published_api_codebuild_id=None,
         )
         store_bot("user1", bot)
         update_bot(
@@ -218,6 +225,7 @@ class TestFindAllBots(unittest.TestCase):
             sync_last_exec_id="",
             published_api_stack_name=None,
             published_api_datetime=None,
+            published_api_codebuild_id=None,
         )
         bot2 = BotModel(
             id="2",
@@ -239,6 +247,7 @@ class TestFindAllBots(unittest.TestCase):
             sync_last_exec_id="",
             published_api_stack_name=None,
             published_api_datetime=None,
+            published_api_codebuild_id=None,
         )
         bot3 = BotModel(
             id="3",
@@ -260,6 +269,7 @@ class TestFindAllBots(unittest.TestCase):
             sync_last_exec_id="",
             published_api_stack_name=None,
             published_api_datetime=None,
+            published_api_codebuild_id=None,
         )
         bot4 = BotModel(
             id="4",
@@ -281,6 +291,7 @@ class TestFindAllBots(unittest.TestCase):
             sync_last_exec_id="",
             published_api_stack_name=None,
             published_api_datetime=None,
+            published_api_codebuild_id=None,
         )
         public_bot1 = BotModel(
             id="public1",
@@ -301,6 +312,7 @@ class TestFindAllBots(unittest.TestCase):
             sync_last_exec_id="",
             published_api_stack_name=None,
             published_api_datetime=None,
+            published_api_codebuild_id=None,
         )
         public_bot2 = BotModel(
             id="public2",
@@ -321,6 +333,7 @@ class TestFindAllBots(unittest.TestCase):
             sync_last_exec_id="",
             published_api_stack_name=None,
             published_api_datetime=None,
+            published_api_codebuild_id=None,
         )
         alias1 = BotAliasModel(
             id="alias1",
@@ -357,7 +370,7 @@ class TestFindAllBots(unittest.TestCase):
         update_bot_visibility("user2", "public2", True)
         store_alias("user1", alias1)
         store_alias("user1", alias2)
-        update_bot_publication("user2", "public1", "api1")
+        update_bot_publication("user2", "public1", "api1", "build1")
 
     def tearDown(self) -> None:
         delete_bot_by_id("user1", "1")
@@ -469,6 +482,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             sync_last_exec_id="",
             published_api_stack_name=None,
             published_api_datetime=None,
+            published_api_codebuild_id=None,
         )
         bot2 = BotModel(
             id="2",
@@ -489,6 +503,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             sync_last_exec_id="",
             published_api_stack_name=None,
             published_api_datetime=None,
+            published_api_codebuild_id=None,
         )
         public1 = BotModel(
             id="public1",
@@ -509,6 +524,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             sync_last_exec_id="",
             published_api_stack_name=None,
             published_api_datetime=None,
+            published_api_codebuild_id=None,
         )
         alias1 = BotAliasModel(
             id="4",

@@ -153,7 +153,7 @@ def move_file_in_s3(bucket: str, key: str, new_key: str):
     return response
 
 
-def start_codebuild_project(environment_variables: dict):
+def start_codebuild_project(environment_variables: dict) -> str:
     environment_variables_override = [
         {"name": key, "value": value} for key, value in environment_variables.items()
     ]
@@ -162,4 +162,4 @@ def start_codebuild_project(environment_variables: dict):
         projectName=PUBLISH_API_CODEBUILD_PROJECT_NAME,
         environmentVariablesOverride=environment_variables_override,
     )
-    return response
+    return response["build"]["id"]
