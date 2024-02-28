@@ -310,7 +310,9 @@ def post_bot_publication(
 
 
 @router.get("/bot/{bot_id}/publication", response_model=BotPublishOutput)
-def get_bot_publication(request: Request, bot_id: str, owner_user_id: str | None):
+def get_bot_publication(
+    request: Request, bot_id: str, owner_user_id: str | None = None
+):
     """Get bot publication
     This can be used by both owner and admin.
     """
@@ -330,7 +332,9 @@ def get_bot_publication(request: Request, bot_id: str, owner_user_id: str | None
 
 
 @router.delete("/bot/{bot_id}/publication")
-def delete_bot_publication(request: Request, bot_id: str, owner_user_id: str | None):
+def delete_bot_publication(
+    request: Request, bot_id: str, owner_user_id: str | None = None
+):
     """Delete bot publication
     This can be used by both owner and admin.
     """

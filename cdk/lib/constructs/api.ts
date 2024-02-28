@@ -67,13 +67,37 @@ export class Api extends Construct {
         "service-role/AWSLambdaVPCAccessExecutionRole"
       )
     );
+    // TODO: remove?
+    // handlerRole.addToPolicy(
+    //   new iam.PolicyStatement({
+    //     effect: iam.Effect.ALLOW,
+    //     actions: ["cognito-idp:AdminGetUser"],
+    //     resources: [props.auth.userPool.userPoolArn],
+    //   })
+    // );
     handlerRole.addToPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
-        actions: ["cognito-idp:AdminGetUser"],
-        resources: [props.auth.userPool.userPoolArn],
+        actions: ["codebuild:StartBuild"],
+        resources: [props.apiPublishProject.projectArn],
       })
     );
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["cloudformation:DescribeStacks"],
+        resources: [
+          `arn:aws:cloudformation:region:${Stack.of(this).account}:stack/`,
+        ],
+      })
+    );
+    // handlerRole.addToPolicy(
+    //   new iam.PolicyStatement({
+    //     effect: iam.Effect.ALLOW,
+    //     actions: ["apigateway:*"],
+    //     resources: [`arn:aws:apigateway:${Stack.of(this).region}::/apis/*`],
+    //   })
+    // );
 
     const handler = new DockerImageFunction(this, "Handler", {
       code: DockerImageCode.fromImageAsset(
