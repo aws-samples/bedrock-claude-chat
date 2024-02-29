@@ -3,25 +3,23 @@ import os
 import traceback
 from typing import Callable
 
-from app.auth import verify_token
+from app.dependencies import get_current_user
 from app.repositories.common import (
     RecordAccessNotAllowedError,
     RecordNotFoundError,
     ResourceConflictError,
 )
+from app.routes.admin import router as admin_router
 from app.routes.api_publication import router as api_publication_router
 from app.routes.bot import router as bot_router
 from app.routes.conversation import router as conversation_router
 from app.user import User
 from app.utils import is_running_on_lambda
-from fastapi import Depends, FastAPI, HTTPException, Request, status
-from fastapi.exceptions import RequestValidationError
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError
+from fastapi.security import HTTPAuthorizationCredentials
 from pydantic import ValidationError
-from starlette.routing import Match
 from starlette.types import ASGIApp, Message
 
 CORS_ALLOW_ORIGINS = os.environ.get("CORS_ALLOW_ORIGINS", "*")
@@ -33,12 +31,15 @@ app = FastAPI(
         {"name": "conversation", "description": "Conversation API"},
         {"name": "bot", "description": "Bot API"},
         {"name": "api_publication", "description": "API Publication API"},
+        {"name": "admin", "description": "Admin API"},
     ]
 )
 
 app.include_router(conversation_router)
 app.include_router(bot_router)
 app.include_router(api_publication_router)
+app.include_router(admin_router)
+
 
 # NOTE: 組織のセキュリティポリシーに従い、適切にCORSを設定してください
 app.add_middleware(
@@ -64,29 +65,11 @@ app.add_exception_handler(FileNotFoundError, error_handler_factory(404))
 app.add_exception_handler(RecordAccessNotAllowedError, error_handler_factory(403))
 app.add_exception_handler(ValueError, error_handler_factory(400))
 app.add_exception_handler(TypeError, error_handler_factory(400))
+app.add_exception_handler(AssertionError, error_handler_factory(400))
 app.add_exception_handler(PermissionError, error_handler_factory(403))
 app.add_exception_handler(ValidationError, error_handler_factory(422))
 app.add_exception_handler(ResourceConflictError, error_handler_factory(409))
 app.add_exception_handler(Exception, error_handler_factory(500))
-
-security = HTTPBearer()
-
-
-def get_current_user(token: HTTPAuthorizationCredentials = Depends(security)):
-    try:
-        decoded = verify_token(token.credentials)
-        # Return user information
-        return User(
-            id=decoded["sub"],
-            name=decoded["cognito:username"],
-            groups=decoded.get("cognito:groups", []),
-        )
-    except (IndexError, JWTError):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Could not validate credentials",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
 
 
 @app.middleware("http")

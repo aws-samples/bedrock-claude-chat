@@ -17,13 +17,12 @@ from app.repositories.custom_bot import (
     store_bot,
     update_bot_visibility,
 )
-from app.repositories.model import (
-    BotModel,
+from app.repositories.models.conversation import (
     ContentModel,
     ConversationModel,
-    KnowledgeModel,
     MessageModel,
 )
+from app.repositories.models.custom_bot import BotModel, KnowledgeModel
 from app.route_schema import ChatInput, ChatOutput, Content, MessageInput, MessageOutput
 from app.usecases.chat import (
     chat,
@@ -145,6 +144,7 @@ class TestStartChat(unittest.TestCase):
         self.assertEqual(second_message.parent, first_key)
         self.assertEqual(first_message.children, [second_key])
         self.assertEqual(conv.last_message_id, second_key)
+        self.assertNotEqual(conv.total_price, 0)
 
     def tearDown(self) -> None:
         delete_conversation_by_id("user1", self.output.conversation_id)
@@ -161,6 +161,7 @@ class TestContinueChat(unittest.TestCase):
                 id=self.conversation_id,
                 create_time=1627984879.9,
                 title="Test Conversation",
+                total_price=0,
                 message_map={
                     "1-user": MessageModel(
                         role="user",
@@ -234,6 +235,7 @@ class TestRegenerateChat(unittest.TestCase):
                 id=self.conversation_id,
                 create_time=1627984879.9,
                 title="Test Conversation",
+                total_price=0,
                 message_map={
                     "a-1": MessageModel(
                         role="user",
@@ -376,6 +378,10 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             knowledge=KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[]),
             sync_status="SUCCEEDED",
             sync_status_reason="",
+            sync_last_exec_id="",
+            published_api_codebuild_id="",
+            published_api_datetime=0,
+            published_api_stack_name="",
         )
         public_bot = BotModel(
             id="public1",
@@ -390,6 +396,10 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             knowledge=KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[]),
             sync_status="SUCCEEDED",
             sync_status_reason="",
+            sync_last_exec_id="",
+            published_api_codebuild_id="",
+            published_api_datetime=0,
+            published_api_stack_name="",
         )
         store_bot("user1", private_bot)
         store_bot("user2", public_bot)
@@ -553,6 +563,7 @@ class TestInsertKnowledge(unittest.TestCase):
             id="conversation1",
             create_time=1627984879.9,
             title="Test Conversation",
+            total_price=0,
             message_map={
                 "instruction": MessageModel(
                     role="bot",

@@ -3,6 +3,9 @@ import unittest
 
 sys.path.append(".")
 from app.repositories.conversation import (
+    ContentModel,
+    ConversationModel,
+    MessageModel,
     RecordNotFoundError,
     _get_table_client,
     change_conversation_title,
@@ -19,13 +22,7 @@ from app.repositories.custom_bot import (
     find_private_bots_by_user_id,
     store_bot,
 )
-from app.repositories.model import (
-    BotModel,
-    ContentModel,
-    ConversationModel,
-    KnowledgeModel,
-    MessageModel,
-)
+from app.repositories.models.custom_bot import BotModel, KnowledgeModel
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
@@ -115,6 +112,7 @@ class TestConversationRepository(unittest.TestCase):
             id="1",
             create_time=1627984879.9,
             title="Test Conversation",
+            total_price=100,
             message_map={
                 "a": MessageModel(
                     role="user",
@@ -152,6 +150,7 @@ class TestConversationRepository(unittest.TestCase):
         self.assertEqual(message_map["a"].parent, "z")
         self.assertEqual(message_map["a"].create_time, 1627984879.9)
         self.assertEqual(found_conversation.last_message_id, "x")
+        self.assertEqual(found_conversation.total_price, 100)
         self.assertEqual(found_conversation.bot_id, None)
 
         # Test update title
@@ -184,6 +183,7 @@ class TestConversationBotRepository(unittest.TestCase):
             id="1",
             create_time=1627984879.9,
             title="Test Conversation",
+            total_price=100,
             message_map={
                 "a": MessageModel(
                     role="user",
@@ -201,6 +201,7 @@ class TestConversationBotRepository(unittest.TestCase):
             id="2",
             create_time=1627984879.9,
             title="Test Conversation",
+            total_price=100,
             message_map={
                 "a": MessageModel(
                     role="user",
@@ -231,6 +232,9 @@ class TestConversationBotRepository(unittest.TestCase):
             sync_status="RUNNING",
             sync_status_reason="reason",
             sync_last_exec_id="",
+            published_api_codebuild_id="",
+            published_api_datetime=0,
+            published_api_stack_name="",
         )
         bot2 = BotModel(
             id="2",
@@ -249,6 +253,9 @@ class TestConversationBotRepository(unittest.TestCase):
             sync_status="RUNNING",
             sync_status_reason="reason",
             sync_last_exec_id="",
+            published_api_codebuild_id="",
+            published_api_datetime=0,
+            published_api_stack_name="",
         )
 
         store_conversation("user", conversation1)

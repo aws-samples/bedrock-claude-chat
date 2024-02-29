@@ -4,33 +4,10 @@ from app.route_schema import type_sync_status
 from pydantic import BaseModel
 
 
-class ContentModel(BaseModel):
-    content_type: Literal["text"]
-    body: str
-
-
 class KnowledgeModel(BaseModel):
     source_urls: list[str]
     sitemap_urls: list[str]
     filenames: list[str]
-
-
-class MessageModel(BaseModel):
-    role: str
-    content: ContentModel
-    model: Literal["claude-instant-v1", "claude-v2"]
-    children: list[str]
-    parent: str | None
-    create_time: float
-
-
-class ConversationModel(BaseModel):
-    id: str
-    create_time: float
-    title: str
-    message_map: dict[str, MessageModel]
-    last_message_id: str
-    bot_id: str | None
 
 
 class BotModel(BaseModel):
@@ -64,14 +41,6 @@ class BotAliasModel(BaseModel):
     has_knowledge: bool
 
 
-class ConversationMeta(BaseModel):
-    id: str
-    title: str
-    create_time: float
-    model: str
-    bot_id: str | None
-
-
 class BotMeta(BaseModel):
     id: str
     title: str
@@ -92,47 +61,3 @@ class BotMetaWithOwnerUserId(BotMeta):
     owner_user_id: str
     published_api_stack_name: str | None
     published_api_datetime: int | None
-
-
-class PublishedApiStackModel(BaseModel):
-    stack_id: str
-    stack_name: str
-    stack_status: str
-    api_id: str
-    api_name: str
-    api_usage_plan_id: str
-    api_allowed_origins: list[str]
-    api_stage: str
-    create_time: int
-
-
-class CognitoUserModel(BaseModel):
-    name: str
-    email: str
-    link: str
-
-
-class ApiUsagePlanQuotaModel(BaseModel):
-    limit: int
-    offset: int
-    period: Literal["DAY", "WEEK", "MONTH"]
-
-
-class ApiUsagePlanThrottleModel(BaseModel):
-    rate_limit: float
-    burst_limit: int
-
-
-class ApiUsagePlanModel(BaseModel):
-    id: str
-    name: str
-    quota: ApiUsagePlanQuotaModel
-    throttle: ApiUsagePlanThrottleModel
-    key_ids: list[str]
-
-
-class ApiKeyModel(BaseModel):
-    id: str
-    value: str
-    enabled: bool
-    created_date: int

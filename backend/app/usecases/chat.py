@@ -4,7 +4,13 @@ from copy import deepcopy
 from datetime import datetime
 from typing import Literal
 
-from app.bedrock import _create_body, get_model_id, invoke
+from app.bedrock import (
+    _create_body,
+    calculate_price,
+    count_tokens,
+    get_model_id,
+    invoke,
+)
 from app.config import SEARCH_CONFIG
 from app.repositories.conversation import (
     RecordNotFoundError,
@@ -12,13 +18,12 @@ from app.repositories.conversation import (
     store_conversation,
 )
 from app.repositories.custom_bot import find_alias_by_id, store_alias
-from app.repositories.model import (
-    BotAliasModel,
-    BotModel,
+from app.repositories.models.conversation import (
     ContentModel,
     ConversationModel,
     MessageModel,
 )
+from app.repositories.models.custom_bot import BotAliasModel, BotModel
 from app.route_schema import ChatInput, ChatOutput, Content, Conversation, MessageOutput
 from app.usecases.bot import fetch_bot, modify_bot_last_used_time
 from app.utils import get_buffer_string, get_current_time, is_running_on_lambda
@@ -118,6 +123,7 @@ def prepare_conversation(
         conversation = ConversationModel(
             id=chat_input.conversation_id,
             title="New conversation",
+            total_price=0.0,
             create_time=current_time,
             message_map=initial_message_map,
             last_message_id="",
@@ -143,7 +149,9 @@ def prepare_conversation(
     return (message_id, conversation, bot)
 
 
-def get_invoke_payload(message_map: dict[str, MessageModel], chat_input: ChatInput):
+def get_invoke_payload(
+    message_map: dict[str, MessageModel], chat_input: ChatInput
+) -> tuple[dict, str]:
     messages = trace_to_root(
         node_id=chat_input.message.parent_message_id,
         message_map=message_map,
@@ -154,12 +162,15 @@ def get_invoke_payload(message_map: dict[str, MessageModel], chat_input: ChatInp
     model_id = get_model_id(chat_input.message.model)
     accept = "application/json"
     content_type = "application/json"
-    return {
-        "body": body,
-        "model_id": model_id,
-        "accept": accept,
-        "content_type": content_type,
-    }
+    return (
+        {
+            "body": body,
+            "model_id": model_id,
+            "accept": accept,
+            "content_type": content_type,
+        },
+        prompt,
+    )
 
 
 def trace_to_root(
@@ -286,6 +297,12 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     # Append children to parent
     conversation.message_map[user_msg_id].children.append(assistant_msg_id)
     conversation.last_message_id = assistant_msg_id
+
+    # Update total pricing
+    input_tokens = count_tokens(prompt)
+    output_tokens = count_tokens(reply_txt)
+    price = calculate_price(chat_input.message.model, input_tokens, output_tokens)
+    conversation.total_price += price
 
     # Store updated conversation
     store_conversation(user_id, conversation)

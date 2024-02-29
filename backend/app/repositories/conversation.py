@@ -16,7 +16,7 @@ from app.repositories.common import (
     compose_conv_id,
     decompose_conv_id,
 )
-from app.repositories.model import (
+from app.repositories.models.conversation import (
     ContentModel,
     ConversationMeta,
     ConversationModel,
@@ -42,6 +42,9 @@ def store_conversation(user_id: str, conversation: ConversationModel):
         "MessageMap": json.dumps(
             {k: v.model_dump() for k, v in conversation.message_map.items()}
         ),
+        # Convert to decimal via str to avoid error
+        # Ref: https://stackoverflow.com/questions/63026648/errormessage-class-decimal-inexact-class-decimal-rounded-while
+        "TotalPrice": decimal(str(conversation.total_price)),
         "LastMessageId": conversation.last_message_id,
     }
     if conversation.bot_id:
@@ -124,6 +127,7 @@ def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationM
         id=decompose_conv_id(item["SK"]),
         create_time=float(item["CreateTime"]),
         title=item["Title"],
+        total_price=item.get("TotalPrice", 0),
         message_map={
             k: MessageModel(
                 role=v["role"],

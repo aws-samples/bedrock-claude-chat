@@ -22,6 +22,7 @@ import * as path from "path";
 import { DbConfig } from "./embedding";
 import { IBucket } from "aws-cdk-lib/aws-s3";
 import * as codebuild from "aws-cdk-lib/aws-codebuild";
+import { UsageAnalysis } from "./usage-analysis";
 export interface ApiProps {
   readonly vpc: ec2.IVpc;
   readonly database: ITable;
@@ -32,6 +33,7 @@ export interface ApiProps {
   readonly tableAccessRole: iam.IRole;
   readonly documentBucket: IBucket;
   readonly apiPublishProject: codebuild.IProject;
+  readonly usageAnalysis?: UsageAnalysis;
 }
 
 export class Api extends Construct {
@@ -45,6 +47,9 @@ export class Api extends Construct {
       tableAccessRole,
       corsAllowOrigins: allowOrigins = ["*"],
     } = props;
+
+    const usageAnalysisOutputLocation =
+      `s3://${props.usageAnalysis?.resultOutputBucket.bucketName}` || "";
 
     const handlerRole = new iam.Role(this, "HandlerRole", {
       assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
@@ -114,6 +119,49 @@ export class Api extends Construct {
         resources: [`arn:aws:apigateway:${Stack.of(this).region}::/*`],
       })
     );
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "athena:GetWorkGroup",
+          "athena:StartQueryExecution",
+          "athena:StopQueryExecution",
+          "athena:GetQueryExecution",
+          "athena:GetQueryResults",
+          "athena:GetDataCatalog",
+        ],
+        resources: [props.usageAnalysis?.workgroupArn || ""],
+      })
+    );
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["glue:GetDatabase", "glue:GetDatabases"],
+        resources: [
+          props.usageAnalysis?.database.databaseArn || "",
+          props.usageAnalysis?.database.catalogArn || "",
+        ],
+      })
+    );
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "glue:GetDatabase",
+          "glue:GetTable",
+          "glue:GetTables",
+          "glue:GetPartition",
+          "glue:GetPartitions",
+        ],
+        resources: [
+          props.usageAnalysis?.database.databaseArn || "",
+          props.usageAnalysis?.database.catalogArn || "",
+          props.usageAnalysis?.ddbExportTable.tableArn || "",
+        ],
+      })
+    );
+    props.usageAnalysis?.resultOutputBucket.grantReadWrite(handlerRole);
+    props.usageAnalysis?.ddbBucket.grantRead(handlerRole);
 
     const handler = new DockerImageFunction(this, "Handler", {
       code: DockerImageCode.fromImageAsset(
@@ -143,6 +191,12 @@ export class Api extends Construct {
         DB_PORT: props.dbConfig.port.toString(),
         DOCUMENT_BUCKET: props.documentBucket.bucketName,
         PUBLISH_API_CODEBUILD_PROJECT_NAME: props.apiPublishProject.projectName,
+        USAGE_ANALYSIS_DATABASE:
+          props.usageAnalysis?.database.databaseName || "",
+        USAGE_ANALYSIS_TABLE:
+          props.usageAnalysis?.ddbExportTable.tableName || "",
+        USAGE_ANALYSIS_WORKGROUP: props.usageAnalysis?.workgroupName || "",
+        USAGE_ANALYSIS_OUTPUT_LOCATION: usageAnalysisOutputLocation,
       },
       role: handlerRole,
     });

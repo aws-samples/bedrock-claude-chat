@@ -1,6 +1,6 @@
 import boto3
 from app.repositories.common import RecordNotFoundError
-from app.repositories.model import (
+from app.repositories.models.apigateway import (
     ApiKeyModel,
     ApiUsagePlanModel,
     ApiUsagePlanQuotaModel,

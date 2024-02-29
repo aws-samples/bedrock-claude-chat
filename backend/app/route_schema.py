@@ -174,22 +174,15 @@ class BotPresignedUrlOutput(BaseSchema):
     url: str
 
 
-# ----
-
-
-class PublicBotMeta(BaseSchema):
+class PublicBotMetaOutput(BaseSchema):
     id: str
     title: str
     description: str
     is_published: bool
     published_datetime: int | None
     owner_user_id: str
-    # TODO: add `price` to the schema
-
-
-class PublicBotMetaOutput(BaseSchema):
-    bots: list[PublicBotMeta]
-    next_token: str | None
+    # model_id: str
+    total_price: float
 
 
 class PublishedApiQuota(BaseSchema):
@@ -231,45 +224,3 @@ class ApiKeyOutput(BaseSchema):
     value: str
     enabled: bool
     created_date: int
-
-
-# class PublishedApiUser(BaseSchema):
-#     name: str
-#     email: str
-#     link: str
-
-
-# class PublishedApiBotKnowledge(BaseSchema):
-#     source_urls: list[str]
-#     sitemap_urls: list[str]
-#     file_s3_links: list[str]
-
-
-# class PublishedApiBot(BaseSchema):
-#     title: str
-#     description: str
-#     instruction: str
-#     knowledge: PublishedApiBotKnowledge
-
-
-# class PublishedApiApiGateway(BaseSchema):
-#     id: str
-#     link: str
-#     endpoint: str
-#     throttle: PublishedApiThrottle
-#     quota: PublishedApiQuota
-#     allowed_origins: list[str]
-#     # num_published_keys: int
-
-
-# class PublishedApi(BaseSchema):
-#     bot_id: str
-#     user: PublishedApiUser
-#     bot: PublishedApiBot
-#     create_time: float
-#     deployment_status: str
-#     cfn_stack_link: str
-#     api: PublishedApiApiGateway
-
-
-# class PublishedApiMeta(BaseSchema): ...

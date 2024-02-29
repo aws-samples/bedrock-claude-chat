@@ -84,6 +84,13 @@ export class BedrockChatStack extends cdk.Stack {
       pointInTimeRecovery: props.enableUsageAnalysis,
     });
 
+    let usageAnalysis;
+    if (props.enableUsageAnalysis) {
+      usageAnalysis = new UsageAnalysis(this, "UsageAnalysis", {
+        sourceDatabase: database,
+      });
+    }
+
     const backendApi = new Api(this, "BackendApi", {
       vpc,
       database: database.table,
@@ -93,6 +100,7 @@ export class BedrockChatStack extends cdk.Stack {
       dbConfig,
       documentBucket,
       apiPublishProject: apiPublishCodebuild.project,
+      usageAnalysis,
     });
     documentBucket.grantReadWrite(backendApi.handler);
 
@@ -134,12 +142,6 @@ export class BedrockChatStack extends cdk.Stack {
     vectorStore.allowFrom(embedding.removalHandler);
     vectorStore.allowFrom(backendApi.handler);
     vectorStore.allowFrom(websocket.handler);
-
-    if (props.enableUsageAnalysis) {
-      new UsageAnalysis(this, "UsageAnalysis", {
-        sourceDatabase: database,
-      });
-    }
 
     new CfnOutput(this, "DocumentBucketName", {
       value: documentBucket.bucketName,

@@ -22,3 +22,49 @@ EMBEDDING_CONFIG = {
 SEARCH_CONFIG = {
     "max_results": 5,
 }
+
+# Used for price estimation.
+# NOTE: The following is based on 2024-01-29.
+# See: https://aws.amazon.com/jp/bedrock/pricing/
+ANTHROPIC_PRICING = {
+    "us-east-1": {
+        "claude-instant-v1": {
+            "input": 0.00080,
+            "output": 0.00240,
+        },
+        "claude-v2": {
+            "input": 0.00080,
+            "output": 0.00240,
+        },
+    },
+    "us-west-2": {
+        "claude-instant-v1": {
+            "input": 0.00080,
+            "output": 0.00240,
+        },
+        "claude-v2": {
+            "input": 0.00080,
+            "output": 0.00240,
+        },
+    },
+    "ap-northeast-1": {
+        "claude-instant-v1": {
+            "input": 0.00080,
+            "output": 0.00240,
+        },
+        "claude-v2": {
+            "input": 0.00080,
+            "output": 0.00240,
+        },
+    },
+    "default": {
+        "claude-instant-v1": {
+            "input": 0.00080,
+            "output": 0.00240,
+        },
+        "claude-v2": {
+            "input": 0.00080,
+            "output": 0.00240,
+        },
+    },
+}

@@ -1,9 +1,18 @@
 import logging
 import os
+from typing import Literal
 
 import boto3
 from app.repositories.common import RecordNotFoundError
-from app.repositories.model import CognitoUserModel
+from app.route_schema import type_sync_status
+from pydantic import BaseModel
+
+
+class CognitoUserModel(BaseModel):
+    name: str
+    email: str
+    link: str
+
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +23,7 @@ client = boto3.client("cognito-idp", region_name="ap-northeast-1")
 
 
 def find_cognito_user_by_user_id(user_id: str) -> CognitoUserModel:
+    # TOOD: remove?
     try:
         response = client.admin_get_user(UserPoolId=USER_POOL_ID, Username=user_id)
         email = next(

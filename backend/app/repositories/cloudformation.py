@@ -3,7 +3,7 @@ import re
 
 import boto3
 from app.repositories.common import RecordNotFoundError
-from app.repositories.model import PublishedApiStackModel
+from app.repositories.models.cloudformation import PublishedApiStackModel
 
 logger = logging.getLogger(__name__)
 

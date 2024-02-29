@@ -28,7 +28,7 @@ from app.repositories.custom_bot import (
     update_bot_pin_status,
     update_bot_publication,
 )
-from app.repositories.model import BotModel, KnowledgeModel
+from app.repositories.models.custom_bot import BotModel, KnowledgeModel
 from app.route_schema import (
     ApiKeyOutput,
     BotInput,

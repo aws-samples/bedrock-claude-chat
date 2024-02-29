@@ -4,9 +4,10 @@ from datetime import datetime
 
 import boto3
 from app.auth import verify_token
+from app.bedrock import calculate_price, count_tokens
 from app.config import SEARCH_CONFIG
 from app.repositories.conversation import RecordNotFoundError, store_conversation
-from app.repositories.model import ContentModel, MessageModel
+from app.repositories.models.conversation import ContentModel, MessageModel
 from app.route_schema import ChatInputWithToken
 from app.usecases.bot import modify_bot_last_used_time
 from app.usecases.chat import get_invoke_payload, insert_knowledge, prepare_conversation
@@ -95,7 +96,7 @@ def handler(event, context):
         conversation_with_context = insert_knowledge(conversation, results)
         message_map = conversation_with_context.message_map
 
-    payload = get_invoke_payload(message_map, chat_input)
+    payload, prompt = get_invoke_payload(message_map, chat_input)
 
     try:
         # Invoke bedrock streaming api
@@ -131,6 +132,14 @@ def handler(event, context):
             # Append children to parent
             conversation.message_map[user_msg_id].children.append(assistant_msg_id)
             conversation.last_message_id = assistant_msg_id
+
+            # Update total pricing
+            input_tokens = count_tokens(prompt)
+            output_tokens = count_tokens(concatenated)
+            price = calculate_price(
+                chat_input.message.model, input_tokens, output_tokens
+            )
+            conversation.total_price += price
 
             store_conversation(user_id, conversation)
         try:

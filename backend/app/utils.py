@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List
 
 import boto3
-from app.repositories.model import MessageModel
+from app.repositories.models.conversation import MessageModel
 from botocore.client import Config
 from botocore.exceptions import ClientError
 

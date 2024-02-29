@@ -1,9 +1,18 @@
 import json
+import logging
+import os
 
-from app.config import EMBEDDING_CONFIG, GENERATION_CONFIG
+from anthropic import Anthropic
+from app.config import ANTHROPIC_PRICING, EMBEDDING_CONFIG, GENERATION_CONFIG
 from app.utils import get_bedrock_client
 
+logger = logging.getLogger(__name__)
+
+BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
+
+
 client = get_bedrock_client()
+anthropic_client = Anthropic()
 
 
 def _create_body(model: str, prompt: str):
@@ -27,10 +36,29 @@ def _extract_output_text(model: str, response) -> str:
         raise NotImplementedError()
 
 
+def count_tokens(text: str) -> int:
+    return anthropic_client.count_tokens(text)
+
+
+def calculate_price(
+    model: str, input_tokens: int, output_tokens: int, region: str = BEDROCK_REGION
+) -> float:
+    if region in ("us-east-1", "us-west-2", "ap-northeast-1"):
+        input_price = ANTHROPIC_PRICING[region][model]["input"]
+        output_price = ANTHROPIC_PRICING[region][model]["output"]
+
+    else:
+        logger.warning(f"Unsupported region: {region}. Using default pricing.")
+        input_price = ANTHROPIC_PRICING["default"][model]["input"]
+        output_price = ANTHROPIC_PRICING["default"][model]["output"]
+
+    return input_price * input_tokens / 1000.0 + output_price * output_tokens / 1000.0
+
+
 def get_model_id(model: str) -> str:
     # Ref: https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
     if model == "claude-v2":
-        return "anthropic.claude-v2"
+        return "anthropic.claude-v2:1"
     elif model == "claude-instant-v1":
         return "anthropic.claude-instant-v1"
     else:

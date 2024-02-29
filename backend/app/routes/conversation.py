@@ -10,7 +10,6 @@ from app.repositories.conversation import (
 )
 from app.repositories.custom_bot import (
     find_all_bots_by_user_id,
-    find_all_public_bots,
     find_private_bot_by_id,
     find_private_bots_by_user_id,
     update_bot_visibility,
@@ -36,8 +35,6 @@ from app.route_schema import (
     MessageOutput,
     NewTitleInput,
     ProposedTitle,
-    PublicBotMeta,
-    PublicBotMetaOutput,
 )
 from app.usecases.bot import (
     create_bot_publication,

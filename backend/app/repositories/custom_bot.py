@@ -1,13 +1,14 @@
+import asyncio
 import base64
 import json
 import logging
 import os
 from datetime import datetime
 from decimal import Decimal as decimal
+from functools import partial
 
 import boto3
 from app.repositories.common import (
-    RecordAccessNotAllowedError,
     RecordNotFoundError,
     _get_table_client,
     _get_table_public_client,
@@ -16,7 +17,7 @@ from app.repositories.common import (
     decompose_bot_alias_id,
     decompose_bot_id,
 )
-from app.repositories.model import (
+from app.repositories.models.custom_bot import (
     BotAliasModel,
     BotMeta,
     BotMetaWithOwnerUserId,
@@ -27,6 +28,8 @@ from app.route_schema import type_sync_status
 from app.utils import get_current_time
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
+
+TABLE_NAME = os.environ.get("TABLE_NAME", "")
 
 logger = logging.getLogger(__name__)
 sts_client = boto3.client("sts")
@@ -627,55 +630,97 @@ def delete_alias_by_id(user_id: str, bot_id: str):
     return response
 
 
-def find_all_public_bots(
-    limit: int | None = None, next_token: str | None = None
-) -> tuple[list[BotMetaWithOwnerUserId], str | None]:
-    # TODO: add index? existing table not deleted?
-    """Find all public bots. This method is intended for administrator use."""
+async def find_public_bots_by_ids(bot_ids: list[str]) -> list[BotMetaWithOwnerUserId]:
+    """Find all public bots by ids. This method is intended for administrator use."""
     table = _get_table_public_client()
-    logger.info("Fetching public bots with limit and next token")
+    loop = asyncio.get_running_loop()
 
-    # Fetch only public bots
-    scan_params = {
-        "IndexName": "PublicBotIdIndex",
-    }
-
-    if limit:
-        scan_params["Limit"] = limit
-
-    if next_token:
-        # Decode the next_token to get ExclusiveStartKey
-        scan_params["ExclusiveStartKey"] = json.loads(
-            base64.b64decode(next_token).decode("utf-8")
+    def query_dynamodb(table, bot_id):
+        response = table.query(
+            IndexName="PublicBotIdIndex",
+            KeyConditionExpression=Key("PublicBotId").eq(bot_id),
         )
+        return response["Items"]
 
-    response = table.scan(**scan_params)
-
-    bots = [
-        BotMetaWithOwnerUserId(
-            id=decompose_bot_id(item["SK"]),
-            owner_user_id=item["PK"],
-            title=item["Title"],
-            create_time=float(item["CreateTime"]),
-            last_used_time=float(item["LastBotUsed"]),
-            owned=True,
-            available=True,
-            is_pinned=item["IsPinned"],
-            description=item["Description"],
-            is_public="PublicBotId" in item,
-            sync_status=item["SyncStatus"],
-            published_api_stack_name=item["ApiPublishmentStackName"],
-            published_api_datetime=item["ApiPublishedDatetime"],
-        )
-        for item in response.get("Items", [])
+    tasks = [
+        loop.run_in_executor(None, partial(query_dynamodb, table, bot_id))
+        for bot_id in bot_ids
     ]
+    results = await asyncio.gather(*tasks)
 
-    next_token = None
-    if "LastEvaluatedKey" in response:
-        # Encode the LastEvaluatedKey to create a next_token
-        next_token = base64.b64encode(
-            json.dumps(response["LastEvaluatedKey"]).encode("utf-8")
-        ).decode("utf-8")
+    bots = []
+    for items in results:
+        for item in items:
+            bots.append(
+                BotMetaWithOwnerUserId(
+                    id=decompose_bot_id(item["SK"]),
+                    owner_user_id=item["PK"],
+                    title=item["Title"],
+                    create_time=float(item["CreateTime"]),
+                    last_used_time=float(item["LastBotUsed"]),
+                    owned=True,
+                    available=True,
+                    is_pinned=item["IsPinned"],
+                    description=item["Description"],
+                    is_public="PublicBotId" in item,
+                    sync_status=item["SyncStatus"],
+                    published_api_stack_name=item["ApiPublishmentStackName"],
+                    published_api_datetime=item["ApiPublishedDatetime"],
+                )
+            )
 
-    logger.info(f"Found public bots: {bots}")
-    return bots, next_token
+    return bots
+
+
+# def find_all_public_bots(
+#     limit: int | None = None, next_token: str | None = None
+# ) -> tuple[list[BotMetaWithOwnerUserId], str | None]:
+#     # TODO: add index? existing table not deleted?
+#     """Find all public bots. This method is intended for administrator use."""
+#     table = _get_table_public_client()
+#     logger.info("Fetching public bots with limit and next token")
+
+#     # Fetch only public bots
+#     scan_params = {
+#         "IndexName": "PublicBotIdIndex",
+#     }
+
+#     if limit:
+#         scan_params["Limit"] = limit
+
+#     if next_token:
+#         # Decode the next_token to get ExclusiveStartKey
+#         scan_params["ExclusiveStartKey"] = json.loads(
+#             base64.b64decode(next_token).decode("utf-8")
+#         )
+
+#     response = table.scan(**scan_params)
+
+#     bots = [
+#         BotMetaWithOwnerUserId(
+#             id=decompose_bot_id(item["SK"]),
+#             owner_user_id=item["PK"],
+#             title=item["Title"],
+#             create_time=float(item["CreateTime"]),
+#             last_used_time=float(item["LastBotUsed"]),
+#             owned=True,
+#             available=True,
+#             is_pinned=item["IsPinned"],
+#             description=item["Description"],
+#             is_public="PublicBotId" in item,
+#             sync_status=item["SyncStatus"],
+#             published_api_stack_name=item["ApiPublishmentStackName"],
+#             published_api_datetime=item["ApiPublishedDatetime"],
+#         )
+#         for item in response.get("Items", [])
+#     ]
+
+#     next_token = None
+#     if "LastEvaluatedKey" in response:
+#         # Encode the LastEvaluatedKey to create a next_token
+#         next_token = base64.b64encode(
+#             json.dumps(response["LastEvaluatedKey"]).encode("utf-8")
+#         ).decode("utf-8")
+
+#     logger.info(f"Found public bots: {bots}")
+#     return bots, next_token

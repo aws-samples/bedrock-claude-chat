@@ -8,9 +8,9 @@ from app.repositories.custom_bot import (
     delete_bot_by_id,
     delete_bot_publication,
     find_all_bots_by_user_id,
-    find_all_public_bots,
     find_private_bot_by_id,
     find_private_bots_by_user_id,
+    find_public_bots_by_ids,
     store_alias,
     store_bot,
     update_alias_last_used_time,
@@ -19,7 +19,7 @@ from app.repositories.custom_bot import (
     update_bot_publication,
     update_bot_visibility,
 )
-from app.repositories.model import BotAliasModel, BotModel, KnowledgeModel
+from app.repositories.models.custom_bot import BotAliasModel, BotModel, KnowledgeModel
 
 
 class TestCustomBotRepository(unittest.TestCase):
@@ -203,7 +203,7 @@ class TestCustomBotRepository(unittest.TestCase):
         delete_bot_by_id("user1", "1")
 
 
-class TestFindAllBots(unittest.TestCase):
+class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         bot1 = BotModel(
             id="1",
@@ -434,31 +434,10 @@ class TestFindAllBots(unittest.TestCase):
         self.assertEqual(bots[4].id, "3")
         self.assertEqual(bots[5].id, "1")
 
-    def test_find_all_public_bots(self):
-        # Test all public bots fetched
-        bots, next_token = find_all_public_bots()
+    async def test_find_public_bots_by_ids(self):
+        bots = await find_public_bots_by_ids(["public1", "public2", "1", "2"])
+        # 2 public bots and 2 private bots
         self.assertEqual(len(bots), 2)
-        self.assertEqual(next_token, None)
-
-        # Test all public bots fetched with limit
-        bots, next_token = find_all_public_bots(limit=1)
-        self.assertEqual(len(bots), 1)
-        self.assertEqual(bots[0].id, "public1")
-        self.assertEqual(bots[0].owner_user_id, "user2")
-        # public1 is published
-        self.assertEqual(bots[0].published_api_stack_name, "ApiPublishmentStackapi1")
-        self.assertNotEqual(bots[0].published_api_datetime, None)
-        self.assertNotEqual(next_token, None)
-
-        # Next bot should be public2
-        bots, next_token = find_all_public_bots(limit=1, next_token=next_token)
-        self.assertEqual(len(bots), 1)
-        self.assertEqual(bots[0].id, "public2")
-        self.assertEqual(bots[0].owner_user_id, "user2")
-
-        # No more public bots
-        bots, next_token = find_all_public_bots(limit=1, next_token=next_token)
-        self.assertEqual(len(bots), 0)
 
 
 class TestUpdateBotVisibility(unittest.TestCase):

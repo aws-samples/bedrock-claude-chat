@@ -1,9 +1,7 @@
-from app.repositories.custom_bot import find_all_public_bots
 from app.route_schema import (
     ApiKeyOutput,
     BotPublishInput,
     BotPublishOutput,
-    PublicBotMeta,
     PublicBotMetaOutput,
 )
 from app.usecases.bot import (
@@ -19,13 +17,6 @@ from app.user import User
 from fastapi import APIRouter, Request
 
 router = APIRouter(tags=["api_publication"])
-
-
-# TODO: remove
-@router.get("/group-test")
-def group_test(request: Request):
-    current_user: User = request.state.current_user
-    return current_user
 
 
 @router.post("/bot/{bot_id}/publication")
@@ -127,30 +118,3 @@ def delete_bot_publication_api_key(request: Request, bot_id: str, api_key_id: st
     if not current_user.is_publish_allowed():
         raise PermissionError("User is not allowed to publish bot.")
     remove_api_key(current_user.id, bot_id, api_key_id)
-
-
-@router.get("/admin/public-bots", response_model=PublicBotMetaOutput)
-def get_all_public_bots(
-    request: Request,
-    limit: int = 10,
-    nextToken: str | None = None,
-):
-    """Get all public APIs. This is intended to be used by admin."""
-    current_user: User = request.state.current_user
-    if not current_user.is_admin():
-        raise PermissionError("Only admin can access this API.")
-    bots, next_token = find_all_public_bots(limit=limit, next_token=nextToken)
-    return PublicBotMetaOutput(
-        bots=[
-            PublicBotMeta(
-                id=bot.id,
-                title=bot.title,
-                description=bot.description,
-                is_published=True if bot.published_api_stack_name else False,
-                published_datetime=bot.published_api_datetime,
-                owner_user_id=bot.owner_user_id,
-            )
-            for bot in bots
-        ],
-        next_token=next_token,
-    )
