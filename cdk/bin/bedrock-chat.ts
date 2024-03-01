@@ -3,8 +3,6 @@ import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
 import { BedrockChatStack } from "../lib/bedrock-chat-stack";
 import { FrontendWafStack } from "../lib/frontend-waf-stack";
-import { ApiPublishmentStack } from "../lib/api-publishment-stack";
-import * as apigateway from "aws-cdk-lib/aws-apigateway";
 
 const app = new cdk.App();
 
@@ -28,28 +26,6 @@ const ENABLE_USAGE_ANALYSIS: boolean = app.node.tryGetContext(
   "enableUsageAnalysis"
 );
 
-// Usage plan for the published API
-const PUBLISHED_API_THROTTLE_RATE_LIMIT: string = app.node.tryGetContext(
-  "publishedApiThrottleRateLimit"
-);
-const PUBLISHED_API_THROTTLE_BURST_LIMIT: string = app.node.tryGetContext(
-  "publishedApiThrottleBurstLimit"
-);
-const PUBLISHED_API_QUOTA_LIMIT: string = app.node.tryGetContext(
-  "publishedApiQuotaLimit"
-);
-const PUBLISHED_API_QUOTA_PERIOD: "DAY" | "WEEK" | "MONTH" =
-  app.node.tryGetContext("publishedApiQuotaPeriod");
-const PUBLISHED_API_DEPLOYMENT_STAGE = app.node.tryGetContext(
-  "publishedApiDeploymentStage"
-);
-const PUBLISHED_API_ID: string = app.node.tryGetContext("publishedApiId");
-const PUBLISHED_API_ALLOWED_ORIGINS_STRING: string = app.node.tryGetContext(
-  "publishedApiAllowedOrigins"
-);
-const PUBLISHED_API_ALLOWED_ORIGINS: string[] = JSON.parse(
-  PUBLISHED_API_ALLOWED_ORIGINS_STRING || '["*"]'
-);
 // WAF for frontend
 // 2023/9: Currently, the WAF for CloudFront needs to be created in the North America region (us-east-1), so the stacks are separated
 // https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-wafv2-webacl.html
@@ -77,39 +53,3 @@ const chat = new BedrockChatStack(app, `BedrockChatStack`, {
     PUBLISHED_API_ALLOWED_IP_V6_ADDRESS_RANGES,
 });
 chat.addDependency(waf);
-
-// NOTE: Do not change the stack id naming rule.
-const publishedApi = new ApiPublishmentStack(
-  app,
-  `ApiPublishmentStack${PUBLISHED_API_ID}`,
-  {
-    env: {
-      // account: process.env.CDK_DEFAULT_ACCOUNT,
-      region: process.env.CDK_DEFAULT_REGION,
-    },
-    bedrockRegion: BEDROCK_REGION,
-    vpcConfig: chat.vpcConfig,
-    conversationTableName: chat.conversationTableName,
-    tableAccessRoleArn: chat.tableAccessRoleArn,
-    dbConfig: chat.dbConfig,
-    webAclArn: chat.publishedApiWebAclArn,
-    usagePlan: {
-      throttle: {
-        rateLimit: Number(PUBLISHED_API_THROTTLE_RATE_LIMIT),
-        burstLimit: Number(PUBLISHED_API_THROTTLE_BURST_LIMIT),
-      },
-      quota: {
-        limit: Number(PUBLISHED_API_QUOTA_LIMIT),
-        period: apigateway.Period[PUBLISHED_API_QUOTA_PERIOD],
-      },
-    },
-    deploymentStage: PUBLISHED_API_DEPLOYMENT_STAGE,
-    corsOptions: {
-      allowOrigins: PUBLISHED_API_ALLOWED_ORIGINS,
-      allowMethods: apigateway.Cors.ALL_METHODS,
-      allowHeaders: apigateway.Cors.DEFAULT_HEADERS,
-      allowCredentials: true,
-    },
-  }
-);
-// publishedApi.addDependency(chat);

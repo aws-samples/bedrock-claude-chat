@@ -72,14 +72,6 @@ export class Api extends Construct {
         "service-role/AWSLambdaVPCAccessExecutionRole"
       )
     );
-    // TODO: remove?
-    // handlerRole.addToPolicy(
-    //   new iam.PolicyStatement({
-    //     effect: iam.Effect.ALLOW,
-    //     actions: ["cognito-idp:AdminGetUser"],
-    //     resources: [props.auth.userPool.userPoolArn],
-    //   })
-    // );
     handlerRole.addToPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,

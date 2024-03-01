@@ -487,7 +487,11 @@ def remove_bot_publication(user_id: str, bot_id: str):
             return
 
     # Before delete cfn stack, delete all api keys
-    stack = find_stack_by_bot_id(bot_id)
+    try:
+        stack = find_stack_by_bot_id(bot_id)
+    except RecordNotFoundError:
+        delete_bot_publication(user_id, bot_id)
+        return
     usage_plan = find_usage_plan_by_id(stack.api_usage_plan_id)
     for key_id in usage_plan.key_ids:
         delete_api_key(key_id)

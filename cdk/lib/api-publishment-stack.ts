@@ -7,27 +7,13 @@ import {
   DockerImageFunction,
   IFunction,
 } from "aws-cdk-lib/aws-lambda";
+import * as iam from "aws-cdk-lib/aws-iam";
 import * as path from "path";
 import { Platform } from "aws-cdk-lib/aws-ecr-assets";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as wafv2 from "aws-cdk-lib/aws-wafv2";
 import { DbConfig } from "./constructs/embedding";
-
-interface ApiPublishmentStackProps extends StackProps {
-  readonly bedrockRegion: string;
-  // readonly vpc: IVpc;
-  // readonly database: ITable;
-  readonly dbConfig: DbConfig;
-  // readonly tableAccessRole: iam.IRole;
-  // readonly vpcName: string;
-  readonly vpcConfig: VpcConfig;
-  readonly conversationTableName: string;
-  readonly tableAccessRoleArn: string;
-  readonly webAclArn: string;
-  readonly usagePlan: apigateway.UsagePlanProps;
-  readonly deploymentStage?: string;
-  readonly corsOptions?: apigateway.CorsOptions;
-}
+import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 
 export interface VpcConfig {
   vpcId: string;
@@ -39,10 +25,39 @@ export interface VpcConfig {
   isolatedSubnetIds: string[];
   // isolatedSubnetRouteTableIds: string[];
 }
+interface ApiPublishmentStackProps extends StackProps {
+  readonly bedrockRegion: string;
+  // readonly vpc: IVpc;
+  // readonly database: ITable;
+  // readonly dbConfig: DbConfig;
+  // readonly tableAccessRole: iam.IRole;
+  // readonly vpcId: string;
+  readonly vpcConfig: VpcConfig;
+  // vpcAvailabilityZones: string[];
+  // vpcPublicSubnetIds: string[];
+  // vpcPrivateSubnetIds: string[];
+  // vpcIsolatedSubnetIds: string[];
+  dbConfigHostname: string;
+  dbConfigPort: number;
+  dbConfigSecretArn: string;
+  dbSecurityGroupId: string;
+  readonly conversationTableName: string;
+  readonly tableAccessRoleArn: string;
+  readonly webAclArn: string;
+  readonly usagePlan: apigateway.UsagePlanProps;
+  readonly deploymentStage?: string;
+  readonly corsOptions?: apigateway.CorsOptions;
+}
 
 export class ApiPublishmentStack extends Stack {
   constructor(scope: Construct, id: string, props: ApiPublishmentStackProps) {
     super(scope, id, props);
+
+    const dbSecret = secretsmanager.Secret.fromSecretCompleteArn(
+      this,
+      "DbSecret",
+      props.dbConfigSecretArn
+    );
 
     const deploymentStage = props.deploymentStage ?? "dev";
     // const vpc = ec2.Vpc.fromLookup(this, "VPC", { vpcId: props.vpcName });
@@ -50,6 +65,35 @@ export class ApiPublishmentStack extends Stack {
     //   vpcId: cdk.Fn.importValue("VpcId"),
     // });
     const vpc = ec2.Vpc.fromVpcAttributes(this, "Vpc", props.vpcConfig);
+    // const vpc = ec2.Vpc.fromVpcAttributes(this, "Vpc", {
+    //   vpcId: props.vpcId,
+    //   availabilityZones: props.vpcAvailabilityZones,
+    //   publicSubnetIds: props.vpcPublicSubnetIds,
+    //   privateSubnetIds: props.vpcPrivateSubnetIds,
+    //   isolatedSubnetIds: [],
+    // });
+
+    const handlerRole = new iam.Role(this, "HandlerRole", {
+      assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
+    });
+    handlerRole.addToPolicy(
+      // Assume the table access role for row-level access control.
+      new iam.PolicyStatement({
+        actions: ["sts:AssumeRole"],
+        resources: [props.tableAccessRoleArn],
+      })
+    );
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        actions: ["bedrock:*"],
+        resources: ["*"],
+      })
+    );
+    handlerRole.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        "service-role/AWSLambdaVPCAccessExecutionRole"
+      )
+    );
 
     const handler = new DockerImageFunction(this, "Handler", {
       code: DockerImageCode.fromImageAsset(
@@ -74,13 +118,31 @@ export class ApiPublishmentStack extends Stack {
         REGION: Stack.of(this).region,
         BEDROCK_REGION: props.bedrockRegion,
         TABLE_ACCESS_ROLE_ARN: props.tableAccessRoleArn,
-        DB_NAME: props.dbConfig.database,
-        DB_HOST: props.dbConfig.host,
-        DB_USER: props.dbConfig.username,
-        DB_PASSWORD: props.dbConfig.password,
-        DB_PORT: props.dbConfig.port.toString(),
+        DB_NAME: dbSecret
+          .secretValueFromJson("dbname")
+          .unsafeUnwrap()
+          .toString(),
+        DB_HOST: props.dbConfigHostname,
+        DB_USER: dbSecret
+          .secretValueFromJson("username")
+          .unsafeUnwrap()
+          .toString(),
+        DB_PASSWORD: dbSecret
+          .secretValueFromJson("password")
+          .unsafeUnwrap()
+          .toString(),
+        DB_PORT: cdk.Token.asString(props.dbConfigPort),
       },
+      role: handlerRole,
     });
+
+    // Allow the handler to access the pgvector.
+    const dbSg = ec2.SecurityGroup.fromSecurityGroupId(
+      this,
+      "DbSecurityGroup",
+      props.dbSecurityGroupId
+    );
+    dbSg.connections.allowFrom(handler, ec2.Port.tcp(props.dbConfigPort));
 
     const api = new apigateway.LambdaRestApi(this, "Api", {
       restApiName: id,
@@ -93,7 +155,9 @@ export class ApiPublishmentStack extends Stack {
       defaultCorsPreflightOptions: props.corsOptions,
     });
 
-    const apiKey = api.addApiKey("ApiKey");
+    const apiKey = api.addApiKey("ApiKey", {
+      description: "Default api key (Auto generated by CDK)",
+    });
     const usagePlan = api.addUsagePlan("UsagePlan", {
       ...props.usagePlan,
     });

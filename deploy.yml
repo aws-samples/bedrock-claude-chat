@@ -89,7 +89,6 @@ Resources:
           - ProjectRole
           - Arn
       Source:
-        # TODO: --allをstack指定するよう変更
         BuildSpec: |-
           {
             "version": "0.2",

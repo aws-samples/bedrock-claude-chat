@@ -5,8 +5,11 @@ import { IgnoreMode, RemovalPolicy } from "aws-cdk-lib";
 import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
 import * as path from "path";
 import * as iam from "aws-cdk-lib/aws-iam";
+import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 
-export interface ApiPublishCodebuildProps {}
+export interface ApiPublishCodebuildProps {
+  readonly dbSecret: secretsmanager.ISecret;
+}
 
 export class ApiPublishCodebuild extends Construct {
   public readonly project: codebuild.Project;
@@ -75,6 +78,8 @@ export class ApiPublishCodebuild extends Construct {
             commands: [
               "cd cdk",
               "npm ci",
+              // Replace cdk's entrypoint. This is a workaround to avoid the issue that cdk synthesize all stacks.
+              "sed -i 's|bin/bedrock-chat.ts|bin/api-publish.ts|' cdk.json",
               `cdk deploy --require-approval never ApiPublishmentStack$PUBLISHED_API_ID \\
          -c publishedApiThrottleRateLimit=$PUBLISHED_API_THROTTLE_RATE_LIMIT \\
          -c publishedApiThrottleBurstLimit=$PUBLISHED_API_THROTTLE_BURST_LIMIT \\
@@ -89,6 +94,8 @@ export class ApiPublishCodebuild extends Construct {
       }),
     });
     sourceBucket.grantRead(project.role!);
+    props.dbSecret.grantRead(project.role!);
+
     // Allow `cdk deploy`
     project.role!.addToPrincipalPolicy(
       new iam.PolicyStatement({

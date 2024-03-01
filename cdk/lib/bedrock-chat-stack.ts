@@ -30,12 +30,11 @@ export interface BedrockChatStackProps extends StackProps {
 }
 
 export class BedrockChatStack extends cdk.Stack {
-  public readonly publishedApiWebAclArn: string;
-  // public readonly vpcId: string;
-  public readonly vpcConfig: VpcConfig;
-  public readonly conversationTableName: string;
-  public readonly tableAccessRoleArn: string;
-  public readonly dbConfig: DbConfig;
+  // public readonly publishedApiWebAclArn: string;
+  // public readonly vpcConfig: VpcConfig;
+  // public readonly conversationTableName: string;
+  // public readonly tableAccessRoleArn: string;
+  // public readonly dbConfig: DbConfig;
   constructor(scope: Construct, id: string, props: BedrockChatStackProps) {
     super(scope, id, {
       description: "Bedrock Chat Stack (uksb-1tupboc46)",
@@ -52,7 +51,7 @@ export class BedrockChatStack extends cdk.Stack {
     const apiPublishCodebuild = new ApiPublishCodebuild(
       this,
       "ApiPublishCodebuild",
-      {}
+      { dbSecret: vectorStore.secret }
     );
 
     const dbConfig = {
@@ -171,20 +170,63 @@ export class BedrockChatStack extends cdk.Stack {
     new CfnOutput(this, "FrontendURL", {
       value: frontend.getOrigin(),
     });
+
+    // Outputs for API publication
+    new CfnOutput(this, "PublishedApiWebAclArn", {
+      value: webAclForPublishedApi.webAclArn,
+      exportName: "PublishedApiWebAclArn",
+    });
     new CfnOutput(this, "VpcId", {
       value: vpc.vpcId,
+      exportName: "BedrockClaudeChatVpcId",
     });
-
-    this.publishedApiWebAclArn = webAclForPublishedApi.webAclArn;
-    this.vpcConfig = {
-      vpcId: vpc.vpcId,
-      availabilityZones: vpc.availabilityZones,
-      publicSubnetIds: vpc.publicSubnets.map((subnet) => subnet.subnetId),
-      privateSubnetIds: vpc.privateSubnets.map((subnet) => subnet.subnetId),
-      isolatedSubnetIds: vpc.isolatedSubnets.map((subnet) => subnet.subnetId),
-    };
-    this.conversationTableName = database.table.tableName;
-    this.tableAccessRoleArn = database.tableAccessRole.roleArn;
-    this.dbConfig = dbConfig;
+    new CfnOutput(this, "AvailabilityZone0", {
+      value: vpc.availabilityZones[0],
+      exportName: "BedrockClaudeChatAvailabilityZone0",
+    });
+    new CfnOutput(this, "AvailabilityZone1", {
+      value: vpc.availabilityZones[1],
+      exportName: "BedrockClaudeChatAvailabilityZone1",
+    });
+    new CfnOutput(this, "PublicSubnetId0", {
+      value: vpc.publicSubnets[0].subnetId,
+      exportName: "BedrockClaudeChatPublicSubnetId0",
+    });
+    new CfnOutput(this, "PublicSubnetId1", {
+      value: vpc.publicSubnets[1].subnetId,
+      exportName: "BedrockClaudeChatPublicSubnetId1",
+    });
+    new CfnOutput(this, "PrivateSubnetId0", {
+      value: vpc.privateSubnets[0].subnetId,
+      exportName: "BedrockClaudeChatPrivateSubnetId0",
+    });
+    new CfnOutput(this, "PrivateSubnetId1", {
+      value: vpc.privateSubnets[1].subnetId,
+      exportName: "BedrockClaudeChatPrivateSubnetId1",
+    });
+    new CfnOutput(this, "DbConfigSecretArn", {
+      value: vectorStore.secret.secretArn,
+      exportName: "BedrockClaudeChatDbConfigSecretArn",
+    });
+    new CfnOutput(this, "DbConfigHostname", {
+      value: vectorStore.cluster.clusterEndpoint.hostname,
+      exportName: "BedrockClaudeChatDbConfigHostname",
+    });
+    new CfnOutput(this, "DbConfigPort", {
+      value: vectorStore.cluster.clusterEndpoint.port.toString(),
+      exportName: "BedrockClaudeChatDbConfigPort",
+    });
+    new CfnOutput(this, "ConversationTableName", {
+      value: database.table.tableName,
+      exportName: "BedrockClaudeChatConversationTableName",
+    });
+    new CfnOutput(this, "TableAccessRoleArn", {
+      value: database.tableAccessRole.roleArn,
+      exportName: "BedrockClaudeChatTableAccessRoleArn",
+    });
+    new CfnOutput(this, "DbSecurityGroupId", {
+      value: vectorStore.securityGroup.securityGroupId,
+      exportName: "BedrockClaudeChatDbSecurityGroupId",
+    });
   }
 }

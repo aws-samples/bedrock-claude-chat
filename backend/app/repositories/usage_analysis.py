@@ -39,7 +39,6 @@ async def run_athena_query(
         QueryExecutionContext={"Database": database},
         WorkGroup=workgroup,
         ResultConfiguration={
-            # TODO
             "OutputLocation": output_location,
         },
     )
@@ -89,23 +88,6 @@ async def find_bots_sorted_by_price(
         today = date.today()
         from_str = today.strftime("%Y/%m/%d/00")
         to_str = today.strftime("%Y/%m/%d/23")
-
-    # TODO: avoid duplication of conversation. apply most latest conversation
-    #     query = f"""
-    # SELECT
-    #     newimage.BotId.S AS BotId,
-    #     SUM(newimage.TotalPrice.N) AS TotalPrice
-    # FROM
-    #     {USAGE_ANALYSIS_DATABASE}.{USAGE_ANALYSIS_TABLE}
-    # WHERE
-    #     datehour BETWEEN '{from_str}' AND '{to_str}'
-    #     AND Keys.SK.S LIKE CONCAT(Keys.PK.S, '#CONV#%')
-    # GROUP BY
-    #     newimage.BotId.S
-    # ORDER BY
-    #     TotalPrice DESC
-    # LIMIT {limit};
-    # """
 
     # To avoid duplication of conversation, apply most the latest conversation by using subquery
     query = f"""
@@ -163,9 +145,6 @@ LIMIT {limit};
         USAGE_ANALYSIS_WORKGROUP,
         USAGE_ANALYSIS_OUTPUT_LOCATION,
     )
-    # TODO: remove
-    # print(response)
-    # print(response["ResultSet"]["Rows"][1:])
     rows = response["ResultSet"]["Rows"][1:]
 
     # Fetch bot meta data from dynamodb

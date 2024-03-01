@@ -39,7 +39,7 @@ def find_api_key_by_id(key_id: str, include_value: bool = False) -> ApiKeyModel:
     response = client.get_api_key(apiKey=key_id, includeValue=include_value)
     return ApiKeyModel(
         id=response["id"],
-        description=response["description"],
+        description=response.get("description", ""),
         value=response["value"] if include_value else "",
         enabled=response["enabled"],
         created_date=response["createdDate"].timestamp() * 1000,

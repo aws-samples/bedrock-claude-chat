@@ -1,10 +1,4 @@
 from app.repositories.apigateway import find_api_key_by_id
-from app.repositories.conversation import (
-    change_conversation_title,
-    delete_conversation_by_id,
-    delete_conversation_by_user_id,
-    find_conversation_by_user_id,
-)
 from app.routes.schemas.conversation import ChatInput, ChatOutput, Conversation
 from app.routes.schemas.published_api import ChatInputWithoutBotId
 from app.usecases.chat import chat, fetch_conversation, propose_conversation_title
