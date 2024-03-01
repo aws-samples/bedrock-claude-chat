@@ -24,7 +24,13 @@ from app.repositories.models.conversation import (
     MessageModel,
 )
 from app.repositories.models.custom_bot import BotAliasModel, BotModel
-from app.route_schema import ChatInput, ChatOutput, Content, Conversation, MessageOutput
+from app.routes.schemas.conversation import (
+    ChatInput,
+    ChatOutput,
+    Content,
+    Conversation,
+    MessageOutput,
+)
 from app.usecases.bot import fetch_bot, modify_bot_last_used_time
 from app.utils import get_buffer_string, get_current_time, is_running_on_lambda
 from app.vector_search import SearchResult, search_related_docs
@@ -48,6 +54,8 @@ def prepare_conversation(
         if chat_input.message.parent_message_id == "system" and chat_input.bot_id:
             # The case editing first user message and use bot
             parent_id = "instruction"
+        elif chat_input.message.parent_message_id is None:
+            parent_id = conversation.last_message_id
         if chat_input.bot_id:
             logger.info("Bot id is provided. Fetching bot.")
             owned, bot = fetch_bot(user_id, chat_input.bot_id)

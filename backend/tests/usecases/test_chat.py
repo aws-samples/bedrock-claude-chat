@@ -23,7 +23,7 @@ from app.repositories.models.conversation import (
     MessageModel,
 )
 from app.repositories.models.custom_bot import BotModel, KnowledgeModel
-from app.route_schema import ChatInput, ChatOutput, Content, MessageInput, MessageOutput
+from app.routes.schemas.conversation import ChatInput, ChatOutput, Content, MessageInput
 from app.usecases.chat import (
     chat,
     fetch_conversation,

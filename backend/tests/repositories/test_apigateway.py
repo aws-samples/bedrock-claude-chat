@@ -31,7 +31,11 @@ class TestApiGatewayRepository(unittest.TestCase):
         self.assertEqual(key.enabled, True)
 
     def test_create_delete_api_key(self):
-        key = create_api_key(usage_plan_id)
+        res = create_api_key(usage_plan_id, "description")
+        key = find_api_key_by_id(res.id, include_value=True)
+        self.assertEqual(key.id, res.id)
+        self.assertEqual(key.enabled, True)
+        self.assertEqual(key.description, "description")
         delete_api_key(key.id)
 
 

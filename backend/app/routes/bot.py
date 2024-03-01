@@ -6,7 +6,7 @@ from app.repositories.custom_bot import (
     find_private_bots_by_user_id,
     update_bot_visibility,
 )
-from app.route_schema import (
+from app.routes.schemas.bot import (
     BotInput,
     BotMetaOutput,
     BotModifyInput,

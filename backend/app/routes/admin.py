@@ -2,7 +2,7 @@ from datetime import date
 
 from app.dependencies import check_admin
 from app.repositories.usage_analysis import find_bots_sorted_by_price
-from app.route_schema import PublicBotMetaOutput
+from app.routes.schemas.admin import PublicBotMetaOutput
 from app.user import User
 from fastapi import APIRouter, Depends, Request
 

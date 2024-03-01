@@ -8,7 +8,7 @@ from app.bedrock import calculate_price, count_tokens
 from app.config import SEARCH_CONFIG
 from app.repositories.conversation import RecordNotFoundError, store_conversation
 from app.repositories.models.conversation import ContentModel, MessageModel
-from app.route_schema import ChatInputWithToken
+from app.routes.schemas.conversation import ChatInputWithToken
 from app.usecases.bot import modify_bot_last_used_time
 from app.usecases.chat import get_invoke_payload, insert_knowledge, prepare_conversation
 from app.utils import get_bedrock_client, get_current_time

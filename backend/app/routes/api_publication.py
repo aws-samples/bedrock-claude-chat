@@ -1,8 +1,8 @@
-from app.route_schema import (
+from app.routes.schemas.api_publication import (
+    ApiKeyInput,
     ApiKeyOutput,
     BotPublishInput,
     BotPublishOutput,
-    PublicBotMetaOutput,
 )
 from app.usecases.bot import (
     create_bot_publication,
@@ -102,12 +102,14 @@ def get_bot_publication_api_key(request: Request, bot_id: str, api_key_id: str):
 
 
 @router.post("/bot/{bot_id}/publication/api-key", response_model=ApiKeyOutput)
-def post_bot_publication_api_key(request: Request, bot_id: str):
+def post_bot_publication_api_key(
+    request: Request, bot_id: str, api_key_input: ApiKeyInput
+):
     """Create bot publication API key. Only the owner can create the key."""
     current_user: User = request.state.current_user
     if not current_user.is_publish_allowed():
         raise PermissionError("User is not allowed to publish bot.")
-    created_key = create_new_api_key(current_user.id, bot_id)
+    created_key = create_new_api_key(current_user.id, bot_id, api_key_input)
     return created_key
 
 

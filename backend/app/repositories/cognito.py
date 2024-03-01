@@ -4,7 +4,6 @@ from typing import Literal
 
 import boto3
 from app.repositories.common import RecordNotFoundError
-from app.route_schema import type_sync_status
 from pydantic import BaseModel
 
 

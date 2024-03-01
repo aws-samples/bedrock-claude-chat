@@ -55,6 +55,7 @@ const PUBLISHED_API_ALLOWED_ORIGINS: string[] = JSON.parse(
 // https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-wafv2-webacl.html
 const waf = new FrontendWafStack(app, `FrontendWafStack`, {
   env: {
+    // account: process.env.CDK_DEFAULT_ACCOUNT,
     region: "us-east-1",
   },
   allowedIpV4AddressRanges: ALLOWED_IP_V4_ADDRESS_RANGES,
@@ -63,39 +64,52 @@ const waf = new FrontendWafStack(app, `FrontendWafStack`, {
 
 const chat = new BedrockChatStack(app, `BedrockChatStack`, {
   env: {
+    // account: process.env.CDK_DEFAULT_ACCOUNT,
     region: process.env.CDK_DEFAULT_REGION,
   },
   crossRegionReferences: true,
   bedrockRegion: BEDROCK_REGION,
   webAclId: waf.webAclArn.value,
   enableUsageAnalysis: ENABLE_USAGE_ANALYSIS,
+  publishedApiAllowedIpV4AddressRanges:
+    PUBLISHED_API_ALLOWED_IP_V4_ADDRESS_RANGES,
+  publishedApiAllowedIpV6AddressRanges:
+    PUBLISHED_API_ALLOWED_IP_V6_ADDRESS_RANGES,
 });
 chat.addDependency(waf);
 
 // NOTE: Do not change the stack id naming rule.
-new ApiPublishmentStack(app, `ApiPublishmentStack${PUBLISHED_API_ID}`, {
-  env: {
-    region: process.env.CDK_DEFAULT_REGION,
-  },
-  bedrockRegion: BEDROCK_REGION,
-  // vpc: ec2.Vpc.fromLookup(app, "VPC", { isDefault: true }),
-  allowedIpV4AddressRanges: PUBLISHED_API_ALLOWED_IP_V4_ADDRESS_RANGES,
-  allowedIpV6AddressRanges: PUBLISHED_API_ALLOWED_IP_V6_ADDRESS_RANGES,
-  usagePlan: {
-    throttle: {
-      rateLimit: Number(PUBLISHED_API_THROTTLE_RATE_LIMIT),
-      burstLimit: Number(PUBLISHED_API_THROTTLE_BURST_LIMIT),
+const publishedApi = new ApiPublishmentStack(
+  app,
+  `ApiPublishmentStack${PUBLISHED_API_ID}`,
+  {
+    env: {
+      // account: process.env.CDK_DEFAULT_ACCOUNT,
+      region: process.env.CDK_DEFAULT_REGION,
     },
-    quota: {
-      limit: Number(PUBLISHED_API_QUOTA_LIMIT),
-      period: apigateway.Period[PUBLISHED_API_QUOTA_PERIOD],
+    bedrockRegion: BEDROCK_REGION,
+    vpcConfig: chat.vpcConfig,
+    conversationTableName: chat.conversationTableName,
+    tableAccessRoleArn: chat.tableAccessRoleArn,
+    dbConfig: chat.dbConfig,
+    webAclArn: chat.publishedApiWebAclArn,
+    usagePlan: {
+      throttle: {
+        rateLimit: Number(PUBLISHED_API_THROTTLE_RATE_LIMIT),
+        burstLimit: Number(PUBLISHED_API_THROTTLE_BURST_LIMIT),
+      },
+      quota: {
+        limit: Number(PUBLISHED_API_QUOTA_LIMIT),
+        period: apigateway.Period[PUBLISHED_API_QUOTA_PERIOD],
+      },
     },
-  },
-  deploymentStage: PUBLISHED_API_DEPLOYMENT_STAGE,
-  corsOptions: {
-    allowOrigins: PUBLISHED_API_ALLOWED_ORIGINS,
-    allowMethods: apigateway.Cors.ALL_METHODS,
-    allowHeaders: apigateway.Cors.DEFAULT_HEADERS,
-    allowCredentials: true,
-  },
-});
+    deploymentStage: PUBLISHED_API_DEPLOYMENT_STAGE,
+    corsOptions: {
+      allowOrigins: PUBLISHED_API_ALLOWED_ORIGINS,
+      allowMethods: apigateway.Cors.ALL_METHODS,
+      allowHeaders: apigateway.Cors.DEFAULT_HEADERS,
+      allowCredentials: true,
+    },
+  }
+);
+// publishedApi.addDependency(chat);

@@ -14,25 +14,37 @@ import { Frontend } from "./constructs/frontend";
 import { WebSocket } from "./constructs/websocket";
 import * as cdk from "aws-cdk-lib";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
-import { Embedding } from "./constructs/embedding";
+import { DbConfig, Embedding } from "./constructs/embedding";
 import { VectorStore } from "./constructs/vectorstore";
 import { UsageAnalysis } from "./constructs/usage-analysis";
 import { ApiPublishCodebuild } from "./constructs/api-publish-codebuild";
+import { WebAclForPublishedApi } from "./constructs/webacl-for-published-api";
+import { VpcConfig } from "./api-publishment-stack";
 
 export interface BedrockChatStackProps extends StackProps {
   readonly bedrockRegion: string;
   readonly webAclId: string;
   readonly enableUsageAnalysis: boolean;
+  readonly publishedApiAllowedIpV4AddressRanges: string[];
+  readonly publishedApiAllowedIpV6AddressRanges: string[];
 }
 
 export class BedrockChatStack extends cdk.Stack {
+  public readonly publishedApiWebAclArn: string;
+  // public readonly vpcId: string;
+  public readonly vpcConfig: VpcConfig;
+  public readonly conversationTableName: string;
+  public readonly tableAccessRoleArn: string;
+  public readonly dbConfig: DbConfig;
   constructor(scope: Construct, id: string, props: BedrockChatStackProps) {
     super(scope, id, {
       description: "Bedrock Chat Stack (uksb-1tupboc46)",
       ...props,
     });
 
-    const vpc = new ec2.Vpc(this, "VPC", {});
+    const vpc = new ec2.Vpc(this, "VPC", {
+      // vpcName: `${id}-VPC`,
+    });
     const vectorStore = new VectorStore(this, "VectorStore", {
       vpc: vpc,
     });
@@ -143,11 +155,36 @@ export class BedrockChatStack extends cdk.Stack {
     vectorStore.allowFrom(backendApi.handler);
     vectorStore.allowFrom(websocket.handler);
 
+    // WebAcl for published API
+    const webAclForPublishedApi = new WebAclForPublishedApi(
+      this,
+      "WebAclForPublishedApi",
+      {
+        allowedIpV4AddressRanges: props.publishedApiAllowedIpV4AddressRanges,
+        allowedIpV6AddressRanges: props.publishedApiAllowedIpV6AddressRanges,
+      }
+    );
+
     new CfnOutput(this, "DocumentBucketName", {
       value: documentBucket.bucketName,
     });
     new CfnOutput(this, "FrontendURL", {
       value: frontend.getOrigin(),
     });
+    new CfnOutput(this, "VpcId", {
+      value: vpc.vpcId,
+    });
+
+    this.publishedApiWebAclArn = webAclForPublishedApi.webAclArn;
+    this.vpcConfig = {
+      vpcId: vpc.vpcId,
+      availabilityZones: vpc.availabilityZones,
+      publicSubnetIds: vpc.publicSubnets.map((subnet) => subnet.subnetId),
+      privateSubnetIds: vpc.privateSubnets.map((subnet) => subnet.subnetId),
+      isolatedSubnetIds: vpc.isolatedSubnets.map((subnet) => subnet.subnetId),
+    };
+    this.conversationTableName = database.table.tableName;
+    this.tableAccessRoleArn = database.tableAccessRole.roleArn;
+    this.dbConfig = dbConfig;
   }
 }

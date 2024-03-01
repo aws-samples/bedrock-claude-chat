@@ -91,32 +91,72 @@ async def find_bots_sorted_by_price(
         to_str = today.strftime("%Y/%m/%d/23")
 
     # TODO: avoid duplication of conversation. apply most latest conversation
+    #     query = f"""
+    # SELECT
+    #     newimage.BotId.S AS BotId,
+    #     SUM(newimage.TotalPrice.N) AS TotalPrice
+    # FROM
+    #     {USAGE_ANALYSIS_DATABASE}.{USAGE_ANALYSIS_TABLE}
+    # WHERE
+    #     datehour BETWEEN '{from_str}' AND '{to_str}'
+    #     AND Keys.SK.S LIKE CONCAT(Keys.PK.S, '#CONV#%')
+    # GROUP BY
+    #     newimage.BotId.S
+    # ORDER BY
+    #     TotalPrice DESC
+    # LIMIT {limit};
+    # """
+
+    # To avoid duplication of conversation, apply most the latest conversation by using subquery
     query = f"""
-    WITH PreAggregatedData AS (
-    SELECT 
+WITH LatestRecords AS (
+    SELECT
         newimage.BotId.S AS BotId,
-        json_extract_scalar(json_parse(json_extract_scalar(newimage.messagemap, '$.s')), '$.system.model') AS ModelId,
-        newimage.TotalPrice.N AS TotalPrice
+        newimage.SK.S AS SK,
+        MAX(datehour) AS LatestDateHour
     FROM
         {USAGE_ANALYSIS_DATABASE}.{USAGE_ANALYSIS_TABLE}
     WHERE
         datehour BETWEEN '{from_str}' AND '{to_str}'
         AND Keys.SK.S LIKE CONCAT(Keys.PK.S, '#CONV#%')
-    )
-
-    SELECT
-        BotId,
-        SUM(TotalPrice) AS TotalPrice
-    FROM
-        PreAggregatedData
     GROUP BY
-        BotId
-    ORDER BY
-        TotalPrice DESC
-    LIMIT {limit};
-    """
+        newimage.BotId.S,
+        newimage.SK.S
+),
+PreAggregatedData AS (
+    SELECT
+        d.newimage.BotId.S AS BotId,
+        d.newimage.SK.S AS SK,
+        d.datehour,
+        d.newimage.TotalPrice.N AS TotalPrice
+    FROM
+        {USAGE_ANALYSIS_DATABASE}.{USAGE_ANALYSIS_TABLE} d
+    WHERE
+        datehour BETWEEN '{from_str}' AND '{to_str}'
+        AND d.Keys.SK.S LIKE CONCAT(d.Keys.PK.S, '#CONV#%')
+),
+AggregatedData AS (
+    SELECT
+        p.BotId,
+        p.TotalPrice
+    FROM
+        PreAggregatedData p
+    JOIN
+        LatestRecords lr ON p.BotId = lr.BotId AND p.SK = lr.SK AND p.datehour = lr.LatestDateHour
+)
+SELECT
+    BotId,
+    SUM(TotalPrice) AS TotalPrice
+FROM
+    AggregatedData
+GROUP BY
+    BotId
+ORDER BY
+    TotalPrice DESC
+LIMIT {limit};
+"""
 
-    print(query)
+    logger.debug(query)
     response = await run_athena_query(
         query,
         USAGE_ANALYSIS_DATABASE,
@@ -130,14 +170,18 @@ async def find_bots_sorted_by_price(
 
     # Fetch bot meta data from dynamodb
     bots = await find_public_bots_by_ids(
-        bot_ids=[item["Data"][0]["VarCharValue"] for item in rows]
+        bot_ids=[
+            item["Data"][0]["VarCharValue"]
+            for item in rows
+            if item["Data"][0].get("VarCharValue", None) is not None
+        ]
     )
     bots_dict = {bot.id: bot for bot in bots}
 
     # Join bot meta data and usage data
     bot_usage = []
     for row in rows:
-        bot_id = row["Data"][0]["VarCharValue"]
+        bot_id = row["Data"][0].get("VarCharValue", "")
         total_price = float(row["Data"][1].get("VarCharValue", 0))
 
         bot = bots_dict.get(bot_id)

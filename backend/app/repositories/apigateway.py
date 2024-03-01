@@ -39,15 +39,17 @@ def find_api_key_by_id(key_id: str, include_value: bool = False) -> ApiKeyModel:
     response = client.get_api_key(apiKey=key_id, includeValue=include_value)
     return ApiKeyModel(
         id=response["id"],
+        description=response["description"],
         value=response["value"] if include_value else "",
         enabled=response["enabled"],
         created_date=response["createdDate"].timestamp() * 1000,
     )
 
 
-def create_api_key(usage_plan_id: str) -> ApiKeyModel:
+def create_api_key(usage_plan_id: str, description: str) -> ApiKeyModel:
     response = client.create_api_key(
         name=str(ULID()),
+        description=description,
         enabled=True,
     )
     api_key_id = response["id"]
@@ -58,6 +60,7 @@ def create_api_key(usage_plan_id: str) -> ApiKeyModel:
     return ApiKeyModel(
         id=api_key_id,
         value="",
+        description=description,
         enabled=True,
         created_date=response["createdDate"].timestamp() * 1000,
     )

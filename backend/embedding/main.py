@@ -10,7 +10,7 @@ from app.bedrock import calculate_document_embeddings
 from app.config import EMBEDDING_CONFIG
 from app.repositories.common import _get_table_client
 from app.repositories.custom_bot import compose_bot_id, decompose_bot_id
-from app.route_schema import type_sync_status
+from app.routes.schemas.bot import type_sync_status
 from app.utils import compose_upload_document_s3_path
 from embedding.loaders import UrlLoader
 from embedding.loaders.base import BaseLoader

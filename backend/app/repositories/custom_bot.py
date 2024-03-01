@@ -24,7 +24,7 @@ from app.repositories.models.custom_bot import (
     BotModel,
     KnowledgeModel,
 )
-from app.route_schema import type_sync_status
+from app.routes.schemas.bot import type_sync_status
 from app.utils import get_current_time
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError

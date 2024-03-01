@@ -29,18 +29,21 @@ from app.repositories.custom_bot import (
     update_bot_publication,
 )
 from app.repositories.models.custom_bot import BotModel, KnowledgeModel
-from app.route_schema import (
+from app.routes.schemas.api_publication import (
+    ApiKeyInput,
     ApiKeyOutput,
+    BotPublishInput,
+    BotPublishOutput,
+    PublishedApiQuota,
+    PublishedApiThrottle,
+)
+from app.routes.schemas.bot import (
     BotInput,
     BotModifyInput,
     BotModifyOutput,
     BotOutput,
-    BotPublishInput,
-    BotPublishOutput,
     BotSummaryOutput,
     Knowledge,
-    PublishedApiQuota,
-    PublishedApiThrottle,
 )
 from app.utils import (
     check_if_file_exists_in_s3,
@@ -513,11 +516,17 @@ def fetch_api_key(user_id: str, bot_id: str, api_key: str) -> ApiKeyOutput:
     # Fetch API Key
     key = find_api_key_by_id(api_key, include_value=True)
     return ApiKeyOutput(
-        id=key.id, value=key.value, enabled=key.enabled, created_date=key.created_date
+        id=key.id,
+        value=key.value,
+        description=key.description,
+        enabled=key.enabled,
+        created_date=key.created_date,
     )
 
 
-def create_new_api_key(user_id: str, bot_id: str) -> ApiKeyOutput:
+def create_new_api_key(
+    user_id: str, bot_id: str, api_key_input: ApiKeyInput
+) -> ApiKeyOutput:
     # Check existence and permission
     try:
         bot = find_private_bot_by_id(user_id, bot_id)
@@ -527,9 +536,13 @@ def create_new_api_key(user_id: str, bot_id: str) -> ApiKeyOutput:
         raise RecordNotFoundError(f"Bot {bot_id} is not owned by user {user_id}.")
 
     # Create API Key
-    key = create_api_key(usage_plan.id)
+    key = create_api_key(usage_plan.id, api_key_input.description)
     return ApiKeyOutput(
-        id=key.id, value="", enabled=key.enabled, created_date=key.created_date
+        id=key.id,
+        value="",
+        description=key.description,
+        enabled=key.enabled,
+        created_date=key.created_date,
     )
 
 
