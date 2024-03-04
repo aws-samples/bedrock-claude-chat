@@ -41,7 +41,8 @@ logger.setLevel(logging.DEBUG)
 
 
 def prepare_conversation(
-    user_id: str, chat_input: ChatInput
+    user_id: str,
+    chat_input: ChatInput,
 ) -> tuple[str, ConversationModel, BotModel | None]:
     current_time = get_current_time()
     bot = None
@@ -139,7 +140,10 @@ def prepare_conversation(
         )
 
     # Append user chat input to the conversation
-    message_id = str(ULID())
+    if chat_input.message.message_id:
+        message_id = chat_input.message.message_id
+    else:
+        message_id = str(ULID())
     new_message = MessageModel(
         role=chat_input.message.role,
         content=ContentModel(

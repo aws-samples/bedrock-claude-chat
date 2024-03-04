@@ -34,26 +34,7 @@ const PUBLISHED_API_ALLOWED_ORIGINS: string[] = JSON.parse(
 );
 
 const webAclArn = cdk.Fn.importValue("PublishedApiWebAclArn");
-// const vpcConfigStr = cdk.Fn.importValue("VpcConfig");
-// const vpcConfig: VpcConfig = JSON.parse(vpcConfigStr);
 const vpcId = cdk.Fn.importValue("BedrockClaudeChatVpcId");
-// const vpcAvailabilityZones = cdk.Fn.split(
-//   ",",
-//   cdk.Fn.importValue("BedrockClaudeChatAvailabilityZones")
-// );
-// const vpcPublicSubnetIds = cdk.Fn.split(
-//   ",",
-//   cdk.Fn.importValue("BedrockClaudeChatPublicSubnetIds")
-// );
-// const vpcPrivateSubnetIds = cdk.Fn.split(
-//   ",",
-//   cdk.Fn.importValue("BedrockClaudeChatPrivateSubnetIds")
-// );
-// const vpcIsolatedSubnetIds = cdk.Fn.split(
-//   ",",
-//   cdk.Fn.importValue("BedrockClaudeChatIsolatedSubnetIds")
-// );
-// console.log(vpcAvailabilityZones);
 const availabilityZone0 = cdk.Fn.importValue(
   "BedrockClaudeChatAvailabilityZone0"
 );
@@ -98,39 +79,19 @@ const dbConfigSecretArn = cdk.Fn.importValue(
 const dbSecurityGroupId = cdk.Fn.importValue(
   "BedrockClaudeChatDbSecurityGroupId"
 );
-// const dbSecret = secretsmanager.Secret.fromSecretCompleteArn(
-//   app,
-//   "DbSecret",
-//   dbConfigSecretArn
-// );
 
-// const dbConfig: DbConfig = {
-//   host: dbConfigHostname,
-//   port: Number(dbConfigPort),
-//   username: dbSecret.secretValueFromJson("username").unsafeUnwrap().toString(),
-//   password: dbSecret.secretValueFromJson("password").unsafeUnwrap().toString(),
-//   database: dbSecret.secretValueFromJson("dbname").unsafeUnwrap().toString(),
-// };
-
-// NOTE: Do not change the stack id naming rule.
+// NOTE: DO NOT change the stack id naming rule.
 const publishedApi = new ApiPublishmentStack(
   app,
   `ApiPublishmentStack${PUBLISHED_API_ID}`,
   {
     env: {
-      // account: process.env.CDK_DEFAULT_ACCOUNT,
       region: process.env.CDK_DEFAULT_REGION,
     },
     bedrockRegion: BEDROCK_REGION,
     vpcConfig: vpcConfig,
-    // vpcId: vpcId,
-    // vpcAvailabilityZones: vpcAvailabilityZones,
-    // vpcPublicSubnetIds: vpcPublicSubnetIds,
-    // vpcPrivateSubnetIds: vpcPrivateSubnetIds,
-    // vpcIsolatedSubnetIds: vpcIsolatedSubnetIds,
     conversationTableName: conversationTableName,
     tableAccessRoleArn: tableAccessRoleArn,
-    // dbConfig: dbConfig,
     dbConfigSecretArn: dbConfigSecretArn,
     dbConfigHostname: dbConfigHostname,
     dbConfigPort: dbConfigPort,

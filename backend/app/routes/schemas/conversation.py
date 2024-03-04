@@ -14,6 +14,9 @@ class MessageInput(BaseSchema):
     content: Content
     model: Literal["claude-instant-v1", "claude-v2"]
     parent_message_id: str | None
+    message_id: str | None = Field(
+        ..., description="Unique message id. If not provided, it will be generated."
+    )
 
 
 class MessageOutput(BaseSchema):
