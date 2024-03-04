@@ -664,8 +664,8 @@ async def find_public_bots_by_ids(bot_ids: list[str]) -> list[BotMetaWithOwnerUs
                     description=item["Description"],
                     is_public="PublicBotId" in item,
                     sync_status=item["SyncStatus"],
-                    published_api_stack_name=item["ApiPublishmentStackName"],
-                    published_api_datetime=item["ApiPublishedDatetime"],
+                    published_api_stack_name=item.get("ApiPublishmentStackName", None),
+                    published_api_datetime=item.get("ApiPublishedDatetime", None),
                 )
             )
 

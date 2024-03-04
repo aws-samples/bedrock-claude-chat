@@ -8,3 +8,9 @@ from pydantic import Field
 class ChatInputWithoutBotId(BaseSchema):
     conversation_id: str
     message: MessageInput
+
+
+class ChatOutputWithoutBotId(BaseSchema):
+    conversation_id: str
+    message: MessageOutput
+    create_time: float

@@ -107,7 +107,7 @@ export class ApiPublishmentStack extends Stack {
       vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
       // vpcSubnets: ec2.Subnet.fromSubnetId
       memorySize: 1024,
-      timeout: cdk.Duration.seconds(30),
+      timeout: cdk.Duration.minutes(15),
       environment: {
         PUBLISHED_API_ID: id.replace("ApiPublishmentStack", ""),
         TABLE_NAME: props.conversationTableName,

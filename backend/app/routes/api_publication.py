@@ -48,6 +48,7 @@ def get_bot_publication(
     NOTE:
     - If not published yet, returns 404.
     - If codebuild for cfn deploy is not succeeded, All value will be empty except for `codebuild_id` and `codebuild_status`.
+    - Need to pass `owner_user_id` if the user is admin.
     """
     current_user: User = request.state.current_user
     if not current_user.is_publish_allowed():
@@ -73,6 +74,7 @@ def delete_bot_publication(
     NOTE:
     - Can't delete if the bot is not published.
     - If codebuild not completed, raise 400. Before delete, please ensure `codebuild_status` is either `SUCCEEDED` or `FAILED`.
+    - Need to pass `owner_user_id` if the user is admin.
     """
     current_user: User = request.state.current_user
     if not current_user.is_publish_allowed():
@@ -114,9 +116,23 @@ def post_bot_publication_api_key(
 
 
 @router.delete("/bot/{bot_id}/publication/api-key/{api_key_id}")
-def delete_bot_publication_api_key(request: Request, bot_id: str, api_key_id: str):
-    """Delete bot publication API key. Only the owner can delete the key."""
+def delete_bot_publication_api_key(
+    request: Request, bot_id: str, api_key_id: str, owner_user_id: str | None = None
+):
+    """Delete bot publication API key.
+    This can be used by both owner and admin.
+    NOTE:
+    - Need to pass `owner_user_id` if the user is admin.
+    """
     current_user: User = request.state.current_user
     if not current_user.is_publish_allowed():
         raise PermissionError("User is not allowed to publish bot.")
+
+    if current_user.is_admin():
+        if owner_user_id is None:
+            raise ValueError("owner_user_id must be specified for admin.")
+        user_id = owner_user_id
+    else:
+        user_id = current_user.id
+
     remove_api_key(current_user.id, bot_id, api_key_id)

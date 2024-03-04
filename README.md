@@ -3,7 +3,7 @@
 ![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/test.yml/badge.svg)
 
 > [!Tip]
-> 🔔**RAG (Retrieval Augmented Generation) Feature released**. See [Release](https://github.com/aws-samples/bedrock-claude-chat/releases/tag/v0.4.0) for the detail.
+> 🔔**Admin dashboard and API publication function released.** See [release](TODO) for the detail.
 
 > [!Warning]
 > The current version (`v0.4.x`) has no compatibility with ex version (~`v0.3.0`) due to the change of DynamoDB table schema. **Please note that UPDATE (i.e. `cdk deploy`) FROM EX VERSION TO `v0.4.x` WILL DESTROY ALL OF EXISTING CONVERSATIONS.**
@@ -20,6 +20,14 @@ Add your own instruction and give external knowledge as URL or files (a.k.a [RAG
 
 ![](./docs/imgs/bot_creation.png)
 ![](./docs/imgs/bot_chat.png)
+
+### Publish personalized bot as stand-alone API
+
+TODO
+
+### Administrator dashboard
+
+TODO
 
 ## 📚 Supported Languages
 
@@ -99,6 +107,7 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 
 - [x] Customized bot creation
 - [x] Customized bot sharing
+- [x] Publish as stand-alone API
 
 ### RAG features
 
@@ -110,7 +119,7 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 
 ### Admin features
 
-- [ ] Admin console to analyze user usage
+- [x] Tracking usage fees per bot
 
 ## Deploy using CDK
 
