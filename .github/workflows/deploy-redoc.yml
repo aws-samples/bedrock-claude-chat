@@ -47,7 +47,7 @@ jobs:
       - name: Generate REDOC static HTML
         run: |
           mkdir -p redoc
-          npx redoc-cli bundle openapi.json -o redoc/index.html
+          npx redoc-cli bundle openapi.json -o docs/index.html
 
       - name: Kill FastAPI server
         run: |
@@ -57,4 +57,4 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./redoc
+          publish_dir: ./docs
