@@ -23,7 +23,10 @@ class BotPublishInput(BaseSchema):
 
 
 class BotPublishOutput(BaseSchema):
-    stage: str  # "dev" | "stg" | "prd" | etc.
+    stage: str = Field(
+        ...,
+        description="The stage of the API Gateway (e.g. dev, stg, prd). Default value is `api`.",
+    )
     quota: PublishedApiQuota
     throttle: PublishedApiThrottle
     allowed_origins: list[str]

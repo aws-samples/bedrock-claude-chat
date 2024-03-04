@@ -60,7 +60,7 @@ export class ApiPublishCodebuild extends Construct {
         PUBLISHED_API_THROTTLE_BURST_LIMIT: { value: "100" },
         PUBLISHED_API_QUOTA_LIMIT: { value: "1000" },
         PUBLISHED_API_QUOTA_PERIOD: { value: "DAY" },
-        PUBLISHED_API_DEPLOYMENT_STAGE: { value: "dev" },
+        PUBLISHED_API_DEPLOYMENT_STAGE: { value: "api" },
         PUBLISHED_API_ID: { value: "xy1234" },
         PUBLISHED_API_ALLOWED_ORIGINS: { value: '["*"]' },
       },
