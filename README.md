@@ -24,6 +24,7 @@ Add your own instruction and give external knowledge as URL or files (a.k.a [RAG
 ### Publish personalized bot as stand-alone API
 
 TODO
+[publish_api.md](./docs/PUBLISH_API.md)
 
 ### Administrator dashboard
 

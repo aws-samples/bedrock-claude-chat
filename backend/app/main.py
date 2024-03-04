@@ -30,14 +30,20 @@ is_published_api = PUBLISHED_API_ID is not None
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s:%(name)s - %(message)s")
 logger = logging.getLogger(__name__)
-app = FastAPI(
-    openapi_tags=[
+
+if not is_published_api:
+    openapi_tags = [
         {"name": "conversation", "description": "Conversation API"},
         {"name": "bot", "description": "Bot API"},
         {"name": "api_publication", "description": "API Publication API"},
         {"name": "admin", "description": "Admin API"},
-        {"name": "published_api", "description": "Published API"},
     ]
+else:
+    openapi_tags = [{"name": "published_api", "description": "Published API"}]
+
+
+app = FastAPI(
+    openapi_tags=openapi_tags,
 )
 
 
