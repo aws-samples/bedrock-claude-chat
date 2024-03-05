@@ -126,7 +126,7 @@ const useChatState = create<{
     editMessage: (id: string, messageId: string, content: string) => {
       set((state) => ({
         chats: produce(state.chats, (draft) => {
-          draft[id][messageId].content.body = content;
+          draft[id][messageId].content[0].body = content;
         }),
       }));
     },
@@ -264,10 +264,12 @@ const useChat = () => {
       NEW_MESSAGE_ID.ASSISTANT,
       {
         role: 'assistant',
-        content: {
-          contentType: 'text',
-          body: '',
-        },
+        content: [
+          {
+            contentType: 'text',
+            body: '',
+          },
+        ],
         model: messageContent.model,
       }
     );
@@ -290,10 +292,12 @@ const useChat = () => {
     const modelToPost = isNewChat ? model : getPostedModel();
 
     const messageContent: MessageContent = {
-      content: {
-        body: content,
-        contentType: 'text',
-      },
+      content: [
+        {
+          body: content,
+          contentType: 'text',
+        },
+      ],
       model: modelToPost,
       role: 'user',
     };
@@ -349,7 +353,7 @@ const useChat = () => {
             editMessage(
               conversationId ?? '',
               NEW_MESSAGE_ID.ASSISTANT,
-              res.data.message.content.body
+              res.data.message.content[0].body
             );
             resolve();
           })
@@ -401,7 +405,7 @@ const useChat = () => {
 
     const parentMessage = produce(messages[index], (draft) => {
       if (props?.content) {
-        draft.content.body = props.content;
+        draft.content[0].body = props.content;
       }
     });
 
@@ -434,10 +438,12 @@ const useChat = () => {
         NEW_MESSAGE_ID.ASSISTANT,
         {
           role: 'assistant',
-          content: {
-            contentType: 'text',
-            body: '',
-          },
+          content: [
+            {
+              contentType: 'text',
+              body: '',
+            },
+          ],
           model: messages[index].model,
         }
       );
@@ -497,7 +503,7 @@ const useChat = () => {
         // エラー発生時の最新のメッセージはユーザ入力;
         removeMessage(conversationId, latestMessage.id);
         postChat(
-          params.content ?? latestMessage.content.body,
+          params.content ?? latestMessage.content[0].body,
           getPostedModel(),
           params.bot
             ? {
@@ -509,7 +515,7 @@ const useChat = () => {
       } else {
         // 再生成時
         regenerate({
-          content: params.content ?? latestMessage.content.body,
+          content: params.content ?? latestMessage.content[0].body,
           bot: params.bot,
         });
       }

@@ -88,7 +88,7 @@ const ChatMessage: React.FC<Props> = (props) => {
         <div className="ml-5 grow ">
           {chatContent?.role === 'user' && !isEdit && (
             <div>
-              {chatContent.content.body.split('\n').map((c, idx) => (
+              {chatContent.content[0].body.split('\n').map((c, idx) => (
                 <div key={idx}>{c}</div>
               ))}
             </div>
@@ -114,7 +114,7 @@ const ChatMessage: React.FC<Props> = (props) => {
             </div>
           )}
           {chatContent?.role === 'assistant' && (
-            <Markdown>{chatContent.content.body}</Markdown>
+            <Markdown>{chatContent.content[0].body}</Markdown>
           )}
         </div>
       </div>
@@ -125,7 +125,7 @@ const ChatMessage: React.FC<Props> = (props) => {
             <ButtonIcon
               className="mr-0.5 text-gray"
               onClick={() => {
-                setChangedContent(chatContent.content.body);
+                setChangedContent(chatContent.content[0].body);
                 setIsEdit(true);
               }}>
               <PiNotePencil />
@@ -135,7 +135,7 @@ const ChatMessage: React.FC<Props> = (props) => {
             <>
               <ButtonCopy
                 className="mr-0.5 text-gray"
-                text={chatContent.content.body}
+                text={chatContent.content[0].body}
               />
             </>
           )}
