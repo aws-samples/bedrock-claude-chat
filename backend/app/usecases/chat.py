@@ -185,7 +185,7 @@ def insert_knowledge(
     for result in search_results:
         context_prompt += f"<context>\n{result.content}</context>\n"
 
-    instruction_prompt = conversation.message_map["instruction"].content.body
+    instruction_prompt = conversation.message_map["instruction"].content[0].body
     inserted_prompt = """You must respond based on given contexts.
 The contexts are as follows:
 <contexts>
@@ -202,7 +202,9 @@ In addition, *YOU MUST OBEY THE FOLLOWING RULE*:
     logger.info(f"Inserted prompt: {inserted_prompt}")
 
     conversation_with_context = deepcopy(conversation)
-    conversation_with_context.message_map["instruction"].content.body = inserted_prompt
+    conversation_with_context.message_map["instruction"].content[
+        0
+    ].body = inserted_prompt
 
     return conversation_with_context
 
@@ -230,7 +232,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     messages.append(chat_input.message)  # type: ignore
 
     # Create payload to invoke Bedrock
-    compose_args_for_anthropic_client(
+    args = compose_args_for_anthropic_client(
         messages=messages,
         model=chat_input.message.model,
         instruction=(
