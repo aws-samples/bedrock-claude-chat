@@ -51,7 +51,7 @@ def handler(event, context):
 
     try:
         # Verify JWT token
-        decoded = verify_token(chat_input.token)
+        decoded = verify_token(chat_input.token,chat_input.access_token)
     except Exception as e:
         print(f"Invalid token: {e}")
         return {"statusCode": 403, "body": "Invalid token."}

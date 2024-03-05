@@ -60,6 +60,7 @@ class ChatInput(BaseSchema):
 
 class ChatInputWithToken(ChatInput):
     token: str
+    access_token: str
 
 
 class ChatOutput(BaseSchema):
