@@ -56,7 +56,7 @@ app.add_exception_handler(Exception, error_handler_factory(500))
 security = HTTPBearer()
 
 
-def get_current_user(access_token: str, token: HTTPAuthorizationCredentials = Depends(security)):
+def get_current_user(access_token: str=None, token: HTTPAuthorizationCredentials = Depends(security)):
     try:
         decoded = verify_token(token.credentials,access_token)
         # Return user information
