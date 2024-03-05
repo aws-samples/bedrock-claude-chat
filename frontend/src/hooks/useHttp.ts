@@ -14,7 +14,10 @@ api.interceptors.request.use(async (config) => {
   const user = await Auth.currentAuthenticatedUser();
   if (user) {
     const token = (await Auth.currentSession()).getIdToken().getJwtToken();
+    const accessToken = await Auth.currentSession();
+
     config.headers['Authorization'] = 'Bearer ' + token;
+    config.headers['X-Access-Token'] = accessToken;
   }
   config.headers['Content-Type'] = 'application/json';
 
