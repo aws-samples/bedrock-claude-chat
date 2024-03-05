@@ -29,6 +29,13 @@ const App: React.FC = () => {
       userPoolId: import.meta.env.VITE_APP_USER_POOL_ID,
       userPoolWebClientId: import.meta.env.VITE_APP_USER_POOL_CLIENT_ID,
       authenticationFlowType: 'USER_SRP_AUTH',
+      oauth: {
+        domain: import.meta.env.VITE_APP_COGNITO_DOMAIN,
+        scope: ['openid'],
+        redirectSignIn: import.meta.env.VITE_APP_REDIRECT_SIGNIN_URL,
+        redirectSignOut: import.meta.env.VITE_APP_REDIRECT_SIGNOUT_URL,
+        responseType: 'code',
+      },
     },
   });
 
@@ -49,6 +56,7 @@ const App: React.FC = () => {
 
   return (
     <Authenticator
+      socialProviders={['google']}
       components={{
         Header: () => (
           <div className="mb-5 mt-10 flex justify-center text-3xl text-aws-font-color">
