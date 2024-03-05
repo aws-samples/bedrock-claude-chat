@@ -8,7 +8,10 @@ client = get_bedrock_client()
 
 
 def compose_args_for_anthropic_client(
-    messages: list[MessageModel], model: str, instruction: str | None = None
+    messages: list[MessageModel],
+    model: str,
+    instruction: str | None = None,
+    stream: bool = False,
 ) -> dict:
     """Compose arguments for Anthropic client.
     Ref: https://docs.anthropic.com/claude/reference/messages_post
@@ -43,7 +46,7 @@ def compose_args_for_anthropic_client(
         **GENERATION_CONFIG,
         "model": get_model_id(model),
         "messages": arg_messages,
-        "stream": False,
+        "stream": stream,
     }
     if instruction:
         args["system"] = instruction

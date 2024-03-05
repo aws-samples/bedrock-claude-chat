@@ -6,22 +6,17 @@ from typing import Literal
 
 from app.bedrock import compose_args_for_anthropic_client, get_model_id
 from app.config import GENERATION_CONFIG, SEARCH_CONFIG
-from app.repositories.conversation import (
-    RecordNotFoundError,
-    find_conversation_by_id,
-    store_conversation,
-)
+from app.repositories.conversation import (RecordNotFoundError,
+                                           find_conversation_by_id,
+                                           store_conversation)
 from app.repositories.custom_bot import find_alias_by_id, store_alias
-from app.repositories.model import (
-    BotAliasModel,
-    BotModel,
-    ContentModel,
-    ConversationModel,
-    MessageModel,
-)
-from app.route_schema import ChatInput, ChatOutput, Content, Conversation, MessageOutput
+from app.repositories.model import (BotAliasModel, BotModel, ContentModel,
+                                    ConversationModel, MessageModel)
+from app.route_schema import (ChatInput, ChatOutput, Content, Conversation,
+                              MessageOutput)
 from app.usecases.bot import fetch_bot, modify_bot_last_used_time
-from app.utils import get_anthropic_client, get_current_time, is_running_on_lambda
+from app.utils import (get_anthropic_client, get_current_time,
+                       is_running_on_lambda)
 from app.vector_search import SearchResult, search_related_docs
 from ulid import ULID
 
@@ -216,7 +211,8 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     if bot and is_running_on_lambda():
         # NOTE: `is_running_on_lambda`is a workaround for local testing due to no postgres mock.
         # Fetch most related documents from vector store
-        query = conversation.message_map[user_msg_id].content.body
+        # NOTE: Currently embedding not support multi-modal. For now, use the last content.
+        query = conversation.message_map[user_msg_id].content[-1].body
         results = search_related_docs(
             bot_id=bot.id, limit=SEARCH_CONFIG["max_results"], query=query
         )

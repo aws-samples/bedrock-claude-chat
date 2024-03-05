@@ -5,7 +5,7 @@ from datetime import datetime
 import boto3
 from anthropic.types import ContentBlockDeltaEvent, MessageDeltaEvent, MessageStopEvent
 from app.auth import verify_token
-from app.bedrock import get_model_id
+from app.bedrock import compose_args_for_anthropic_client, get_model_id
 from app.config import GENERATION_CONFIG, SEARCH_CONFIG
 from app.repositories.conversation import RecordNotFoundError, store_conversation
 from app.repositories.model import ContentModel, MessageModel
@@ -78,7 +78,8 @@ def handler(event, context):
             ).encode("utf-8"),
         )
         # Fetch most related documents from vector store
-        query = conversation.message_map[user_msg_id].content.body
+        # NOTE: Currently embedding not support multi-modal. For now, use the last content.
+        query = conversation.message_map[user_msg_id].content[-1].body
         results = search_related_docs(
             bot_id=bot.id, limit=SEARCH_CONFIG["max_results"], query=query
         )
@@ -95,18 +96,9 @@ def handler(event, context):
     messages.append(chat_input.message)  # type: ignore
 
     # Invoke Bedrock
-    args = {
-        **GENERATION_CONFIG,
-        "model": get_model_id(chat_input.message.model),
-        "messages": [
-            {"role": message.role, "content": message.content.body}
-            for message in messages
-            if message.role not in ["system", "instruction"]
-        ],
-        "stream": True,
-    }
-    if "instruction" in message_map:
-        args["system"] = message_map["instruction"].content.body
+    args = compose_args_for_anthropic_client(
+        messages, chat_input.message.model, stream=True
+    )
 
     try:
         # Invoke bedrock streaming api
@@ -116,6 +108,7 @@ def handler(event, context):
         return {"statusCode": 500, "body": "Failed to invoke bedrock."}
 
     completions = []
+    last_data_to_send = {}
     for event in response:
         # NOTE: following is the example of event sequence:
         # MessageStartEvent(message=Message(id='compl_01GwmkwncsptaeBopeaR4eWE', content=[], model='claude-instant-1.2', role='assistant', stop_reason=None, stop_sequence=None, type='message', usage=Usage(input_tokens=21, output_tokens=1)), type='message_start')
@@ -160,7 +153,11 @@ def handler(event, context):
             assistant_msg_id = str(ULID())
             message = MessageModel(
                 role="assistant",
-                content=ContentModel(content_type="text", body=concatenated),
+                content=[
+                    ContentModel(
+                        content_type="text", body=concatenated, media_type=None
+                    )
+                ],
                 model=chat_input.message.model,
                 children=[],
                 parent=user_msg_id,
@@ -184,6 +181,7 @@ def handler(event, context):
 
     # Send last completion after saving conversation
     try:
+        logger.debug(f"Sending last completion: {last_data_to_send}")
         gatewayapi.post_to_connection(
             ConnectionId=connection_id, Data=last_data_to_send
         )
