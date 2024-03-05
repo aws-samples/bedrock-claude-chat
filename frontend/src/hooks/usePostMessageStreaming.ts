@@ -21,13 +21,16 @@ const usePostMessageStreaming = create<{
       }
 
       const token = (await Auth.currentSession()).getIdToken().getJwtToken();
+      const accessToken = (await Auth.currentSession())
+        .getAccessToken()
+        .getJwtToken();
 
       return new Promise<void>((resolve, reject) => {
         const ws = new WebSocket(WS_ENDPOINT);
         let completion = '';
 
         ws.onopen = () => {
-          ws.send(JSON.stringify({ ...input, token }));
+          ws.send(JSON.stringify({ ...input, token, accessToken }));
         };
 
         ws.onmessage = (message) => {
