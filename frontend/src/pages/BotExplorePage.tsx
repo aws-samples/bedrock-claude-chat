@@ -2,6 +2,7 @@ import React, { ReactNode, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Button from '../components/Button';
 import {
+  PiGlobe,
   PiLink,
   PiLockKey,
   PiPlus,
@@ -264,6 +265,13 @@ const BotExplorePage: React.FC = () => {
                           }}>
                           <PiUsers />
                           {t('bot.button.share')}
+                        </PopoverItem>
+                        <PopoverItem
+                          onClick={() => {
+                            onClickShare(idx);
+                          }}>
+                          <PiGlobe />
+                          {t('bot.button.apiSettings')}
                         </PopoverItem>
 
                         <PopoverItem
