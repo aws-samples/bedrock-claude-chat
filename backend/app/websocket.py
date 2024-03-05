@@ -12,11 +12,11 @@ from app.repositories.model import ContentModel, MessageModel
 from app.route_schema import ChatInputWithToken
 from app.usecases.bot import modify_bot_last_used_time
 from app.usecases.chat import insert_knowledge, prepare_conversation, trace_to_root
-from app.utils import get_bedrock_client, get_current_time
+from app.utils import get_anthropic_client, get_current_time
 from app.vector_search import SearchResult, search_related_docs
 from ulid import ULID
 
-client = get_bedrock_client()
+client = get_anthropic_client()
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

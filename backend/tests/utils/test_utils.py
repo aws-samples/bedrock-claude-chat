@@ -15,7 +15,12 @@ class TestUtils(unittest.TestCase):
         client = get_bedrock_client()
         assert client is not None
 
-        reg = client.aws_region
+        cli_dict = client.__dict__
+
+        reg = cli_dict["_client_config"].region_name
+
+        LOGGER.debug("Region: ")
+        LOGGER.debug(reg)
 
         assert reg == "us-east-1"
 
@@ -25,7 +30,12 @@ class TestUtils(unittest.TestCase):
         client = get_bedrock_client("us-west-2")
         assert client is not None
 
-        reg = client.aws_region
+        cli_dict = client.__dict__
+
+        reg = cli_dict["_client_config"].region_name
+
+        LOGGER.debug("Region: ")
+        LOGGER.debug(reg)
 
         assert reg == "us-west-2"
 

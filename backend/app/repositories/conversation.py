@@ -127,10 +127,14 @@ def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationM
         message_map={
             k: MessageModel(
                 role=v["role"],
-                content=ContentModel(
-                    content_type=v["content"]["content_type"],
-                    body=v["content"]["body"],
-                ),
+                content=[
+                    ContentModel(
+                        content_type=c["content_type"],
+                        body=c["body"],
+                        media_type=c["media_type"],
+                    )
+                    for c in v["content"]
+                ],
                 model=v["model"],
                 children=v["children"],
                 parent=v["parent"],

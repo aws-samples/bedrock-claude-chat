@@ -16,6 +16,11 @@ def is_running_on_lambda():
 
 
 def get_bedrock_client(region=BEDROCK_REGION):
+    client = boto3.client("bedrock-runtime", region)
+    return client
+
+
+def get_anthropic_client(region=BEDROCK_REGION):
     client = AnthropicBedrock(aws_region=region)
 
     return client

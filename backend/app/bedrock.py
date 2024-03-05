@@ -7,6 +7,49 @@ from app.utils import get_bedrock_client
 client = get_bedrock_client()
 
 
+def compose_args_for_anthropic_client(
+    messages: list[MessageModel], model: str, instruction: str | None = None
+) -> dict:
+    """Compose arguments for Anthropic client.
+    Ref: https://docs.anthropic.com/claude/reference/messages_post
+    """
+    arg_messages = []
+    for message in messages:
+        if message.role not in ["system", "instruction"]:
+            content = []
+            for c in message.content:
+                if c.content_type == "text":
+                    content.append(
+                        {
+                            "type": "text",
+                            "text": c.body,
+                        }
+                    )
+                elif c.content_type == "image":
+                    content.append(
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": c.media_type,
+                                "data": c.body,
+                            },
+                        }
+                    )
+            m = {"role": message.role, "content": content}
+            arg_messages.append(m)
+
+    args = {
+        **GENERATION_CONFIG,
+        "model": get_model_id(model),
+        "messages": arg_messages,
+        "stream": False,
+    }
+    if instruction:
+        args["system"] = instruction
+    return args
+
+
 def get_model_id(model: str) -> str:
     # Ref: https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
     if model == "claude-v2":

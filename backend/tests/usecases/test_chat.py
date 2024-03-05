@@ -35,7 +35,7 @@ from app.usecases.chat import (
     propose_conversation_title,
     trace_to_root,
 )
-from app.utils import get_bedrock_client
+from app.utils import get_anthropic_client
 from app.vector_search import SearchResult
 
 MODEL = "claude-instant-v1"
@@ -592,7 +592,7 @@ class TestInsertKnowledge(unittest.TestCase):
 
 class TestStreamingApi(unittest.TestCase):
     def test_streaming_api(self):
-        client = get_bedrock_client()
+        client = get_anthropic_client()
         chat_input = ChatInput(
             conversation_id="test_conversation_id",
             message=MessageInput(

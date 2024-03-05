@@ -4,7 +4,7 @@ from copy import deepcopy
 from datetime import datetime
 from typing import Literal
 
-from app.bedrock import get_model_id
+from app.bedrock import compose_args_for_anthropic_client, get_model_id
 from app.config import GENERATION_CONFIG, SEARCH_CONFIG
 from app.repositories.conversation import (
     RecordNotFoundError,
@@ -21,14 +21,14 @@ from app.repositories.model import (
 )
 from app.route_schema import ChatInput, ChatOutput, Content, Conversation, MessageOutput
 from app.usecases.bot import fetch_bot, modify_bot_last_used_time
-from app.utils import get_bedrock_client, get_current_time, is_running_on_lambda
+from app.utils import get_anthropic_client, get_current_time, is_running_on_lambda
 from app.vector_search import SearchResult, search_related_docs
 from ulid import ULID
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-client = get_bedrock_client()
+client = get_anthropic_client()
 
 
 def prepare_conversation(
@@ -58,10 +58,13 @@ def prepare_conversation(
             # Dummy system message
             "system": MessageModel(
                 role="system",
-                content=ContentModel(
-                    content_type="text",
-                    body="",
-                ),
+                content=[
+                    ContentModel(
+                        content_type="text",
+                        media_type=None,
+                        body="",
+                    )
+                ],
                 model=chat_input.message.model,
                 children=[],
                 parent=None,
@@ -76,10 +79,13 @@ def prepare_conversation(
             owned, bot = fetch_bot(user_id, chat_input.bot_id)
             initial_message_map["instruction"] = MessageModel(
                 role="instruction",
-                content=ContentModel(
-                    content_type="text",
-                    body=bot.instruction,
-                ),
+                content=[
+                    ContentModel(
+                        content_type="text",
+                        media_type=None,
+                        body=bot.instruction,
+                    )
+                ],
                 model=chat_input.message.model,
                 children=[],
                 parent="system",
@@ -130,10 +136,14 @@ def prepare_conversation(
     message_id = str(ULID())
     new_message = MessageModel(
         role=chat_input.message.role,
-        content=ContentModel(
-            content_type=chat_input.message.content.content_type,
-            body=chat_input.message.content.body,
-        ),
+        content=[
+            ContentModel(
+                content_type=c.content_type,
+                media_type=c.media_type,
+                body=c.body,
+            )
+            for c in chat_input.message.content
+        ],
         model=chat_input.message.model,
         children=[],
         parent=parent_id,
@@ -162,35 +172,6 @@ def trace_to_root(
         current_node = message_map.get(parent_id)
 
     return result[::-1]
-
-
-# def compress_knowledge(query: str, results: list[SearchResult]) -> tuple[bool, str]:
-#     """Compress knowledge to avoid token limit. Extract only related parts from the search results."""
-#     contexts_prompt = ""
-#     for result in results:
-#         contexts_prompt += f"<context>\n{result.content}</context>\n"
-#     NO_RELEVANT_DOC = "THERE_IS_NO_RELEVANT_DOC"
-#     PROMPT = """Human: Given the following question and contexts, extract any part of the context *AS IS* that is relevant to answer the question.
-# Remember, *DO NOT* edit the extracted parts of the context.
-# <question>
-# {}
-# </question>
-# <contexts>
-# {}
-# </contexts>
-# If none of the context is relevant, just say {}.
-
-# Assistant:
-# """.format(
-#         query, contexts_prompt, NO_RELEVANT_DOC
-#     )
-#     reply_txt = invoke(prompt=PROMPT, model="claude-instant-v1")
-#     print(reply_txt)
-
-#     if reply_txt.find(NO_RELEVANT_DOC) != -1:
-#         return False, ""
-
-#     return reply_txt
 
 
 def insert_knowledge(
@@ -248,19 +229,16 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     )
     messages.append(chat_input.message)  # type: ignore
 
-    # Invoke Bedrock
-    args = {
-        **GENERATION_CONFIG,
-        "model": get_model_id(chat_input.message.model),
-        "messages": [
-            {"role": message.role, "content": message.content.body}
-            for message in messages
-            if message.role not in ["system", "instruction"]
-        ],
-        "stream": False,
-    }
-    if "instruction" in message_map:
-        args["system"] = message_map["instruction"].content.body
+    # Create payload to invoke Bedrock
+    compose_args_for_anthropic_client(
+        messages=messages,
+        model=chat_input.message.model,
+        instruction=(
+            message_map["instruction"].content[0].body
+            if "instruction" in message_map
+            else None
+        ),
+    )
     response = client.messages.create(**args)
     reply_txt = response.content[0].text
 
@@ -269,7 +247,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     # Append bedrock output to the existing conversation
     message = MessageModel(
         role="assistant",
-        content=ContentModel(content_type="text", body=reply_txt),
+        content=[ContentModel(content_type="text", body=reply_txt, media_type=None)],
         model=chat_input.message.model,
         children=[],
         parent=user_msg_id,
@@ -294,10 +272,14 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         create_time=conversation.create_time,
         message=MessageOutput(
             role=message.role,
-            content=Content(
-                content_type=message.content.content_type,
-                body=message.content.body,
-            ),
+            content=[
+                Content(
+                    content_type=c.content_type,
+                    body=c.body,
+                    media_type=c.media_type,
+                )
+                for c in message.content
+            ],
             model=message.model,
             children=message.children,
             parent=message.parent,
@@ -334,10 +316,13 @@ def propose_conversation_title(
     # Append message to generate title
     new_message = MessageModel(
         role="user",
-        content=ContentModel(
-            content_type="text",
-            body=PROMPT,
-        ),
+        content=[
+            ContentModel(
+                content_type="text",
+                body=PROMPT,
+                media_type=None,
+            )
+        ],
         model=model,
         children=[],
         parent=conversation.last_message_id,
@@ -346,19 +331,10 @@ def propose_conversation_title(
     messages.append(new_message)
 
     # Invoke Bedrock
-    args = {
-        **GENERATION_CONFIG,
-        "model": get_model_id(model),
-        "messages": [
-            {
-                "role": message.role,
-                "content": message.content.body,
-            }
-            for message in messages
-            if message.role not in ["system", "instruction"]
-        ],
-        "stream": False,
-    }
+    args = compose_args_for_anthropic_client(
+        messages=messages,
+        model=model,
+    )
     response = client.messages.create(**args)
     reply_txt = response.content[0].text
     return reply_txt
@@ -370,10 +346,14 @@ def fetch_conversation(user_id: str, conversation_id: str) -> Conversation:
     message_map = {
         message_id: MessageOutput(
             role=message.role,
-            content=Content(
-                content_type=message.content.content_type,
-                body=message.content.body,
-            ),
+            content=[
+                Content(
+                    content_type=c.content_type,
+                    body=c.body,
+                    media_type=c.media_type,
+                )
+                for c in message.content
+            ],
             model=message.model,
             children=message.children,
             parent=message.parent,
