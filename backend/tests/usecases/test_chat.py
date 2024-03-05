@@ -1,10 +1,12 @@
 import sys
 
 sys.path.append(".")
-
 import unittest
 from pprint import pprint
 
+from anthropic.types import MessageDeltaEvent, MessageStopEvent
+from app.bedrock import get_model_id
+from app.config import GENERATION_CONFIG
 from app.repositories.conversation import (
     delete_conversation_by_id,
     delete_conversation_by_user_id,
@@ -29,9 +31,11 @@ from app.usecases.chat import (
     chat,
     fetch_conversation,
     insert_knowledge,
+    prepare_conversation,
     propose_conversation_title,
     trace_to_root,
 )
+from app.utils import get_bedrock_client
 from app.vector_search import SearchResult
 
 MODEL = "claude-instant-v1"
@@ -376,6 +380,7 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             knowledge=KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[]),
             sync_status="SUCCEEDED",
             sync_status_reason="",
+            sync_last_exec_id="",
         )
         public_bot = BotModel(
             id="public1",
@@ -390,6 +395,7 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             knowledge=KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[]),
             sync_status="SUCCEEDED",
             sync_status_reason="",
+            sync_last_exec_id="",
         )
         store_bot("user1", private_bot)
         store_bot("user2", public_bot)
@@ -582,6 +588,49 @@ class TestInsertKnowledge(unittest.TestCase):
         )
         conversation_with_context = insert_knowledge(conversation, results)
         print(conversation_with_context.message_map["instruction"])
+
+
+class TestStreamingApi(unittest.TestCase):
+    def test_streaming_api(self):
+        client = get_bedrock_client()
+        chat_input = ChatInput(
+            conversation_id="test_conversation_id",
+            message=MessageInput(
+                role="user",
+                content=Content(
+                    content_type="text",
+                    body="あなたの名前は何ですか？",
+                ),
+                model=MODEL,
+                parent_message_id=None,
+            ),
+            bot_id=None,
+        )
+        user_msg_id, conversation, bot = prepare_conversation("user1", chat_input)
+        messages = trace_to_root(
+            node_id=chat_input.message.parent_message_id,
+            message_map=conversation.message_map,
+        )
+        messages.append(chat_input.message)  # type: ignore
+        args = {
+            **GENERATION_CONFIG,
+            "model": get_model_id(chat_input.message.model),
+            "messages": [
+                {"role": message.role, "content": message.content.body}
+                for message in messages
+                if message.role not in ["system", "instruction"]
+            ],
+            "stream": True,
+        }
+        response = client.messages.create(**args)
+        for event in response:
+            # print(event)
+            if isinstance(event, (MessageStopEvent)):
+                print(event)
+                metrics = event.model_dump()["amazon-bedrock-invocationMetrics"]
+                input_token_count = metrics.get("inputTokenCount")
+                output_token_count = metrics.get("outputTokenCount")
+                print(input_token_count, output_token_count)
 
 
 if __name__ == "__main__":

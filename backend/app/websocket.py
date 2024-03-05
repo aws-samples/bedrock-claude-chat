@@ -3,13 +3,15 @@ import logging
 from datetime import datetime
 
 import boto3
+from anthropic.types import ContentBlockDeltaEvent, MessageDeltaEvent, MessageStopEvent
 from app.auth import verify_token
-from app.config import SEARCH_CONFIG
+from app.bedrock import get_model_id
+from app.config import GENERATION_CONFIG, SEARCH_CONFIG
 from app.repositories.conversation import RecordNotFoundError, store_conversation
 from app.repositories.model import ContentModel, MessageModel
 from app.route_schema import ChatInputWithToken
 from app.usecases.bot import modify_bot_last_used_time
-from app.usecases.chat import get_invoke_payload, insert_knowledge, prepare_conversation
+from app.usecases.chat import insert_knowledge, prepare_conversation, trace_to_root
 from app.utils import get_bedrock_client, get_current_time
 from app.vector_search import SearchResult, search_related_docs
 from ulid import ULID
@@ -18,15 +20,6 @@ client = get_bedrock_client()
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-
-
-def generate_chunk(stream) -> bytes:
-    if stream:
-        for event in stream:
-            chunk = event.get("chunk")
-            if chunk:
-                chunk_bytes = chunk.get("bytes")
-                yield chunk_bytes
 
 
 def handler(event, context):
@@ -95,26 +88,72 @@ def handler(event, context):
         conversation_with_context = insert_knowledge(conversation, results)
         message_map = conversation_with_context.message_map
 
-    payload = get_invoke_payload(message_map, chat_input)
+    messages = trace_to_root(
+        node_id=chat_input.message.parent_message_id,
+        message_map=message_map,
+    )
+    messages.append(chat_input.message)  # type: ignore
+
+    # Invoke Bedrock
+    args = {
+        **GENERATION_CONFIG,
+        "model": get_model_id(chat_input.message.model),
+        "messages": [
+            {"role": message.role, "content": message.content.body}
+            for message in messages
+            if message.role not in ["system", "instruction"]
+        ],
+        "stream": True,
+    }
+    if "instruction" in message_map:
+        args["system"] = message_map["instruction"].content.body
 
     try:
         # Invoke bedrock streaming api
-        response = client.invoke_model_with_response_stream(
-            body=payload["body"],
-            modelId=payload["model_id"],
-            accept=payload["accept"],
-            contentType=payload["content_type"],
-        )
+        response = client.messages.create(**args)
     except Exception as e:
         print(f"Failed to invoke bedrock: {e}")
         return {"statusCode": 500, "body": "Failed to invoke bedrock."}
 
-    stream = response.get("body")
     completions = []
-    for chunk in generate_chunk(stream):
-        chunk_data = json.loads(chunk.decode("utf-8"))
-        completions.append(chunk_data["completion"])
-        if "stop_reason" in chunk_data and chunk_data["stop_reason"] is not None:
+    for event in response:
+        # NOTE: following is the example of event sequence:
+        # MessageStartEvent(message=Message(id='compl_01GwmkwncsptaeBopeaR4eWE', content=[], model='claude-instant-1.2', role='assistant', stop_reason=None, stop_sequence=None, type='message', usage=Usage(input_tokens=21, output_tokens=1)), type='message_start')
+        # ContentBlockStartEvent(content_block=ContentBlock(text='', type='text'), index=0, type='content_block_start')
+        # ...
+        # ContentBlockDeltaEvent(delta=TextDelta(text='です', type='text_delta'), index=0, type='content_block_delta')
+        # ContentBlockStopEvent(index=0, type='content_block_stop')
+        # MessageDeltaEvent(delta=Delta(stop_reason='end_turn', stop_sequence=None), type='message_delta', usage=MessageDeltaUsage(output_tokens=26))
+        # MessageStopEvent(type='message_stop', amazon-bedrock-invocationMetrics={'inputTokenCount': 21, 'outputTokenCount': 25, 'invocationLatency': 621, 'firstByteLatency': 279})
+
+        if isinstance(event, ContentBlockDeltaEvent):
+            completions.append(event.delta.text)
+            try:
+                # Send completion
+                data_to_send = json.dumps(
+                    dict(
+                        status="STREAMING",
+                        completion=event.delta.text,
+                    )
+                ).encode("utf-8")
+                gatewayapi.post_to_connection(
+                    ConnectionId=connection_id, Data=data_to_send
+                )
+            except Exception as e:
+                print(f"Failed to post message: {str(e)}")
+                return {
+                    "statusCode": 500,
+                    "body": "Failed to send message to connection.",
+                }
+        elif isinstance(event, MessageDeltaEvent):
+            logger.debug(f"Received message delta event: {event.delta}")
+            last_data_to_send = json.dumps(
+                dict(
+                    completion="",
+                    stop_reason=event.delta.stop_reason,
+                )
+            ).encode("utf-8")
+        elif isinstance(event, MessageStopEvent):
             # Persist conversation before finish streaming so that front-end can avoid 404 issue
             concatenated = "".join(completions)
             # Append entire completion as the last message
@@ -133,12 +172,27 @@ def handler(event, context):
             conversation.last_message_id = assistant_msg_id
 
             store_conversation(user_id, conversation)
-        try:
-            # Send completion
-            gatewayapi.post_to_connection(ConnectionId=connection_id, Data=chunk)
-        except Exception as e:
-            print(f"Failed to post message: {str(e)}")
-            return {"statusCode": 500, "body": "Failed to send message to connection."}
+
+            # TODO: implement cost calculation
+            metrics = event.model_dump()["amazon-bedrock-invocationMetrics"]
+            input_token_count = metrics.get("inputTokenCount")
+            output_token_count = metrics.get("outputTokenCount")
+            logger.debug(f"Input token count: {input_token_count}")
+            logger.debug(f"Output token count: {output_token_count}")
+        else:
+            continue
+
+    # Send last completion after saving conversation
+    try:
+        gatewayapi.post_to_connection(
+            ConnectionId=connection_id, Data=last_data_to_send
+        )
+    except Exception as e:
+        print(f"Failed to post message: {str(e)}")
+        return {
+            "statusCode": 500,
+            "body": "Failed to send message to connection.",
+        }
 
     # Update bot last used time
     if chat_input.bot_id:

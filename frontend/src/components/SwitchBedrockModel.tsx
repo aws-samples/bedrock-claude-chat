@@ -1,5 +1,3 @@
-import { FaBrain } from 'react-icons/fa';
-import { AiFillThunderbolt } from 'react-icons/ai';
 import { BaseProps } from '../@types/common';
 import { Model } from '../@types/conversation';
 import Button from './Button';
@@ -24,7 +22,6 @@ const SwitchBedrockModel: React.FC<Props> = (props) => {
             ? ''
             : 'border-light-gray bg-white text-dark-gray'
         }`}
-        icon={<AiFillThunderbolt />}
         onClick={() => props.setModel('claude-instant-v1')}
         children={<span>Claude Instant</span>}></Button>
       <Button
@@ -33,9 +30,16 @@ const SwitchBedrockModel: React.FC<Props> = (props) => {
             ? ''
             : 'border-light-gray bg-white text-dark-gray'
         }`}
-        icon={<FaBrain />}
         onClick={() => props.setModel('claude-v2')}
         children={<span>Claude v2</span>}></Button>
+      <Button
+        className={`${buttonClass} ${
+          props.model === 'claude-v3-sonnet'
+            ? ''
+            : 'border-light-gray bg-white text-dark-gray'
+        }`}
+        onClick={() => props.setModel('claude-v3-sonnet')}
+        children={<span>Claude v3</span>}></Button>
     </div>
   );
 };

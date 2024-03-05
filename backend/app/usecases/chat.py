@@ -4,8 +4,8 @@ from copy import deepcopy
 from datetime import datetime
 from typing import Literal
 
-from app.bedrock import _create_body, get_model_id, invoke
-from app.config import SEARCH_CONFIG
+from app.bedrock import get_model_id
+from app.config import GENERATION_CONFIG, SEARCH_CONFIG
 from app.repositories.conversation import (
     RecordNotFoundError,
     find_conversation_by_id,
@@ -21,12 +21,14 @@ from app.repositories.model import (
 )
 from app.route_schema import ChatInput, ChatOutput, Content, Conversation, MessageOutput
 from app.usecases.bot import fetch_bot, modify_bot_last_used_time
-from app.utils import get_buffer_string, get_current_time, is_running_on_lambda
+from app.utils import get_bedrock_client, get_current_time, is_running_on_lambda
 from app.vector_search import SearchResult, search_related_docs
 from ulid import ULID
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+client = get_bedrock_client()
 
 
 def prepare_conversation(
@@ -143,25 +145,6 @@ def prepare_conversation(
     return (message_id, conversation, bot)
 
 
-def get_invoke_payload(message_map: dict[str, MessageModel], chat_input: ChatInput):
-    messages = trace_to_root(
-        node_id=chat_input.message.parent_message_id,
-        message_map=message_map,
-    )
-    messages.append(chat_input.message)  # type: ignore
-    prompt = get_buffer_string(messages)
-    body = _create_body(chat_input.message.model, prompt)
-    model_id = get_model_id(chat_input.message.model)
-    accept = "application/json"
-    content_type = "application/json"
-    return {
-        "body": body,
-        "model_id": model_id,
-        "accept": accept,
-        "content_type": content_type,
-    }
-
-
 def trace_to_root(
     node_id: str | None, message_map: dict[str, MessageModel]
 ) -> list[MessageModel]:
@@ -266,9 +249,20 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     messages.append(chat_input.message)  # type: ignore
 
     # Invoke Bedrock
-    prompt = get_buffer_string(messages)
-
-    reply_txt = invoke(prompt=prompt, model=chat_input.message.model)
+    args = {
+        **GENERATION_CONFIG,
+        "model": get_model_id(chat_input.message.model),
+        "messages": [
+            {"role": message.role, "content": message.content.body}
+            for message in messages
+            if message.role not in ["system", "instruction"]
+        ],
+        "stream": False,
+    }
+    if "instruction" in message_map:
+        args["system"] = message_map["instruction"].content.body
+    response = client.messages.create(**args)
+    reply_txt = response.content[0].text
 
     # Issue id for new assistant message
     assistant_msg_id = str(ULID())
@@ -317,7 +311,9 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
 def propose_conversation_title(
     user_id: str,
     conversation_id: str,
-    model: Literal["claude-instant-v1", "claude-v2"] = "claude-instant-v1",
+    model: Literal[
+        "claude-instant-v1", "claude-v2", "claude-v3-sonnet"
+    ] = "claude-instant-v1",
 ) -> str:
     PROMPT = """Reading the conversation above, what is the appropriate title for the conversation? When answering the title, please follow the rules below:
 <rules>
@@ -350,9 +346,21 @@ def propose_conversation_title(
     messages.append(new_message)
 
     # Invoke Bedrock
-    prompt = get_buffer_string(messages)
-    reply_txt = invoke(prompt=prompt, model=model)
-    reply_txt = reply_txt.replace("\n", "")
+    args = {
+        **GENERATION_CONFIG,
+        "model": get_model_id(model),
+        "messages": [
+            {
+                "role": message.role,
+                "content": message.content.body,
+            }
+            for message in messages
+            if message.role not in ["system", "instruction"]
+        ],
+        "stream": False,
+    }
+    response = client.messages.create(**args)
+    reply_txt = response.content[0].text
     return reply_txt
 
 

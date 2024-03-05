@@ -39,7 +39,7 @@ class KnowledgeDiffInput(BaseSchema):
 class MessageInput(BaseSchema):
     role: str
     content: Content
-    model: Literal["claude-instant-v1", "claude-v2"]
+    model: Literal["claude-instant-v1", "claude-v2", "claude-v3-sonnet"]
     parent_message_id: str | None
 
 
