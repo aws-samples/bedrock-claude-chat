@@ -94,6 +94,7 @@ export class BedrockChatStack extends cdk.Stack {
       dbConfig,
       database: database.table,
       tableAccessRole: database.tableAccessRole,
+      websocketSessionTable: database.websocketSessionTable,
       auth,
       bedrockRegion: props.bedrockRegion,
     });

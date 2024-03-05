@@ -55,7 +55,13 @@ def handler(event, context):
     except RecordNotFoundError:
         if chat_input.bot_id:
             gatewayapi.post_to_connection(
-                ConnectionId=connection_id, Data="Bot not found.".encode("utf-8")
+                ConnectionId=connection_id,
+                Data=json.dumps(
+                    dict(
+                        status="ERROR",
+                        reason="bot_not_found",
+                    )
+                ).encode("utf-8"),
             )
             return {"statusCode": 404, "body": f"bot {chat_input.bot_id} not found."}
         else:

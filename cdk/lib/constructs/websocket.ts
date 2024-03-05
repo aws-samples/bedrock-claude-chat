@@ -27,6 +27,7 @@ export interface WebSocketProps {
   readonly auth: Auth;
   readonly bedrockRegion: string;
   readonly tableAccessRole: iam.IRole;
+  readonly websocketSessionTable: ITable;
 }
 
 export class WebSocket extends Construct {
@@ -48,9 +49,11 @@ export class WebSocket extends Construct {
       runtime: Runtime.PYTHON_3_11,
       environment: {
         WEBSOCKET_TOPIC_ARN: topic.topicArn,
+        WEBSOCKET_SESSION_TABLE_NAME: props.websocketSessionTable.tableName,
       },
     });
     topic.grantPublish(publisher);
+    props.websocketSessionTable.grantReadWriteData(publisher);
 
     const handlerRole = new iam.Role(this, "HandlerRole", {
       assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
@@ -128,6 +131,7 @@ export class WebSocket extends Construct {
       autoDeploy: true,
     });
     webSocketApi.grantManageConnections(handler);
+    webSocketApi.grantManageConnections(publisher);
 
     new CfnRouteResponse(this, "RouteResponse", {
       apiId: webSocketApi.apiId,
