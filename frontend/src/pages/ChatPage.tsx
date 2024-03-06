@@ -26,6 +26,7 @@ import ButtonIcon from '../components/ButtonIcon';
 import StatusSyncBot from '../components/StatusSyncBot';
 import Alert from '../components/Alert';
 import useBotSummary from '../hooks/useBotSummary';
+import useModel from '../hooks/useModel';
 
 const ChatPage: React.FC = () => {
   const { t } = useTranslation();
@@ -208,8 +209,25 @@ const ChatPage: React.FC = () => {
     navigate(`/bot/edit/${bot?.id}`);
   }, [bot?.id, navigate]);
 
+  const { disabledImageUpload } = useModel();
+  const [dndMode, setDndMode] = useState(false);
+  const onDragOver: React.DragEventHandler<HTMLDivElement> = useCallback(
+    (e) => {
+      if (!disabledImageUpload) {
+        setDndMode(true);
+      }
+      e.preventDefault();
+    },
+    [disabledImageUpload]
+  );
+
+  const endDnd: React.DragEventHandler<HTMLDivElement> = useCallback((e) => {
+    setDndMode(false);
+    e.preventDefault();
+  }, []);
+
   return (
-    <>
+    <div onDragOver={onDragOver} onDrop={endDnd} onDragEnd={endDnd}>
       <div className="relative h-14 w-full">
         <div className="flex w-full justify-between">
           <div className="p-2">
@@ -330,6 +348,7 @@ const ChatPage: React.FC = () => {
           </div>
         )}
         <InputChatContent
+          dndMode={dndMode}
           disabledSend={postingMessage}
           disabled={disabledInput}
           placeholder={
@@ -341,7 +360,7 @@ const ChatPage: React.FC = () => {
           onRegenerate={onRegenerate}
         />
       </div>
-    </>
+    </div>
   );
 };
 

@@ -48,6 +48,10 @@ const useModel = () => {
     setModelId,
     model,
     disabledImageUpload: (model?.supportMediaType.length ?? 0) === 0,
+    acceptMediaType:
+      model?.supportMediaType.map(
+        (mediaType) => `.${mediaType.split('/')[1]}`
+      ) ?? [],
     availableModels,
   };
 };
