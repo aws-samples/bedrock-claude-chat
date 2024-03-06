@@ -110,8 +110,12 @@ const ChatPage: React.FC = () => {
   }, [bot?.hasKnowledge, botId]);
 
   const onSend = useCallback(
-    (content: string) => {
-      postChat(content, inputBotParams);
+    (content: string, base64EncodedImages?: string[]) => {
+      postChat({
+        content,
+        base64EncodedImages,
+        bot: inputBotParams,
+      });
     },
     [inputBotParams, postChat]
   );

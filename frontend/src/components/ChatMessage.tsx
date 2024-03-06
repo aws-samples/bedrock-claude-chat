@@ -88,9 +88,25 @@ const ChatMessage: React.FC<Props> = (props) => {
         <div className="ml-5 grow ">
           {chatContent?.role === 'user' && !isEdit && (
             <div>
-              {chatContent.content[0].body.split('\n').map((c, idx) => (
-                <div key={idx}>{c}</div>
-              ))}
+              {chatContent.content.map((content, idx) => {
+                if (content.contentType === 'image') {
+                  return (
+                    <img
+                      key={idx}
+                      src={`data:${content.mediaType};base64,${content.body}`}
+                      className="mb-2 h-48"
+                    />
+                  );
+                } else {
+                  return (
+                    <React.Fragment key={idx}>
+                      {content.body.split('\n').map((c, idxBody) => (
+                        <div key={idxBody}>{c}</div>
+                      ))}
+                    </React.Fragment>
+                  );
+                }
+              })}
             </div>
           )}
           {isEdit && (

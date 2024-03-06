@@ -277,7 +277,12 @@ const useChat = () => {
     );
   };
 
-  const postChat = (content: string, bot?: BotInputType) => {
+  const postChat = (params: {
+    content: string;
+    base64EncodedImages?: string[];
+    bot?: BotInputType;
+  }) => {
+    const { content, bot, base64EncodedImages } = params;
     const isNewChat = conversationId ? false : true;
     const newConversationId = ulid();
 
@@ -293,8 +298,23 @@ const useChat = () => {
 
     const modelToPost = isNewChat ? modelId : getPostedModel();
 
+    const imageContents: MessageContent['content'] = (
+      base64EncodedImages ?? []
+    ).map((encodedImage) => {
+      const result =
+        /data:(?<mediaType>image\/.+);base64,(?<encodedImage>.+)/.exec(
+          encodedImage
+        );
+
+      return {
+        body: result!.groups!.encodedImage,
+        contentType: 'image',
+        mediaType: result!.groups!.mediaType,
+      };
+    });
     const messageContent: MessageContent = {
       content: [
+        ...imageContents,
         {
           body: content,
           contentType: 'text',
@@ -504,15 +524,15 @@ const useChat = () => {
         // 通常のメッセージ送信時
         // エラー発生時の最新のメッセージはユーザ入力;
         removeMessage(conversationId, latestMessage.id);
-        postChat(
-          params.content ?? latestMessage.content[0].body,
-          params.bot
+        postChat({
+          content: params.content ?? latestMessage.content[0].body,
+          bot: params.bot
             ? {
                 botId: params.bot.botId,
                 hasKnowledge: params.bot.hasKnowledge,
               }
-            : undefined
-        );
+            : undefined,
+        });
       } else {
         // 再生成時
         regenerate({

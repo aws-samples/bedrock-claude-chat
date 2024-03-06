@@ -9,19 +9,50 @@ import ButtonSend from './ButtonSend';
 import Textarea from './Textarea';
 import useChat from '../hooks/useChat';
 import Button from './Button';
-import { PiArrowsCounterClockwise } from 'react-icons/pi';
+import { PiArrowsCounterClockwise, PiX } from 'react-icons/pi';
 import { TbPhotoPlus } from 'react-icons/tb';
 import { useTranslation } from 'react-i18next';
 import ButtonIcon from './ButtonIcon';
 import useModel from '../hooks/useModel';
+import { produce } from 'immer';
+import { twMerge } from 'tailwind-merge';
+import { create } from 'zustand';
 
 type Props = {
   disabledSend?: boolean;
   disabled?: boolean;
   placeholder?: string;
-  onSend: (content: string) => void;
+  onSend: (content: string, base64EncodedImages?: string[]) => void;
   onRegenerate: () => void;
 };
+
+const useInputChatContentState = create<{
+  base64EncodedImages: string[];
+  pushBase64EncodedImage: (encodedImage: string) => void;
+  removeBase64EncodedImage: (index: number) => void;
+  clearBase64EncodedImages: () => void;
+}>((set, get) => ({
+  base64EncodedImages: [],
+  pushBase64EncodedImage: (encodedImage) => {
+    set({
+      base64EncodedImages: produce(get().base64EncodedImages, (draft) => {
+        draft.push(encodedImage);
+      }),
+    });
+  },
+  removeBase64EncodedImage: (index) => {
+    set({
+      base64EncodedImages: produce(get().base64EncodedImages, (draft) => {
+        draft.splice(index, 1);
+      }),
+    });
+  },
+  clearBase64EncodedImages: () => {
+    set({
+      base64EncodedImages: [],
+    });
+  },
+}));
 
 const InputChatContent: React.FC<Props> = (props) => {
   const { t } = useTranslation();
@@ -29,7 +60,17 @@ const InputChatContent: React.FC<Props> = (props) => {
   const { disabledImageUpload, model } = useModel();
 
   const [content, setContent] = useState('');
-  const [base64EncodedImages, setBase64EncodedImages] = useState<string[]>([]);
+  const {
+    base64EncodedImages,
+    pushBase64EncodedImage,
+    removeBase64EncodedImage,
+    clearBase64EncodedImages,
+  } = useInputChatContentState();
+
+  useEffect(() => {
+    clearBase64EncodedImages();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const disabledSend = useMemo(() => {
     return content === '' || props.disabledSend || hasError;
@@ -42,9 +83,13 @@ const InputChatContent: React.FC<Props> = (props) => {
   const inputRef = useRef<HTMLDivElement>(null);
 
   const sendContent = useCallback(() => {
-    props.onSend(content);
+    props.onSend(
+      content,
+      base64EncodedImages.length > 0 ? base64EncodedImages : undefined
+    );
     setContent('');
-  }, [content, props]);
+    clearBase64EncodedImages();
+  }, [base64EncodedImages, clearBase64EncodedImages, content, props]);
 
   useEffect(() => {
     const currentElem = inputRef?.current;
@@ -73,36 +118,15 @@ const InputChatContent: React.FC<Props> = (props) => {
             reader.readAsDataURL(pastedFile);
 
             reader.onloadend = () => {
-              setBase64EncodedImages([reader.result?.toString() ?? '']);
+              const encodedImage = reader.result?.toString();
+              if (encodedImage) {
+                pushBase64EncodedImage(encodedImage);
+              }
             };
+            e.preventDefault();
           }
         }
       }
-
-      // if(clipboardItems[0].type)
-
-      // const items = [].slice.call(clipboardItems).filter(function (item) {
-      //   // Filter the image items only
-      //   return /^image\//.test(item.type);
-      // });
-      // if (items.length === 0) {
-      //   return;
-      // }
-
-      // const item = items[0];
-      // const blob = item.getAsFile();
-
-      // const imageEle = document.getElementById('preview');
-      // imageEle.src = URL.createObjectURL(blob);
-      // let file = new File(
-      //   [blob],
-      //   'file name',
-      //   { type: 'image/jpeg', lastModified: new Date().getTime() },
-      //   'utf-8'
-      // );
-      // let container = new DataTransfer();
-      // container.items.add(file);
-      // document.querySelector('#file_input').files = container.files;
     };
     currentElem?.addEventListener('paste', pasteListener);
 
@@ -117,16 +141,20 @@ const InputChatContent: React.FC<Props> = (props) => {
       ref={inputRef}
       id="input-chat-content"
       className="relative mb-7 flex w-11/12 flex-col  rounded-xl border border-black/10 bg-white shadow-[0_0_30px_7px] shadow-light-gray md:w-10/12 lg:w-4/6 xl:w-3/6">
-      <div className="flex w-full items-end">
+      <div className="flex w-full">
         <Textarea
-          className="m-1 -mr-16 bg-transparent pr-6 scrollbar-thin scrollbar-thumb-light-gray "
+          className={twMerge(
+            'm-1  bg-transparent scrollbar-thin scrollbar-thumb-light-gray',
+            disabledImageUpload ? 'pr-6' : 'pr-12'
+          )}
           placeholder={props.placeholder ?? t('app.inputMessage')}
           disabled={props.disabled}
           noBorder
           value={content}
           onChange={setContent}
         />
-
+      </div>
+      <div className="absolute bottom-0 right-0 flex">
         {!disabledImageUpload && (
           <ButtonIcon className="text-aws-sea-blue" onClick={() => {}}>
             <TbPhotoPlus />
@@ -139,11 +167,25 @@ const InputChatContent: React.FC<Props> = (props) => {
           onClick={sendContent}
         />
       </div>
-      <div className="flex">
-        {base64EncodedImages.map((imageFile, idx) => (
-          <img key={idx} src={imageFile} />
-        ))}
-      </div>
+      {base64EncodedImages.length > 0 && (
+        <div className="m-2 mr-24 flex flex-wrap gap-3">
+          {base64EncodedImages.map((imageFile, idx) => (
+            <div key={idx} className="relative">
+              <img
+                src={imageFile}
+                className="h-16 rounded border border-aws-squid-ink"
+              />
+              <ButtonIcon
+                className="absolute right-0 top-0 -m-2 border border-aws-sea-blue bg-white p-1 text-xs text-aws-sea-blue"
+                onClick={() => {
+                  removeBase64EncodedImage(idx);
+                }}>
+                <PiX />
+              </ButtonIcon>
+            </div>
+          ))}
+        </div>
+      )}
       {messages.length > 1 && (
         <Button
           className="absolute -top-14 right-0 bg-aws-paper p-2 text-sm"
