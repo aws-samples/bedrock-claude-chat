@@ -60,9 +60,10 @@ export class Database extends Construct {
     // This table is used to concatenate user input exceeding 32KB which is the limit of API Gateway.
     const websocketSessionTable = new Table(this, "WebsocketSessionTable", {
       partitionKey: { name: "ConnectionId", type: AttributeType.STRING },
+      sortKey: { name: "MessagePartId", type: AttributeType.NUMBER },
       billingMode: BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY,
-      timeToLiveAttribute: "TTL",
+      timeToLiveAttribute: "expire",
     });
 
     this.table = table;

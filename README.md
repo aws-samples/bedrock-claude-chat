@@ -8,7 +8,7 @@
 > [!Warning]
 > The current version (`v0.4.x`) has no compatibility with ex version (~`v0.3.0`) due to the change of DynamoDB table schema. **Please note that UPDATE (i.e. `cdk deploy`) FROM EX VERSION TO `v0.4.x` WILL DESTROY ALL OF EXISTING CONVERSATIONS.**
 
-This repository is a sample chatbot using the Anthropic company's LLM [Claude 2](https://www.anthropic.com/index/claude-2), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI.
+This repository is a sample chatbot using the Anthropic company's LLM [Anthropic Claude](https://www.anthropic.com/), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI.
 
 ### Basic Conversation
 
