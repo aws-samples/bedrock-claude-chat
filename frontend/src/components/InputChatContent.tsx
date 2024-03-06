@@ -29,8 +29,8 @@ type Props = BaseProps & {
   onRegenerate: () => void;
 };
 
-// const MAX_IMAGE_WIDTH = 1568;
-// const MAX_IMAGE_HEIGHT = 1568;
+const MAX_IMAGE_WIDTH = 800;
+const MAX_IMAGE_HEIGHT = 800;
 
 const useInputChatContentState = create<{
   base64EncodedImages: string[];
@@ -108,51 +108,44 @@ const InputChatContent: React.FC<Props> = (props) => {
   const encodeAndPushImage = useCallback(
     (imageFile: File) => {
       const reader = new FileReader();
-      reader.readAsDataURL(imageFile);
+      reader.readAsArrayBuffer(imageFile);
       reader.onload = () => {
         if (!reader.result) {
           return;
         }
-        // const img = new Image();
-        // img.src = reader.result.toString();
-        // img.onload = () => {
-        //   const width = img.naturalWidth;
-        //   const height = img.naturalHeight;
-        //   if (img.si) {
-        //     pushBase64EncodedImage(reader.result!.toString());
-        //     return;
-        //   }
-        //   const aspectRatio = width / height;
-        //   let newWidth;
-        //   let newHeight;
-        //   if (aspectRatio > 1) {
-        //     newWidth = MAX_IMAGE_WIDTH;
-        //     newHeight = MAX_IMAGE_WIDTH / aspectRatio;
-        //   } else {
-        //     newHeight = MAX_IMAGE_HEIGHT;
-        //     newWidth = MAX_IMAGE_HEIGHT * aspectRatio;
-        //   }
-        //   sharp()
 
-        // // キャンバスを作成
-        // const canvas = document.createElement('canvas');
-        // const ctx = canvas.getContext('2d');
-        // // キャンバスのサイズを設定
-        // canvas.width = newWidth;
-        // canvas.height = newHeight;
-        // // 画像をリサイズして描画
-        // ctx?.drawImage(img, 0, 0, newWidth, newHeight);
-        // const resizedImageData = canvas.toDataURL();
-        // pushBase64EncodedImage(resizedImageData);
-        // console.log(resizedImageData);
+        const img = new Image();
+        img.src = URL.createObjectURL(new Blob([reader.result]));
+        img.onload = async () => {
+          const width = img.naturalWidth;
+          const height = img.naturalHeight;
 
-        // };
+          const aspectRatio = width / height;
+          let newWidth;
+          let newHeight;
+          if (aspectRatio > 1) {
+            newWidth = width > MAX_IMAGE_WIDTH ? MAX_IMAGE_WIDTH : width;
+            newHeight =
+              width > MAX_IMAGE_WIDTH ? MAX_IMAGE_WIDTH / aspectRatio : height;
+          } else {
+            newHeight = height > MAX_IMAGE_HEIGHT ? MAX_IMAGE_HEIGHT : height;
+            newWidth =
+              height > MAX_IMAGE_HEIGHT
+                ? MAX_IMAGE_HEIGHT * aspectRatio
+                : width;
+          }
 
-        // resizeなし
-        const encodedImage = reader.result.toString();
-        if (encodedImage) {
-          pushBase64EncodedImage(encodedImage);
-        }
+          // キャンバスを作成
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          // キャンバスのサイズを設定
+          canvas.width = newWidth;
+          canvas.height = newHeight;
+          // 画像をリサイズして描画
+          ctx?.drawImage(img, 0, 0, newWidth, newHeight);
+          const resizedImageData = canvas.toDataURL('image/jpeg', 0.3);
+          pushBase64EncodedImage(resizedImageData);
+        };
       };
     },
     [pushBase64EncodedImage]
@@ -287,7 +280,7 @@ const InputChatContent: React.FC<Props> = (props) => {
             {disabledImageUpload && (
               <div className="absolute -m-2 flex h-[120%] w-[110%] items-center justify-center bg-black/30">
                 <div className="rounded bg-light-red p-3 text-sm text-aws-font-color">
-                  選択しているモデルでは、画像を利用できません。
+                  {t('error.notSupportedImage')}
                 </div>
               </div>
             )}
