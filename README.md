@@ -12,6 +12,9 @@ This repository is a sample chatbot using the Anthropic company's LLM [Claude 2]
 
 ### Basic Conversation
 
+Not only text but also images are available with [Anthropic's Calude 3 Sonnet](https://www.anthropic.com/news/claude-3-family).
+TODO
+
 ![](./docs/imgs/demo.gif)
 
 ### Bot Personalization

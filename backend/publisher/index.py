@@ -22,6 +22,22 @@ table = dynamodb_client.Table(WEBSOCKET_SESSION_TABLE_NAME)
 
 
 def handler(event, context):
+    """WebSocket event handler.
+    API Gateway (websocket) has hard limit of 32KB per message, so if the message is larger than that,
+    need to concatenate chunks and send as a single message to SNS.
+    To do that, we store the chunks in DynamoDB and when the message is complete, send it to SNS.
+    The life cycle of the message is as follows:
+    1. Client sends `START` message to the WebSocket API.
+    2. This handler receives the `START` message and creates a new item in DynamoDB then returns `Session started.`.
+       Note that the order of messages is not guaranteed, so client should wait for the response before sending the body parts.
+    3. Client sends message parts to the WebSocket API.
+    4. This handler receives the message parts and appends them to the item in DynamoDB with index.
+    5. Client sends `END` message to the WebSocket API.
+    6. This handler receives the `END` message, concatenates the parts and sends the message to SNS.
+       Note that SNS has a limit of 256KB per message, so if the message is larger than that, it will fail.
+       To handle larger messages, see:
+       https://docs.aws.amazon.com/sns/latest/dg/large-message-payloads.html
+    """
     print(f"Received event: {event}")
     route_key = event["requestContext"]["routeKey"]
 
