@@ -49,6 +49,7 @@
     "@aws-cdk/core:includePrefixInUniqueNameGeneration": true,
     "@aws-cdk/aws-opensearchservice:enableOpensearchMultiAzWithStandby": true,
     "bedrockRegion": "us-east-1",
+    "userPoolDomainPrefix": "google-auth",
     "allowedIpV4AddressRanges": ["0.0.0.0/1", "128.0.0.0/1"],
     "allowedIpV6AddressRanges": [
       "0000:0000:0000:0000:0000:0000:0000:0000/1",

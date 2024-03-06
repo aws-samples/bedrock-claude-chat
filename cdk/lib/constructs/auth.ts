@@ -1,13 +1,21 @@
-import { CfnOutput, Duration } from "aws-cdk-lib";
-import { UserPool, UserPoolClient } from "aws-cdk-lib/aws-cognito";
+import { CfnOutput, SecretValue, Duration, aws_cognito } from "aws-cdk-lib";
+import {
+  ProviderAttribute,
+  UserPool,
+  UserPoolClient,
+  UserPoolIdentityProviderGoogle,
+} from "aws-cdk-lib/aws-cognito";
+
 import { Construct } from "constructs";
 
-export interface AuthProps {}
+export interface AuthProps {
+  getOrigin: string;
+}
 
 export class Auth extends Construct {
   readonly userPool: UserPool;
   readonly client: UserPoolClient;
-  constructor(scope: Construct, id: string, props?: AuthProps) {
+  constructor(scope: Construct, id: string, props: AuthProps) {
     super(scope, id);
 
     const userPool = new UserPool(this, "UserPool", {
@@ -23,6 +31,14 @@ export class Auth extends Construct {
         email: true,
       },
     });
+    const userPoolDomainPrefixKey: string = this.node.tryGetContext(
+      "userPoolDomainPrefix"
+    );
+    userPool.addDomain("UserPool", {
+      cognitoDomain: {
+        domainPrefix: userPoolDomainPrefixKey,
+      },
+    });
 
     const client = userPool.addClient(`Client`, {
       idTokenValidity: Duration.days(1),
@@ -30,10 +46,38 @@ export class Auth extends Construct {
         userPassword: true,
         userSrp: true,
       },
+      oAuth: {
+        callbackUrls: [props.getOrigin],
+        logoutUrls: [props.getOrigin],
+      },
+      supportedIdentityProviders: [
+        aws_cognito.UserPoolClientIdentityProvider.GOOGLE,
+        aws_cognito.UserPoolClientIdentityProvider.COGNITO,
+      ],
     });
+
+    const googleProvider = new UserPoolIdentityProviderGoogle(
+      this,
+      "GoogleProvider",
+      {
+        userPool: userPool,
+        clientId: SecretValue.secretsManager("GoogleProviderClientId", {
+          jsonField: "clientId",
+        }).unsafeUnwrap(),
+        clientSecretValue: SecretValue.secretsManager("GoogleAuthSecret", {
+          jsonField: "clientSecret",
+        }),
+        scopes: ["openid", "email"],
+        attributeMapping: {
+          email: ProviderAttribute.GOOGLE_EMAIL,
+        },
+      }
+    );
 
     this.client = client;
     this.userPool = userPool;
+
+    client.node.addDependency(googleProvider);
 
     new CfnOutput(this, "UserPoolId", { value: userPool.userPoolId });
     new CfnOutput(this, "UserPoolClientId", { value: client.userPoolClientId });

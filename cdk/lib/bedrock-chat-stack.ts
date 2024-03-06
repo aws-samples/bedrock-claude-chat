@@ -1,16 +1,21 @@
-import { CfnOutput, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
+import { CfnOutput, RemovalPolicy, StackProps, Stack } from "aws-cdk-lib";
+import { HttpMethods, ObjectOwnership } from "aws-cdk-lib/aws-s3";
+
 import {
   BlockPublicAccess,
   Bucket,
   BucketEncryption,
-  HttpMethods,
-  ObjectOwnership,
 } from "aws-cdk-lib/aws-s3";
+import {
+  CloudFrontWebDistribution,
+  OriginAccessIdentity,
+} from "aws-cdk-lib/aws-cloudfront";
+import { NodejsBuild } from "deploy-time-build";
+
 import { Construct } from "constructs";
 import { Auth } from "./constructs/auth";
 import { Api } from "./constructs/api";
 import { Database } from "./constructs/database";
-import { Frontend } from "./constructs/frontend";
 import { WebSocket } from "./constructs/websocket";
 import * as cdk from "aws-cdk-lib";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
@@ -62,6 +67,61 @@ export class BedrockChatStack extends cdk.Stack {
       autoDeleteObjects: true,
     });
 
+    const assetBucket = new Bucket(this, "AssetBucket", {
+      encryption: BucketEncryption.S3_MANAGED,
+      blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+      enforceSSL: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+    });
+
+    const originAccessIdentity = new OriginAccessIdentity(
+      this,
+      "OriginAccessIdentity"
+    );
+
+    const userPoolDomainPrefixKey: string = this.node.tryGetContext(
+      "userPoolDomainPrefix"
+    );
+    const distribution = new CloudFrontWebDistribution(this, "Distribution", {
+      originConfigs: [
+        {
+          s3OriginSource: {
+            s3BucketSource: assetBucket,
+            originAccessIdentity,
+          },
+          behaviors: [
+            {
+              isDefaultBehavior: true,
+            },
+          ],
+        },
+      ],
+      errorConfigurations: [
+        {
+          errorCode: 404,
+          errorCachingMinTtl: 0,
+          responseCode: 200,
+          responsePagePath: "/",
+        },
+        {
+          errorCode: 403,
+          errorCachingMinTtl: 0,
+          responseCode: 200,
+          responsePagePath: "/",
+        },
+      ],
+      loggingConfig: {
+        bucket: accessLogBucket,
+        prefix: "Frontend/",
+      },
+      webACLId: props.webAclId,
+    });
+
+    const getOrigin = () => {
+      return `https://${distribution.distributionDomainName}`;
+    };
+
     const documentBucket = new Bucket(this, "DocumentBucket", {
       encryption: BucketEncryption.S3_MANAGED,
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
@@ -71,7 +131,7 @@ export class BedrockChatStack extends cdk.Stack {
       autoDeleteObjects: true,
     });
 
-    const auth = new Auth(this, "Auth");
+    const auth = new Auth(this, "Auth", { getOrigin: getOrigin() });
     const database = new Database(this, "Database", {
       // Enable PITR to export data to s3 if usage analysis is enabled
       pointInTimeRecovery: props.enableUsageAnalysis,
@@ -98,18 +158,38 @@ export class BedrockChatStack extends cdk.Stack {
       bedrockRegion: props.bedrockRegion,
     });
 
-    const frontend = new Frontend(this, "Frontend", {
-      backendApiEndpoint: backendApi.api.apiEndpoint,
-      webSocketApiEndpoint: websocket.apiEndpoint,
-      auth,
-      accessLogBucket,
-      webAclId: props.webAclId,
-    });
     documentBucket.addCorsRule({
       allowedMethods: [HttpMethods.PUT],
-      allowedOrigins: [frontend.getOrigin(), "http://localhost:5173"],
+      allowedOrigins: [getOrigin(), "http://localhost:5173"],
       allowedHeaders: ["*"],
       maxAge: 3000,
+    });
+
+    const region = Stack.of(auth.userPool).region;
+
+    new NodejsBuild(this, "ReactBuild", {
+      assets: [
+        {
+          path: "../frontend",
+          exclude: ["node_modules", "dist"],
+          commands: ["npm ci"],
+        },
+      ],
+      buildCommands: ["npm run build"],
+      buildEnvironment: {
+        VITE_APP_API_ENDPOINT: backendApi.api.apiEndpoint,
+        VITE_APP_WS_ENDPOINT: websocket.apiEndpoint,
+        VITE_APP_USER_POOL_ID: auth.userPool.userPoolId,
+        VITE_APP_USER_POOL_CLIENT_ID: auth.client.userPoolClientId,
+        VITE_APP_REGION: region,
+        VITE_APP_REDIRECT_SIGNIN_URL: getOrigin(),
+        VITE_APP_REDIRECT_SIGNOUT_URL: getOrigin(),
+        VITE_APP_COGNITO_DOMAIN: `${userPoolDomainPrefixKey}.auth.${region}.amazoncognito.com/`,
+        VITE_APP_USE_STREAMING: "true",
+      },
+      destinationBucket: assetBucket,
+      distribution,
+      outputSourceDirectory: "dist",
     });
 
     const embedding = new Embedding(this, "Embedding", {
@@ -137,7 +217,7 @@ export class BedrockChatStack extends cdk.Stack {
       value: documentBucket.bucketName,
     });
     new CfnOutput(this, "FrontendURL", {
-      value: frontend.getOrigin(),
+      value: getOrigin(),
     });
   }
 }
