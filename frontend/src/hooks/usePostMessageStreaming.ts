@@ -27,12 +27,23 @@ const usePostMessageStreaming = create<{
         let completion = '';
 
         ws.onopen = () => {
-          ws.send(JSON.stringify({ ...input, token }));
+          ws.send('START');
         };
 
         ws.onmessage = (message) => {
           try {
-            if (message.data === '') {
+            if (message.data === '' || message.data === 'Message sent.') {
+              return;
+            } else if (message.data === 'Session started.') {
+              ws.send(
+                JSON.stringify({
+                  index: 0,
+                  part: JSON.stringify({ ...input, token }),
+                })
+              );
+              return;
+            } else if (message.data === 'Message part received.') {
+              ws.send('END');
               return;
             }
 

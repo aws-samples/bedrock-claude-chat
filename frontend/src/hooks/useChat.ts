@@ -16,6 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import { ulid } from 'ulid';
 import { convertMessageMapToArray } from '../utils/MessageUtils';
 import { useTranslation } from 'react-i18next';
+import useModel from './useModel';
 
 type ChatStateType = {
   [id: string]: MessageMap;
@@ -204,6 +205,7 @@ const useChat = () => {
   const navigate = useNavigate();
 
   const { post: postStreaming } = usePostMessageStreaming();
+  const { modelId } = useModel();
 
   const conversationApi = useConversationApi();
   const {
@@ -275,7 +277,7 @@ const useChat = () => {
     );
   };
 
-  const postChat = (content: string, model: Model, bot?: BotInputType) => {
+  const postChat = (content: string, bot?: BotInputType) => {
     const isNewChat = conversationId ? false : true;
     const newConversationId = ulid();
 
@@ -289,7 +291,7 @@ const useChat = () => {
       ? 'system'
       : tmpMessages[tmpMessages.length - 1].id;
 
-    const modelToPost = isNewChat ? model : getPostedModel();
+    const modelToPost = isNewChat ? modelId : getPostedModel();
 
     const messageContent: MessageContent = {
       content: [
@@ -504,7 +506,6 @@ const useChat = () => {
         removeMessage(conversationId, latestMessage.id);
         postChat(
           params.content ?? latestMessage.content[0].body,
-          getPostedModel(),
           params.bot
             ? {
                 botId: params.bot.botId,

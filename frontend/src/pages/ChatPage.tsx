@@ -15,7 +15,6 @@ import {
 import Button from '../components/Button';
 import { useTranslation } from 'react-i18next';
 import SwitchBedrockModel from '../components/SwitchBedrockModel';
-import { Model } from '../@types/conversation';
 import useBot from '../hooks/useBot';
 import useConversation from '../hooks/useConversation';
 import ButtonPopover from '../components/PopoverMenu';
@@ -32,8 +31,6 @@ const ChatPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const [content, setContent] = useState('');
-  const [model, setModel] = useState<Model>('claude-instant-v1');
   const {
     postingMessage,
     postChat,
@@ -112,10 +109,12 @@ const ChatPage: React.FC = () => {
       : undefined;
   }, [bot?.hasKnowledge, botId]);
 
-  const onSend = useCallback(() => {
-    postChat(content, model, inputBotParams);
-    setContent('');
-  }, [content, inputBotParams, model, postChat]);
+  const onSend = useCallback(
+    (content: string) => {
+      postChat(content, inputBotParams);
+    },
+    [inputBotParams, postChat]
+  );
 
   const onChangeCurrentMessageId = useCallback(
     (messageId: string) => {
@@ -272,11 +271,7 @@ const ChatPage: React.FC = () => {
         {messages.length === 0 ? (
           <div className="relative flex w-full justify-center">
             {!loadingConversation && (
-              <SwitchBedrockModel
-                className="mt-3 w-min"
-                model={model}
-                setModel={setModel}
-              />
+              <SwitchBedrockModel className="mt-3 w-min" />
             )}
             <div className="absolute mx-3 my-20 flex items-center justify-center text-4xl font-bold text-gray">
               {t('app.name')}
@@ -331,7 +326,6 @@ const ChatPage: React.FC = () => {
           </div>
         )}
         <InputChatContent
-          content={content}
           disabledSend={postingMessage}
           disabled={disabledInput}
           placeholder={
@@ -339,7 +333,6 @@ const ChatPage: React.FC = () => {
               ? t('bot.label.notAvailableBotInputMessage')
               : undefined
           }
-          onChangeContent={setContent}
           onSend={onSend}
           onRegenerate={onRegenerate}
         />

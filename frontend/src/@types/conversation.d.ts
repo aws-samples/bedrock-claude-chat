@@ -2,7 +2,7 @@ export type Role = 'system' | 'assistant' | 'user';
 export type Model = 'claude-instant-v1' | 'claude-v2' | 'claude-v3-sonnet';
 export type Content = {
   contentType: 'text' | 'image';
-  mediaType?: 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
+  mediaType?: string;
   body: string;
 };
 
