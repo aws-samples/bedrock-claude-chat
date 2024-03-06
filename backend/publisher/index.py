@@ -13,7 +13,6 @@ logger.setLevel(logging.DEBUG)
 TOPIC_ARN = os.environ["WEBSOCKET_TOPIC_ARN"]
 WEBSOCKET_SESSION_TABLE_NAME = os.environ["WEBSOCKET_SESSION_TABLE_NAME"]
 SNS_SIZE_LIMIT = 262144
-APIGW_SIZE_LIMIT = 32 * 1024
 
 
 sns_client = boto3.client("sns")
@@ -93,21 +92,6 @@ def handler(event, context):
                 message_json = json.loads(body)
                 part_index = message_json["index"]
                 message_part = message_json["part"]
-
-                if len(message_part.encode("utf-8")) > APIGW_SIZE_LIMIT:
-                    gatewayapi.post_to_connection(
-                        ConnectionId=connection_id,
-                        Data=json.dumps(
-                            {
-                                "status": "ERROR",
-                                "reason": "Payload size exceeds APIGW limit.",
-                            }
-                        ).encode("utf-8"),
-                    )
-                    return {
-                        "statusCode": 413,
-                        "body": json.dumps({"error": "Payload too large."}),
-                    }
 
                 # Append the message part with its index
                 table.update_item(

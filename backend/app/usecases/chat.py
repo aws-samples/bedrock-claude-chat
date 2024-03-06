@@ -6,17 +6,22 @@ from typing import Literal
 
 from app.bedrock import compose_args_for_anthropic_client, get_model_id
 from app.config import GENERATION_CONFIG, SEARCH_CONFIG
-from app.repositories.conversation import (RecordNotFoundError,
-                                           find_conversation_by_id,
-                                           store_conversation)
+from app.repositories.conversation import (
+    RecordNotFoundError,
+    find_conversation_by_id,
+    store_conversation,
+)
 from app.repositories.custom_bot import find_alias_by_id, store_alias
-from app.repositories.model import (BotAliasModel, BotModel, ContentModel,
-                                    ConversationModel, MessageModel)
-from app.route_schema import (ChatInput, ChatOutput, Content, Conversation,
-                              MessageOutput)
+from app.repositories.model import (
+    BotAliasModel,
+    BotModel,
+    ContentModel,
+    ConversationModel,
+    MessageModel,
+)
+from app.route_schema import ChatInput, ChatOutput, Content, Conversation, MessageOutput
 from app.usecases.bot import fetch_bot, modify_bot_last_used_time
-from app.utils import (get_anthropic_client, get_current_time,
-                       is_running_on_lambda)
+from app.utils import get_anthropic_client, get_current_time, is_running_on_lambda
 from app.vector_search import SearchResult, search_related_docs
 from ulid import ULID
 
@@ -303,9 +308,14 @@ def propose_conversation_title(
 - Return the conversation title only. DO NOT include any strings other than the title.
 </rules>
 """
-
     # Fetch existing conversation
     conversation = find_conversation_by_id(user_id, conversation_id)
+
+    # Omit image (claude instant v1 / v2 don't support image content type)
+    # TODO: Remove this when claude v3 haiku is supported
+    for message in conversation.message_map.values():
+        message.content = [c for c in message.content if c.content_type != "image"]
+
     messages = trace_to_root(
         node_id=conversation.last_message_id,
         message_map=conversation.message_map,
