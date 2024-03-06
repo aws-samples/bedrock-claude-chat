@@ -14,8 +14,9 @@ api.interceptors.request.use(async (config) => {
   const user = await Auth.currentAuthenticatedUser();
   if (user) {
     const token = (await Auth.currentSession()).getIdToken().getJwtToken();
-    const accessToken = await Auth.currentSession();
-
+    const accessToken = (await Auth.currentSession())
+      .getAccessToken()
+      .getJwtToken();
     config.headers['Authorization'] = 'Bearer ' + token;
     config.headers['X-Access-Token'] = accessToken;
   }
