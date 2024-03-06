@@ -32,6 +32,7 @@ import Menu from './Menu';
 import useBot from '../hooks/useBot';
 import DrawerItem from './DrawerItem';
 import ExpandableDrawerGroup from './ExpandableDrawerGroup';
+import { Spinner } from './Spinner';
 
 type Props = BaseProps & {
   onSignOut: () => void;
@@ -343,6 +344,11 @@ const ChatListDrawer: React.FC<Props> = (props) => {
             <ExpandableDrawerGroup
               label={t('app.conversationHistory')}
               className="border-t pt-1">
+              {conversations === undefined && (
+                <div className="flex items-center justify-center p-4">
+                  <Spinner />
+                </div>
+              )}
               {conversations?.map((conversation, idx) => (
                 <Item
                   key={idx}
