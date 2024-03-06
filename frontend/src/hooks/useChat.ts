@@ -205,7 +205,7 @@ const useChat = () => {
   const navigate = useNavigate();
 
   const { post: postStreaming } = usePostMessageStreaming();
-  const { modelId } = useModel();
+  const { modelId, setModelId } = useModel();
 
   const conversationApi = useConversationApi();
   const {
@@ -241,8 +241,16 @@ const useChat = () => {
     if (conversationId && data?.id === conversationId) {
       setMessages(conversationId, data.messageMap);
       setCurrentMessageId(data.lastMessageId);
+      setModelId(getPostedModel());
     }
-  }, [conversationId, data, setCurrentMessageId, setMessages]);
+  }, [
+    conversationId,
+    data,
+    getPostedModel,
+    setCurrentMessageId,
+    setMessages,
+    setModelId,
+  ]);
 
   useEffect(() => {
     setIsGeneratedTitle(false);
