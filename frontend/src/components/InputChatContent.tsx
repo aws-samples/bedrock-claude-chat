@@ -91,11 +91,19 @@ const InputChatContent: React.FC<Props> = (props) => {
   const sendContent = useCallback(() => {
     props.onSend(
       content,
-      base64EncodedImages.length > 0 ? base64EncodedImages : undefined
+      !disabledImageUpload && base64EncodedImages.length > 0
+        ? base64EncodedImages
+        : undefined
     );
     setContent('');
     clearBase64EncodedImages();
-  }, [base64EncodedImages, clearBase64EncodedImages, content, props]);
+  }, [
+    base64EncodedImages,
+    clearBase64EncodedImages,
+    content,
+    disabledImageUpload,
+    props,
+  ]);
 
   const encodeAndPushImage = useCallback(
     (imageFile: File) => {
