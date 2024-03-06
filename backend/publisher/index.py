@@ -16,7 +16,6 @@ SNS_SIZE_LIMIT = 262144
 APIGW_SIZE_LIMIT = 32 * 1024
 
 
-# AWS clients
 sns_client = boto3.client("sns")
 dynamodb_client = boto3.resource("dynamodb")
 table = dynamodb_client.Table(WEBSOCKET_SESSION_TABLE_NAME)
@@ -29,7 +28,6 @@ def handler(event, context):
     if route_key == "$connect":
         return {"statusCode": 200, "body": "Connected."}
     elif route_key == "$disconnect":
-        # No need to send a message back on disconnect
         return {"statusCode": 200, "body": "Disconnected."}
 
     connection_id = event["requestContext"]["connectionId"]
@@ -50,8 +48,10 @@ def handler(event, context):
             return {"statusCode": 200, "body": "Session started."}
         elif body == "END":
             response = table.get_item(Key={"ConnectionId": connection_id})
-            messages = response["Item"]["Messages"]
-            full_message = "".join(messages)
+            message_parts = response["Item"]["Messages"]
+            # Sort by index
+            sorted_parts = sorted(message_parts, key=lambda x: x["index"])
+            full_message = "".join(part["part"] for part in sorted_parts)
             if len(full_message.encode("utf-8")) > SNS_SIZE_LIMIT:
                 logger.error("Payload size exceeds SNS limit.")
                 gatewayapi.post_to_connection(
@@ -73,27 +73,36 @@ def handler(event, context):
             table.delete_item(Key={"ConnectionId": connection_id})
             return {"statusCode": 200, "body": "Message sent."}
         else:
-            if len(body.encode("utf-8")) > APIGW_SIZE_LIMIT:
-                gatewayapi.post_to_connection(
-                    ConnectionId=connection_id,
-                    Data=json.dumps(
-                        {
-                            "status": "ERROR",
-                            "reason": "Payload size exceeds APIGW limit.",
-                        }
-                    ).encode("utf-8"),
-                )
-                return {
-                    "statusCode": 413,
-                    "body": json.dumps({"error": "Payload too large."}),
-                }
             try:
+                message_json = json.loads(body)
+                part_index = message_json["index"]
+                message_part = message_json["part"]
+
+                if len(message_part.encode("utf-8")) > APIGW_SIZE_LIMIT:
+                    gatewayapi.post_to_connection(
+                        ConnectionId=connection_id,
+                        Data=json.dumps(
+                            {
+                                "status": "ERROR",
+                                "reason": "Payload size exceeds APIGW limit.",
+                            }
+                        ).encode("utf-8"),
+                    )
+                    return {
+                        "statusCode": 413,
+                        "body": json.dumps({"error": "Payload too large."}),
+                    }
+
+                # Append the message part with its index
                 table.update_item(
                     Key={"ConnectionId": connection_id},
-                    UpdateExpression="SET Messages = list_append(Messages, :i), #T = :ttl",
-                    ConditionExpression="attribute_exists(Messages)",
+                    UpdateExpression="SET Messages = list_append(Messages, :msg), #T = :ttl",
                     ExpressionAttributeNames={"#T": "TTL"},
-                    ExpressionAttributeValues={":i": [body], ":ttl": ttl},
+                    ExpressionAttributeValues={
+                        ":msg": [{"index": part_index, "part": message_part}],
+                        ":ttl": ttl,
+                    },
+                    ConditionExpression="attribute_exists(Messages)",
                 )
                 return {"statusCode": 200, "body": "Message part received."}
             except ClientError as e:
@@ -120,46 +129,3 @@ def handler(event, context):
             Data=json.dumps({"status": "ERROR", "reason": str(e)}).encode("utf-8"),
         )
         return {"statusCode": 500, "body": str(e)}
-
-
-# import json
-# import os
-
-# import boto3
-# from botocore.exceptions import ClientError
-
-# TOPIC_ARN = os.environ["WEBSOCKET_TOPIC_ARN"]
-# WEBSOCKET_SESSION_TABLE_NAME = os.environ["WEBSOCKET_SESSION_TABLE_NAME"]
-# sns_client = boto3.client("sns")
-
-
-# def handler(event, context):
-#     print(f"Received event: {event}")
-#     route_key = event["requestContext"]["routeKey"]
-
-#     if route_key == "$connect":
-#         # NOTE: Authentication is run at each message
-#         return {"statusCode": 200, "body": "Connected."}
-
-#     message = {
-#         "requestContext": event["requestContext"],
-#         "body": event["body"],
-#     }
-
-#     try:
-#         sns_response = sns_client.publish(
-#             TopicArn=TOPIC_ARN,
-#             Message=json.dumps(message),
-#         )
-
-#         response = {
-#             "statusCode": 200,
-#         }
-#     except ClientError as e:
-#         print(f"ClientError: {e}")
-#         response = {
-#             "statusCode": 500,
-#             "body": json.dumps({"error": str(e)}),
-#         }
-
-#     return response
