@@ -245,6 +245,10 @@ Thank you for considering contribution on this repository! We welcome for bug fi
 
 See [here](./docs/RAG.md).
 
+### setup OAuth web client
+
+See [here](https://support.google.com/workspacemigrate/answer/9222992?hl=en)
+
 ## Authors
 
 - [Takehiro Suzuki](https://github.com/statefb)
