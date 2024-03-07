@@ -35,6 +35,7 @@ const ButtonFileChoose: React.FC<Props> = (props) => {
 
       <input
         type="file"
+        hidden
         disabled={props.disabled}
         multiple
         value={[]}
