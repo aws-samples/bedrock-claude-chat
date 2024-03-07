@@ -24,7 +24,7 @@ const translation = {
         notAvailable: 'This bot is NOT available.',
         noBots: 'No Bots.',
         noBotsRecentlyUsed: 'No Recently Used Shared Bots.',
-        retrivingKnowledge: '[Retriving Knowledge...]',
+        retrievingKnowledge: '[Retrieving Knowledge...]',
         dndFileUpload:
           'You can upload files by drag and drop.\nSupported files: {{fileExtensions}}',
         uploadError: 'Error Message',

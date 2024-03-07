@@ -15,7 +15,7 @@ const usePostMessageStreaming = create<{
   return {
     post: async ({ input, dispatch, hasKnowledge }) => {
       if (hasKnowledge) {
-        dispatch(i18next.t('bot.label.retrivingKnowledge'));
+        dispatch(i18next.t('bot.label.retrievingKnowledge'));
       } else {
         dispatch(i18next.t('app.chatWaitingSymbol'));
       }
