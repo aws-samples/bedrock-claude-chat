@@ -3,6 +3,8 @@ from typing import Literal, Optional
 from app.routes.schemas.base import BaseSchema
 from pydantic import Field
 
+type_model_name = Literal["claude-instant-v1", "claude-v2", "claude-v3-sonnet"]
+
 
 class Content(BaseSchema):
     content_type: Literal["text", "image"]
@@ -16,18 +18,17 @@ class Content(BaseSchema):
 class MessageInput(BaseSchema):
     role: str
     content: list[Content]
-    model: Literal["claude-instant-v1", "claude-v2", "claude-v3-sonnet"]
+    model: type_model_name
     parent_message_id: str | None
     message_id: str | None = Field(
-        ..., description="Unique message id. If not provided, it will be generated."
+        None, description="Unique message id. If not provided, it will be generated."
     )
 
 
 class MessageOutput(BaseSchema):
     role: str
     content: list[Content]
-    # NOTE: "claude" will be deprecated (same as "claude-v2")
-    model: Literal["claude-instant-v1", "claude-v2", "claude", "claude-v3-sonnet"]
+    model: type_model_name
     children: list[str]
     parent: str | None
 

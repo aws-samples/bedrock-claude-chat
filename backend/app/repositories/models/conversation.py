@@ -1,5 +1,6 @@
 from typing import Literal, Optional
 
+from app.routes.schemas.conversation import type_model_name
 from pydantic import BaseModel
 
 
@@ -12,7 +13,7 @@ class ContentModel(BaseModel):
 class MessageModel(BaseModel):
     role: str
     content: list[ContentModel]
-    model: Literal["claude-instant-v1", "claude-v2", "claude-v3-sonnet"]
+    model: type_model_name
     children: list[str]
     parent: str | None
     create_time: float

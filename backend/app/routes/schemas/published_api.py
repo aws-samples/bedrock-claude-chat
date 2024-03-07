@@ -1,14 +1,14 @@
 from typing import Literal, Optional
 
 from app.routes.schemas.base import BaseSchema
-from app.routes.schemas.conversation import Content, MessageInput, MessageOutput
+from app.routes.schemas.conversation import Content, MessageOutput, type_model_name
 from pydantic import Field
 
 
 class MessageInputWithoutMessageid(BaseSchema):
     role: str
     content: list[Content]
-    model: Literal["claude-instant-v1", "claude-v2", "claude-v3-sonnet"]
+    model: type_model_name
     parent_message_id: str | None = Field(None, description="Parent message id.")
 
 
