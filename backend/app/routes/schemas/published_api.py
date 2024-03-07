@@ -7,8 +7,8 @@ from pydantic import Field
 
 class MessageInputWithoutMessageid(BaseSchema):
     role: str
-    content: Content
-    model: Literal["claude-instant-v1", "claude-v2"]
+    content: list[Content]
+    model: Literal["claude-instant-v1", "claude-v2", "claude-v3-sonnet"]
     parent_message_id: str | None = Field(None, description="Parent message id.")
 
 

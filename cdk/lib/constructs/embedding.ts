@@ -208,6 +208,36 @@ export class Embedding extends Construct {
     /**
      * Removal handler
      */
+    const removeHandlerRole = new iam.Role(this, "RemovalHandlerRole", {
+      assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
+    });
+    removeHandlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "cloudformation:DescribeStacks",
+          "cloudformation:DescribeStackEvents",
+          "cloudformation:DescribeStackResource",
+          "cloudformation:DescribeStackResources",
+          "cloudformation:DeleteStack",
+        ],
+        resources: [`*`],
+      })
+    );
+    removeHandlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "apigateway:GET",
+          "apigateway:POST",
+          "apigateway:PUT",
+          "apigateway:DELETE",
+        ],
+        resources: [`arn:aws:apigateway:${Stack.of(this).region}::/*`],
+      })
+    );
+    props.database.grantStreamRead(removeHandlerRole);
+    props.documentBucket.grantReadWrite(removeHandlerRole);
     const removalHandler = new DockerImageFunction(this, "BotRemovalHandler", {
       code: DockerImageCode.fromImageAsset(
         path.join(__dirname, "../../../backend"),
@@ -228,9 +258,8 @@ export class Embedding extends Construct {
         DB_NAME: props.dbConfig.database,
         DOCUMENT_BUCKET: props.documentBucket.bucketName,
       },
+      role: removeHandlerRole,
     });
-    props.database.grantStreamRead(removalHandler);
-    props.documentBucket.grantReadWrite(removalHandler);
     removalHandler.addEventSource(
       new DynamoEventSource(props.database, {
         startingPosition: lambda.StartingPosition.TRIM_HORIZON,
