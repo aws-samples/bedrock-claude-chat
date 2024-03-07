@@ -5,6 +5,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
+import ButtonCopy from './ButtonCopy';
 
 type Props = BaseProps & {
   children: string;
@@ -56,24 +57,6 @@ const CopyToClipboard = ({
       {children}
       <ButtonCopy text={codeText} className="absolute right-2 top-2" />
     </div>
-  );
-};
-
-const ButtonCopy = ({
-  className,
-  text,
-}: {
-  className?: string;
-  text: string;
-}) => {
-  return (
-    <button
-      className={`${className ?? ''} text-gray-500 hover:text-gray-700`}
-      onClick={() => {
-        navigator.clipboard.writeText(text ?? '');
-      }}>
-      Copy
-    </button>
   );
 };
 
