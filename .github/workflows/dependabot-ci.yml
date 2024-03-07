@@ -2,9 +2,9 @@ name: Dependabot CI
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
     paths-ignore:
-      - '**.md'
+      - "**.md"
     types: [opened, synchronize, reopened]
 
 jobs:
@@ -18,4 +18,4 @@ jobs:
           node-version: "18.x"
       - name: Build Check
         run: |
-          cd ./frontend && npm ci
+          cd ./frontend && npm ci && npm run build
