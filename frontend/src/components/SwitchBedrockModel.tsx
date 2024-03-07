@@ -16,6 +16,7 @@ const SwitchBedrockModel: React.FC<Props> = (props) => {
       )}>
       {availableModels.map((availableModel) => (
         <Button
+          key={availableModel.modelId}
           className={twMerge(
             'flex w-40 flex-1 items-center rounded-lg p-2',
             modelId === availableModel.modelId
