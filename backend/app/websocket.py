@@ -98,9 +98,16 @@ def process_chat_input(
 
     # Invoke Bedrock
     args = compose_args_for_anthropic_client(
-        messages, chat_input.message.model, stream=True
+        messages,
+        chat_input.message.model,
+        instruction=(
+            message_map["instruction"].content[0].body
+            if "instruction" in message_map
+            else None
+        ),
+        stream=True,
     )
-
+    # logger.debug(f"Invoking bedrock with args: {args}")
     try:
         # Invoke bedrock streaming api
         response = client.messages.create(**args)
@@ -222,15 +229,15 @@ def handler(event, context):
 
     try:
         # API Gateway (websocket) has hard limit of 32KB per message, so if the message is larger than that,
-        # need to concatenate chunks and send as a single message to SNS.
+        # need to concatenate chunks and send as a single full message.
         # To do that, we store the chunks in DynamoDB and when the message is complete, send it to SNS.
         # The life cycle of the message is as follows:
         # 1. Client sends `START` message to the WebSocket API.
-        # 2. This handler receives the `START` message and creates a new item in DynamoDB then returns `Session started.`.
+        # 2. This handler receives the `Session started` message.
         # 3. Client sends message parts to the WebSocket API.
         # 4. This handler receives the message parts and appends them to the item in DynamoDB with index.
         # 5. Client sends `END` message to the WebSocket API.
-        # 6. This handler receives the `END` message, concatenates the parts and sends the message to SNS.
+        # 6. This handler receives the `END` message, concatenates the parts and sends the message to Bedrock.
         if body == "START":
             return {"statusCode": 200, "body": "Session started."}
         elif body == "END":
