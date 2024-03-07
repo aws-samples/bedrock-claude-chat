@@ -120,6 +120,7 @@ const InputChatContent: React.FC<Props> = (props) => {
           const width = img.naturalWidth;
           const height = img.naturalHeight;
 
+          // determine image size
           const aspectRatio = width / height;
           let newWidth;
           let newHeight;
@@ -135,15 +136,16 @@ const InputChatContent: React.FC<Props> = (props) => {
                 : width;
           }
 
-          // キャンバスを作成
+          // resize image using canvas
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d');
-          // キャンバスのサイズを設定
           canvas.width = newWidth;
           canvas.height = newHeight;
-          // 画像をリサイズして描画
           ctx?.drawImage(img, 0, 0, newWidth, newHeight);
+
+          // quality can only be set to jpeg
           const resizedImageData = canvas.toDataURL('image/jpeg', 0.3);
+
           pushBase64EncodedImage(resizedImageData);
         };
       };
