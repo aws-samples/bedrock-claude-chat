@@ -20,7 +20,7 @@ import {
   PiTrash,
   PiX,
 } from 'react-icons/pi';
-
+import { PiCircleNotch } from 'react-icons/pi';
 import useConversation from '../hooks/useConversation';
 import LazyOutputText from './LazyOutputText';
 import DialogConfirmDelete from './DialogConfirmDeleteChat';
@@ -32,7 +32,6 @@ import Menu from './Menu';
 import useBot from '../hooks/useBot';
 import DrawerItem from './DrawerItem';
 import ExpandableDrawerGroup from './ExpandableDrawerGroup';
-import { Spinner } from './Spinner';
 
 type Props = BaseProps & {
   onSignOut: () => void;
@@ -345,8 +344,8 @@ const ChatListDrawer: React.FC<Props> = (props) => {
               label={t('app.conversationHistory')}
               className="border-t pt-1">
               {conversations === undefined && (
-                <div className="flex items-center justify-center p-4">
-                  <Spinner />
+                <div className="flex animate-spin items-center justify-center p-4">
+                  <PiCircleNotch size={24} />
                 </div>
               )}
               {conversations?.map((conversation, idx) => (
