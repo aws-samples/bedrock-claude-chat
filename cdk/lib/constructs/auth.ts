@@ -9,7 +9,7 @@ import {
 import { Construct } from "constructs";
 
 export interface AuthProps {
-  getOrigin: string;
+  origin: string;
 }
 
 export class Auth extends Construct {
@@ -47,8 +47,8 @@ export class Auth extends Construct {
         userSrp: true,
       },
       oAuth: {
-        callbackUrls: [props.getOrigin],
-        logoutUrls: [props.getOrigin],
+        callbackUrls: [props.origin],
+        logoutUrls: [props.origin],
       },
       supportedIdentityProviders: [
         aws_cognito.UserPoolClientIdentityProvider.GOOGLE,

@@ -131,7 +131,7 @@ export class BedrockChatStack extends cdk.Stack {
       autoDeleteObjects: true,
     });
 
-    const auth = new Auth(this, "Auth", { getOrigin: getOrigin() });
+    const auth = new Auth(this, "Auth", { origin: getOrigin() });
     const database = new Database(this, "Database", {
       // Enable PITR to export data to s3 if usage analysis is enabled
       pointInTimeRecovery: props.enableUsageAnalysis,
