@@ -16,6 +16,9 @@ Not only text but also images are available with [Anthropic's Claude 3 Sonnet](h
 
 ![](./docs/imgs/demo.gif)
 
+> [!Note]
+> Currently the image will be compressed into 800px jpeg due to DynamoDB [item size limitation](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/ServiceQuotas.html#limits-items). [Issue](https://github.com/aws-samples/bedrock-claude-chat/issues/131)
+
 ### Bot Personalization
 
 Add your own instruction and give external knowledge as URL or files (a.k.a [RAG](./docs/RAG.md)). The bot can be shared among application users.
@@ -180,18 +183,19 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 Edit [config.py](./backend/app/config.py) and run `cdk deploy`.
 
 ```py
+# See: https://docs.anthropic.com/claude/reference/complete_post
 GENERATION_CONFIG = {
-    "max_tokens_to_sample": 500,
-    "temperature": 0.6,
+    "max_tokens": 2000,
     "top_k": 250,
     "top_p": 0.999,
+    "temperature": 0.6,
     "stop_sequences": ["Human: ", "Assistant: "],
 }
 
 EMBEDDING_CONFIG = {
-    "model_id": "amazon.titan-embed-text-v1",
+    "model_id": "cohere.embed-multilingual-v3",
     "chunk_size": 1000,
-    "chunk_overlap": 100,
+    "chunk_overlap": 200,
 }
 ```
 

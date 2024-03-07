@@ -15,6 +15,9 @@
 [Claude 3 Sonnet](https://www.anthropic.com/news/claude-3-family)によるテキストと画像の両方を利用したチャットが可能です。
 ![](./imgs/demo_ja.gif)
 
+> [!Note]
+> 現在画像は DynamoDB [アイテムサイズ制限](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/ServiceQuotas.html#limits-items) のため 800px jpeg へ変換されます。[Issue](https://github.com/aws-samples/bedrock-claude-chat/issues/131)
+
 ### ボットのカスタマイズ
 
 外部のナレッジおよび具体的なインストラクションを組み合わせ、ボットをカスタマイズすることが可能です（外部のナレッジを利用した方法は[RAG](./RAG_ja.md)として知られています）。なお、作成したボットはアプリケーションのユーザー間で共有することができます。
