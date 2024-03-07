@@ -8,7 +8,9 @@ from app.usecases.bot import issue_presigned_url
 
 class TestIssuePresignedUrl(unittest.TestCase):
     def test_issue_presigned_url(self):
-        url = issue_presigned_url("test_user", "test_bot", "test_file")
+        url = issue_presigned_url(
+            "test_user", "test_bot", "test_file", content_type="image/png"
+        )
         self.assertEqual(type(url), str)
         self.assertTrue(url.startswith("https://"))
 

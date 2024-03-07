@@ -8,11 +8,16 @@
 > [!Warning]
 > The current version (`v0.4.x`) has no compatibility with ex version (~`v0.3.0`) due to the change of DynamoDB table schema. **Please note that UPDATE (i.e. `cdk deploy`) FROM EX VERSION TO `v0.4.x` WILL DESTROY ALL OF EXISTING CONVERSATIONS.**
 
-This repository is a sample chatbot using the Anthropic company's LLM [Claude 2](https://www.anthropic.com/index/claude-2), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI.
+This repository is a sample chatbot using the Anthropic company's LLM [Claude](https://www.anthropic.com/), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI.
 
 ### Basic Conversation
 
+Not only text but also images are available with [Anthropic's Claude 3 Sonnet](https://www.anthropic.com/news/claude-3-family).
+
 ![](./docs/imgs/demo.gif)
+
+> [!Note]
+> Currently the image will be compressed into 800px jpeg due to DynamoDB [item size limitation](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/ServiceQuotas.html#limits-items). [Issue](https://github.com/aws-samples/bedrock-claude-chat/issues/131)
 
 ### Bot Personalization
 
@@ -39,7 +44,7 @@ TODO
 
 ## 🚀 Super-easy Deployment
 
-- On us-east-1 region, open [Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > Check `Anthropic / Claude`, `Anthropic / Claude Instant` and `Cohere / Embed Multilingual` then `Save changes`.
+- On us-east-1 region, open [Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > Check `Anthropic / Claude`, `Anthropic / Claude Instant`, `Anthropic / Claude 3 Sonnet` and `Cohere / Embed Multilingual` then `Save changes`.
 
 <details>
 <summary>Screenshot</summary>
@@ -77,7 +82,6 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 
 - [Amazon DynamoDB](https://aws.amazon.com/dynamodb/): NoSQL database for conversation history storage
 - [Amazon API Gateway](https://aws.amazon.com/api-gateway/) + [AWS Lambda](https://aws.amazon.com/lambda/): Backend API endpoint ([AWS Lambda Web Adapter](https://github.com/awslabs/aws-lambda-web-adapter), [FastAPI](https://fastapi.tiangolo.com/))
-- [Amazon SNS](https://aws.amazon.com/sns/): Used to decouple streaming calls between API Gateway and Bedrock because streaming responses can take over 30 seconds in total, exceeding the limitations of HTTP integration (See [quota](https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html)).
 - [Amazon CloudFront](https://aws.amazon.com/cloudfront/) + [S3](https://aws.amazon.com/s3/): Frontend application delivery ([React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/))
 - [AWS WAF](https://aws.amazon.com/waf/): IP address restriction
 - [Amazon Cognito](https://aws.amazon.com/cognito/): User authentication
@@ -189,18 +193,19 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 Edit [config.py](./backend/app/config.py) and run `cdk deploy`.
 
 ```py
+# See: https://docs.anthropic.com/claude/reference/complete_post
 GENERATION_CONFIG = {
-    "max_tokens_to_sample": 500,
-    "temperature": 0.6,
+    "max_tokens": 2000,
     "top_k": 250,
     "top_p": 0.999,
+    "temperature": 0.6,
     "stop_sequences": ["Human: ", "Assistant: "],
 }
 
 EMBEDDING_CONFIG = {
-    "model_id": "amazon.titan-embed-text-v1",
+    "model_id": "cohere.embed-multilingual-v3",
     "chunk_size": 1000,
-    "chunk_overlap": 100,
+    "chunk_overlap": 200,
 }
 ```
 

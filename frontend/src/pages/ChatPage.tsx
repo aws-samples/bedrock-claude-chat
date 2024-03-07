@@ -15,7 +15,6 @@ import {
 import Button from '../components/Button';
 import { useTranslation } from 'react-i18next';
 import SwitchBedrockModel from '../components/SwitchBedrockModel';
-import { Model } from '../@types/conversation';
 import useBot from '../hooks/useBot';
 import useConversation from '../hooks/useConversation';
 import ButtonPopover from '../components/PopoverMenu';
@@ -27,13 +26,12 @@ import ButtonIcon from '../components/ButtonIcon';
 import StatusSyncBot from '../components/StatusSyncBot';
 import Alert from '../components/Alert';
 import useBotSummary from '../hooks/useBotSummary';
+import useModel from '../hooks/useModel';
 
 const ChatPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const [content, setContent] = useState('');
-  const [model, setModel] = useState<Model>('claude-instant-v1');
   const {
     postingMessage,
     postChat,
@@ -112,10 +110,16 @@ const ChatPage: React.FC = () => {
       : undefined;
   }, [bot?.hasKnowledge, botId]);
 
-  const onSend = useCallback(() => {
-    postChat(content, model, inputBotParams);
-    setContent('');
-  }, [content, inputBotParams, model, postChat]);
+  const onSend = useCallback(
+    (content: string, base64EncodedImages?: string[]) => {
+      postChat({
+        content,
+        base64EncodedImages,
+        bot: inputBotParams,
+      });
+    },
+    [inputBotParams, postChat]
+  );
 
   const onChangeCurrentMessageId = useCallback(
     (messageId: string) => {
@@ -205,8 +209,25 @@ const ChatPage: React.FC = () => {
     navigate(`/bot/edit/${bot?.id}`);
   }, [bot?.id, navigate]);
 
+  const { disabledImageUpload } = useModel();
+  const [dndMode, setDndMode] = useState(false);
+  const onDragOver: React.DragEventHandler<HTMLDivElement> = useCallback(
+    (e) => {
+      if (!disabledImageUpload) {
+        setDndMode(true);
+      }
+      e.preventDefault();
+    },
+    [disabledImageUpload]
+  );
+
+  const endDnd: React.DragEventHandler<HTMLDivElement> = useCallback((e) => {
+    setDndMode(false);
+    e.preventDefault();
+  }, []);
+
   return (
-    <>
+    <div onDragOver={onDragOver} onDrop={endDnd} onDragEnd={endDnd}>
       <div className="relative h-14 w-full">
         <div className="flex w-full justify-between">
           <div className="p-2">
@@ -272,11 +293,7 @@ const ChatPage: React.FC = () => {
         {messages.length === 0 ? (
           <div className="relative flex w-full justify-center">
             {!loadingConversation && (
-              <SwitchBedrockModel
-                className="mt-3 w-min"
-                model={model}
-                setModel={setModel}
-              />
+              <SwitchBedrockModel className="mt-3 w-min" />
             )}
             <div className="absolute mx-3 my-20 flex items-center justify-center text-4xl font-bold text-gray">
               {t('app.name')}
@@ -331,7 +348,7 @@ const ChatPage: React.FC = () => {
           </div>
         )}
         <InputChatContent
-          content={content}
+          dndMode={dndMode}
           disabledSend={postingMessage}
           disabled={disabledInput}
           placeholder={
@@ -339,12 +356,11 @@ const ChatPage: React.FC = () => {
               ? t('bot.label.notAvailableBotInputMessage')
               : undefined
           }
-          onChangeContent={setContent}
           onSend={onSend}
           onRegenerate={onRegenerate}
         />
       </div>
-    </>
+    </div>
   );
 };
 

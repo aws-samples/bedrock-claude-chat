@@ -2,10 +2,10 @@
 # Adjust the values according to your application.
 # See: https://docs.anthropic.com/claude/reference/complete_post
 GENERATION_CONFIG = {
-    "max_tokens_to_sample": 2000,
-    "temperature": 0.6,
+    "max_tokens": 2000,
     "top_k": 250,
     "top_p": 0.999,
+    "temperature": 0.6,
     "stop_sequences": ["Human: ", "Assistant: "],
 }
 
@@ -24,8 +24,8 @@ SEARCH_CONFIG = {
 }
 
 # Used for price estimation.
-# NOTE: The following is based on 2024-01-29.
-# See: https://aws.amazon.com/jp/bedrock/pricing/
+# NOTE: The following is based on 2024-03-07
+# See: https://aws.amazon.com/bedrock/pricing/
 ANTHROPIC_PRICING = {
     "us-east-1": {
         "claude-instant-v1": {
@@ -36,6 +36,7 @@ ANTHROPIC_PRICING = {
             "input": 0.00080,
             "output": 0.00240,
         },
+        "claude-v3-sonnet": {"input": 0.00300, "output": 0.01500},
     },
     "us-west-2": {
         "claude-instant-v1": {
@@ -46,6 +47,7 @@ ANTHROPIC_PRICING = {
             "input": 0.00080,
             "output": 0.00240,
         },
+        "claude-v3-sonnet": {"input": 0.00300, "output": 0.01500},
     },
     "ap-northeast-1": {
         "claude-instant-v1": {
@@ -66,5 +68,6 @@ ANTHROPIC_PRICING = {
             "input": 0.00080,
             "output": 0.00240,
         },
+        "claude-v3-sonnet": {"input": 0.00300, "output": 0.01500},
     },
 }

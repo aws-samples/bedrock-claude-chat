@@ -4,14 +4,9 @@ from copy import deepcopy
 from datetime import datetime
 from typing import Literal
 
-from app.bedrock import (
-    _create_body,
-    calculate_price,
-    count_tokens,
-    get_model_id,
-    invoke,
-)
-from app.config import SEARCH_CONFIG
+from anthropic.types import Message as AnthropicMessage
+from app.bedrock import calculate_price, compose_args_for_anthropic_client, get_model_id
+from app.config import GENERATION_CONFIG, SEARCH_CONFIG
 from app.repositories.conversation import (
     RecordNotFoundError,
     find_conversation_by_id,
@@ -32,12 +27,14 @@ from app.routes.schemas.conversation import (
     MessageOutput,
 )
 from app.usecases.bot import fetch_bot, modify_bot_last_used_time
-from app.utils import get_buffer_string, get_current_time, is_running_on_lambda
+from app.utils import get_anthropic_client, get_current_time, is_running_on_lambda
 from app.vector_search import SearchResult, search_related_docs
 from ulid import ULID
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+client = get_anthropic_client()
 
 
 def prepare_conversation(
@@ -70,10 +67,13 @@ def prepare_conversation(
             # Dummy system message
             "system": MessageModel(
                 role="system",
-                content=ContentModel(
-                    content_type="text",
-                    body="",
-                ),
+                content=[
+                    ContentModel(
+                        content_type="text",
+                        media_type=None,
+                        body="",
+                    )
+                ],
                 model=chat_input.message.model,
                 children=[],
                 parent=None,
@@ -88,10 +88,13 @@ def prepare_conversation(
             owned, bot = fetch_bot(user_id, chat_input.bot_id)
             initial_message_map["instruction"] = MessageModel(
                 role="instruction",
-                content=ContentModel(
-                    content_type="text",
-                    body=bot.instruction,
-                ),
+                content=[
+                    ContentModel(
+                        content_type="text",
+                        media_type=None,
+                        body=bot.instruction,
+                    )
+                ],
                 model=chat_input.message.model,
                 children=[],
                 parent="system",
@@ -146,10 +149,14 @@ def prepare_conversation(
         message_id = str(ULID())
     new_message = MessageModel(
         role=chat_input.message.role,
-        content=ContentModel(
-            content_type=chat_input.message.content.content_type,
-            body=chat_input.message.content.body,
-        ),
+        content=[
+            ContentModel(
+                content_type=c.content_type,
+                media_type=c.media_type,
+                body=c.body,
+            )
+            for c in chat_input.message.content
+        ],
         model=chat_input.message.model,
         children=[],
         parent=parent_id,
@@ -159,30 +166,6 @@ def prepare_conversation(
     conversation.message_map[parent_id].children.append(message_id)  # type: ignore
 
     return (message_id, conversation, bot)
-
-
-def get_invoke_payload(
-    message_map: dict[str, MessageModel], chat_input: ChatInput
-) -> tuple[dict, str]:
-    messages = trace_to_root(
-        node_id=chat_input.message.parent_message_id,
-        message_map=message_map,
-    )
-    messages.append(chat_input.message)  # type: ignore
-    prompt = get_buffer_string(messages)
-    body = _create_body(chat_input.message.model, prompt)
-    model_id = get_model_id(chat_input.message.model)
-    accept = "application/json"
-    content_type = "application/json"
-    return (
-        {
-            "body": body,
-            "model_id": model_id,
-            "accept": accept,
-            "content_type": content_type,
-        },
-        prompt,
-    )
 
 
 def trace_to_root(
@@ -204,35 +187,6 @@ def trace_to_root(
     return result[::-1]
 
 
-# def compress_knowledge(query: str, results: list[SearchResult]) -> tuple[bool, str]:
-#     """Compress knowledge to avoid token limit. Extract only related parts from the search results."""
-#     contexts_prompt = ""
-#     for result in results:
-#         contexts_prompt += f"<context>\n{result.content}</context>\n"
-#     NO_RELEVANT_DOC = "THERE_IS_NO_RELEVANT_DOC"
-#     PROMPT = """Human: Given the following question and contexts, extract any part of the context *AS IS* that is relevant to answer the question.
-# Remember, *DO NOT* edit the extracted parts of the context.
-# <question>
-# {}
-# </question>
-# <contexts>
-# {}
-# </contexts>
-# If none of the context is relevant, just say {}.
-
-# Assistant:
-# """.format(
-#         query, contexts_prompt, NO_RELEVANT_DOC
-#     )
-#     reply_txt = invoke(prompt=PROMPT, model="claude-instant-v1")
-#     print(reply_txt)
-
-#     if reply_txt.find(NO_RELEVANT_DOC) != -1:
-#         return False, ""
-
-#     return reply_txt
-
-
 def insert_knowledge(
     conversation: ConversationModel, search_results: list[SearchResult]
 ) -> ConversationModel:
@@ -244,7 +198,7 @@ def insert_knowledge(
     for result in search_results:
         context_prompt += f"<context>\n{result.content}</context>\n"
 
-    instruction_prompt = conversation.message_map["instruction"].content.body
+    instruction_prompt = conversation.message_map["instruction"].content[0].body
     inserted_prompt = """You must respond based on given contexts.
 The contexts are as follows:
 <contexts>
@@ -261,7 +215,9 @@ In addition, *YOU MUST OBEY THE FOLLOWING RULE*:
     logger.info(f"Inserted prompt: {inserted_prompt}")
 
     conversation_with_context = deepcopy(conversation)
-    conversation_with_context.message_map["instruction"].content.body = inserted_prompt
+    conversation_with_context.message_map["instruction"].content[
+        0
+    ].body = inserted_prompt
 
     return conversation_with_context
 
@@ -273,7 +229,8 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     if bot and is_running_on_lambda():
         # NOTE: `is_running_on_lambda`is a workaround for local testing due to no postgres mock.
         # Fetch most related documents from vector store
-        query = conversation.message_map[user_msg_id].content.body
+        # NOTE: Currently embedding not support multi-modal. For now, use the last content.
+        query = conversation.message_map[user_msg_id].content[-1].body
         results = search_related_docs(
             bot_id=bot.id, limit=SEARCH_CONFIG["max_results"], query=query
         )
@@ -288,17 +245,25 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     )
     messages.append(chat_input.message)  # type: ignore
 
-    # Invoke Bedrock
-    prompt = get_buffer_string(messages)
-
-    reply_txt = invoke(prompt=prompt, model=chat_input.message.model)
+    # Create payload to invoke Bedrock
+    args = compose_args_for_anthropic_client(
+        messages=messages,
+        model=chat_input.message.model,
+        instruction=(
+            message_map["instruction"].content[0].body
+            if "instruction" in message_map
+            else None
+        ),
+    )
+    response: AnthropicMessage = client.messages.create(**args)
+    reply_txt = response.content[0].text
 
     # Issue id for new assistant message
     assistant_msg_id = str(ULID())
     # Append bedrock output to the existing conversation
     message = MessageModel(
         role="assistant",
-        content=ContentModel(content_type="text", body=reply_txt),
+        content=[ContentModel(content_type="text", body=reply_txt, media_type=None)],
         model=chat_input.message.model,
         children=[],
         parent=user_msg_id,
@@ -311,8 +276,11 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     conversation.last_message_id = assistant_msg_id
 
     # Update total pricing
-    input_tokens = count_tokens(prompt)
-    output_tokens = count_tokens(reply_txt)
+    input_tokens = response.usage.input_tokens
+    output_tokens = response.usage.output_tokens
+
+    logger.debug(f"Input tokens: {input_tokens}, Output tokens: {output_tokens}")
+
     price = calculate_price(chat_input.message.model, input_tokens, output_tokens)
     conversation.total_price += price
 
@@ -329,10 +297,14 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         create_time=conversation.create_time,
         message=MessageOutput(
             role=message.role,
-            content=Content(
-                content_type=message.content.content_type,
-                body=message.content.body,
-            ),
+            content=[
+                Content(
+                    content_type=c.content_type,
+                    body=c.body,
+                    media_type=c.media_type,
+                )
+                for c in message.content
+            ],
             model=message.model,
             children=message.children,
             parent=message.parent,
@@ -346,7 +318,9 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
 def propose_conversation_title(
     user_id: str,
     conversation_id: str,
-    model: Literal["claude-instant-v1", "claude-v2"] = "claude-instant-v1",
+    model: Literal[
+        "claude-instant-v1", "claude-v2", "claude-v3-sonnet"
+    ] = "claude-instant-v1",
 ) -> str:
     PROMPT = """Reading the conversation above, what is the appropriate title for the conversation? When answering the title, please follow the rules below:
 <rules>
@@ -356,9 +330,14 @@ def propose_conversation_title(
 - Return the conversation title only. DO NOT include any strings other than the title.
 </rules>
 """
-
     # Fetch existing conversation
     conversation = find_conversation_by_id(user_id, conversation_id)
+
+    # Omit image (claude instant v1 / v2 don't support image content type)
+    # TODO: Remove this when claude v3 haiku is supported
+    for message in conversation.message_map.values():
+        message.content = [c for c in message.content if c.content_type != "image"]
+
     messages = trace_to_root(
         node_id=conversation.last_message_id,
         message_map=conversation.message_map,
@@ -367,10 +346,13 @@ def propose_conversation_title(
     # Append message to generate title
     new_message = MessageModel(
         role="user",
-        content=ContentModel(
-            content_type="text",
-            body=PROMPT,
-        ),
+        content=[
+            ContentModel(
+                content_type="text",
+                body=PROMPT,
+                media_type=None,
+            )
+        ],
         model=model,
         children=[],
         parent=conversation.last_message_id,
@@ -379,9 +361,12 @@ def propose_conversation_title(
     messages.append(new_message)
 
     # Invoke Bedrock
-    prompt = get_buffer_string(messages)
-    reply_txt = invoke(prompt=prompt, model=model)
-    reply_txt = reply_txt.replace("\n", "")
+    args = compose_args_for_anthropic_client(
+        messages=messages,
+        model=model,
+    )
+    response = client.messages.create(**args)
+    reply_txt = response.content[0].text
     return reply_txt
 
 
@@ -391,10 +376,14 @@ def fetch_conversation(user_id: str, conversation_id: str) -> Conversation:
     message_map = {
         message_id: MessageOutput(
             role=message.role,
-            content=Content(
-                content_type=message.content.content_type,
-                body=message.content.body,
-            ),
+            content=[
+                Content(
+                    content_type=c.content_type,
+                    body=c.body,
+                    media_type=c.media_type,
+                )
+                for c in message.content
+            ],
             model=message.model,
             children=message.children,
             parent=message.parent,

@@ -5,14 +5,18 @@ from pydantic import Field
 
 
 class Content(BaseSchema):
-    content_type: Literal["text"]
-    body: str
+    content_type: Literal["text", "image"]
+    media_type: Optional[str] = Field(
+        None,
+        description="MIME type of the image. Must be specified if `content_type` is `image`.",
+    )
+    body: str = Field(..., description="Content body. Text or base64 encoded image.")
 
 
 class MessageInput(BaseSchema):
     role: str
-    content: Content
-    model: Literal["claude-instant-v1", "claude-v2"]
+    content: list[Content]
+    model: Literal["claude-instant-v1", "claude-v2", "claude-v3-sonnet"]
     parent_message_id: str | None
     message_id: str | None = Field(
         ..., description="Unique message id. If not provided, it will be generated."
@@ -21,9 +25,9 @@ class MessageInput(BaseSchema):
 
 class MessageOutput(BaseSchema):
     role: str
-    content: Content
+    content: list[Content]
     # NOTE: "claude" will be deprecated (same as "claude-v2")
-    model: Literal["claude-instant-v1", "claude-v2", "claude"]
+    model: Literal["claude-instant-v1", "claude-v2", "claude", "claude-v3-sonnet"]
     children: list[str]
     parent: str | None
 

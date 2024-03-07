@@ -1,17 +1,18 @@
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import BaseModel
 
 
 class ContentModel(BaseModel):
-    content_type: Literal["text"]
+    content_type: Literal["text", "image"]
+    media_type: Optional[str]
     body: str
 
 
 class MessageModel(BaseModel):
     role: str
-    content: ContentModel
-    model: Literal["claude-instant-v1", "claude-v2"]
+    content: list[ContentModel]
+    model: Literal["claude-instant-v1", "claude-v2", "claude-v3-sonnet"]
     children: list[str]
     parent: str | None
     create_time: float

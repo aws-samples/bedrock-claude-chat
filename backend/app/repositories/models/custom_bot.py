@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, Optional
 
 from app.routes.schemas.bot import type_sync_status
 from pydantic import BaseModel

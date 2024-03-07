@@ -14,6 +14,9 @@
 
 本サンプルでは、いくつかのパラメータを設定できます([Configure RAG Parameters](./CONFIGURE_KNOWLEDGE.md))。RAG ロジックをカスタマイズするには、ECS タスクの embedding を編集し、クエリ処理の [vector_search.py](../backend/app/vector_search.py) を編集してください。
 
+> [!Note]
+> 現在 RAG についてははマルチモーダルをサポートしていません。検索クエリには文章のテキストのみが使用されます (添付された画像は無視されます) 。
+
 ## 依存関係
 
 ドキュメントの解析には[Unstructured](https://github.com/Unstructured-IO)を、ドキュメントのチャンク分割には[Llamaindex](https://www.llamaindex.ai/)を使用しています。`Content-Type`が`text/html`のコンテンツのレンダリングには[Playwright](https://playwright.dev/)を使用しています。
