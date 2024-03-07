@@ -76,8 +76,10 @@ const translation = {
       },
       samples: {
         title: 'インストラクションのサンプル',
-        reference:
-          '引用: https://docs.anthropic.com/claude/docs/how-to-use-system-prompts',
+        anthropicLibrary: {
+          title: 'Anthropicプロンプトライブラリ',
+          sentence: '他のサンプル: ',
+        },
         pythonCodeAssistant: {
           title: 'Python コーディングアシスタント',
           prompt: `あなたは非常にスキルの高い Python の専門家です。与えられたタスクをこなすための、短くて高品質な Python スクリプトを書いてください。あなたは経験豊富な開発者のためにコードを書いているので、自明でないことについてのみコメントを追加してください。必要なインポートは必ず含めてください。
