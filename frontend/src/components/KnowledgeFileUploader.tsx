@@ -10,6 +10,7 @@ import { AxiosError } from 'axios';
 import Progress from './Progress';
 import useBot from '../hooks/useBot';
 import { create } from 'zustand';
+import ButtonFileChoose from './ButtonFileChoose';
 
 type Props = BaseProps & {
   botId: string;
@@ -133,16 +134,6 @@ const KnowledgeFileUploader: React.FC<Props> = (props) => {
     [_getFiles, _setFiles, props, t, uploadFile]
   );
 
-  const onClickChooseFiles: React.ChangeEventHandler<HTMLInputElement> =
-    useCallback(
-      (e) => {
-        if (e.target.files) {
-          uploadFiles(e.target.files);
-        }
-      },
-      [uploadFiles]
-    );
-
   const onDragOver: React.DragEventHandler<HTMLDivElement> = useCallback(
     (e) => {
       e.preventDefault();
@@ -188,21 +179,12 @@ const KnowledgeFileUploader: React.FC<Props> = (props) => {
               <div key={idx}>{s}</div>
             ))}
         </div>
-        <label className="flex cursor-pointer items-center justify-center whitespace-nowrap rounded-lg border bg-aws-sea-blue p-1 px-3 text-aws-font-color-white hover:brightness-75">
-          {t('bot.button.chooseFiles', {
-            replace: {
-              fileExtensions: 'aa',
-            },
-          })}
 
-          <input
-            type="file"
-            hidden
-            multiple
-            onChange={onClickChooseFiles}
-            accept={SUPPORTED_FILES.join(',')}
-          />
-        </label>
+        <ButtonFileChoose
+          onChange={uploadFiles}
+          accept={SUPPORTED_FILES.join(',')}>
+          {t('bot.button.chooseFiles')}
+        </ButtonFileChoose>
       </div>
 
       <div className="flex flex-col gap-1">

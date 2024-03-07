@@ -118,7 +118,16 @@ class TestConversationRepository(unittest.TestCase):
             message_map={
                 "a": MessageModel(
                     role="user",
-                    content=ContentModel(content_type="text", body="Hello"),
+                    content=[
+                        ContentModel(
+                            content_type="text", body="Hello", media_type=None
+                        ),
+                        ContentModel(
+                            content_type="image",
+                            body="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+                            media_type="image/png",
+                        ),
+                    ],
                     model="claude-instant-v1",
                     children=["x", "y"],
                     parent="z",
@@ -145,8 +154,16 @@ class TestConversationRepository(unittest.TestCase):
         message_map = found_conversation.message_map
         # Assert whether the message map is correctly reconstructed
         self.assertEqual(message_map["a"].role, "user")
-        self.assertEqual(message_map["a"].content.content_type, "text")
-        self.assertEqual(message_map["a"].content.body, "Hello")
+        content = message_map["a"].content
+        self.assertEqual(len(content), 2)
+        self.assertEqual(content[0].content_type, "text")
+        self.assertEqual(content[0].body, "Hello")
+        self.assertEqual(content[1].content_type, "image")
+        self.assertEqual(
+            content[1].body,
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+        )
+        self.assertEqual(content[1].media_type, "image/png")
         self.assertEqual(message_map["a"].model, "claude-instant-v1")
         self.assertEqual(message_map["a"].children, ["x", "y"])
         self.assertEqual(message_map["a"].parent, "z")
@@ -187,7 +204,16 @@ class TestConversationBotRepository(unittest.TestCase):
             message_map={
                 "a": MessageModel(
                     role="user",
-                    content=ContentModel(content_type="text", body="Hello"),
+                    content=[
+                        ContentModel(
+                            content_type="text", body="Hello", media_type=None
+                        ),
+                        ContentModel(
+                            content_type="image",
+                            body="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+                            media_type="image/png",
+                        ),
+                    ],
                     model="claude-instant-v1",
                     children=["x", "y"],
                     parent="z",
@@ -204,7 +230,16 @@ class TestConversationBotRepository(unittest.TestCase):
             message_map={
                 "a": MessageModel(
                     role="user",
-                    content=ContentModel(content_type="text", body="Hello"),
+                    content=[
+                        ContentModel(
+                            content_type="text", body="Hello", media_type=None
+                        ),
+                        ContentModel(
+                            content_type="image",
+                            body="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+                            media_type="image/png",
+                        ),
+                    ],
                     model="claude-instant-v1",
                     children=["x", "y"],
                     parent="z",

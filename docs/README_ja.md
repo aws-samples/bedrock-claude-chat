@@ -3,16 +3,20 @@
 ![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/test.yml/badge.svg)
 
 > [!Tip]
-> 🔔**RAG 機能をリリースしました。** 詳細は [Release](https://github.com/aws-samples/bedrock-claude-chat/releases/tag/v0.4.0) をご覧ください。
+> 🔔**[Claude v3 (Sonnet)](https://aws.amazon.com/jp/about-aws/whats-new/2024/03/anthropics-claude-3-sonnet-model-amazon-bedrock/) による画像とテキスト両方を使ったチャットが可能になりました。** 詳細は[Release](https://github.com/aws-samples/bedrock-claude-chat/releases/tag/v0.4.2)をご確認ください。
 
 > [!Warning]
 > 現在のバージョン(v0.4.x)は、DynamoDB テーブルスキーマの変更のため、過去バージョン(~v0.3.0)とは互換性がありません。**以前のバージョンから v0.4.x へアップデートすると、既存の対話記録は全て破棄されますので注意が必要です。**
 
-このリポジトリは、生成系 AI を提供する[Amazon Bedrock](https://aws.amazon.com/jp/bedrock/)の基盤モデルの一つである、Anthropic 社製 LLM [Claude 2](https://www.anthropic.com/index/claude-2)を利用したチャットボットのサンプルです。
+このリポジトリは、生成系 AI を提供する[Amazon Bedrock](https://aws.amazon.com/jp/bedrock/)の基盤モデルの一つである、Anthropic 社製 LLM [Claude](https://www.anthropic.com/)を利用したチャットボットのサンプルです。
 
 ### 基本的な会話
 
+[Claude 3 Sonnet](https://www.anthropic.com/news/claude-3-family)によるテキストと画像の両方を利用したチャットが可能です。
 ![](./imgs/demo_ja.gif)
+
+> [!Note]
+> 現在画像は DynamoDB [アイテムサイズ制限](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/ServiceQuotas.html#limits-items) のため 800px jpeg へ変換されます。[Issue](https://github.com/aws-samples/bedrock-claude-chat/issues/131)
 
 ### ボットのカスタマイズ
 
@@ -23,7 +27,7 @@
 
 ## 🚀 まずはお試し
 
-- us-east-1 リージョンにて、[Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > `Anthropic / Claude`, `Anthropic / Claude Instant`, `Cohere / Embed Multilingual`をチェックし、`Save changes`をクリックします
+- us-east-1 リージョンにて、[Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > `Anthropic / Claude`, `Anthropic / Claude Instant`, `Anthropic / Claude 3 Sonnet`, `Cohere / Embed Multilingual`をチェックし、`Save changes`をクリックします
 <details>
 <summary>スクリーンショット</summary>
 
@@ -60,7 +64,6 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 
 - [Amazon DynamoDB](https://aws.amazon.com/jp/dynamodb/): 会話履歴保存用の NoSQL データベース
 - [Amazon API Gateway](https://aws.amazon.com/jp/api-gateway/) + [AWS Lambda](https://aws.amazon.com/jp/lambda/): バックエンド API エンドポイント ([AWS Lambda Web Adapter](https://github.com/awslabs/aws-lambda-web-adapter), [FastAPI](https://fastapi.tiangolo.com/))
-- [Amazon SNS](https://aws.amazon.com/jp/sns/): API Gateway と Bedrock 間のストリーミング呼び出しを疎結合にするため使用しています。ストリーミングレスポンスにはトータルで 30 秒以上かかることがあり、これは HTTP インテグレーションの制約を超えてしまうためです（[クオータ](https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html)を参照）。
 - [Amazon CloudFront](https://aws.amazon.com/jp/cloudfront/) + [S3](https://aws.amazon.com/jp/s3/): フロントエンドアプリケーションの配信 ([React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/))
 - [AWS WAF](https://aws.amazon.com/jp/waf/): IP アドレス制限
 - [Amazon Cognito](https://aws.amazon.com/jp/cognito/): ユーザ認証

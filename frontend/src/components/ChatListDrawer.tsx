@@ -20,7 +20,7 @@ import {
   PiTrash,
   PiX,
 } from 'react-icons/pi';
-
+import { PiCircleNotch } from 'react-icons/pi';
 import useConversation from '../hooks/useConversation';
 import LazyOutputText from './LazyOutputText';
 import DialogConfirmDelete from './DialogConfirmDeleteChat';
@@ -343,6 +343,11 @@ const ChatListDrawer: React.FC<Props> = (props) => {
             <ExpandableDrawerGroup
               label={t('app.conversationHistory')}
               className="border-t pt-1">
+              {conversations === undefined && (
+                <div className="flex animate-spin items-center justify-center p-4">
+                  <PiCircleNotch size={24} />
+                </div>
+              )}
               {conversations?.map((conversation, idx) => (
                 <Item
                   key={idx}

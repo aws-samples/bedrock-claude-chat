@@ -14,6 +14,9 @@ When a bot is created or updated, the document loader retrieves documents from S
 
 You can configure some parameters (See [Configure RAG Parameters](./CONFIGURE_KNOWLEDGE.md)). To customize the RAG logic, edit [embedding](../backend/embedding/) for ECS task and edit [vector_search.py](../backend/app/vector_search.py) for query handling.
 
+> [!Note]
+> Currently embedding does not support multi-modal. Only text sentence is used for search query (attached images are ignored).
+
 ## Dependencies
 
 We utilize [Unstructured](https://github.com/Unstructured-IO) for parsing documents and [Llamaindex](https://www.llamaindex.ai/) for splitting them into chunks. [Playwright](https://playwright.dev/) is used to render content whose `Content-Type` corresponds to `text/html`.

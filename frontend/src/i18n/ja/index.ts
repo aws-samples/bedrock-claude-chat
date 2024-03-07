@@ -27,7 +27,7 @@ const translation = {
         notAvailable: 'このボットは利用できません。',
         noBots: 'ボットが登録されていません。',
         noBotsRecentlyUsed: '最近利用した公開ボットはありません。',
-        retrivingKnowledge: '[ナレッジを取得中...]',
+        retrievingKnowledge: '[ナレッジを取得中...]',
         dndFileUpload:
           'ドラッグ＆ドロップでファイルをアップロードできます。\n対応ファイル: {{fileExtensions}}',
         uploadError: 'エラーメッセージ',
@@ -187,6 +187,7 @@ const translation = {
         general: '推論中にエラーが発生しました。',
         invalidResponse: '想定外のResponseが返ってきました。',
       },
+      notSupportedImage: '選択しているモデルは、画像を利用できません。',
     },
   },
 };
