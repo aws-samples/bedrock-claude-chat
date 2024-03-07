@@ -16,6 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import { ulid } from 'ulid';
 import { convertMessageMapToArray } from '../utils/MessageUtils';
 import { useTranslation } from 'react-i18next';
+import useModel from './useModel';
 
 type ChatStateType = {
   [id: string]: MessageMap;
@@ -126,7 +127,7 @@ const useChatState = create<{
     editMessage: (id: string, messageId: string, content: string) => {
       set((state) => ({
         chats: produce(state.chats, (draft) => {
-          draft[id][messageId].content.body = content;
+          draft[id][messageId].content[0].body = content;
         }),
       }));
     },
@@ -204,6 +205,7 @@ const useChat = () => {
   const navigate = useNavigate();
 
   const { post: postStreaming } = usePostMessageStreaming();
+  const { modelId, setModelId } = useModel();
 
   const conversationApi = useConversationApi();
   const {
@@ -239,8 +241,16 @@ const useChat = () => {
     if (conversationId && data?.id === conversationId) {
       setMessages(conversationId, data.messageMap);
       setCurrentMessageId(data.lastMessageId);
+      setModelId(getPostedModel());
     }
-  }, [conversationId, data, setCurrentMessageId, setMessages]);
+  }, [
+    conversationId,
+    data,
+    getPostedModel,
+    setCurrentMessageId,
+    setMessages,
+    setModelId,
+  ]);
 
   useEffect(() => {
     setIsGeneratedTitle(false);
@@ -264,16 +274,23 @@ const useChat = () => {
       NEW_MESSAGE_ID.ASSISTANT,
       {
         role: 'assistant',
-        content: {
-          contentType: 'text',
-          body: '',
-        },
+        content: [
+          {
+            contentType: 'text',
+            body: '',
+          },
+        ],
         model: messageContent.model,
       }
     );
   };
 
-  const postChat = (content: string, model: Model, bot?: BotInputType) => {
+  const postChat = (params: {
+    content: string;
+    base64EncodedImages?: string[];
+    bot?: BotInputType;
+  }) => {
+    const { content, bot, base64EncodedImages } = params;
     const isNewChat = conversationId ? false : true;
     const newConversationId = ulid();
 
@@ -287,13 +304,30 @@ const useChat = () => {
       ? 'system'
       : tmpMessages[tmpMessages.length - 1].id;
 
-    const modelToPost = isNewChat ? model : getPostedModel();
+    const modelToPost = isNewChat ? modelId : getPostedModel();
 
+    const imageContents: MessageContent['content'] = (
+      base64EncodedImages ?? []
+    ).map((encodedImage) => {
+      const result =
+        /data:(?<mediaType>image\/.+);base64,(?<encodedImage>.+)/.exec(
+          encodedImage
+        );
+
+      return {
+        body: result!.groups!.encodedImage,
+        contentType: 'image',
+        mediaType: result!.groups!.mediaType,
+      };
+    });
     const messageContent: MessageContent = {
-      content: {
-        body: content,
-        contentType: 'text',
-      },
+      content: [
+        ...imageContents,
+        {
+          body: content,
+          contentType: 'text',
+        },
+      ],
       model: modelToPost,
       role: 'user',
     };
@@ -349,7 +383,7 @@ const useChat = () => {
             editMessage(
               conversationId ?? '',
               NEW_MESSAGE_ID.ASSISTANT,
-              res.data.message.content.body
+              res.data.message.content[0].body
             );
             resolve();
           })
@@ -401,7 +435,7 @@ const useChat = () => {
 
     const parentMessage = produce(messages[index], (draft) => {
       if (props?.content) {
-        draft.content.body = props.content;
+        draft.content[0].body = props.content;
       }
     });
 
@@ -434,10 +468,12 @@ const useChat = () => {
         NEW_MESSAGE_ID.ASSISTANT,
         {
           role: 'assistant',
-          content: {
-            contentType: 'text',
-            body: '',
-          },
+          content: [
+            {
+              contentType: 'text',
+              body: '',
+            },
+          ],
           model: messages[index].model,
         }
       );
@@ -496,20 +532,19 @@ const useChat = () => {
         // 通常のメッセージ送信時
         // エラー発生時の最新のメッセージはユーザ入力;
         removeMessage(conversationId, latestMessage.id);
-        postChat(
-          params.content ?? latestMessage.content.body,
-          getPostedModel(),
-          params.bot
+        postChat({
+          content: params.content ?? latestMessage.content[0].body,
+          bot: params.bot
             ? {
                 botId: params.bot.botId,
                 hasKnowledge: params.bot.hasKnowledge,
               }
-            : undefined
-        );
+            : undefined,
+        });
       } else {
         // 再生成時
         regenerate({
-          content: params.content ?? latestMessage.content.body,
+          content: params.content ?? latestMessage.content[0].body,
           bot: params.bot,
         });
       }

@@ -1,6 +1,6 @@
+import logging
 import sys
 import unittest
-import logging
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.DEBUG)
@@ -16,14 +16,13 @@ class TestUtils(unittest.TestCase):
         assert client is not None
 
         cli_dict = client.__dict__
-        
-        reg=cli_dict['_client_config'].region_name
-        
+
+        reg = cli_dict["_client_config"].region_name
+
         LOGGER.debug("Region: ")
         LOGGER.debug(reg)
 
         assert reg == "us-east-1"
-        
 
     def test_get_bedrock_client_alt(self):
         from app.utils import get_bedrock_client
@@ -32,10 +31,9 @@ class TestUtils(unittest.TestCase):
         assert client is not None
 
         cli_dict = client.__dict__
-        
 
-        reg=cli_dict['_client_config'].region_name
-        
+        reg = cli_dict["_client_config"].region_name
+
         LOGGER.debug("Region: ")
         LOGGER.debug(reg)
 

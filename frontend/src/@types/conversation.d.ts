@@ -1,13 +1,14 @@
 export type Role = 'system' | 'assistant' | 'user';
-export type Model = 'claude-instant-v1' | 'claude-v2';
+export type Model = 'claude-instant-v1' | 'claude-v2' | 'claude-v3-sonnet';
 export type Content = {
-  contentType: 'text';
+  contentType: 'text' | 'image';
+  mediaType?: string;
   body: string;
 };
 
 export type MessageContent = {
   role: Role;
-  content: Content;
+  content: Content[];
   model: Model;
 };
 

@@ -4,7 +4,6 @@ import os
 
 import pg8000
 from app.bedrock import calculate_query_embedding
-from app.utils import get_bedrock_client
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)

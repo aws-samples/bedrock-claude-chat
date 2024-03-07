@@ -187,6 +187,7 @@ const translation = {
         general: '推論中にエラーが発生しました。',
         invalidResponse: '想定外のResponseが返ってきました。',
       },
+      notSupportedImage: '選択しているモデルは、画像を利用できません。',
     },
   },
 };
