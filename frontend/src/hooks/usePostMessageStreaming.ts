@@ -44,7 +44,14 @@ const usePostMessageStreaming = create<{
 
         ws.onmessage = (message) => {
           try {
-            if (message.data === '' || message.data === 'Message sent.') {
+            if (
+              message.data === '' ||
+              message.data === 'Message sent.' ||
+              // Ignore timeout message from api gateway
+              message.data.startsWith(
+                '{"message": "Endpoint request timed out",'
+              )
+            ) {
               return;
             } else if (message.data === 'Session started.') {
               chunkedPayloads.forEach((chunk, index) => {
