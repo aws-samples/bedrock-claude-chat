@@ -1,0 +1,33 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18.x"
+      - name: configure aws
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE_TO_ASSUME }}
+          aws-region: ap-northeast-1
+          role-session-name: GitHubActions
+          role-duration-seconds: 3600
+      - name: Install dependencies & cdk deploy
+        run: |
+          cd cdk
+          npm ci
+          npm i -g aws-cdk
+          cdk deploy --require-approval never --all
