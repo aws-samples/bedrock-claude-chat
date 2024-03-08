@@ -245,6 +245,10 @@ Thank you for considering contribution on this repository! We welcome for bug fi
 
 See [here](./docs/RAG.md).
 
+### how to set id provider
+
+See [here](https://docs.aws.amazon.com/ja_jp/IAM/latest/UserGuide/id_roles_providers_create_oidc.html)
+
 ## Authors
 
 - [Takehiro Suzuki](https://github.com/statefb)
