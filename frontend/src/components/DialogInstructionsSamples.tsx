@@ -58,7 +58,7 @@ const DialogInstructionsSamples: React.FC<Props> = (props) => {
             href="https://docs.anthropic.com/claude/prompt-library"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-600 hover:text-blue-800">
+            className="text-aws-sea-blue underline hover:text-aws-sea-blue-hover">
             {t('bot.samples.anthropicLibrary.title')}
           </a>
         </div>
