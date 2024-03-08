@@ -79,6 +79,7 @@ const translation = {
         anthropicLibrary: {
           title: 'Anthropicプロンプトライブラリ',
           sentence: '他のサンプル: ',
+          url: 'https://docs.anthropic.com/claude/prompt-library',
         },
         pythonCodeAssistant: {
           title: 'Python コーディングアシスタント',

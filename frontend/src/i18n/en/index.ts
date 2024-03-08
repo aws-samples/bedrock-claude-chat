@@ -76,6 +76,7 @@ const translation = {
         anthropicLibrary: {
           title: 'Anthropic Prompt Library',
           sentence: 'Do you need more examples? Visit: ',
+          url: 'https://docs.anthropic.com/claude/prompt-library',
         },
         pythonCodeAssistant: {
           title: 'Python Coding Assistant',
