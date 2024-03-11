@@ -66,7 +66,7 @@ def post_message(request: Request, message_input: ChatInputWithoutBotId):
 
 @router.get("/conversation/{conversation_id}", response_model=Conversation)
 def get_conversation(request: Request, conversation_id: str):
-    """Get a conversation history"""
+    """Get a conversation history. If the conversation does not exist, it will return 404."""
     current_user: User = request.state.current_user
 
     output = fetch_conversation(current_user.id, conversation_id)
@@ -78,12 +78,19 @@ def get_conversation(request: Request, conversation_id: str):
     response_model=ChatOutputWithoutBotId,
 )
 def get_message(request: Request, conversation_id: str, message_id: str):
-    """Get specified message in a conversation"""
+    """Get specified message in a conversation. If the message does not exist, it will return 404."""
     current_user: User = request.state.current_user
 
     conversation = fetch_conversation(current_user.id, conversation_id)
-    message = conversation.message_map.get(message_id, None)
-    if message is None:
+    input_message = conversation.message_map.get(message_id, None)
+    if input_message is None:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Message {message_id} not found in conversation {conversation_id}",
+        )
+    output_message_id = input_message.children[0]
+    output_message = conversation.message_map.get(output_message_id, None)
+    if output_message is None:
         raise HTTPException(
             status_code=404,
             detail=f"Message {message_id} not found in conversation {conversation_id}",
@@ -91,6 +98,6 @@ def get_message(request: Request, conversation_id: str, message_id: str):
 
     return ChatOutputWithoutBotId(
         conversation_id=conversation_id,
-        message=message,
+        message=output_message,
         create_time=conversation.create_time,
     )
