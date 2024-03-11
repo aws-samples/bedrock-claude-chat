@@ -18,6 +18,8 @@ import { Embedding } from "./constructs/embedding";
 import { VectorStore } from "./constructs/vectorstore";
 import { UsageAnalysis } from "./constructs/usage-analysis";
 import { randomUUID } from "crypto";
+import { Effect, pipe } from "effect";
+import { as } from "effect/Option";
 
 export interface BedrockChatStackProps extends StackProps {
   readonly bedrockRegion: string;
@@ -156,10 +158,28 @@ export class BedrockChatStack extends cdk.Stack {
 }
 export type Idp = ReturnType<typeof identifyProvider>;
 const identifyProvider = (construct: Construct) => {
-  const providers: [] = construct.node.tryGetContext("identifyProviders");
+  const providers: TProvider[] =
+    construct.node.tryGetContext("identifyProviders");
 
-  const isExist = () => providers.length == 0;
-  const getProviders = (): TProvider[] => providers;
+  const isExist = () => providers.length > 0;
+
+  const getProviders = (): TProvider[] => {
+    const program = pipe(
+      providers,
+      isIdpAsArray,
+      Effect.flatMap(validateProviders)
+    );
+    const result = Effect.match(program, {
+      onSuccess: (providers) => providers,
+      onFailure: (error: Errors) => {
+        if (error.type === "NotFoundIdpArray") return [] as TProvider[];
+        if (error.type === "InvalidSocialProvider")
+          throw new Error("InvalidSocialProvider");
+        return error;
+      },
+    });
+    return Effect.runSync(result);
+  };
   const getSupportedIndetityProviders = () => {
     return [...getProviders(), { service: "cognito" }].map(({ service }) => {
       switch (service) {
@@ -174,7 +194,7 @@ const identifyProvider = (construct: Construct) => {
         case "cognito":
           return aws_cognito.UserPoolClientIdentityProvider.COGNITO;
         default:
-          return aws_cognito.UserPoolClientIdentityProvider.COGNITO;
+          throw new Error(`Invalid identity provider: ${service}`);
       }
     });
   };
@@ -191,3 +211,35 @@ type TProvider = {
   clientId: string;
   clientSecret: string;
 };
+
+const validateProviders = (providers: TProvider[]) =>
+  Effect.all(providers.map(validateSocialProvider));
+
+const validateSocialProvider = (
+  provider: TProvider
+):
+  | Effect.Effect<never, InvalidSocialProvider, never>
+  | Effect.Effect<TProvider, never, never> =>
+  !["google", "facebook", "amazon", "apple"].includes(provider.service)
+    ? Effect.fail({
+        type: "InvalidSocialProvider",
+      })
+    : Effect.succeed(provider);
+
+const isIdpAsArray = (
+  providers: TProvider[]
+):
+  | Effect.Effect<TProvider[], never, never>
+  | Effect.Effect<never, NotFoundIdpArray, never> =>
+  Array.isArray(providers)
+    ? Effect.succeed(providers as TProvider[])
+    : Effect.fail({ type: "NotFoundIdpArray" });
+
+type NotFoundIdpArray = {
+  type: "NotFoundIdpArray";
+};
+
+type InvalidSocialProvider = {
+  type: "InvalidSocialProvider";
+};
+type Errors = NotFoundIdpArray | InvalidSocialProvider;
