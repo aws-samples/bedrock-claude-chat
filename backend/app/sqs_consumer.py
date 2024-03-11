@@ -16,6 +16,9 @@ from fastapi import APIRouter, HTTPException, Request
 
 
 def handler(event, context):
+    """SQS consumer.
+    This is used for async invocation for published api.
+    """
     for record in event["Records"]:
         message_body = json.loads(record["body"])
         chat_input = ChatInput(**message_body)

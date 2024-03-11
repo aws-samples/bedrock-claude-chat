@@ -6,16 +6,17 @@ from pydantic import Field
 
 
 class MessageInputWithoutMessageid(BaseSchema):
-    role: str
     content: list[Content]
     model: type_model_name
-    parent_message_id: str | None = Field(None, description="Parent message id.")
 
 
 class ChatInputWithoutBotId(BaseSchema):
     conversation_id: str | None = Field(
         None,
-        description="Unique conversation id. If not provided, new conversation will be generated.",
+        description="""Unique conversation id. 
+        If not provided, new conversation will be generated.
+        Please note that the id must be unique across the application.
+        We recommend to use auto-generated id (i.e. give None to this field)""",
     )
     message: MessageInputWithoutMessageid
 

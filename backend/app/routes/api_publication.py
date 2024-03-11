@@ -4,7 +4,7 @@ from app.routes.schemas.api_publication import (
     BotPublishInput,
     BotPublishOutput,
 )
-from app.usecases.bot import (
+from app.usecases.publication import (
     create_bot_publication,
     create_new_api_key,
     fetch_api_key,
@@ -12,7 +12,6 @@ from app.usecases.bot import (
     remove_api_key,
     remove_bot_publication,
 )
-from app.usecases.chat import chat, fetch_conversation, propose_conversation_title
 from app.user import User
 from fastapi import APIRouter, Request
 

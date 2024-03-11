@@ -1,4 +1,3 @@
-from app.repositories.apigateway import find_api_key_by_id
 from app.repositories.conversation import (
     change_conversation_title,
     delete_conversation_by_id,

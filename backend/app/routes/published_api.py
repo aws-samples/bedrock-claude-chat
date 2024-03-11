@@ -3,14 +3,7 @@ import os
 from time import sleep
 
 import boto3
-from app.repositories.apigateway import find_api_key_by_id
-from app.routes.schemas.conversation import (
-    ChatInput,
-    ChatOutput,
-    Conversation,
-    MessageInput,
-    MessageOutput,
-)
+from app.routes.schemas.conversation import ChatInput, Conversation, MessageInput
 from app.routes.schemas.published_api import (
     ChatInputWithoutBotId,
     ChatOutputWithoutBotId,
@@ -50,10 +43,10 @@ def post_message(request: Request, message_input: ChatInputWithoutBotId):
     chat_input = ChatInput(
         conversation_id=conversation_id,
         message=MessageInput(
-            role=message_input.message.role,
+            role="user",
             content=message_input.message.content,
             model=message_input.message.model,
-            parent_message_id=message_input.message.parent_message_id,
+            parent_message_id=None,  # Use the latest message as the parent
             message_id=response_message_id,
         ),
         bot_id=current_user.id,

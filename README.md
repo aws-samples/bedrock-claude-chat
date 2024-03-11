@@ -34,6 +34,7 @@ TODO
 ### Administrator dashboard
 
 TODO
+[administrator_dashboard.md](./docs/ADMINISTRATOR.md)
 
 ## 📚 Supported Languages
 

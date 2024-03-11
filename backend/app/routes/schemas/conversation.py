@@ -7,7 +7,9 @@ type_model_name = Literal["claude-instant-v1", "claude-v2", "claude-v3-sonnet"]
 
 
 class Content(BaseSchema):
-    content_type: Literal["text", "image"]
+    content_type: Literal["text", "image"] = Field(
+        ..., description="Content type. Note that image is only available for claude 3."
+    )
     media_type: Optional[str] = Field(
         None,
         description="MIME type of the image. Must be specified if `content_type` is `image`.",
@@ -26,7 +28,7 @@ class MessageInput(BaseSchema):
 
 
 class MessageOutput(BaseSchema):
-    role: str
+    role: str = Field(..., description="Role of the message. Either `user` or `bot`.")
     content: list[Content]
     model: type_model_name
     children: list[str]

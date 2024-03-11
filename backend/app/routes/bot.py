@@ -23,9 +23,7 @@ from app.usecases.bot import (
     issue_presigned_url,
     modify_owned_bot,
     modify_pin_status,
-    remove_api_key,
     remove_bot_by_id,
-    remove_bot_publication,
     remove_uploaded_file,
 )
 from app.usecases.chat import chat, fetch_conversation, propose_conversation_title
