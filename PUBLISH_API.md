@@ -21,7 +21,11 @@ The API is published as following diagram:
 
 ![](./imgs/published_arch.png)
 
-Once a user determined to publish the bot, [AWS CodeBuild](https://aws.amazon.com/codebuild/) launch CDK deployment task to provision the API stack (Also see: [CDK definition](../cdk/lib/api-publishment-stack.ts)) which contains API Gateway, Lambda and SQS. SQS is used to decouple user request and LLM operation because generating output may exceed 30sec, which is the limit of API Gateway quota. To fetch the output, need to access the API asynchronously. For more the detail, see [API Specification](#api-specification).
+The WAF is used for ip address restriction. The address can be configured by setting parameters `publishedApiAllowedIpV4AddressRanges` and `publishedApiAllowedIpV6AddressRanges` in `cdk.json`.
+
+Once a user click publish the bot, [AWS CodeBuild](https://aws.amazon.com/codebuild/) launch CDK deployment task to provision the API stack (Also see: [CDK definition](../cdk/lib/api-publishment-stack.ts)) which contains API Gateway, Lambda and SQS. SQS is used to decouple user request and LLM operation because generating output may exceed 30sec, which is the limit of API Gateway quota. To fetch the output, need to access the API asynchronously. For more the detail, see [API Specification](#api-specification).
+
+Client needs to set `x-api-key` on the request header.
 
 ## API specification
 
