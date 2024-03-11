@@ -11,6 +11,7 @@ import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as wafv2 from "aws-cdk-lib/aws-wafv2";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import * as sqs from "aws-cdk-lib/aws-sqs";
+import * as s3 from "aws-cdk-lib/aws-s3";
 
 export interface VpcConfig {
   vpcId: string;
@@ -31,6 +32,7 @@ interface ApiPublishmentStackProps extends StackProps {
   readonly webAclArn: string;
   readonly usagePlan: apigateway.UsagePlanProps;
   readonly deploymentStage?: string;
+  readonly largeMessageBucketName: string;
   readonly corsOptions?: apigateway.CorsOptions;
 }
 
@@ -73,6 +75,12 @@ export class ApiPublishmentStack extends Stack {
         "service-role/AWSLambdaVPCAccessExecutionRole"
       )
     );
+    const largeMessageBucket = s3.Bucket.fromBucketName(
+      this,
+      "LargeMessageBucket",
+      props.largeMessageBucketName
+    );
+    largeMessageBucket.grantReadWrite(handlerRole);
 
     // Handler for FastAPI
     const apiHandler = new DockerImageFunction(this, "ApiHandler", {
@@ -97,6 +105,7 @@ export class ApiPublishmentStack extends Stack {
         ACCOUNT: Stack.of(this).account,
         REGION: Stack.of(this).region,
         BEDROCK_REGION: props.bedrockRegion,
+        LARGE_MESSAGE_BUCKET: props.largeMessageBucketName,
         TABLE_ACCESS_ROLE_ARN: props.tableAccessRoleArn,
         DB_NAME: dbSecret
           .secretValueFromJson("dbname")

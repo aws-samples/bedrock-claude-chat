@@ -82,6 +82,15 @@ export class BedrockChatStack extends cdk.Stack {
       autoDeleteObjects: true,
     });
 
+    const largeMessageBucket = new Bucket(this, "LargeMessageBucket", {
+      encryption: BucketEncryption.S3_MANAGED,
+      blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+      enforceSSL: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      objectOwnership: ObjectOwnership.OBJECT_WRITER,
+      autoDeleteObjects: true,
+    });
+
     const auth = new Auth(this, "Auth");
     const database = new Database(this, "Database", {
       // Enable PITR to export data to s3 if usage analysis is enabled
@@ -105,6 +114,7 @@ export class BedrockChatStack extends cdk.Stack {
       documentBucket,
       apiPublishProject: apiPublishCodebuild.project,
       usageAnalysis,
+      largeMessageBucket,
     });
     documentBucket.grantReadWrite(backendApi.handler);
 
@@ -117,6 +127,7 @@ export class BedrockChatStack extends cdk.Stack {
       websocketSessionTable: database.websocketSessionTable,
       auth,
       bedrockRegion: props.bedrockRegion,
+      largeMessageBucket,
     });
 
     const frontend = new Frontend(this, "Frontend", {
@@ -221,6 +232,10 @@ export class BedrockChatStack extends cdk.Stack {
     new CfnOutput(this, "DbSecurityGroupId", {
       value: vectorStore.securityGroup.securityGroupId,
       exportName: "BedrockClaudeChatDbSecurityGroupId",
+    });
+    new CfnOutput(this, "LargeMessageBucketName", {
+      value: largeMessageBucket.bucketName,
+      exportName: "BedrockClaudeChatLargeMessageBucketName",
     });
   }
 }

@@ -32,6 +32,7 @@ export interface ApiProps {
   readonly bedrockRegion: string;
   readonly tableAccessRole: iam.IRole;
   readonly documentBucket: IBucket;
+  readonly largeMessageBucket: IBucket;
   readonly apiPublishProject: codebuild.IProject;
   readonly usageAnalysis?: UsageAnalysis;
 }
@@ -161,6 +162,7 @@ export class Api extends Construct {
     );
     props.usageAnalysis?.resultOutputBucket.grantReadWrite(handlerRole);
     props.usageAnalysis?.ddbBucket.grantRead(handlerRole);
+    props.largeMessageBucket.grantReadWrite(handlerRole);
 
     const handler = new DockerImageFunction(this, "Handler", {
       code: DockerImageCode.fromImageAsset(
@@ -189,6 +191,7 @@ export class Api extends Construct {
         DB_PASSWORD: props.dbConfig.password,
         DB_PORT: props.dbConfig.port.toString(),
         DOCUMENT_BUCKET: props.documentBucket.bucketName,
+        LARGE_MESSAGE_BUCKET: props.largeMessageBucket.bucketName,
         PUBLISH_API_CODEBUILD_PROJECT_NAME: props.apiPublishProject.projectName,
         USAGE_ANALYSIS_DATABASE:
           props.usageAnalysis?.database.databaseName || "",

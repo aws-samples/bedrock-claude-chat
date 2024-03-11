@@ -15,9 +15,8 @@ from app.routes.schemas.conversation import ChatInputWithToken
 from app.usecases.bot import modify_bot_last_used_time
 from app.usecases.chat import insert_knowledge, prepare_conversation, trace_to_root
 from app.utils import get_anthropic_client, get_current_time
-from app.vector_search import SearchResult, search_related_docs
+from app.vector_search import search_related_docs
 from boto3.dynamodb.conditions import Key
-from botocore.exceptions import ClientError
 from ulid import ULID
 
 WEBSOCKET_SESSION_TABLE_NAME = os.environ["WEBSOCKET_SESSION_TABLE_NAME"]
@@ -28,7 +27,7 @@ dynamodb_client = boto3.resource("dynamodb")
 table = dynamodb_client.Table(WEBSOCKET_SESSION_TABLE_NAME)
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 
 def process_chat_input(
@@ -41,7 +40,7 @@ def process_chat_input(
         # Verify JWT token
         decoded = verify_token(chat_input.token)
     except Exception as e:
-        print(f"Invalid token: {e}")
+        logger.error(f"Invalid token: {e}")
         return {"statusCode": 403, "body": "Invalid token."}
 
     user_id = decoded["sub"]
@@ -112,7 +111,7 @@ def process_chat_input(
         # Invoke bedrock streaming api
         response = client.messages.create(**args)
     except Exception as e:
-        print(f"Failed to invoke bedrock: {e}")
+        logger.error(f"Failed to invoke bedrock: {e}")
         return {"statusCode": 500, "body": "Failed to invoke bedrock."}
 
     completions = []
@@ -141,7 +140,7 @@ def process_chat_input(
                     ConnectionId=connection_id, Data=data_to_send
                 )
             except Exception as e:
-                print(f"Failed to post message: {str(e)}")
+                logger.error(f"Failed to post message: {str(e)}")
                 return {
                     "statusCode": 500,
                     "body": "Failed to send message to connection.",
@@ -201,7 +200,7 @@ def process_chat_input(
             ConnectionId=connection_id, Data=last_data_to_send
         )
     except Exception as e:
-        print(f"Failed to post message: {str(e)}")
+        logger.error(f"Failed to post message: {str(e)}")
         return {
             "statusCode": 500,
             "body": "Failed to send message to connection.",
@@ -216,7 +215,7 @@ def process_chat_input(
 
 
 def handler(event, context):
-    print(f"Received event: {event}")
+    logger.info(f"Received event: {event}")
     route_key = event["requestContext"]["routeKey"]
 
     if route_key == "$connect":
@@ -231,7 +230,7 @@ def handler(event, context):
     gatewayapi = boto3.client("apigatewaymanagementapi", endpoint_url=endpoint_url)
 
     now = datetime.now()
-    expire = int(now.timestamp()) + (2 * 60 * 60)  # 2 hours from now
+    expire = int(now.timestamp()) + 60 * 2  # 2 minute from now
     body = event["body"]
 
     try:
@@ -260,13 +259,16 @@ def handler(event, context):
             response = table.query(
                 KeyConditionExpression=Key("ConnectionId").eq(connection_id)
             )
-            for item in response["Items"]:
-                table.delete_item(
-                    Key={
-                        "ConnectionId": item["ConnectionId"],
-                        "MessagePartId": item["MessagePartId"],
-                    }
-                )
+
+            # Delete the message parts
+            # Note: commented out for now to improve TTFT (time-to-first-token)
+            # for item in response["Items"]:
+            #     table.delete_item(
+            #         Key={
+            #             "ConnectionId": item["ConnectionId"],
+            #             "MessagePartId": item["MessagePartId"],
+            #         }
+            #     )
 
             # Process the concatenated full message
             chat_input = ChatInputWithToken(**json.loads(full_message))

@@ -193,6 +193,77 @@ class TestConversationRepository(unittest.TestCase):
         conversations = find_conversation_by_user_id(user_id="user")
         self.assertEqual(len(conversations), 0)
 
+    def test_store_and_find_large_conversation(self):
+        large_message_map = {
+            f"msg_{i}": MessageModel(
+                role="user",
+                content=[
+                    ContentModel(
+                        content_type="text",
+                        body="This is a large message."
+                        * 1000,  # Repeating to make it large
+                        media_type=None,
+                    )
+                ],
+                model="claude-instant-v1",
+                children=[],
+                parent=None,
+                create_time=1627984879.9,
+            )
+            for i in range(10)  # Create 10 large messages
+        }
+
+        large_conversation = ConversationModel(
+            id="2",
+            create_time=1627984879.9,
+            title="Large Conversation",
+            total_price=200,
+            message_map=large_message_map,
+            last_message_id="msg_9",
+            bot_id=None,
+        )
+
+        # Test storing large conversation with a small threshold
+        response = store_conversation("user", large_conversation, threshold=1)
+        self.assertIsNotNone(response)
+
+        # Test finding large conversation by id
+        found_conversation = find_conversation_by_id(
+            user_id="user", conversation_id="2"
+        )
+        self.assertEqual(found_conversation.id, "2")
+        self.assertEqual(found_conversation.title, "Large Conversation")
+        self.assertEqual(found_conversation.total_price, 200)
+        self.assertEqual(found_conversation.last_message_id, "msg_9")
+        self.assertEqual(found_conversation.bot_id, None)
+
+        message_map = found_conversation.message_map
+        self.assertEqual(len(message_map), 10)
+
+        for i in range(10):
+            message_id = f"msg_{i}"
+            self.assertIn(message_id, message_map)
+            message = message_map[message_id]
+            self.assertEqual(message.role, "user")
+            self.assertEqual(len(message.content), 1)
+            self.assertEqual(message.content[0].content_type, "text")
+            self.assertEqual(message.content[0].body, "This is a large message." * 1000)
+            self.assertEqual(message.content[0].media_type, None)
+            self.assertEqual(message.model, "claude-instant-v1")
+            self.assertEqual(message.children, [])
+            self.assertEqual(message.parent, None)
+            self.assertEqual(message.create_time, 1627984879.9)
+
+        # Test deleting large conversation
+        delete_conversation_by_id(user_id="user", conversation_id="2")
+        with self.assertRaises(RecordNotFoundError):
+            find_conversation_by_id("user", "2")
+
+        store_conversation(user_id="user", conversation=large_conversation)
+        delete_conversation_by_user_id(user_id="user")
+        conversations = find_conversation_by_user_id(user_id="user")
+        self.assertEqual(len(conversations), 0)
+
 
 class TestConversationBotRepository(unittest.TestCase):
     def setUp(self) -> None:

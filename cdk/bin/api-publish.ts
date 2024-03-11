@@ -79,6 +79,9 @@ const dbConfigSecretArn = cdk.Fn.importValue(
 const dbSecurityGroupId = cdk.Fn.importValue(
   "BedrockClaudeChatDbSecurityGroupId"
 );
+const largeMessageBucketName = cdk.Fn.importValue(
+  "BedrockClaudeChatLargeMessageBucketName"
+);
 
 // NOTE: DO NOT change the stack id naming rule.
 const publishedApi = new ApiPublishmentStack(
@@ -97,6 +100,7 @@ const publishedApi = new ApiPublishmentStack(
     dbConfigPort: dbConfigPort,
     dbSecurityGroupId: dbSecurityGroupId,
     webAclArn: webAclArn,
+    largeMessageBucketName: largeMessageBucketName,
     usagePlan: {
       throttle: {
         rateLimit: Number(PUBLISHED_API_THROTTLE_RATE_LIMIT),

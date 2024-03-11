@@ -5,7 +5,7 @@ from app.routes.schemas.conversation import Content, MessageOutput, type_model_n
 from pydantic import Field
 
 
-class MessageInputWithoutMessageid(BaseSchema):
+class MessageInputWithoutMessageId(BaseSchema):
     content: list[Content]
     model: type_model_name
 
@@ -14,11 +14,9 @@ class ChatInputWithoutBotId(BaseSchema):
     conversation_id: str | None = Field(
         None,
         description="""Unique conversation id. 
-        If not provided, new conversation will be generated.
-        Please note that the id must be unique across the application.
-        We recommend to use auto-generated id (i.e. give None to this field)""",
+        If not provided, new conversation will be generated.""",
     )
-    message: MessageInputWithoutMessageid
+    message: MessageInputWithoutMessageId
 
 
 class ChatOutputWithoutBotId(BaseSchema):

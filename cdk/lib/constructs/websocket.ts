@@ -29,6 +29,7 @@ export interface WebSocketProps {
   readonly bedrockRegion: string;
   readonly tableAccessRole: iam.IRole;
   readonly websocketSessionTable: ITable;
+  readonly largeMessageBucket: s3.IBucket;
 }
 
 export class WebSocket extends Construct {
@@ -79,6 +80,7 @@ export class WebSocket extends Construct {
     );
     largePayloadSupportBucket.grantRead(handlerRole);
     props.websocketSessionTable.grantReadWriteData(handlerRole);
+    props.largeMessageBucket.grantReadWrite(handlerRole);
 
     const handler = new DockerImageFunction(this, "Handler", {
       code: DockerImageCode.fromImageAsset(
@@ -100,6 +102,7 @@ export class WebSocket extends Construct {
         BEDROCK_REGION: props.bedrockRegion,
         TABLE_NAME: database.tableName,
         TABLE_ACCESS_ROLE_ARN: tableAccessRole.roleArn,
+        LARGE_MESSAGE_BUCKET: props.largeMessageBucket.bucketName,
         DB_NAME: props.dbConfig.database,
         DB_HOST: props.dbConfig.host,
         DB_USER: props.dbConfig.username,

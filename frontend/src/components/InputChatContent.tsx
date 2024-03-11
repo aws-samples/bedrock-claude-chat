@@ -143,8 +143,7 @@ const InputChatContent: React.FC<Props> = (props) => {
           canvas.height = newHeight;
           ctx?.drawImage(img, 0, 0, newWidth, newHeight);
 
-          // quality can only be set to jpeg
-          const resizedImageData = canvas.toDataURL('image/jpeg', 0.3);
+          const resizedImageData = canvas.toDataURL('image/png');
 
           pushBase64EncodedImage(resizedImageData);
         };
