@@ -344,8 +344,8 @@ const ChatListDrawer: React.FC<Props> = (props) => {
               label={t('app.conversationHistory')}
               className="border-t pt-1">
               {conversations === undefined && (
-                <div className="flex animate-spin items-center justify-center p-4">
-                  <PiCircleNotch size={24} />
+                <div className="flex items-center justify-center p-4">
+                  <PiCircleNotch className="animate-spin" size={24} />
                 </div>
               )}
               {conversations?.map((conversation, idx) => (
