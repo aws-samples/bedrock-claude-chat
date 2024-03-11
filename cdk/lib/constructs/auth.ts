@@ -1,4 +1,4 @@
-import { CfnOutput, SecretValue, Duration, aws_cognito } from "aws-cdk-lib";
+import { CfnOutput, SecretValue, Duration } from "aws-cdk-lib";
 import {
   ProviderAttribute,
   UserPool,
@@ -7,9 +7,12 @@ import {
 } from "aws-cdk-lib/aws-cognito";
 
 import { Construct } from "constructs";
+import { Idp } from "../bedrock-chat-stack";
 
 export interface AuthProps {
   origin: string;
+  uuid: string;
+  idp: Idp;
 }
 
 export class Auth extends Construct {
@@ -17,28 +20,6 @@ export class Auth extends Construct {
   readonly client: UserPoolClient;
   constructor(scope: Construct, id: string, props: AuthProps) {
     super(scope, id);
-
-    const providers: [] = this.node.tryGetContext("identifyProviders");
-    const supportedIndetityProviders = [
-      ...providers,
-      { service: "cognito" },
-    ].map(({ service }) => {
-      switch (service) {
-        case "google":
-          return aws_cognito.UserPoolClientIdentityProvider.GOOGLE;
-        case "facebook":
-          return aws_cognito.UserPoolClientIdentityProvider.FACEBOOK;
-        case "amazon":
-          return aws_cognito.UserPoolClientIdentityProvider.AMAZON;
-        case "apple":
-          return aws_cognito.UserPoolClientIdentityProvider.APPLE;
-        case "cognito":
-          return aws_cognito.UserPoolClientIdentityProvider.COGNITO;
-        default:
-          return aws_cognito.UserPoolClientIdentityProvider.COGNITO;
-      }
-    });
-
     const userPool = new UserPool(this, "UserPool", {
       passwordPolicy: {
         requireUppercase: true,
@@ -53,17 +34,6 @@ export class Auth extends Construct {
       },
     });
 
-    const userPoolDomainPrefixKey: string = this.node.tryGetContext(
-      "userPoolDomainPrefix"
-    );
-
-    // unused, but required for Google auth
-    userPool.addDomain("UserPool", {
-      cognitoDomain: {
-        domainPrefix: userPoolDomainPrefixKey,
-      },
-    });
-
     const clientProps = (() => {
       const defaultProps = {
         idTokenValidity: Duration.days(1),
@@ -72,50 +42,61 @@ export class Auth extends Construct {
           userSrp: true,
         },
       };
-      if (providers.length == 0) return defaultProps;
+      if (props.idp.isExist()) return defaultProps;
       return {
         ...defaultProps,
         oAuth: {
           callbackUrls: [props.origin],
           logoutUrls: [props.origin],
         },
-        supportedIdentityProviders: [...supportedIndetityProviders],
+        supportedIdentityProviders: [
+          ...props.idp.getSupportedIndetityProviders(),
+        ],
       };
     })();
 
     const client = userPool.addClient(`Client`, clientProps);
 
-    const googleAuthSecretName: string = this.node.tryGetContext(
-      "googleAuthSecretName"
-    );
-    const googleProviderClientId: string = this.node.tryGetContext(
-      "googleProviderClientId"
-    );
-
-    // unused, but required for Google auth
-    const googleProvider = new UserPoolIdentityProviderGoogle(
-      this,
-      "GoogleProvider",
-      {
-        userPool: userPool,
-        clientId: SecretValue.secretsManager(googleProviderClientId, {
-          jsonField: "clientId",
-        }).unsafeUnwrap(),
-        clientSecretValue: SecretValue.secretsManager(googleAuthSecretName, {
-          jsonField: "clientSecret",
-        }),
-        scopes: ["openid", "email"],
-        attributeMapping: {
-          email: ProviderAttribute.GOOGLE_EMAIL,
+    if (props.idp.isExist()) {
+      props.idp.getProviders().forEach((provider) => {
+        switch (provider.service) {
+          case "google": {
+            const googleProvider = new UserPoolIdentityProviderGoogle(
+              this,
+              "GoogleProvider",
+              {
+                userPool: userPool,
+                clientId: SecretValue.secretsManager(provider.clientId, {
+                  jsonField: "clientId",
+                }).unsafeUnwrap(),
+                clientSecretValue: SecretValue.secretsManager(
+                  provider.clientSecret,
+                  {
+                    jsonField: "clientSecret",
+                  }
+                ),
+                scopes: ["openid", "email"],
+                attributeMapping: {
+                  email: ProviderAttribute.GOOGLE_EMAIL,
+                },
+              }
+            );
+            client.node.addDependency(googleProvider);
+          }
+          // set other providers
+          default:
+            return null;
+        }
+      });
+      userPool.addDomain("UserPool", {
+        cognitoDomain: {
+          domainPrefix: props.uuid,
         },
-      }
-    );
+      });
+    }
 
     this.client = client;
     this.userPool = userPool;
-
-    // unused, but required for Google auth
-    client.node.addDependency(googleProvider);
 
     new CfnOutput(this, "UserPoolId", { value: userPool.userPoolId });
     new CfnOutput(this, "UserPoolClientId", { value: client.userPoolClientId });

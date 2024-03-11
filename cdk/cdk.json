@@ -58,9 +58,8 @@
     "identifyProviders": [
       {
         "service": "google",
-        "userPoolDomainPrefix": "",
-        "googleProviderClientId": "",
-        "googleAuthSecretName": ""
+        "clientId": "googleProviderClientId",
+        "secretName": "googleAuthSecret"
       }
     ]
   }

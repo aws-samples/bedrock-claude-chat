@@ -1,4 +1,4 @@
-import { CfnOutput, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
+import { CfnOutput, RemovalPolicy, StackProps, aws_cognito } from "aws-cdk-lib";
 import {
   BlockPublicAccess,
   Bucket,
@@ -17,6 +17,7 @@ import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { Embedding } from "./constructs/embedding";
 import { VectorStore } from "./constructs/vectorstore";
 import { UsageAnalysis } from "./constructs/usage-analysis";
+import { randomUUID } from "crypto";
 
 export interface BedrockChatStackProps extends StackProps {
   readonly bedrockRegion: string;
@@ -35,6 +36,8 @@ export class BedrockChatStack extends cdk.Stack {
     const vectorStore = new VectorStore(this, "VectorStore", {
       vpc: vpc,
     });
+    const uuid = randomUUID();
+    const idp = identifyProvider(this);
 
     const dbConfig = {
       host: vectorStore.cluster.clusterEndpoint.hostname,
@@ -76,7 +79,11 @@ export class BedrockChatStack extends cdk.Stack {
       webAclId: props.webAclId,
     });
 
-    const auth = new Auth(this, "Auth", { origin: frontend.getOrigin() });
+    const auth = new Auth(this, "Auth", {
+      origin: frontend.getOrigin(),
+      uuid: uuid,
+      idp,
+    });
     const database = new Database(this, "Database", {
       // Enable PITR to export data to s3 if usage analysis is enabled
       pointInTimeRecovery: props.enableUsageAnalysis,
@@ -107,6 +114,7 @@ export class BedrockChatStack extends cdk.Stack {
     frontend.buildViteApp({
       backendApiEndpoint: backendApi.api.apiEndpoint,
       webSocketApiEndpoint: websocket.apiEndpoint,
+      userPoolDomainPrefixKey: uuid,
       auth,
     });
 
@@ -146,3 +154,40 @@ export class BedrockChatStack extends cdk.Stack {
     });
   }
 }
+export type Idp = ReturnType<typeof identifyProvider>;
+const identifyProvider = (construct: Construct) => {
+  const providers: [] = construct.node.tryGetContext("identifyProviders");
+
+  const isExist = () => providers.length == 0;
+  const getProviders = (): TProvider[] => providers;
+  const getSupportedIndetityProviders = () => {
+    return [...getProviders(), { service: "cognito" }].map(({ service }) => {
+      switch (service) {
+        case "google":
+          return aws_cognito.UserPoolClientIdentityProvider.GOOGLE;
+        case "facebook":
+          return aws_cognito.UserPoolClientIdentityProvider.FACEBOOK;
+        case "amazon":
+          return aws_cognito.UserPoolClientIdentityProvider.AMAZON;
+        case "apple":
+          return aws_cognito.UserPoolClientIdentityProvider.APPLE;
+        case "cognito":
+          return aws_cognito.UserPoolClientIdentityProvider.COGNITO;
+        default:
+          return aws_cognito.UserPoolClientIdentityProvider.COGNITO;
+      }
+    });
+  };
+
+  return {
+    isExist,
+    getProviders,
+    getSupportedIndetityProviders,
+  };
+};
+
+type TProvider = {
+  service: string;
+  clientId: string;
+  clientSecret: string;
+};

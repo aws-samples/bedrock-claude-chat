@@ -81,16 +81,16 @@ export class Frontend extends Construct {
   buildViteApp({
     backendApiEndpoint,
     webSocketApiEndpoint,
+    userPoolDomainPrefixKey,
     auth,
   }: {
     backendApiEndpoint: string;
     webSocketApiEndpoint: string;
+    userPoolDomainPrefixKey: string;
     auth: Auth;
   }) {
     const region = Stack.of(auth.userPool).region;
-    const userPoolDomainPrefixKey: string = this.node.tryGetContext(
-      "userPoolDomainPrefix"
-    );
+
     new NodejsBuild(this, "ReactBuild", {
       assets: [
         {
@@ -106,9 +106,11 @@ export class Frontend extends Construct {
         VITE_APP_USER_POOL_ID: auth.userPool.userPoolId,
         VITE_APP_USER_POOL_CLIENT_ID: auth.client.userPoolClientId,
         VITE_APP_REGION: region,
+        // used for Google auth
         VITE_APP_REDIRECT_SIGNIN_URL: this.getOrigin(),
         VITE_APP_REDIRECT_SIGNOUT_URL: this.getOrigin(),
         VITE_APP_COGNITO_DOMAIN: `${userPoolDomainPrefixKey}.auth.${region}.amazoncognito.com/`,
+        // here
         VITE_APP_USE_STREAMING: "true",
       },
       destinationBucket: this.assetBucket,
