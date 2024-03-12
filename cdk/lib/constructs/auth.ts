@@ -1,4 +1,4 @@
-import { CfnOutput, Duration, SecretValue } from "aws-cdk-lib";
+import { CfnOutput, Duration, SecretValue, Stack } from "aws-cdk-lib";
 import {
   ProviderAttribute,
   UserPool,
@@ -103,5 +103,11 @@ export class Auth extends Construct {
 
     new CfnOutput(this, "UserPoolId", { value: userPool.userPoolId });
     new CfnOutput(this, "UserPoolClientId", { value: client.userPoolClientId });
+    if (props.idp.isExist())
+      new CfnOutput(this, "ApprovedRedirectURI", {
+        value: `https://${props.userPoolDomainPrefixKey}.auth.${
+          Stack.of(userPool).region
+        }.amazoncognito.com/oauth2/idpresponse`,
+      });
   }
 }
