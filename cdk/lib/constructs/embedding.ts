@@ -52,7 +52,7 @@ export class Embedding extends Construct {
       "TaskDefinition",
       {
         cpu: 2048,
-        memoryLimitMiB: 4096,
+        memoryLimitMiB: 8192,
         runtimePlatform: {
           cpuArchitecture: ecs.CpuArchitecture.X86_64,
           operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,

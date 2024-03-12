@@ -4,6 +4,7 @@ import App from './App.tsx';
 import './index.css';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import ChatPage from './pages/ChatPage.tsx';
+import PublicChatPage from './pages/PublicChatPage.tsx';
 import NotFound from './pages/NotFound.tsx';
 import './i18n';
 import BotExplorePage from './pages/BotExplorePage.tsx';
@@ -44,6 +45,10 @@ const router = createBrowserRouter([
       },
     ],
   },
+  {
+    path: '/public/bot/:botId',
+    element: <PublicChatPage />,
+  }
 ]);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

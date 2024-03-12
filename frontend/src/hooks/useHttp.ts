@@ -11,10 +11,14 @@ const api = axios.create({
 // // HTTP Request Preprocessing
 api.interceptors.request.use(async (config) => {
   // If Authenticated, append ID Token to Request Header
-  const user = await Auth.currentAuthenticatedUser();
-  if (user) {
-    const token = (await Auth.currentSession()).getIdToken().getJwtToken();
-    config.headers['Authorization'] = 'Bearer ' + token;
+  try {
+    const user = await Auth.currentAuthenticatedUser();
+    if (user) {
+      const token = (await Auth.currentSession()).getIdToken().getJwtToken();
+      config.headers['Authorization'] = 'Bearer ' + token;
+    }
+  } catch (e) {
+    console.error(e);
   }
   config.headers['Content-Type'] = 'application/json';
 
