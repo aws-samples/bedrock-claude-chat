@@ -60,9 +60,10 @@ const App: React.FC = () => {
   ): provider is SocialProvider =>
     ['google', 'facebook', 'amazon', 'apple'].includes(provider);
 
-  const socialProviderFromEnv = import.meta.env.VITE_APP_SOCIAL_PROVIDERS.split(
-    ','
-  ).filter(validateSocialProvider);
+  const socialProviderFromEnv =
+    import.meta.env.VITE_APP_SOCIAL_PROVIDERS?.split(',').filter(
+      validateSocialProvider
+    );
 
   return (
     <Authenticator
