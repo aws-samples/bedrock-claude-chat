@@ -4,11 +4,12 @@ import App from './App.tsx';
 import './index.css';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import ChatPage from './pages/ChatPage.tsx';
-import PublicChatPage from './pages/PublicChatPage.tsx';
 import NotFound from './pages/NotFound.tsx';
 import './i18n';
 import BotExplorePage from './pages/BotExplorePage.tsx';
 import BotEditPage from './pages/BotEditPage.tsx';
+import { AdminRoute } from './pages/AdminRoute.tsx';
+import { HomePage } from './pages/HomePage.tsx';
 
 const router = createBrowserRouter([
   {
@@ -17,19 +18,19 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/',
-        element: <ChatPage />,
+        element: <HomePage />,
       },
       {
         path: '/bot/explore',
-        element: <BotExplorePage />,
+        element: <AdminRoute><BotExplorePage /></AdminRoute>,
       },
       {
         path: '/bot/new',
-        element: <BotEditPage />,
+        element: <AdminRoute><BotEditPage /></AdminRoute>,
       },
       {
         path: '/bot/edit/:botId',
-        element: <BotEditPage />,
+        element: <AdminRoute><BotEditPage /></AdminRoute>,
       },
       {
         path: '/bot/:botId',
@@ -44,10 +45,6 @@ const router = createBrowserRouter([
         element: <NotFound />,
       },
     ],
-  },
-  {
-    path: '/public/bot/:botId',
-    element: <PublicChatPage />,
   }
 ]);
 

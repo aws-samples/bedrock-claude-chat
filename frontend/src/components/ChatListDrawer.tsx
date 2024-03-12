@@ -32,6 +32,7 @@ import Menu from './Menu';
 import useBot from '../hooks/useBot';
 import DrawerItem from './DrawerItem';
 import ExpandableDrawerGroup from './ExpandableDrawerGroup';
+import { useAuth } from '../hooks/useAuth';
 
 type Props = BaseProps & {
   onSignOut: () => void;
@@ -178,6 +179,7 @@ const Item: React.FC<ItemProps> = (props) => {
 };
 
 const ChatListDrawer: React.FC<Props> = (props) => {
+  const { isAdmin } = useAuth();
   const { t } = useTranslation();
   const { opened, switchOpen } = useDrawer();
   const { conversations } = useConversation();
@@ -243,7 +245,7 @@ const ChatListDrawer: React.FC<Props> = (props) => {
     (conversationId: string) => {
       deleteConversation(conversationId).then(() => {
         newChat();
-        navigate('');
+        navigate(window.location.pathname.includes('/bot') ? window.location.pathname : '');
         setIsOpenDeleteModal(false);
         setDeleteTarget(undefined);
       });
@@ -294,19 +296,19 @@ const ChatListDrawer: React.FC<Props> = (props) => {
             opened ? 'visible w-64' : 'invisible w-0'
           } text-sm  text-white transition-width`}>
           <div className="absolute top-0 w-full overflow-y-auto overflow-x-hidden pb-12">
-            <DrawerItem
+            {window.location.pathname.startsWith('/bot') && <DrawerItem
               isActive={false}
               icon={<PiNotePencil />}
-              to=""
+              to={window.location.pathname}
               onClick={onClickNewChat}
               labelComponent={t('button.newChat')}
-            />
-            <DrawerItem
+            />}
+            {isAdmin && <DrawerItem
               isActive={false}
               icon={<PiCompass />}
               to="bot/explore"
               labelComponent={t('button.botConsole')}
-            />
+            />}
 
             <ExpandableDrawerGroup
               label={t('app.starredBots')}

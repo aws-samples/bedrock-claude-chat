@@ -1,4 +1,3 @@
-// import { Auth } from "aws-amplify";
 import { Auth } from 'aws-amplify';
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import useSWR, { SWRConfiguration } from 'swr';

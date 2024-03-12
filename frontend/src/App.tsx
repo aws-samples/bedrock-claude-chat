@@ -2,7 +2,7 @@ import React, { useCallback, useEffect } from 'react';
 import { PiList, PiPlus } from 'react-icons/pi';
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
 import ChatListDrawer from './components/ChatListDrawer';
-import { Authenticator, translations } from '@aws-amplify/ui-react';
+import { Authenticator, Loader, translations } from '@aws-amplify/ui-react';
 import { Amplify, I18n } from 'aws-amplify';
 import '@aws-amplify/ui-react/styles.css';
 import useDrawer from './hooks/useDrawer';
@@ -57,7 +57,7 @@ const App: React.FC = () => {
           </div>
         ),
       }}>
-      {({ signOut }) => (
+      {({ signOut, user }) => (
         <div className="relative flex h-screen w-screen bg-aws-paper">
           <ChatListDrawer
             onSignOut={() => {
@@ -94,7 +94,8 @@ const App: React.FC = () => {
               className="h-full overflow-hidden overflow-y-auto  text-aws-font-color"
               id="main">
               <SnackbarProvider>
-                <Outlet />
+
+                {user != null ? <Outlet /> : <Loader />}
               </SnackbarProvider>
             </div>
           </main>
