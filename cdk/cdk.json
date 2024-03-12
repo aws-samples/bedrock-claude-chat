@@ -58,8 +58,8 @@
     "identifyProviders": [
       {
         "service": "google",
-        "clientId": "googleProviderClientId",
-        "secretName": "googleAuthSecret"
+        "clientId": "",
+        "secretName": ""
       }
     ]
   }
