@@ -156,7 +156,9 @@ export class BedrockChatStack extends cdk.Stack {
     });
   }
 }
+
 export type Idp = ReturnType<typeof identifyProvider>;
+
 const identifyProvider = (construct: Construct) => {
   const providers: TProvider[] =
     construct.node.tryGetContext("identifyProviders");
@@ -180,6 +182,7 @@ const identifyProvider = (construct: Construct) => {
     });
     return Effect.runSync(result);
   };
+
   const getSupportedIndetityProviders = () => {
     return [...getProviders(), { service: "cognito" }].map(({ service }) => {
       switch (service) {
