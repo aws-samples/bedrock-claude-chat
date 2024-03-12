@@ -5,6 +5,7 @@ import en from './en';
 import ja from './ja';
 import ko from './ko';
 import zh from './zh';
+import fr from './fr'
 
 export const LANGUAGES: {
   value: string;
@@ -13,6 +14,10 @@ export const LANGUAGES: {
   {
     value: 'en',
     label: 'English',
+  },
+  {
+    value: 'fr',
+    label: 'French',
   },
   {
     value: 'ja',
@@ -33,6 +38,7 @@ const resources = {
   ja,
   ko,
   zh,
+  fr,
 };
 
 // Settings i18n
