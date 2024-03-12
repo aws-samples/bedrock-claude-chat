@@ -1,5 +1,5 @@
 import { CfnOutput, Duration } from "aws-cdk-lib";
-import { UserPool, UserPoolClient } from "aws-cdk-lib/aws-cognito";
+import { UserPool, UserPoolClient, CfnUserPoolGroup } from "aws-cdk-lib/aws-cognito";
 import { Construct } from "constructs";
 
 export interface AuthProps {}
@@ -37,5 +37,9 @@ export class Auth extends Construct {
 
     new CfnOutput(this, "UserPoolId", { value: userPool.userPoolId });
     new CfnOutput(this, "UserPoolClientId", { value: client.userPoolClientId });
+    new CfnUserPoolGroup(this, "AdminGroup", {
+      groupName: "admin",
+      userPoolId: userPool.userPoolId,
+    });
   }
 }
