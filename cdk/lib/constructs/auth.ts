@@ -5,6 +5,7 @@ import {
   UserPoolClient,
   UserPoolIdentityProviderGoogle,
 } from "aws-cdk-lib/aws-cognito";
+import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 
 import { Construct } from "constructs";
 import { Idp } from "../bedrock-chat-stack";
@@ -66,15 +67,18 @@ export class Auth extends Construct {
               "GoogleProvider",
               {
                 userPool: userPool,
-                clientId: SecretValue.secretsManager(provider.clientId, {
-                  jsonField: "clientId",
-                }).unsafeUnwrap(),
-                clientSecretValue: SecretValue.secretsManager(
-                  provider.clientSecret,
-                  {
-                    jsonField: "clientSecret",
-                  }
-                ),
+                clientId: secretsmanager.Secret.fromSecretNameV2(
+                  this,
+                  "GoogleClientId",
+                  provider.clientId
+                )
+                  .secretValue.unsafeUnwrap()
+                  .toString(),
+                clientSecretValue: secretsmanager.Secret.fromSecretNameV2(
+                  this,
+                  "GoogleSecret",
+                  provider.clientSecret
+                ).secretValue,
                 scopes: ["openid", "email"],
                 attributeMapping: {
                   email: ProviderAttribute.GOOGLE_EMAIL,
