@@ -11,9 +11,9 @@ import { Construct } from "constructs";
 import { Idp } from "../bedrock-chat-stack";
 
 export interface AuthProps {
-  origin: string;
-  uuid: string;
-  idp: Idp;
+  readonly origin: string;
+  readonly uuid: string;
+  readonly idp: Idp;
 }
 
 export class Auth extends Construct {
@@ -43,7 +43,7 @@ export class Auth extends Construct {
           userSrp: true,
         },
       };
-      if (props.idp.isExist()) return defaultProps;
+      if (!props.idp.isExist()) return defaultProps;
       return {
         ...defaultProps,
         oAuth: {
@@ -59,26 +59,28 @@ export class Auth extends Construct {
     const client = userPool.addClient(`Client`, clientProps);
 
     if (props.idp.isExist()) {
-      props.idp.getProviders().forEach((provider) => {
+      for (const provider of props.idp.getProviders()) {
         switch (provider.service) {
           case "google": {
+            const oidcSecretClient = secretsmanager.Secret.fromSecretNameV2(
+              this,
+              "GoogleClientId",
+              provider.clientId
+            );
+            const oidcSecret = secretsmanager.Secret.fromSecretNameV2(
+              this,
+              "GoogleSecret",
+              provider.clientSecret
+            );
             const googleProvider = new UserPoolIdentityProviderGoogle(
               this,
               "GoogleProvider",
               {
-                userPool: userPool,
-                clientId: secretsmanager.Secret.fromSecretNameV2(
-                  this,
-                  "GoogleClientId",
-                  provider.clientId
-                )
-                  .secretValue.unsafeUnwrap()
+                userPool,
+                clientId: oidcSecretClient.secretValue
+                  .unsafeUnwrap()
                   .toString(),
-                clientSecretValue: secretsmanager.Secret.fromSecretNameV2(
-                  this,
-                  "GoogleSecret",
-                  provider.clientSecret
-                ).secretValue,
+                clientSecretValue: oidcSecret.secretValue,
                 scopes: ["openid", "email"],
                 attributeMapping: {
                   email: ProviderAttribute.GOOGLE_EMAIL,
@@ -89,9 +91,9 @@ export class Auth extends Construct {
           }
           // set other providers
           default:
-            return null;
+            continue;
         }
-      });
+      }
       userPool.addDomain("UserPool", {
         cognitoDomain: {
           domainPrefix: props.uuid,
