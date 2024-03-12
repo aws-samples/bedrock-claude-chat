@@ -12,6 +12,7 @@ import {
 } from "aws-cdk-lib/aws-cloudfront";
 import { NodejsBuild } from "deploy-time-build";
 import { Auth } from "./auth";
+import { Idp } from "../bedrock-chat-stack";
 
 export interface FrontendProps {
   readonly accessLogBucket: IBucket;
@@ -83,13 +84,35 @@ export class Frontend extends Construct {
     webSocketApiEndpoint,
     userPoolDomainPrefixKey,
     auth,
+    idp,
   }: {
     backendApiEndpoint: string;
     webSocketApiEndpoint: string;
     userPoolDomainPrefixKey: string;
     auth: Auth;
+    idp: Idp;
   }) {
     const region = Stack.of(auth.userPool).region;
+
+    const buildEnvProps = (() => {
+      const defaultProps = {
+        VITE_APP_API_ENDPOINT: backendApiEndpoint,
+        VITE_APP_WS_ENDPOINT: webSocketApiEndpoint,
+        VITE_APP_USER_POOL_ID: auth.userPool.userPoolId,
+        VITE_APP_USER_POOL_CLIENT_ID: auth.client.userPoolClientId,
+        VITE_APP_REGION: region,
+        VITE_APP_USE_STREAMING: "true",
+      };
+
+      if (!idp.isExist()) return defaultProps;
+      const oAuthProps = {
+        VITE_APP_REDIRECT_SIGNIN_URL: this.getOrigin(),
+        VITE_APP_REDIRECT_SIGNOUT_URL: this.getOrigin(),
+        VITE_APP_COGNITO_DOMAIN: `${userPoolDomainPrefixKey}.auth.${region}.amazoncognito.com/`,
+        VITE_APP_SOCIAL_PROVIDERS: idp.getSocialProviders(),
+      };
+      return { ...defaultProps, ...oAuthProps };
+    })();
 
     new NodejsBuild(this, "ReactBuild", {
       assets: [
@@ -100,19 +123,7 @@ export class Frontend extends Construct {
         },
       ],
       buildCommands: ["npm run build"],
-      buildEnvironment: {
-        VITE_APP_API_ENDPOINT: backendApiEndpoint,
-        VITE_APP_WS_ENDPOINT: webSocketApiEndpoint,
-        VITE_APP_USER_POOL_ID: auth.userPool.userPoolId,
-        VITE_APP_USER_POOL_CLIENT_ID: auth.client.userPoolClientId,
-        VITE_APP_REGION: region,
-        // used for Google auth
-        VITE_APP_REDIRECT_SIGNIN_URL: this.getOrigin(),
-        VITE_APP_REDIRECT_SIGNOUT_URL: this.getOrigin(),
-        VITE_APP_COGNITO_DOMAIN: `${userPoolDomainPrefixKey}.auth.${region}.amazoncognito.com/`,
-        // here
-        VITE_APP_USE_STREAMING: "true",
-      },
+      buildEnvironment: buildEnvProps,
       destinationBucket: this.assetBucket,
       distribution: this.cloudFrontWebDistribution,
       outputSourceDirectory: "dist",

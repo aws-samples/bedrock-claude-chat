@@ -19,7 +19,6 @@ import { VectorStore } from "./constructs/vectorstore";
 import { UsageAnalysis } from "./constructs/usage-analysis";
 import { randomUUID } from "crypto";
 import { Effect, pipe } from "effect";
-import { as } from "effect/Option";
 
 export interface BedrockChatStackProps extends StackProps {
   readonly bedrockRegion: string;
@@ -118,6 +117,7 @@ export class BedrockChatStack extends cdk.Stack {
       webSocketApiEndpoint: websocket.apiEndpoint,
       userPoolDomainPrefixKey: uuid,
       auth,
+      idp,
     });
 
     documentBucket.addCorsRule({
@@ -202,10 +202,16 @@ const identifyProvider = (construct: Construct) => {
     });
   };
 
+  const getSocialProviders = () =>
+    getProviders()
+      .map(({ service }) => service)
+      .join(",");
+
   return {
     isExist,
     getProviders,
     getSupportedIndetityProviders,
+    getSocialProviders,
   };
 };
 
