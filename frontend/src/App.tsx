@@ -3,7 +3,6 @@ import { PiList, PiPlus } from 'react-icons/pi';
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
 import ChatListDrawer from './components/ChatListDrawer';
 import { Authenticator, translations } from '@aws-amplify/ui-react';
-import { SocialProvider } from '@aws-amplify/ui';
 import { Amplify, I18n } from 'aws-amplify';
 import '@aws-amplify/ui-react/styles.css';
 import useDrawer from './hooks/useDrawer';
@@ -15,6 +14,7 @@ import useChat from './hooks/useChat';
 import SnackbarProvider from './providers/SnackbarProvider';
 import { useTranslation } from 'react-i18next';
 import './i18n';
+import { validateSocialProvider } from './libs/validateSocialProvider';
 
 const App: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -54,11 +54,6 @@ const App: React.FC = () => {
     navigate('');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const validateSocialProvider = (
-    provider: string
-  ): provider is SocialProvider =>
-    ['google', 'facebook', 'amazon', 'apple'].includes(provider);
 
   const socialProviderFromEnv =
     import.meta.env.VITE_APP_SOCIAL_PROVIDERS?.split(',').filter(

@@ -37,9 +37,10 @@ export class BedrockChatStack extends cdk.Stack {
     const vectorStore = new VectorStore(this, "VectorStore", {
       vpc: vpc,
     });
-    const uuid = randomUUID();
     const idp = identifyProvider(this);
-
+    const userPoolDomainPrefixKey: string = this.node.tryGetContext(
+      "userPoolDomainPrefix"
+    );
     const dbConfig = {
       host: vectorStore.cluster.clusterEndpoint.hostname,
       username: vectorStore.secret
@@ -82,7 +83,7 @@ export class BedrockChatStack extends cdk.Stack {
 
     const auth = new Auth(this, "Auth", {
       origin: frontend.getOrigin(),
-      uuid: uuid,
+      userPoolDomainPrefixKey,
       idp,
     });
     const database = new Database(this, "Database", {
@@ -115,7 +116,7 @@ export class BedrockChatStack extends cdk.Stack {
     frontend.buildViteApp({
       backendApiEndpoint: backendApi.api.apiEndpoint,
       webSocketApiEndpoint: websocket.apiEndpoint,
-      userPoolDomainPrefixKey: uuid,
+      userPoolDomainPrefixKey,
       auth,
       idp,
     });

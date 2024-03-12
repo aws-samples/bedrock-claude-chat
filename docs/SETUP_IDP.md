@@ -21,7 +21,15 @@ Review and store the secret.
 
 # Step 3: Update cdk.json
 
-In your cdk.json file, add the configuration for your identity providers like so:
+In your cdk.json file, add the configuration for your identity providers
+
+## Attention
+
+### Uniqueness
+
+The userPoolDomainPrefix must be globally unique across all Amazon Cognito users. If you choose a prefix that's already in use by another AWS account, the creation of the user pool domain will fail. It's a good practice to include identifiers, project names, or environment names in the prefix to ensure uniqueness.
+
+like so:
 
 ```json
 {
@@ -30,10 +38,11 @@ In your cdk.json file, add the configuration for your identity providers like so
     "identityProviders": [
       {
         "service": "google",
-        "clientIdKey": "<YOUR_GOOGLE_CLIENT_ID_SECRET_NAME>",
-        "secretName": "<YOUR_GOOGLE_CLIENT_SECRET_NAME>"
+        "clientId": "<YOUR_GOOGLE_CLIENT_ID_SECRET_NAME>",
+        "clientSecret": "<YOUR_GOOGLE_CLIENT_SECRET_NAME>"
       }
-    ]
+    ],
+    "userPoolDomainPrefix": "<UNIQUE_DOMAIN_PREFIX_FOR_YOUR_USER_POOL>"
   }
 }
 ```

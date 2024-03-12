@@ -1,18 +1,17 @@
-import { CfnOutput, SecretValue, Duration } from "aws-cdk-lib";
+import { CfnOutput, Duration, SecretValue } from "aws-cdk-lib";
 import {
   ProviderAttribute,
   UserPool,
   UserPoolClient,
   UserPoolIdentityProviderGoogle,
 } from "aws-cdk-lib/aws-cognito";
-import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 
 import { Construct } from "constructs";
 import { Idp } from "../bedrock-chat-stack";
 
 export interface AuthProps {
   readonly origin: string;
-  readonly uuid: string;
+  readonly userPoolDomainPrefixKey: string;
   readonly idp: Idp;
 }
 
@@ -62,31 +61,28 @@ export class Auth extends Construct {
       for (const provider of props.idp.getProviders()) {
         switch (provider.service) {
           case "google": {
-            const oidcSecretClient = secretsmanager.Secret.fromSecretNameV2(
-              this,
-              "GoogleClientId",
-              provider.clientId
-            );
-            const oidcSecret = secretsmanager.Secret.fromSecretNameV2(
-              this,
-              "GoogleSecret",
-              provider.clientSecret
-            );
             const googleProvider = new UserPoolIdentityProviderGoogle(
               this,
               "GoogleProvider",
               {
                 userPool,
-                clientId: oidcSecretClient.secretValue
-                  .unsafeUnwrap()
-                  .toString(),
-                clientSecretValue: oidcSecret.secretValue,
+                clientId: SecretValue.secretsManager(provider.clientId, {
+                  jsonField: "clientId",
+                }).unsafeUnwrap(),
+                clientSecretValue: SecretValue.secretsManager(
+                  provider.clientSecret,
+                  {
+                    jsonField: "clientSecret",
+                  }
+                ),
+
                 scopes: ["openid", "email"],
                 attributeMapping: {
                   email: ProviderAttribute.GOOGLE_EMAIL,
                 },
               }
             );
+
             client.node.addDependency(googleProvider);
           }
           // set other providers
@@ -94,9 +90,10 @@ export class Auth extends Construct {
             continue;
         }
       }
+
       userPool.addDomain("UserPool", {
         cognitoDomain: {
-          domainPrefix: props.uuid,
+          domainPrefix: props.userPoolDomainPrefixKey,
         },
       });
     }

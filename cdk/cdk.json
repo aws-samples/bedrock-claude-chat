@@ -55,12 +55,7 @@
       "8000:0000:0000:0000:0000:0000:0000:0000/1"
     ],
     "enableUsageAnalysis": false,
-    "identifyProviders": [
-      {
-        "service": "google",
-        "clientId": "",
-        "secretName": ""
-      }
-    ]
+    "identifyProviders": [],
+    "userPoolDomainPrefix": ""
   }
 }
