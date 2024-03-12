@@ -1,12 +1,12 @@
 # Step 1: Create a Google OAuth 2.0 Client
 
-Go to the Google Developer Console.
-Create a new project or select an existing one.
-Navigate to "Credentials", then click on "Create Credentials" and choose "OAuth client ID".
-Configure the consent screen if prompted.
-For the application type, select "Web application".
-Add authorized redirect URIs. These will be the Cognito URLs which Google will redirect to after authentication. Typically, they look like https://${your_domain}.auth.region.amazoncognito.com/oauth2/idpresponse. You'll set the exact value in the Cognito setup later.
-Once created, note down the Client ID and Client Secret.
+1. Go to the Google Developer Console.
+2. Create a new project or select an existing one.
+3. Navigate to "Credentials", then click on "Create Credentials" and choose "OAuth client ID".
+4. Configure the consent screen if prompted.
+5. For the application type, select "Web application".
+6. Add authorized redirect URIs. These will be the Cognito URLs which Google will redirect to after authentication. Typically, they look like https://${your_domain}.auth.region.amazoncognito.com/oauth2/idpresponse. You'll set the exact value in the Cognito setup later.[See Step5](# Step 5: Update Google OAuth Client with Cognito Redirect URIs)
+7. Once created, note down the Client ID and Client Secret.
 
 # Step 2: Store Google OAuth Credentials in AWS Secrets Manager
 
@@ -57,4 +57,4 @@ cdk deploy --require-approval never --all
 
 # Step 5: Update Google OAuth Client with Cognito Redirect URIs
 
-After deploying your stack, go back to the Google Developer Console and update the OAuth client with the correct redirect URIs. You can find these URIs in the Cognito console under the domain name configuration for your user pool.
+fter deploying the stack, the AuthApprovedRedirectURI is output in CfnOutput. go back to the Google Developer Console and update the OAuth client with the correct redirect URIs. You can find these URIs in the Cognito console under the domain name configuration for your user pool.
