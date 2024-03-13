@@ -19,8 +19,8 @@
 3. 「他のタイプのシークレット」を選択します。
 4. Google OAuth clientId と clientSecret をキーと値のペアとして入力します。
 
-- キー: clientId, 値: <YOUR_GOOGLE_CLIENT_ID>
-- キー: clientSecret, 値: <YOUR_GOOGLE_CLIENT_SECRET>
+   1. キー: clientId, 値: <YOUR_GOOGLE_CLIENT_ID>
+   2. キー: clientSecret, 値: <YOUR_GOOGLE_CLIENT_SECRET>
 
 5. シークレットの名前と説明を入力して進んでください。CDK コードで必要になるので、シークレット名を覚えておいてください。例：googleOAuthCredentials。
 6. シークレットを確認して保存します。

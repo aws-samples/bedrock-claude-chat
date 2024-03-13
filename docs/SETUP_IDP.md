@@ -19,8 +19,8 @@ Currently we support Google for external Idp.
 3. Select "Other type of secrets".
 4. Input the Google OAuth clientId and clientSecret as key-value pairs.
 
-- Key: clientId, Value: <YOUR_GOOGLE_CLIENT_ID>
-- Key: clientSecret, Value: <YOUR_GOOGLE_CLIENT_SECRET>
+   1. Key: clientId, Value: <YOUR_GOOGLE_CLIENT_ID>
+   2. Key: clientSecret, Value: <YOUR_GOOGLE_CLIENT_SECRET>
 
 5. Follow the prompts to name and describe the secret. Remember the secret name as you will need it in your CDK code. For example, googleOAuthCredentials.
 6. Review and store the secret.
