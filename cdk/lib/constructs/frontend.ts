@@ -12,7 +12,7 @@ import {
 } from "aws-cdk-lib/aws-cloudfront";
 import { NodejsBuild } from "deploy-time-build";
 import { Auth } from "./auth";
-import { Idp } from "../bedrock-chat-stack";
+import { Idp } from "../utils/identifyProvider";
 
 export interface FrontendProps {
   readonly accessLogBucket: IBucket;

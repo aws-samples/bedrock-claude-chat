@@ -7,7 +7,7 @@ import {
 } from "aws-cdk-lib/aws-cognito";
 
 import { Construct } from "constructs";
-import { Idp } from "../bedrock-chat-stack";
+import { Idp } from "../utils/identifyProvider";
 
 export interface AuthProps {
   readonly origin: string;
