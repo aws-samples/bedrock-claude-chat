@@ -1,4 +1,4 @@
-import { CfnOutput, RemovalPolicy, StackProps, aws_cognito } from "aws-cdk-lib";
+import { CfnOutput, RemovalPolicy, StackProps } from "aws-cdk-lib";
 import {
   BlockPublicAccess,
   Bucket,
@@ -17,8 +17,7 @@ import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { Embedding } from "./constructs/embedding";
 import { VectorStore } from "./constructs/vectorstore";
 import { UsageAnalysis } from "./constructs/usage-analysis";
-import { randomUUID } from "crypto";
-import { Effect, pipe } from "effect";
+import { identifyProvider } from "./utils/identifyProvider";
 
 export interface BedrockChatStackProps extends StackProps {
   readonly bedrockRegion: string;
@@ -148,7 +147,6 @@ export class BedrockChatStack extends cdk.Stack {
         sourceDatabase: database,
       });
     }
-
     new CfnOutput(this, "DocumentBucketName", {
       value: documentBucket.bucketName,
     });
@@ -157,99 +155,3 @@ export class BedrockChatStack extends cdk.Stack {
     });
   }
 }
-
-export type Idp = ReturnType<typeof identifyProvider>;
-
-const identifyProvider = (construct: Construct) => {
-  const providers: TProvider[] =
-    construct.node.tryGetContext("identifyProviders");
-
-  const isExist = () => providers.length > 0;
-
-  const getProviders = (): TProvider[] => {
-    const program = pipe(
-      providers,
-      isIdpAsArray,
-      Effect.flatMap(validateProviders)
-    );
-    const result = Effect.match(program, {
-      onSuccess: (providers) => providers,
-      onFailure: (error: Errors) => {
-        if (error.type === "NotFoundIdpArray") return [] as TProvider[];
-        if (error.type === "InvalidSocialProvider")
-          throw new Error("InvalidSocialProvider");
-        return error;
-      },
-    });
-    return Effect.runSync(result);
-  };
-
-  const getSupportedIndetityProviders = () => {
-    return [...getProviders(), { service: "cognito" }].map(({ service }) => {
-      switch (service) {
-        case "google":
-          return aws_cognito.UserPoolClientIdentityProvider.GOOGLE;
-        case "facebook":
-          return aws_cognito.UserPoolClientIdentityProvider.FACEBOOK;
-        case "amazon":
-          return aws_cognito.UserPoolClientIdentityProvider.AMAZON;
-        case "apple":
-          return aws_cognito.UserPoolClientIdentityProvider.APPLE;
-        case "cognito":
-          return aws_cognito.UserPoolClientIdentityProvider.COGNITO;
-        default:
-          throw new Error(`Invalid identity provider: ${service}`);
-      }
-    });
-  };
-
-  const getSocialProviders = () =>
-    getProviders()
-      .map(({ service }) => service)
-      .join(",");
-
-  return {
-    isExist,
-    getProviders,
-    getSupportedIndetityProviders,
-    getSocialProviders,
-  };
-};
-
-type TProvider = {
-  service: string;
-  clientId: string;
-  clientSecret: string;
-};
-
-const validateProviders = (providers: TProvider[]) =>
-  Effect.all(providers.map(validateSocialProvider));
-
-const validateSocialProvider = (
-  provider: TProvider
-):
-  | Effect.Effect<never, InvalidSocialProvider, never>
-  | Effect.Effect<TProvider, never, never> =>
-  !["google", "facebook", "amazon", "apple"].includes(provider.service)
-    ? Effect.fail({
-        type: "InvalidSocialProvider",
-      })
-    : Effect.succeed(provider);
-
-const isIdpAsArray = (
-  providers: TProvider[]
-):
-  | Effect.Effect<TProvider[], never, never>
-  | Effect.Effect<never, NotFoundIdpArray, never> =>
-  Array.isArray(providers)
-    ? Effect.succeed(providers as TProvider[])
-    : Effect.fail({ type: "NotFoundIdpArray" });
-
-type NotFoundIdpArray = {
-  type: "NotFoundIdpArray";
-};
-
-type InvalidSocialProvider = {
-  type: "InvalidSocialProvider";
-};
-type Errors = NotFoundIdpArray | InvalidSocialProvider;
