@@ -1,10 +1,9 @@
 import { Effect, pipe } from "effect";
 import { aws_cognito } from "aws-cdk-lib";
-import { Construct } from "constructs";
 
 export type Idp = ReturnType<typeof identifyProvider>;
 
-type TProvider = {
+export type TProvider = {
   service: string;
   clientId: string;
   clientSecret: string;
@@ -19,10 +18,7 @@ type InvalidSocialProvider = {
 };
 type Errors = NotFoundIdpArray | InvalidSocialProvider;
 
-export const identifyProvider = (construct: Construct) => {
-  const providers: TProvider[] =
-    construct.node.tryGetContext("identifyProviders");
-
+export const identifyProvider = (providers: TProvider[]) => {
   const isExist = () => providers.length > 0;
 
   const getProviders = (): TProvider[] => {

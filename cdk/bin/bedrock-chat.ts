@@ -3,6 +3,7 @@ import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
 import { BedrockChatStack } from "../lib/bedrock-chat-stack";
 import { FrontendWafStack } from "../lib/frontend-waf-stack";
+import { TProvider } from "../lib/utils/identifyProvider";
 
 const app = new cdk.App();
 
@@ -28,6 +29,8 @@ const waf = new FrontendWafStack(app, `FrontendWafStack`, {
   allowedIpV6AddressRanges: ALLOWED_IP_V6_ADDRESS_RANGES,
 });
 
+const providers: TProvider[] = app.node.tryGetContext("identifyProviders");
+
 new BedrockChatStack(app, `BedrockChatStack`, {
   env: {
     region: process.env.CDK_DEFAULT_REGION,
@@ -36,4 +39,5 @@ new BedrockChatStack(app, `BedrockChatStack`, {
   bedrockRegion: BEDROCK_REGION,
   webAclId: waf.webAclArn.value,
   enableUsageAnalysis: ENABLE_USAGE_ANALYSIS,
+  providers,
 });

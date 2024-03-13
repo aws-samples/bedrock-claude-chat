@@ -17,12 +17,13 @@ import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { Embedding } from "./constructs/embedding";
 import { VectorStore } from "./constructs/vectorstore";
 import { UsageAnalysis } from "./constructs/usage-analysis";
-import { identifyProvider } from "./utils/identifyProvider";
+import { TProvider, identifyProvider } from "./utils/identifyProvider";
 
 export interface BedrockChatStackProps extends StackProps {
   readonly bedrockRegion: string;
   readonly webAclId: string;
   readonly enableUsageAnalysis: boolean;
+  readonly providers: TProvider[];
 }
 
 export class BedrockChatStack extends cdk.Stack {
@@ -36,7 +37,7 @@ export class BedrockChatStack extends cdk.Stack {
     const vectorStore = new VectorStore(this, "VectorStore", {
       vpc: vpc,
     });
-    const idp = identifyProvider(this);
+    const idp = identifyProvider(props.providers);
     const userPoolDomainPrefixKey: string = this.node.tryGetContext(
       "userPoolDomainPrefix"
     );
