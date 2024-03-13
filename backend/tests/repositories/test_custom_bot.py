@@ -30,6 +30,7 @@ class TestCustomBotRepository(unittest.TestCase):
             last_used_time=1627984879.9,
             is_pinned=False,
             public_bot_id=None,
+            model_id="claude-v3-sonnet",
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -49,6 +50,7 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(bot.instruction, "Test Bot Prompt")
         self.assertEqual(bot.create_time, 1627984879.9)
         self.assertEqual(bot.last_used_time, 1627984879.9)
+        self.assertEqual(bot.model_id, "claude-v3-sonnet")
         self.assertEqual(bot.is_pinned, False)
         self.assertEqual(bot.knowledge.source_urls, ["https://aws.amazon.com/"])
         self.assertEqual(bot.knowledge.sitemap_urls, ["https://aws.amazon.sitemap.xml"])
@@ -80,6 +82,7 @@ class TestCustomBotRepository(unittest.TestCase):
             instruction="Test Bot Prompt",
             create_time=1627984879.9,
             last_used_time=1627984879.9,
+            model_id="claude-v3-sonnet",
             is_pinned=False,
             public_bot_id=None,
             knowledge=KnowledgeModel(
@@ -110,6 +113,7 @@ class TestCustomBotRepository(unittest.TestCase):
             last_used_time=1627984879.9,
             is_pinned=False,
             public_bot_id=None,
+            model_id="claude-v3-sonnet",
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/jp"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml/jp"],
@@ -126,6 +130,7 @@ class TestCustomBotRepository(unittest.TestCase):
             title="Updated Title",
             description="Updated Description",
             instruction="Updated Instruction",
+            model_id="claude-v2",
             knowledge=KnowledgeModel(
                 source_urls=["https://updated.com/"],
                 sitemap_urls=["https://updated.xml"],
@@ -143,6 +148,7 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(bot.knowledge.sitemap_urls, ["https://updated.xml"])
         self.assertEqual(bot.knowledge.filenames, ["updated.txt"])
         self.assertEqual(bot.sync_status, "RUNNING")
+        self.assertEqual(bot.model_id, "claude-v2")
         self.assertEqual(bot.sync_status_reason, "reason")
 
         delete_bot_by_id("user1", "1")

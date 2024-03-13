@@ -13,18 +13,23 @@ import Alert from '../components/Alert';
 import KnowledgeFileUploader from '../components/KnowledgeFileUploader';
 import { BotFile } from '../@types/bot';
 import { ulid } from 'ulid';
+import useModel from '../hooks/useModel';
+import { twMerge } from 'tailwind-merge';
+import { InputLabel } from '../components/InputLabel';
 
 const BotEditPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { botId: paramsBotId } = useParams();
   const { getMyBot, registerBot, updateBot } = useBot();
+  const { availableModels } = useModel();
 
   const [isLoading, setIsLoading] = useState(false);
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [instruction, setInstruction] = useState('');
+  const [modelId, setModelId] = useState(availableModels[0].modelId);
   const [urls, setUrls] = useState<string[]>(['']);
   const [files, setFiles] = useState<BotFile[]>([]);
   const [addedFilenames, setAddedFilenames] = useState<string[]>([]);
@@ -49,6 +54,7 @@ const BotEditPage: React.FC = () => {
           setTitle(bot.title);
           setDescription(bot.description);
           setInstruction(bot.instruction);
+          setModelId(bot.modelId);
           setUrls(
             bot.knowledge.sourceUrls.length === 0
               ? ['']
@@ -204,6 +210,7 @@ const BotEditPage: React.FC = () => {
       id: botId,
       title,
       description,
+      modelId,
       instruction,
       knowledge: {
         sourceUrls: urls.filter((s) => s !== ''),
@@ -223,6 +230,7 @@ const BotEditPage: React.FC = () => {
     botId,
     title,
     description,
+    modelId,
     instruction,
     urls,
     files,
@@ -235,6 +243,7 @@ const BotEditPage: React.FC = () => {
       updateBot(botId, {
         title,
         description,
+        modelId,
         instruction,
         knowledge: {
           sourceUrls: urls.filter((s) => s !== ''),
@@ -259,6 +268,7 @@ const BotEditPage: React.FC = () => {
     title,
     description,
     instruction,
+    modelId,
     urls,
     addedFilenames,
     deletedFilenames,
@@ -301,6 +311,27 @@ const BotEditPage: React.FC = () => {
                 value={description}
                 onChange={setDescription}
               />
+              <div className={`flex flex-col`}>
+                <InputLabel>{t('bot.item.model')}</InputLabel>
+                <div
+                  className={twMerge(
+                    'flex justify-center gap-2 rounded-lg border border-light-gray bg-light-gray p-1 text-sm'
+                  )}>
+                  {availableModels.map((availableModel) => (
+                    <Button
+                      key={availableModel.modelId}
+                      className={twMerge(
+                        'flex w-40 flex-1 items-center rounded-lg p-2',
+                        modelId === availableModel.modelId
+                          ? ''
+                          : 'border-light-gray bg-white text-dark-gray'
+                      )}
+                      onClick={() => setModelId(availableModel.modelId)}
+                      children={<span>{availableModel.label}</span>}
+                    />
+                  ))}
+                </div>
+              </div>
               <div className="relative mt-3">
                 <Button
                   className="absolute -top-3 right-0 text-xs"

@@ -40,6 +40,7 @@ def store_bot(user_id: str, custom_bot: BotModel):
         "IsPinned": custom_bot.is_pinned,
         "Knowledge": custom_bot.knowledge.model_dump(),
         "SyncStatus": custom_bot.sync_status,
+        "ModelId": custom_bot.model_id,
         "SyncStatusReason": custom_bot.sync_status_reason,
         "LastExecId": custom_bot.sync_last_exec_id,
     }
@@ -52,6 +53,7 @@ def update_bot(
     user_id: str,
     bot_id: str,
     title: str,
+    model_id: str,
     description: str,
     instruction: str,
     knowledge: KnowledgeModel,
@@ -67,13 +69,14 @@ def update_bot(
     try:
         response = table.update_item(
             Key={"PK": user_id, "SK": compose_bot_id(user_id, bot_id)},
-            UpdateExpression="SET Title = :title, Description = :description, Instruction = :instruction, Knowledge = :knowledge, SyncStatus = :sync_status, SyncStatusReason = :sync_status_reason",
+            UpdateExpression="SET Title = :title, Description = :description, ModelId = :modelId, Instruction = :instruction, Knowledge = :knowledge, SyncStatus = :sync_status, SyncStatusReason = :sync_status_reason",
             ExpressionAttributeValues={
                 ":title": title,
                 ":description": description,
                 ":instruction": instruction,
                 ":knowledge": knowledge.model_dump(),
                 ":sync_status": sync_status,
+                ":modelId": model_id,
                 ":sync_status_reason": sync_status_reason,
             },
             ReturnValues="ALL_NEW",
@@ -402,6 +405,7 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
         create_time=float(item["CreateTime"]),
         last_used_time=float(item["LastBotUsed"]),
         is_pinned=item["IsPinned"],
+        model_id=item["ModelId"] if "ModelId" in item else "claude-v3-sonnet",
         public_bot_id=None if "PublicBotId" not in item else item["PublicBotId"],
         knowledge=KnowledgeModel(**item["Knowledge"]),
         sync_status=item["SyncStatus"],
@@ -432,6 +436,7 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
         instruction=item["Instruction"],
         create_time=float(item["CreateTime"]),
         last_used_time=float(item["LastBotUsed"]),
+        model_id=item["ModelId"] if "ModelId" in item else "claude-v3-sonnet",
         is_pinned=item["IsPinned"],
         public_bot_id=item["PublicBotId"],
         knowledge=KnowledgeModel(**item["Knowledge"]),

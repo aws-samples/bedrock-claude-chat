@@ -14,7 +14,6 @@ import {
 } from 'react-icons/pi';
 import Button from '../components/Button';
 import { useTranslation } from 'react-i18next';
-import SwitchBedrockModel from '../components/SwitchBedrockModel';
 import useBot from '../hooks/useBot';
 import useConversation from '../hooks/useConversation';
 import ButtonPopover from '../components/PopoverMenu';
@@ -43,10 +42,10 @@ const ChatPage: React.FC = () => {
     setCurrentMessageId,
     regenerate,
     getPostedModel,
-    loadingConversation,
   } = useChat();
 
   const { getBotId } = useConversation();
+  const { disabledImageUpload, availableModels } = useModel();
 
   const { scrollToBottom, scrollToTop } = useScroll();
 
@@ -106,9 +105,10 @@ const ChatPage: React.FC = () => {
       ? {
           botId: botId,
           hasKnowledge: bot?.hasKnowledge ?? false,
+          modelId: bot?.modelId ?? availableModels[0]?.modelId,
         }
       : undefined;
-  }, [bot?.hasKnowledge, botId]);
+  }, [bot?.hasKnowledge, bot?.modelId, botId, availableModels]);
 
   const onSend = useCallback(
     (content: string, base64EncodedImages?: string[]) => {
@@ -209,7 +209,6 @@ const ChatPage: React.FC = () => {
     navigate(`/bot/edit/${bot?.id}`);
   }, [bot?.id, navigate]);
 
-  const { disabledImageUpload } = useModel();
   const [dndMode, setDndMode] = useState(false);
   const onDragOver: React.DragEventHandler<HTMLDivElement> = useCallback(
     (e) => {
@@ -290,31 +289,20 @@ const ChatPage: React.FC = () => {
       </div>
       <hr className="w-full border-t border-gray" />
       <div className="pb-52 lg:pb-40">
-        {messages.length === 0 ? (
-          <div className="relative flex w-full justify-center">
-            {!loadingConversation && (
-              <SwitchBedrockModel className="mt-3 w-min" />
-            )}
-            <div className="absolute mx-3 my-20 flex items-center justify-center text-4xl font-bold text-gray">
-              {t('app.name')}
-            </div>
+        {messages.map((message, idx) => (
+          <div
+            key={idx}
+            className={`${
+              message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
+            }`}>
+            <ChatMessage
+              chatContent={message}
+              onChangeMessageId={onChangeCurrentMessageId}
+              onSubmit={onSubmitEditedContent}
+            />
+            <div className="w-full border-b border-aws-squid-ink/10"></div>
           </div>
-        ) : (
-          messages.map((message, idx) => (
-            <div
-              key={idx}
-              className={`${
-                message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
-              }`}>
-              <ChatMessage
-                chatContent={message}
-                onChangeMessageId={onChangeCurrentMessageId}
-                onSubmit={onSubmitEditedContent}
-              />
-              <div className="w-full border-b border-aws-squid-ink/10"></div>
-            </div>
-          ))
-        )}
+        ))}
         {hasError && (
           <div className="mb-12 mt-2 flex flex-col items-center">
             <div className="flex items-center font-bold text-red">

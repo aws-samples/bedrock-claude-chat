@@ -1,4 +1,5 @@
 export type BotKind = 'private' | 'mixed';
+export type Model = 'claude-instant-v1' | 'claude-v2' | 'claude-v3-sonnet';
 
 export type BotMeta = {
   id: string;
@@ -36,12 +37,14 @@ export type BotListItem = BotMeta & {
 
 export type BotDetails = BotMeta & {
   instruction: string;
+  modelId: Model;
   knowledge: BotKnowledge;
   syncStatusReason: string;
 };
 
 export type BotSummary = BotMeta & {
   hasKnowledge: boolean;
+  modelId: Model;
 };
 
 export type BotFile = {
@@ -56,6 +59,7 @@ export type RegisterBotRequest = {
   title: string;
   instruction: string;
   description?: string;
+  modelId?: Model;
   knowledge?: BotKnowledge;
 };
 
@@ -65,6 +69,7 @@ export type UpdateBotRequest = {
   title: string;
   instruction: string;
   description?: string;
+  modelId?: Model;
   knowledge?: BotKnowledgeDiff;
 };
 
@@ -73,6 +78,7 @@ export type UpdateBotResponse = {
   title: string;
   instruction: string;
   description: string;
+  modelId?: Model;
   knowledge?: BotKnowledge;
 };
 

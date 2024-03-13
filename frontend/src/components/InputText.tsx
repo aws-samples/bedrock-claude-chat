@@ -1,4 +1,5 @@
 import React, { HTMLInputTypeAttribute } from 'react';
+import { InputLabel } from './InputLabel';
 
 type Props = {
   className?: string;
@@ -23,9 +24,7 @@ const InputText: React.FC<Props> = (props) => {
         }}
       />
       {props.label && (
-        <div className="order-first text-sm text-dark-gray peer-focus:font-semibold peer-focus:italic peer-focus:text-aws-font-color">
-          {props.label}
-        </div>
+        <InputLabel>{props.label}</InputLabel>
       )}
       {props.hint && (
         <div className="mt-0.5 text-xs text-gray">{props.hint}</div>

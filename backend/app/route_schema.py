@@ -103,6 +103,7 @@ class BotInput(BaseSchema):
     title: str
     instruction: str
     description: str | None
+    model_id: str | None
     knowledge: Knowledge | None
 
 
@@ -110,6 +111,7 @@ class BotModifyInput(BaseSchema):
     title: str
     instruction: str
     description: str | None
+    model_id: str | None
     knowledge: KnowledgeDiffInput | None
 
 
@@ -118,6 +120,7 @@ class BotModifyOutput(BaseSchema):
     title: str
     instruction: str
     description: str
+    model_id: str
     knowledge: Knowledge
 
 
@@ -132,6 +135,7 @@ class BotOutput(BaseSchema):
     is_pinned: bool
     # Whether the bot is owned by the user
     owned: bool
+    model_id: str
     knowledge: Knowledge
     sync_status: type_sync_status
     sync_status_reason: str
@@ -157,6 +161,7 @@ class BotSummaryOutput(BaseSchema):
     id: str
     title: str
     description: str
+    model_id: str
     create_time: float
     last_used_time: float
     is_pinned: bool

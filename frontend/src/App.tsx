@@ -49,7 +49,6 @@ const App: React.FC = () => {
 
   return (
     <Authenticator
-      hideSignUp
       components={{
         Header: () => (
           <div className="mb-5 mt-10 flex justify-center text-3xl text-aws-font-color">

@@ -224,6 +224,7 @@ def get_private_bot(request: Request, bot_id: str):
         last_used_time=bot.last_used_time,
         is_public=True if bot.public_bot_id else False,
         is_pinned=bot.is_pinned,
+        model_id=bot.model_id,
         owned=True,
         knowledge=Knowledge(
             source_urls=bot.knowledge.source_urls,

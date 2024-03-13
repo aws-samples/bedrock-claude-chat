@@ -101,6 +101,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             title=bot_input.title,
             description=bot_input.description if bot_input.description else "",
             instruction=bot_input.instruction,
+            model_id=bot_input.model_id if bot_input.model_id else "claude-v3-sonnet",
             create_time=current_time,
             last_used_time=current_time,
             public_bot_id=None,
@@ -167,6 +168,7 @@ def modify_owned_bot(
         user_id,
         bot_id,
         title=modify_input.title,
+        model_id=modify_input.model_id if modify_input.model_id else "claude-v3-sonnet",
         instruction=modify_input.instruction,
         description=modify_input.description if modify_input.description else "",
         knowledge=KnowledgeModel(
@@ -221,6 +223,7 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
             is_pinned=bot.is_pinned,
             is_public=True if bot.public_bot_id else False,
             owned=True,
+            model_id=bot.model_id,
             sync_status=bot.sync_status,
             has_knowledge=(
                 len(bot.knowledge.source_urls) > 0

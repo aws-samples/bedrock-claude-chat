@@ -41,6 +41,7 @@ class BotModel(BaseModel):
     instruction: str
     create_time: float
     last_used_time: float
+    model_id: str
     # This can be used as the bot is public or not. Also used for GSI PK
     public_bot_id: str | None
     is_pinned: bool

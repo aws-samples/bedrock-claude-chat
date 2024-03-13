@@ -5,9 +5,9 @@ import {
   MessageContent,
   MessageContentWithChildren,
   MessageMap,
-  Model,
   PostMessageRequest,
 } from '../@types/conversation';
+
 import useConversation from './useConversation';
 import { create } from 'zustand';
 import usePostMessageStreaming from './usePostMessageStreaming';
@@ -16,7 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import { ulid } from 'ulid';
 import { convertMessageMapToArray } from '../utils/MessageUtils';
 import { useTranslation } from 'react-i18next';
-import useModel from './useModel';
+import { Model } from '../@types/bot';
 
 type ChatStateType = {
   [id: string]: MessageMap;
@@ -24,6 +24,7 @@ type ChatStateType = {
 
 type BotInputType = {
   botId: string;
+  modelId: Model;
   hasKnowledge: boolean;
 };
 
@@ -205,7 +206,6 @@ const useChat = () => {
   const navigate = useNavigate();
 
   const { post: postStreaming } = usePostMessageStreaming();
-  const { modelId, setModelId } = useModel();
 
   const conversationApi = useConversationApi();
   const {
@@ -241,7 +241,6 @@ const useChat = () => {
     if (conversationId && data?.id === conversationId) {
       setMessages(conversationId, data.messageMap);
       setCurrentMessageId(data.lastMessageId);
-      setModelId(getPostedModel());
     }
   }, [
     conversationId,
@@ -249,7 +248,6 @@ const useChat = () => {
     getPostedModel,
     setCurrentMessageId,
     setMessages,
-    setModelId,
   ]);
 
   useEffect(() => {
@@ -304,8 +302,6 @@ const useChat = () => {
       ? 'system'
       : tmpMessages[tmpMessages.length - 1].id;
 
-    const modelToPost = isNewChat ? modelId : getPostedModel();
-
     const imageContents: MessageContent['content'] = (
       base64EncodedImages ?? []
     ).map((encodedImage) => {
@@ -320,6 +316,9 @@ const useChat = () => {
         mediaType: result!.groups!.mediaType,
       };
     });
+
+    const modelId = bot?.modelId ?? getPostedModel();
+
     const messageContent: MessageContent = {
       content: [
         ...imageContents,
@@ -328,7 +327,7 @@ const useChat = () => {
           contentType: 'text',
         },
       ],
-      model: modelToPost,
+      model: modelId,
       role: 'user',
     };
     const input: PostMessageRequest = {
@@ -538,6 +537,7 @@ const useChat = () => {
             ? {
                 botId: params.bot.botId,
                 hasKnowledge: params.bot.hasKnowledge,
+                modelId: params.bot.modelId,
               }
             : undefined,
         });

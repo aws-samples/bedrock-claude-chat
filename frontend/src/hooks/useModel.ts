@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Model } from '../@types/conversation';
+import { Model } from '../@types/bot';
 import { useMemo } from 'react';
 
 const availableModels: {

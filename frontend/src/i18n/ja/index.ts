@@ -110,6 +110,7 @@ const translation = {
         title: 'ボット名',
         description: '説明文',
         instruction: 'インストラクション',
+        model: 'Model',
       },
       button: {
         newBot: 'ボットを新規作成',

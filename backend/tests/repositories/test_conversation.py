@@ -257,6 +257,7 @@ class TestConversationBotRepository(unittest.TestCase):
             create_time=1627984879.9,
             last_used_time=1627984879.9,
             public_bot_id="1",
+            model_id="claude-instant-v1",
             is_pinned=False,
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -274,6 +275,7 @@ class TestConversationBotRepository(unittest.TestCase):
             description="Test Bot Description",
             create_time=1627984879.9,
             last_used_time=1627984879.9,
+            model_id="claude-v3-sonnet",
             public_bot_id="2",
             is_pinned=False,
             knowledge=KnowledgeModel(
