@@ -39,7 +39,13 @@ export class VectorStore extends Construct {
       serverlessV2MaxCapacity: 5.0,
       writer: rds.ClusterInstance.serverlessV2("writer", {
         autoMinorVersionUpgrade: false,
+        caCertificate: rds.CaCertificate.RDS_CA_RDS2048_G1,
       }),
+      readers: [
+        rds.ClusterInstance.serverlessV2("reader", {
+          caCertificate: rds.CaCertificate.of("custom-ca"),
+        }),
+      ],
       // readers: [
       //   rds.ClusterInstance.serverlessV2("reader", {
       //     autoMinorVersionUpgrade: false,
