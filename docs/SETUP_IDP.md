@@ -14,14 +14,14 @@ Currently we support Google for external Idp.
 
 ## Step 2: Store Google OAuth Credentials in AWS Secrets Manager
 
-Go to the AWS Management Console.
-Navigate to Secrets Manager and choose "Store a new secret".
-Select "Other type of secrets".
-Input the Google OAuth clientId and clientSecret as key-value pairs. For example:
-Key: clientId, Value: <YOUR_GOOGLE_CLIENT_ID>
-Key: clientSecret, Value: <YOUR_GOOGLE_CLIENT_SECRET>
-Follow the prompts to name and describe the secret. Remember the secret name as you will need it in your CDK code. For example, googleOAuthCredentials.
-Review and store the secret.
+1. Go to the AWS Management Console.
+2. Navigate to Secrets Manager and choose "Store a new secret".
+3. Select "Other type of secrets".
+4. Input the Google OAuth clientId and clientSecret as key-value pairs. For example:
+5. Key: clientId, Value: <YOUR_GOOGLE_CLIENT_ID>
+6. Key: clientSecret, Value: <YOUR_GOOGLE_CLIENT_SECRET>
+7. Follow the prompts to name and describe the secret. Remember the secret name as you will need it in your CDK code. For example, googleOAuthCredentials.
+8. Review and store the secret.
 
 ## Step 3: Update cdk.json
 
