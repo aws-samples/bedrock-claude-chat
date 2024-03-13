@@ -12,6 +12,8 @@ Currently we support Google for external Idp.
 6. Add authorized redirect URIs. These will be the Cognito URLs which Google will redirect to after authentication. Typically, they look like https://${your_domain}.auth.region.amazoncognito.com/oauth2/idpresponse. You'll set the exact value in the Cognito setup later.[See Step5](#step-5-update-google-oauth-client-with-cognito-redirect-uris)
 7. Once created, note down the Client ID and Client Secret.
 
+For the detail, visit [Google's official document](https://support.google.com/cloud/answer/6158849?hl=en)
+
 ## Step 2: Store Google OAuth Credentials in AWS Secrets Manager
 
 1. Go to the AWS Management Console.
