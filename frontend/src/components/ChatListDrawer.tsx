@@ -271,7 +271,7 @@ const ChatListDrawer: React.FC<Props> = (props) => {
       }
 
       // 狭い画面のDrawerが表示されていて、画面サイズが大きくなったら状態を更新
-      if (!smallDrawer.current?.checkVisibility() && opened) {
+      if (!smallDrawer.current?.checkVisibility?.() && opened) {
         switchOpen();
       }
     };
