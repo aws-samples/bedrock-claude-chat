@@ -17,11 +17,15 @@
 1. AWS 管理コンソールへ移動します。
 2. Secrets Manager に移動し、「新しいシークレットを保存」を選択します。
 3. 「他のタイプのシークレット」を選択します。
-4. Google OAuth clientId と clientSecret をキーと値のペアとして入力します。例えば：
+4. Google OAuth clientId と clientSecret をキーと値のペアとして入力します。
    キー: clientId, 値: <YOUR_GOOGLE_CLIENT_ID>
    キー: clientSecret, 値: <YOUR_GOOGLE_CLIENT_SECRET>
 5. シークレットの名前と説明を入力して進んでください。CDK コードで必要になるので、シークレット名を覚えておいてください。例：googleOAuthCredentials。
 6. シークレットを確認して保存します。
+
+### 注意
+
+キー名は、文字列 'clientId' および 'clientSecret' と完全に一致する必要があります。
 
 ## ステップ 3: cdk.json を更新する
 
