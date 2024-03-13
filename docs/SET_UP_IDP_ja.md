@@ -62,4 +62,4 @@ cdk deploy --require-approval never --all
 ## ステップ 5: Cognito リダイレクト URI で Google OAuth クライアントを更新する
 
 スタックをデプロイした後、CfnOutput で AuthApprovedRedirectURI が出力されます。
-Google Developer Console に戻り、OAuth クライアントを正しいリダイレクト URI で更新します。これらの URI は、Cognito コンソールのユーザープールのドメイン名設定の下にあります。
+Google Developer Console に戻り、OAuth クライアントを正しいリダイレクト URI で更新します。

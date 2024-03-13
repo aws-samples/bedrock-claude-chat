@@ -61,4 +61,4 @@ cdk deploy --require-approval never --all
 
 ## Step 5: Update Google OAuth Client with Cognito Redirect URIs
 
-after deploying the stack, the AuthApprovedRedirectURI is output in CfnOutput. go back to the Google Developer Console and update the OAuth client with the correct redirect URIs. You can find these URIs in the Cognito console under the domain name configuration for your user pool.
+After deploying the stack, AuthApprovedRedirectURI is showing on the CloudFormation outputs. Go back to the Google Developer Console and update the OAuth client with the correct redirect URIs.
