@@ -264,6 +264,7 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
             last_used_time=bot.last_used_time,
             is_pinned=False,  # NOTE: Shared bot is not pinned by default.
             is_public=True,
+            model_id=bot.model_id,
             owned=False,
             sync_status=bot.sync_status,
             has_knowledge=(
