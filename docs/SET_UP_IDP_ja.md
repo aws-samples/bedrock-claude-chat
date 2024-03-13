@@ -1,4 +1,8 @@
-# ステップ 1: Google OAuth 2.0 クライアントを作成する
+# 外部アイデンティティプロバイダーの設定
+
+現在、外部 Idp として Google をサポートしています。
+
+## ステップ 1: Google OAuth 2.0 クライアントを作成する
 
 1. Google Developer Console へ移動します。
 2. 新しいプロジェクトを作成するか、既存のプロジェクトを選択します。
@@ -8,7 +12,7 @@
 6. 承認されたリダイレクト URI を追加します。これらは、認証後に Google がリダイレクトする Cognito の URL になります。一般的に、これらは https://${your_domain}.auth.region.amazoncognito.com/oauth2/idpresponse のように見えます。Cognito の設定で後ほど正確な値を設定します。[Step5 を参照](#ステップ-5-cognito-リダイレクト-uri-で-google-oauth-クライアントを更新する)
 7. 作成されたら、クライアント ID とクライアント シークレットをメモしてください。
 
-# ステップ 2: AWS Secrets Manager に Google OAuth 資格情報を保存する
+## ステップ 2: AWS Secrets Manager に Google OAuth 資格情報を保存する
 
 1. AWS 管理コンソールへ移動します。
 2. Secrets Manager に移動し、「新しいシークレットを保存」を選択します。
@@ -19,13 +23,13 @@
 5. シークレットの名前と説明を入力して進んでください。CDK コードで必要になるので、シークレット名を覚えておいてください。例：googleOAuthCredentials。
 6. シークレットを確認して保存します。
 
-# ステップ 3: cdk.json を更新する
+## ステップ 3: cdk.json を更新する
 
 cdk.json ファイルに、あなたのアイデンティティプロバイダーの設定を追加します。
 
-## 注意
+### 注意
 
-### ユニークさ
+#### ユニークさ
 
 userPoolDomainPrefix は、すべての Amazon Cognito ユーザー間でグローバルにユニークでなければなりません。他の AWS アカウントですでに使用されているプレフィックスを選択した場合、ユーザープールドメインの作成が失敗します。プレフィックスに識別子、プロジェクト名、または環境名を含めることは、ユニークさを確保するための良い実践です。
 
@@ -47,7 +51,7 @@ userPoolDomainPrefix は、すべての Amazon Cognito ユーザー間でグロ�
 }
 ```
 
-# ステップ 4: CDK スタックをデプロイする
+## ステップ 4: CDK スタックをデプロイする
 
 AWS に CDK スタックをデプロイします：
 
@@ -55,7 +59,7 @@ AWS に CDK スタックをデプロイします：
 cdk deploy --require-approval never --all
 ```
 
-# ステップ 5: Cognito リダイレクト URI で Google OAuth クライアントを更新する
+## ステップ 5: Cognito リダイレクト URI で Google OAuth クライアントを更新する
 
 スタックをデプロイした後、CfnOutput で AuthApprovedRedirectURI が出力されます。
 Google Developer Console に戻り、OAuth クライアントを正しいリダイレクト URI で更新します。これらの URI は、Cognito コンソールのユーザープールのドメイン名設定の下にあります。
