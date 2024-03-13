@@ -220,6 +220,10 @@ const userPool = new UserPool(this, "UserPool", {
 });
 ```
 
+### 外部のアイデンティティプロバイダー
+
+このサンプルは外部のアイデンティティプロバイダーをサポートしています。現在、Google のみをサポートしています。設定するには、[こちら](./SET_UP_IDP_ja.md)をご覧ください。
+
 ### ローカルでの開発について
 
 - [こちら](./LOCAL_DEVELOPMENT_ja.md)を参照ください。

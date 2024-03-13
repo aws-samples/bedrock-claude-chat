@@ -230,6 +230,10 @@ const userPool = new UserPool(this, "UserPool", {
 });
 ```
 
+### External Identity Provider
+
+This sample supports external identity provider. Currently we only support Google. To set up, See [SETUP_IDP.md](./docs/SETUP_IDP.md).
+
 ### Local Development
 
 See [LOCAL DEVELOPMENT](./docs/LOCAL_DEVELOPMENT.md).
@@ -244,10 +248,6 @@ Thank you for considering contribution on this repository! We welcome for bug fi
 ### RAG (Retrieval Augmented Generation)
 
 See [here](./docs/RAG.md).
-
-### setup OAuth web client
-
-See [here](https://support.google.com/workspacemigrate/answer/9222992?hl=en)
 
 ## Authors
 
