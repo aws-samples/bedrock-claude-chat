@@ -1,6 +1,6 @@
 import useBotPublicationApi from './useBotPublicationApi';
 
-const useBotPublication = (botId: string, apiKey: string) => {
+const useBotApiKey = (botId: string, apiKey: string) => {
   const { getBotPublicationApiKey, deleteBotPublicationApiKey } =
     useBotPublicationApi();
 
@@ -15,4 +15,4 @@ const useBotPublication = (botId: string, apiKey: string) => {
   };
 };
 
-export default useBotPublication;
+export default useBotApiKey;

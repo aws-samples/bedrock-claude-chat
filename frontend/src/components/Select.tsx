@@ -2,8 +2,10 @@ import { Fragment, useCallback, useMemo } from 'react';
 import { Listbox, Transition } from '@headlessui/react';
 import { PiCaretUpDown, PiCheck, PiX } from 'react-icons/pi';
 import ButtonIcon from './ButtonIcon';
+import { BaseProps } from '../@types/common';
+import { twMerge } from 'tailwind-merge';
 
-type Props = {
+type Props = BaseProps & {
   label?: string;
   value: string;
   options: {
@@ -11,6 +13,7 @@ type Props = {
     label: string;
   }[];
   clearable?: boolean;
+  disabled?: boolean;
   onChange: (value: string) => void;
 };
 
@@ -24,15 +27,19 @@ const Select: React.FC<Props> = (props) => {
   }, [props]);
 
   return (
-    <>
+    <div className={props.className}>
       {props.label && (
         <div>
           <span className="text-sm">{props.label}</span>
         </div>
       )}
-      <Listbox value={props.value} onChange={props.onChange}>
-        <div className="relative">
-          <Listbox.Button className="relative h-11 w-full cursor-default rounded border border-black/30 bg-white py-2 pl-3 pr-10 text-left focus:outline-none">
+      <Listbox
+        value={props.value}
+        disabled={props.disabled}
+        onChange={props.onChange}>
+        <div
+          className={twMerge('relative', props.disabled ? 'opacity-50' : '')}>
+          <Listbox.Button className="relative h-9 w-full cursor-default rounded border border-black/30 bg-white py-1 pl-3 pr-10 text-left focus:outline-none">
             <span className="block truncate">{selectedLabel}</span>
 
             <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
@@ -84,7 +91,7 @@ const Select: React.FC<Props> = (props) => {
           </Transition>
         </div>
       </Listbox>
-    </>
+    </div>
   );
 };
 

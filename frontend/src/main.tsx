@@ -8,6 +8,7 @@ import NotFound from './pages/NotFound.tsx';
 import './i18n';
 import BotExplorePage from './pages/BotExplorePage.tsx';
 import BotEditPage from './pages/BotEditPage.tsx';
+import BotApiSettingsPage from './pages/BotApiSettingsPage.tsx';
 
 const router = createBrowserRouter([
   {
@@ -29,6 +30,10 @@ const router = createBrowserRouter([
       {
         path: '/bot/edit/:botId',
         element: <BotEditPage />,
+      },
+      {
+        path: '/bot/api-settings/:botId',
+        element: <BotApiSettingsPage />,
       },
       {
         path: '/bot/:botId',

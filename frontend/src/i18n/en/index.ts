@@ -39,6 +39,16 @@ const translation = {
           uploaded: 'Uploaded',
           error: 'ERROR',
         },
+        apiSettings: {
+          usagePlan: 'Usage Plan',
+          allowOrigins: 'Allow Origins',
+          apiKeys: 'API Keys',
+          period: {
+            day: 'Per day',
+            week: 'Per week',
+            month: 'Per month',
+          },
+        },
       },
       titleSubmenu: {
         edit: 'Edit',
@@ -58,6 +68,25 @@ const translation = {
             'By specifying the URL of the sitemap, the information obtained through automatically scraping websites within it will be used as Knowledge.',
           file: 'The uploaded files will be used as Knowledge.',
         },
+        apiSettings: {
+          usagePlan:
+            'Usage plans specify the number or rate of requests that your API accepts from a client. Associate an API key with a usage plan to track the requests your API receives.',
+          throttling: 'Limit the rate that users can call your API.',
+          rateLimit:
+            'Enter the rate, in requests per second, that clients can call your API.',
+          burstLimit:
+            'Enter the number of concurrent requests that a client can make to your API.',
+          quota:
+            'Turn on quotas to limit the number of requests a user can make to your API in a given time period.',
+          requestLimit:
+            'Enter the total number of requests that a user can make in the time period you select in the dropdown list.',
+          allowOrigins:
+            'Allowed client origins for access. If the origin is not allowed, the caller receives a 403 Forbidden response and is denied access to the API. The Origin must follow the format: (http|https)://host-name or (http|https)://host-name:port. ',
+          allowOriginsExample:
+            'e.g. [https://your-host-name.com], [http://localhost:8000] ',
+          apiKeys:
+            'An API key is an alphanumeric string that used to identify a client of your API. Otherwise, the caller receives a 403 Forbidden response and is denied access to the API.',
+        },
       },
       alert: {
         sync: {
@@ -69,6 +98,10 @@ const translation = {
             title: 'NOT Ready',
             body: 'This bot has not completed the knowledge synchronization, so the knowledge before the update is used.',
           },
+        },
+        botUnshared: {
+          title: 'Please Share The Bot',
+          body: 'You cannot publish an API for the bot that is not shared.',
         },
       },
       samples: {
@@ -103,10 +136,21 @@ How would you categorize this email?`,
       edit: {
         pageTitle: 'Edit My Bot',
       },
+      apiSettings: {
+        pageTitle: 'Shared Bot API Settings',
+      },
       item: {
         title: 'Name',
         description: 'Description',
         instruction: 'Instructions',
+        apiSettings: {
+          throttling: 'Throttling',
+          burstLimit: 'Burst',
+          rateLimit: 'Rate',
+          quota: 'Quota',
+          requestLimit: 'Requests',
+          offset: 'Offset',
+        },
       },
       button: {
         newBot: 'Create New Bot',
@@ -173,6 +217,10 @@ How would you categorize this email?`,
     input: {
       hint: {
         required: '* Required',
+      },
+      validationError: {
+        required: 'This field is required.',
+        invalidOriginFormat: 'Invalid Origin format.',
       },
     },
     error: {

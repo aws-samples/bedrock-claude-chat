@@ -40,7 +40,7 @@ const useBot = (shouldAutoRefreshMyBots?: boolean) => {
     ),
     recentlyUsedSharedBots: recentlyUsedBots?.filter((bot) => !bot.owned),
     getMyBot: async (botId: string) => {
-      return (await api.getMyBot(botId)).data;
+      return (await api.getOnceMyBot(botId)).data;
     },
     registerBot: (params: RegisterBotRequest) => {
       mutateMyBots(

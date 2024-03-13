@@ -136,6 +136,13 @@ const BotExplorePage: React.FC = () => {
     setTargetShareIndex(targetIndex);
   }, []);
 
+  const onClickApiSettings = useCallback(
+    (botId: string) => {
+      navigate(`/bot/api-settings/${botId}`);
+    },
+    [navigate]
+  );
+
   const onToggleShare = useCallback(() => {
     if (targetShareBot) {
       updateBotSharing(targetShareBot.id, !targetShareBot.isPublic);
@@ -268,7 +275,7 @@ const BotExplorePage: React.FC = () => {
                         </PopoverItem>
                         <PopoverItem
                           onClick={() => {
-                            onClickShare(idx);
+                            onClickApiSettings(bot.id);
                           }}>
                           <PiGlobe />
                           {t('bot.button.apiSettings')}
