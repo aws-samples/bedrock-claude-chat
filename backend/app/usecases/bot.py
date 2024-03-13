@@ -244,6 +244,7 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
             create_time=alias.create_time,
             last_used_time=alias.last_used_time,
             is_pinned=alias.is_pinned,
+            model_id=alias.model_id,
             is_public=True,
             owned=False,
             sync_status=alias.sync_status,

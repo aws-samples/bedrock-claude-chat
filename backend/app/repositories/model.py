@@ -55,6 +55,7 @@ class BotAliasModel(BaseModel):
     id: str
     title: str
     description: str
+    model_id: str
     original_bot_id: str
     create_time: float
     last_used_time: float

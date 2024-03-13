@@ -108,6 +108,7 @@ def prepare_conversation(
                             id=bot.id,
                             title=bot.title,
                             description=bot.description,
+                            model_id=bot.model_id,
                             original_bot_id=chat_input.bot_id,
                             create_time=current_time,
                             last_used_time=current_time,

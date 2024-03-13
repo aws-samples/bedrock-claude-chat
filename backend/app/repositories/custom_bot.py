@@ -351,6 +351,7 @@ def find_all_bots_by_user_id(
                         original_bot_id=item["OriginalBotId"],
                         create_time=float(item["CreateTime"]),
                         last_used_time=float(item["LastBotUsed"]),
+                        model_id=bot.model_id,
                         is_pinned=item["IsPinned"],
                         sync_status=bot.sync_status,
                         has_knowledge=(
@@ -467,6 +468,7 @@ def find_alias_by_id(user_id: str, alias_id: str) -> BotAliasModel:
         original_bot_id=item["OriginalBotId"],
         create_time=float(item["CreateTime"]),
         last_used_time=float(item["LastBotUsed"]),
+        model_id=item["ModelId"] if "ModelId" in item else "claude-v3-sonnet",
         is_pinned=item["IsPinned"],
         sync_status=item["SyncStatus"],
         has_knowledge=item["HasKnowledge"],
