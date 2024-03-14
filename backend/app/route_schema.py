@@ -43,7 +43,9 @@ class KnowledgeDiffInput(BaseSchema):
 class MessageInput(BaseSchema):
     role: str
     content: list[Content]
-    model: Literal["claude-instant-v1", "claude-v2", "claude-v3-sonnet"]
+    model: Literal[
+        "claude-instant-v1", "claude-v2", "claude-v3-sonnet", "claude-v3-haiku"
+    ]
     parent_message_id: str | None
 
 
@@ -51,7 +53,13 @@ class MessageOutput(BaseSchema):
     role: str
     content: list[Content]
     # NOTE: "claude" will be deprecated (same as "claude-v2")
-    model: Literal["claude-instant-v1", "claude-v2", "claude", "claude-v3-sonnet"]
+    model: Literal[
+        "claude-instant-v1",
+        "claude-v2",
+        "claude",
+        "claude-v3-sonnet",
+        "claude-v3-haiku",
+    ]
     children: list[str]
     parent: str | None
 
