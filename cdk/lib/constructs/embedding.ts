@@ -189,7 +189,7 @@ export class Embedding extends Construct {
             // Ref: https://repost.aws/questions/QU_WC7301mT8qR7ip_9cyjdQ/eventbridge-pipes-and-ecs-task
             containerOverrides: [
               {
-                command: ["-u", "embedding/main.py", "$.dynamodb.NewImage"],
+                command: ["-u", "embedding/main.py", "$.dynamodb.NewImage", "$.dynamodb.OldImage"],
                 name: taskDefinition.defaultContainer!.containerName,
               },
             ],

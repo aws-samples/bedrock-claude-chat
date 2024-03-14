@@ -28,6 +28,9 @@ class S3FileLoader(BaseLoader):
     def _get_metadata(self) -> dict:
         return {"source": f"s3://{self.bucket}/{self.key}"}
 
+    def get_sources(self) -> list[str]:
+        return [self._get_metadata()["source"]]
+
     def load(self) -> list[Document]:
         """Load file."""
         elements = self._get_elements()

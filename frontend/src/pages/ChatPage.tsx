@@ -63,6 +63,12 @@ const ChatPage: React.FC = () => {
     mutate: mutateBot,
   } = useBotSummary(botId ?? undefined);
 
+  useEffect(() => {
+    // set header title
+    document.title = bot?.title ?? t('app.name');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bot?.title]);
+
   const [pageTitle, setPageTitle] = useState('');
   const [isAvailabilityBot, setIsAvailabilityBot] = useState(false);
 

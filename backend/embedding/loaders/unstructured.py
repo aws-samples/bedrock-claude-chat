@@ -40,6 +40,13 @@ class UnstructuredURLLoader(BaseLoader):
                 f"Got {mode} for `mode`, but should be one of `{_valid_modes}`"
             )
 
+    def get_sources(self) -> List[str]:
+        """Get the sources of the data."""
+        if self.mode == "single":
+            return self.urls
+        else:
+            return [element.metadata.to_dict()["source"] for element in self.elements]
+
     def load(self) -> List[Document]:
         """Load file."""
         docs: List[Document] = list()

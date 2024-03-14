@@ -139,6 +139,14 @@ class PlaywrightURLLoader(BaseLoader):
             remove_selectors, delay_sec=2
         )
 
+    def get_sources(self) -> List[str]:
+        """Get the sources of the data.
+
+        Returns:
+            List[str]: A list of URLs.
+        """
+        return self.urls
+
     def load(self) -> List[Document]:
         """Load the specified URLs using Playwright and create Document instances.
 

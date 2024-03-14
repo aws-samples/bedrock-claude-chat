@@ -87,3 +87,12 @@ class UrlLoader(BaseLoader):
             res.extend(documents)
 
         return res
+
+    def get_sources(self) -> list[str]:
+        categorized_urls = group_urls_by_content_type(self._urls)
+        res = []
+        for (loader_type, urls) in categorized_urls.items():
+            loader = get_loader(loader_type, urls)
+            res.extend(loader.get_sources())
+
+        return res

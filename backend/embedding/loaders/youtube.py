@@ -90,6 +90,10 @@ class YoutubeLoader(BaseLoader):
             )
         return video_id
 
+    def get_sources(self) -> List[str]:
+        """Get the sources of the data."""
+        return [self.video_id]
+
     def load(self) -> List[Document]:
         """Load documents."""
         metadata = {"source": self.video_id}

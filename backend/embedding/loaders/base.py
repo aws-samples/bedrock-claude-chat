@@ -12,3 +12,7 @@ class BaseLoader(ABC):
     @abstractmethod
     def load(self) -> list[Document]:
         """Load data into Document objects."""
+
+    @abstractmethod
+    def get_sources(self) -> list[str]:
+        """Get sources of the data."""
