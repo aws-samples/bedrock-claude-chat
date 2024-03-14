@@ -39,7 +39,6 @@ const resources = {
   ja,
   ko,
   zh,
-  fr,
 };
 
 // Settings i18n
