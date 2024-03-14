@@ -8,18 +8,13 @@ const availableModels: {
   supportMediaType: string[];
 }[] = [
   {
-    modelId: 'claude-instant-v1',
-    label: 'Claude Instant',
-    supportMediaType: [],
-  },
-  {
-    modelId: 'claude-v2',
-    label: 'Claude v2',
-    supportMediaType: [],
+    modelId: 'claude-v3-haiku',
+    label: 'Claude 3 (Haiku)',
+    supportMediaType: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
   },
   {
     modelId: 'claude-v3-sonnet',
-    label: 'Claude v3',
+    label: 'Claude 3 (Sonnet)',
     supportMediaType: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
   },
 ];
@@ -28,7 +23,7 @@ const useModelState = create<{
   modelId: Model;
   setModelId: (m: Model) => void;
 }>((set) => ({
-  modelId: 'claude-instant-v1',
+  modelId: 'claude-v3-haiku',
   setModelId: (m) => {
     set({
       modelId: m,

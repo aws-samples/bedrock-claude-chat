@@ -3,7 +3,7 @@
 ![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/test.yml/badge.svg)
 
 > [!Tip]
-> 🔔**Multi-modal chat by [Claude v3 (Sonnet)](https://aws.amazon.com/jp/about-aws/whats-new/2024/03/anthropics-claude-3-sonnet-model-amazon-bedrock/) is available for now**. See [Release](https://github.com/aws-samples/bedrock-claude-chat/releases/tag/v0.4.2) for the detail.
+> 🔔**Multi-modal chat by [Claude v3 (Haiku, Sonnet)](https://aws.amazon.com/jp/about-aws/whats-new/2024/03/anthropics-claude-3-sonnet-model-amazon-bedrock/) is available for now**. See [Release](https://github.com/aws-samples/bedrock-claude-chat/releases/tag/v0.4.2) for the detail.
 
 > [!Warning]
 > The current version (`v0.4.x`) has no compatibility with ex version (~`v0.3.0`) due to the change of DynamoDB table schema. **Please note that UPDATE (i.e. `cdk deploy`) FROM EX VERSION TO `v0.4.x` WILL DESTROY ALL OF EXISTING CONVERSATIONS.**
@@ -12,7 +12,7 @@ This repository is a sample chatbot using the Anthropic company's LLM [Claude](h
 
 ### Basic Conversation
 
-Not only text but also images are available with [Anthropic's Claude 3 Sonnet](https://www.anthropic.com/news/claude-3-family).
+Not only text but also images are available with [Anthropic's Claude 3](https://www.anthropic.com/news/claude-3-family). Currently we support `Haiku` and `Sonnet`.
 
 ![](./docs/imgs/demo.gif)
 
@@ -35,7 +35,7 @@ Add your own instruction and give external knowledge as URL or files (a.k.a [RAG
 
 ## 🚀 Super-easy Deployment
 
-- On us-east-1 region, open [Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > Check `Anthropic / Claude`, `Anthropic / Claude Instant`, `Anthropic / Claude 3 Sonnet` and `Cohere / Embed Multilingual` then `Save changes`.
+- On us-east-1 region, open [Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > Check `Anthropic / Claude 3 Haiku`, `Anthropic / Claude 3 Sonnet` and `Cohere / Embed Multilingual` then `Save changes`.
 
 <details>
 <summary>Screenshot</summary>
