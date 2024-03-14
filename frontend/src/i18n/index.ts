@@ -5,6 +5,7 @@ import en from './en';
 import ja from './ja';
 import ko from './ko';
 import zh from './zh';
+import fr from './fr';
 
 export const LANGUAGES: {
   value: string;
@@ -13,6 +14,10 @@ export const LANGUAGES: {
   {
     value: 'en',
     label: 'English',
+  },
+  {
+    value: 'fr',
+    label: 'Français',
   },
   {
     value: 'ja',
@@ -30,6 +35,7 @@ export const LANGUAGES: {
 
 const resources = {
   en,
+  fr,
   ja,
   ko,
   zh,
