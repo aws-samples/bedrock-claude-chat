@@ -1,5 +1,6 @@
 import useHttp from './useHttp';
 import {
+  CreateBotPublicationApiKeyRequest,
   CreateBotPublicationApiKeyResponse,
   DeleteBotPublicationApiKeyResponse,
   DeleteBotPublicationRequest,
@@ -55,10 +56,13 @@ const useBotPublicationApi = () => {
         `/bot/${botId}/publication/api-key/${apiKeyId}`
       );
     },
-    createBotPublicationApiKey: (botId: string) => {
+    createBotPublicationApiKey: (
+      botId: string,
+      params: CreateBotPublicationApiKeyRequest
+    ) => {
       return http.post<CreateBotPublicationApiKeyResponse>(
         `/bot/${botId}/publication/api-key`,
-        {}
+        params
       );
     },
   };

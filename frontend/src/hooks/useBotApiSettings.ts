@@ -17,15 +17,18 @@ const useBotApiSettings = (botId: string) => {
     botPublication,
     isLoading: isLoadingBotPublication,
     error,
+    mutate: mutateBotPublication,
   } = useBotPublication(botId);
 
-  const { publishBot } = useBotPublicationApi();
+  const { publishBot, createBotPublicationApiKey, deleteBotPublication } =
+    useBotPublicationApi();
 
   return {
     myBot,
     isLoadingMyBot,
     botPublication,
     isLoadingBotPublication,
+    mutateBotPublication,
     isUnpublishedBot: (
       (error?.response?.data['errors'][0] as string) ?? ''
     ).includes('is not published'),
@@ -54,6 +57,14 @@ const useBotApiSettings = (botId: string) => {
           burstLimit: throttle?.burstLimit ?? null,
           rateLimit: throttle?.rateLimit ?? null,
         },
+      });
+    },
+    deleteBotPublication: () => {
+      return deleteBotPublication(botId);
+    },
+    createApiKey: (description: string) => {
+      return createBotPublicationApiKey(botId, {
+        description,
       });
     },
   };

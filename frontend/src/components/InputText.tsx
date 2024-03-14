@@ -26,7 +26,7 @@ const InputText: React.FC<Props> = (props) => {
         disabled={props.disabled}
         value={props.value}
         onChange={(e) => {
-          props.onChange(e.target.value);
+          props.onChange ? props.onChange(e.target.value) : null;
         }}
       />
       {props.label && (

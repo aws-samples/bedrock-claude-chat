@@ -49,6 +49,12 @@ const translation = {
             week: 'Per week',
             month: 'Per month',
           },
+          apiKeyDetail: {
+            creationDate: 'Creation date',
+            active: 'Active',
+            inactive: 'Inactive',
+            key: 'API Key',
+          },
         },
       },
       titleSubmenu: {
@@ -70,6 +76,8 @@ const translation = {
           file: 'The uploaded files will be used as Knowledge.',
         },
         apiSettings: {
+          overview:
+            "Creating an API enables the Bot's functions to be accessed by external clients; APIs enable integration with external applications.",
           endpoint: 'The client can use the Bot from this endpoint.',
           usagePlan:
             'Usage plans specify the number or rate of requests that your API accepts from a client. Associate an API key with a usage plan to track the requests your API receives.',
@@ -175,10 +183,26 @@ How would you categorize this email?`,
         copied: 'Copied',
         instructionsSamples: 'Samples',
         chooseFiles: 'Choose files',
+        ApiKeyShow: 'Show',
+        ApiKeyHide: 'Hide',
       },
       deleteDialog: {
         title: 'Delete?',
         content: 'Are you sure to delete <Bold>{{title}}</Bold>?',
+      },
+      deleteApi: {
+        title: 'Delete?',
+        content:
+          'Are you sure to delete <Bold>{{title}}</Bold>? The API endpoint will be deleted, and the client will no longer have access to it.',
+      },
+      addApiKeyDialog: {
+        title: 'Add API Key',
+        content: 'Enter a name to identify the API Key.',
+      },
+      deleteApiKeyDialog: {
+        title: 'Delete?',
+        content:
+          'Are you sure to delete <Bold>{{title}}</Bold>?\nClients using this API Key will be denied access to the API.',
       },
       shareDialog: {
         title: 'Share',

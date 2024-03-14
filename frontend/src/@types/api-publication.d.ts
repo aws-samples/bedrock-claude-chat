@@ -61,11 +61,16 @@ export type DeleteBotPublicationResponse = null;
 export type GetBotPublicationApiKeyResponse = {
   id: string;
   value: string;
+  description: string;
   enabled: boolean;
   createdDate: Date;
 };
 
 export type DeleteBotPublicationApiKeyResponse = null;
+
+export type CreateBotPublicationApiKeyRequest = {
+  description: string;
+};
 
 export type CreateBotPublicationApiKeyResponse = {
   id: string;

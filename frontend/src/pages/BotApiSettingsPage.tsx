@@ -16,6 +16,9 @@ import { twMerge } from 'tailwind-merge';
 import { produce } from 'immer';
 import useErrorMessage from '../hooks/useErrorMessage';
 import ButtonCopy from '../components/ButtonCopy';
+import ApiKeyItem from '../components/ApiKeyItem';
+import DialogConfirmAddApiKey from '../components/DialogConfirmAddApiKey';
+import Help from '../components/Help';
 
 const PERIOD_OPTIONS: {
   label: string;
@@ -47,6 +50,8 @@ const BotApiSettingsPage: React.FC = () => {
     isUnpublishedBot,
     shareBot,
     publishBot,
+    createApiKey,
+    mutateBotPublication,
   } = useBotApiSettings(botId ?? '');
 
   const [isLoading, setIsLoading] = useState(false);
@@ -169,15 +174,20 @@ const BotApiSettingsPage: React.FC = () => {
               rateLimit: rateLimit!,
             }
           : undefined,
-      }).finally(() => {
-        setIsLoading(false);
-      });
+      })
+        .then(() => {
+          mutateBotPublication();
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
     }
   }, [
     burstLimit,
     clearErrorMessages,
     enabledQuota,
     enabledThtottle,
+    mutateBotPublication,
     origins,
     period,
     publishBot,
@@ -200,13 +210,44 @@ const BotApiSettingsPage: React.FC = () => {
     return isLoading || hasCreated || isDeploying;
   }, [hasCreated, isLoading, isDeploying]);
 
+  const [isOpenAddApiKeyDialog, setIsOpenAddApiKeyDialog] = useState(false);
+  const [isAddingApiKey, setIsAddingApiKey] = useState(false);
+  const onClickCreateApiKey = useCallback(() => {
+    setIsOpenAddApiKeyDialog(true);
+  }, []);
+  const addApiKey = useCallback(
+    (description: string) => {
+      setIsAddingApiKey(true);
+      createApiKey(description)
+        .then(() => {
+          setIsOpenAddApiKeyDialog(false);
+        })
+        .finally(() => {
+          mutateBotPublication();
+          setIsAddingApiKey(false);
+        });
+    },
+    [createApiKey, mutateBotPublication]
+  );
+
   return (
     <>
+      <DialogConfirmAddApiKey
+        isOpen={isOpenAddApiKeyDialog}
+        loading={isAddingApiKey}
+        onAdd={addApiKey}
+        onClose={() => {
+          setIsOpenAddApiKeyDialog(false);
+        }}
+      />
       <div className="mb-20 flex justify-center">
         <div className="w-2/3">
           <div className="mt-5 w-full">
-            <div className="text-xl font-bold">
-              {t('bot.apiSettings.pageTitle')}
+            <div className="flex items-center gap-1">
+              <div className="text-xl font-bold">
+                {t('bot.apiSettings.pageTitle')}
+              </div>
+              <Help message={t('bot.help.apiSettings.overview')} />
             </div>
             <div className="mt-3 flex flex-col gap-3">
               {isInitialLoading ? (
@@ -277,6 +318,21 @@ const BotApiSettingsPage: React.FC = () => {
                         </div>
                         <div className="text-sm text-aws-font-color/50">
                           {t('bot.help.apiSettings.apiKeys')}
+                        </div>
+
+                        <div className="mt-1 flex flex-col gap-1">
+                          {botPublication?.apiKeyIds.map((keyId) => (
+                            <ApiKeyItem
+                              key={keyId}
+                              botId={botId ?? ''}
+                              apiKeyId={keyId}
+                            />
+                          ))}
+                        </div>
+                        <div className="mt-2 flex w-full justify-end">
+                          <Button onClick={onClickCreateApiKey}>
+                            {t('button.add')}
+                          </Button>
                         </div>
                       </div>
                     </>
@@ -431,19 +487,23 @@ const BotApiSettingsPage: React.FC = () => {
                   onClick={onClickBack}>
                   {t('button.back')}
                 </Button>
-                {!hasShared && (
+                {!hasShared && !isInitialLoading && (
                   <Button loading={isLoadingShare} onClick={onClickShare}>
                     {t('bot.button.share')}
                   </Button>
                 )}
-                {!isLoadingShare && !isInitialLoading && !disabledCreate && (
-                  <>
-                    {hasShared && (
-                      <Button onClick={onClickCreate} loading={isLoading}>
-                        {t('bot.button.create')}
-                      </Button>
-                    )}
-                  </>
+                {!isLoadingShare &&
+                  !hasCreated &&
+                  !isDeploying &&
+                  hasShared && (
+                    <Button onClick={onClickCreate} loading={isLoading}>
+                      {t('bot.button.create')}
+                    </Button>
+                  )}
+                {hasCreated && (
+                  <Button className="bg-red" onClick={() => {}}>
+                    {t('button.delete')}
+                  </Button>
                 )}
               </div>
             </div>
