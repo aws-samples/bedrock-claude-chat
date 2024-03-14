@@ -4,6 +4,7 @@ import tempfile
 import boto3
 from embedding.loaders.base import BaseLoader, Document
 from unstructured.partition.auto import partition
+from unstructured.chunking.basic import chunk_elements
 
 
 class S3FileLoader(BaseLoader):
@@ -70,8 +71,9 @@ class S3FileLoader(BaseLoader):
             ]
         elif self.mode == "single":
             metadata = self._get_metadata()
-            text = "\n\n".join([str(el) for el in elements])
-            docs = [Document(page_content=text, metadata=metadata)]
+            # Unstructured is used for creating elements, so it should be used for splitting
+            chunks = chunk_elements(elements)
+            docs = [Document(page_content=str(chunk), metadata=metadata) for chunk in chunks]
         else:
             raise ValueError(f"mode of {self.mode} not supported.")
         return docs

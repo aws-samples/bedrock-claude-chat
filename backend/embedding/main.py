@@ -187,7 +187,11 @@ def main(
                     embed(
                         S3FileLoader(
                             bucket=DOCUMENT_BUCKET,
-                            key=compose_upload_document_s3_path(user_id, bot_id, filename),
+                            key=compose_upload_document_s3_path(
+                                user_id,
+                                bot_id,
+                                filename
+                            ),
                         ),
                         contents,
                         sources,
