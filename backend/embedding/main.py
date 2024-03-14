@@ -271,6 +271,9 @@ if __name__ == "__main__":
         old_sitemap_urls = [x["S"] for x in old_knowledge["sitemap_urls"]["L"]]
         old_source_urls = [x["S"] for x in old_knowledge["source_urls"]["L"]]
         old_filenames = [x["S"] for x in old_knowledge["filenames"]["L"]]
+        print(f"old_source_urls: {old_source_urls}")
+        print(f"old_sitemap_urls: {old_sitemap_urls}")
+        print(f"old_filenames: {old_filenames}")
 
         sitemap_urls = list(set(sitemap_urls) - set(old_sitemap_urls))
         source_urls = list(set(source_urls) - set(old_source_urls))
@@ -285,9 +288,9 @@ if __name__ == "__main__":
     print(f"sitemap_urls to crawl: {sitemap_urls}")
     print(f"filenames: {filenames}")
 
-    print(f"source_urls to remove: {deprecated_filenames}")
-    print(f"sitemap_urls to remove: {sitemap_urls}")
-    print(f"filenames to remove: {filenames}")
+    print(f"source_urls to remove: {deprecated_source_urls}")
+    print(f"sitemap_urls to remove: {deprecated_sitemap_urls}")
+    print(f"filenames to remove: {deprecated_filenames}")
 
     main(user_id,
          bot_id,

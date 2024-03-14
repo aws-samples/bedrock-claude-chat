@@ -201,6 +201,7 @@ export class Embedding extends Construct {
           logGroupArn: pipeLogGroup.logGroupArn,
         },
         level: "INFO",
+        includeExecutionData: [],
       },
       roleArn: pipeRole.roleArn,
     });

@@ -28,7 +28,7 @@ export class Database extends Construct {
       sortKey: { name: "SK", type: AttributeType.STRING },
       billingMode: BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY,
-      stream: StreamViewType.NEW_IMAGE,
+      stream: StreamViewType.NEW_AND_OLD_IMAGES,
       pointInTimeRecovery: props?.pointInTimeRecovery,
     });
     table.addGlobalSecondaryIndex({
