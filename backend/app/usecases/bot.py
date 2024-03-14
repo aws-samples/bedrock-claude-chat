@@ -184,6 +184,7 @@ def modify_owned_bot(
         title=modify_input.title,
         instruction=modify_input.instruction,
         description=modify_input.description if modify_input.description else "",
+        model_id=modify_input.model_id if modify_input.model_id else "claude-v3-sonnet",
         knowledge=Knowledge(
             source_urls=source_urls,
             sitemap_urls=sitemap_urls,

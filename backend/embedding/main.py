@@ -52,6 +52,7 @@ def insert_to_postgres(
     sources: list[str],
     embeddings: list[list[float]],
     expired_sources: list[str] = [],
+    clear_all: bool = False,
 ):
     conn = pg8000.connect(
         database=DB_NAME,
@@ -63,8 +64,17 @@ def insert_to_postgres(
 
     try:
         with conn.cursor() as cursor:
-            delete_query = "DELETE FROM items WHERE botid = %s AND source IN %s"
-            cursor.execute(delete_query, (bot_id, f"({','.join(expired_sources)})",))
+            if clear_all:
+                delete_query = "DELETE FROM items WHERE botid = %s"
+                cursor.execute(delete_query, (bot_id,))
+            elif len(expired_sources) > 0:
+                delete_query = "DELETE FROM items WHERE botid = %s AND source IN %s"
+                expired_source_array = list(set(expired_sources))
+                expired_source_sql_array = f"({','.join(expired_source_array)})"
+                print(f"Expired sources: {expired_source_sql_array}")
+                cursor.execute(delete_query, (bot_id, expired_source_sql_array,))
+            else:
+                print("No expired sources to delete.")
 
             insert_query = f"INSERT INTO items (id, botid, content, source, embedding) VALUES (%s, %s, %s, %s, %s)"
             values_to_insert = []
@@ -76,9 +86,11 @@ def insert_to_postgres(
                 values_to_insert.append(
                     (id_, bot_id, content, source, json.dumps(embedding))
                 )
-            cursor.executemany(insert_query, values_to_insert)
+            if len(values_to_insert) > 0:
+                cursor.executemany(insert_query, values_to_insert)
         conn.commit()
         print(f"Successfully inserted {len(values_to_insert)} records.")
+        print(f"Sucessfully removed {'all' if clear_all else len(expired_sources) } sources.")
     except Exception as e:
         conn.rollback()
         raise e
@@ -140,6 +152,7 @@ def main(
     deprecated_sitemap_urls: list[str],
     deprecated_source_urls: list[str],
     deprecated_filenames: list[str],
+    clear_all: bool = False,
 ):
     exec_id = ""
     try:
@@ -158,53 +171,43 @@ def main(
 
     status_reason = ""
     try:
-        if len(sitemap_urls) + len(source_urls) + len(filenames) == 0:
-            status_reason = "No contents to embed."
-            update_sync_status(
-                user_id,
-                bot_id,
-                "SUCCEEDED",
-                status_reason,
-                exec_id,
-            )
-            return
-
         # Calculate embeddings using LangChain
         contents = []
         sources = []
         embeddings = []
 
-        if len(source_urls) > 0:
-            embed(UrlLoader(source_urls), contents, sources, embeddings)
-        if len(sitemap_urls) > 0:
-            for sitemap_url in sitemap_urls:
-                raise NotImplementedError()
-        if len(filenames) > 0:
-            for filename in filenames:
-                embed(
-                    S3FileLoader(
-                        bucket=DOCUMENT_BUCKET,
-                        key=compose_upload_document_s3_path(user_id, bot_id, filename),
-                    ),
-                    contents,
-                    sources,
-                    embeddings,
-                )
+        if len(sitemap_urls) + len(source_urls) + len(filenames) > 0:
+            if len(source_urls) > 0:
+                embed(UrlLoader(source_urls), contents, sources, embeddings)
+            if len(sitemap_urls) > 0:
+                for sitemap_url in sitemap_urls:
+                    raise NotImplementedError()
+            if len(filenames) > 0:
+                for filename in filenames:
+                    embed(
+                        S3FileLoader(
+                            bucket=DOCUMENT_BUCKET,
+                            key=compose_upload_document_s3_path(user_id, bot_id, filename),
+                        ),
+                        contents,
+                        sources,
+                        embeddings,
+                    )
 
-        print(f"Number of chunks: {len(contents)}")
+            print(f"Number of chunks: {len(contents)}")
 
         # Insert records into postgres
 
         # Get expired sources
         # TODO: Add sitemap_urls when supported
         expired_sources = []
-        if len(source_urls) > 0:
+        if len(deprecated_source_urls) > 0:
             expired_sources.extend(
                 UrlLoader(
                     deprecated_source_urls
                 ).get_sources()
             )
-        if len(filenames) > 0:
+        if len(deprecated_filenames) > 0:
             for filename in deprecated_filenames:
                 expired_sources.extend(
                     S3FileLoader(
@@ -216,8 +219,15 @@ def main(
                     ).get_sources()
                 )
 
-        insert_to_postgres(bot_id, contents, sources, embeddings, expired_sources)
-        status_reason = "Successfully inserted to vector store."
+        insert_to_postgres(
+            bot_id,
+            contents,
+            sources,
+            embeddings,
+            expired_sources,
+            clear_all
+        )
+        status_reason = "Successfully updated vector store."
     except Exception as e:
         print("[ERROR] Failed to embed.")
         print(e)
@@ -258,6 +268,7 @@ if __name__ == "__main__":
     deprecated_sitemap_urls = []
     deprecated_source_urls = []
     deprecated_filenames = []
+    clear_all = False
 
     sk = new_image["SK"]["S"]
     bot_id = decompose_bot_id(sk)
@@ -267,22 +278,38 @@ if __name__ == "__main__":
 
     # If old_image is not None, remove the contents that are already embedded
     if (old_image is not None):
-        old_knowledge = old_image["Knowledge"]["M"]
-        old_sitemap_urls = [x["S"] for x in old_knowledge["sitemap_urls"]["L"]]
-        old_source_urls = [x["S"] for x in old_knowledge["source_urls"]["L"]]
-        old_filenames = [x["S"] for x in old_knowledge["filenames"]["L"]]
-        print(f"old_source_urls: {old_source_urls}")
-        print(f"old_sitemap_urls: {old_sitemap_urls}")
-        print(f"old_filenames: {old_filenames}")
+        # If old image sync status is failed, re-embbed all contents
+        old_sync_status = old_image["SyncStatus"]["S"]
+        if old_sync_status == "FAILED":
+            clear_all = True
+            print("old_sync_status is FAILED. Clearing all contents.")
+        else:
+            old_knowledge = old_image["Knowledge"]["M"]
+            new_sitemap_urls = sitemap_urls.copy()
+            new_source_urls = source_urls.copy()
+            new_filenames = filenames.copy()
+            old_sitemap_urls = [x["S"] for x in old_knowledge["sitemap_urls"]["L"]]
+            old_source_urls = [x["S"] for x in old_knowledge["source_urls"]["L"]]
+            old_filenames = [x["S"] for x in old_knowledge["filenames"]["L"]]
+            print(f"old_source_urls: {old_source_urls}")
+            print(f"old_sitemap_urls: {old_sitemap_urls}")
+            print(f"old_filenames: {old_filenames}")
 
-        sitemap_urls = list(set(sitemap_urls) - set(old_sitemap_urls))
-        source_urls = list(set(source_urls) - set(old_source_urls))
-        filenames = list(set(filenames) - set(old_filenames))
+            # Find new knowledge by looking for new knowledge that is not in old knowledge
+            sitemap_urls = list(set(sitemap_urls) - set(old_sitemap_urls))
+            source_urls = list(set(source_urls) - set(old_source_urls))
+            filenames = list(set(filenames) - set(old_filenames))
 
-        # Find deprecated knowledge by looking for old knowledge that is not in new knowledge
-        deprecated_sitemap_urls = list(set(old_sitemap_urls) - set(sitemap_urls))
-        deprecated_source_urls = list(set(old_source_urls) - set(source_urls))
-        deprecated_filenames = list(set(old_filenames) - set(filenames))
+            # Find deprecated knowledge by looking for old knowledge that is not in new knowledge
+            deprecated_sitemap_urls = list(
+                set(old_sitemap_urls) - set(new_sitemap_urls)
+            )
+            deprecated_source_urls = list(
+                set(old_source_urls) - set(new_source_urls)
+            )
+            deprecated_filenames = list(
+                set(old_filenames) - set(new_filenames)
+            )
 
     print(f"source_urls to crawl: {source_urls}")
     print(f"sitemap_urls to crawl: {sitemap_urls}")
@@ -299,4 +326,5 @@ if __name__ == "__main__":
          filenames,
          deprecated_sitemap_urls,
          deprecated_source_urls,
-         deprecated_filenames)
+         deprecated_filenames,
+         clear_all=clear_all)
