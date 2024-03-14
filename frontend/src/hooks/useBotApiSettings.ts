@@ -13,8 +13,11 @@ const useBotApiSettings = (botId: string) => {
     isLoading: isLoadingMyBot,
     mutate: mutateMyBot,
   } = getMyBot(botId);
-  const { botPublication, isLoading: isLoadingBotPublication } =
-    useBotPublication(botId);
+  const {
+    botPublication,
+    isLoading: isLoadingBotPublication,
+    error,
+  } = useBotPublication(botId);
 
   const { publishBot } = useBotPublicationApi();
 
@@ -23,6 +26,9 @@ const useBotApiSettings = (botId: string) => {
     isLoadingMyBot,
     botPublication,
     isLoadingBotPublication,
+    isUnpublishedBot: (
+      (error?.response?.data['errors'][0] as string) ?? ''
+    ).includes('is not published'),
     shareBot: () => {
       return updateBotVisibility(botId, {
         toPublic: true,
@@ -35,9 +41,19 @@ const useBotApiSettings = (botId: string) => {
       throttle?: BotPublicationThrottle;
       allowedOrigins: string[];
     }) => {
+      const { quota, throttle, allowedOrigins } = params;
       return publishBot(botId, {
         stage: 'api',
-        ...params,
+        allowedOrigins,
+        quota: {
+          limit: quota?.limit ?? null,
+          offset: quota?.offset ?? null,
+          period: quota?.period ?? null,
+        },
+        throttle: {
+          burstLimit: throttle?.burstLimit ?? null,
+          rateLimit: throttle?.rateLimit ?? null,
+        },
       });
     },
   };

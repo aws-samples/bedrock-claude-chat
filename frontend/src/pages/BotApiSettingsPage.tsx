@@ -1,25 +1,25 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import InputText from '../components/InputText';
 import Button from '../components/Button';
 import { useParams } from 'react-router-dom';
 import { PiCaretLeft, PiPlus, PiTrash } from 'react-icons/pi';
-import DialogInstructionsSamples from '../components/DialogInstructionsSamples';
 import useBotApiSettings from '../hooks/useBotApiSettings';
 import Alert from '../components/Alert';
 import Skeleton from '../components/Skeleton';
 import Toggle from '../components/Toggle';
 import Select from '../components/Select';
-import { BotPublicationQuota } from '../@types/api-publication';
+import { QuotaPeriod } from '../@types/api-publication';
 import i18next from 'i18next';
 import ButtonIcon from '../components/ButtonIcon';
 import { twMerge } from 'tailwind-merge';
 import { produce } from 'immer';
 import useErrorMessage from '../hooks/useErrorMessage';
+import ButtonCopy from '../components/ButtonCopy';
 
 const PERIOD_OPTIONS: {
   label: string;
-  value: BotPublicationQuota['period'];
+  value: QuotaPeriod;
 }[] = [
   {
     label: i18next.t('bot.label.apiSettings.period.day'),
@@ -39,9 +39,15 @@ const BotApiSettingsPage: React.FC = () => {
   const { t } = useTranslation();
   const { botId } = useParams();
 
-  const { myBot, isLoadingMyBot, shareBot, publishBot } = useBotApiSettings(
-    botId ?? ''
-  );
+  const {
+    myBot,
+    isLoadingMyBot,
+    botPublication,
+    isLoadingBotPublication,
+    isUnpublishedBot,
+    shareBot,
+    publishBot,
+  } = useBotApiSettings(botId ?? '');
 
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingShare, setIsLoadingShare] = useState(false);
@@ -53,13 +59,23 @@ const BotApiSettingsPage: React.FC = () => {
     });
   }, [shareBot]);
 
+  const isDeploying = useMemo(() => {
+    return botPublication?.codebuildStatus === 'IN_PROGRESS';
+  }, [botPublication?.codebuildStatus]);
+
+  const hasShared = useMemo(() => {
+    return !!myBot?.isPublic;
+  }, [myBot?.isPublic]);
+
+  const [hasCreated, setHasCreated] = useState(false);
+
   const [enabledThtottle, setEnabledThtottle] = useState(true);
   const [enabledQuota, setEnabledQuota] = useState(true);
 
   const [rateLimit, setRateLimit] = useState<null | number>(null);
   const [burstLimit, setBurstLimit] = useState<null | number>(null);
   const [requestLimit, setRequestLimit] = useState<null | number>(null);
-  const [period, setPeriod] = useState<BotPublicationQuota['period']>('MONTH');
+  const [period, setPeriod] = useState<QuotaPeriod>('MONTH');
 
   const {
     errorMessages,
@@ -89,6 +105,21 @@ const BotApiSettingsPage: React.FC = () => {
     },
     [origins]
   );
+
+  useEffect(() => {
+    if (!botPublication) {
+      return;
+    }
+
+    if (botPublication.cfnStatus === 'CREATE_COMPLETE') {
+      setHasCreated(true);
+      setRateLimit(botPublication.throttle.rateLimit);
+      setBurstLimit(botPublication.throttle.burstLimit);
+      setRequestLimit(botPublication.quota.limit);
+      setPeriod(botPublication.quota.period ?? 'MONTH');
+      setOrigins(botPublication.allowedOrigins);
+    }
+  }, [botPublication]);
 
   const onClickCreate = useCallback(() => {
     clearErrorMessages();
@@ -160,25 +191,25 @@ const BotApiSettingsPage: React.FC = () => {
     history.back();
   }, []);
 
-  const [isOpenSamples, setIsOpenSamples] = useState(false);
+  const isInitialLoading = useMemo(() => {
+    // If the Bot is not Published, do not show the Loading indicator when searching for BotPublish again.
+    return isLoadingMyBot || (isLoadingBotPublication && !isUnpublishedBot);
+  }, [isLoadingBotPublication, isLoadingMyBot, isUnpublishedBot]);
+
+  const disabledCreate = useMemo(() => {
+    return isLoading || hasCreated || isDeploying;
+  }, [hasCreated, isLoading, isDeploying]);
 
   return (
     <>
-      <DialogInstructionsSamples
-        isOpen={isOpenSamples}
-        onClose={() => {
-          setIsOpenSamples(false);
-        }}
-      />
       <div className="mb-20 flex justify-center">
         <div className="w-2/3">
           <div className="mt-5 w-full">
             <div className="text-xl font-bold">
               {t('bot.apiSettings.pageTitle')}
             </div>
-
             <div className="mt-3 flex flex-col gap-3">
-              {isLoadingMyBot ? (
+              {isInitialLoading ? (
                 <div className="flex flex-col gap-3">
                   <Skeleton />
                   <Skeleton className="w-full" />
@@ -199,18 +230,58 @@ const BotApiSettingsPage: React.FC = () => {
                     )}
                   </div>
 
-                  {!myBot?.isPublic && (
+                  {isDeploying && (
                     <Alert
-                      severity="warning"
-                      title={t('bot.alert.botUnshared.title')}>
-                      <div>{t('bot.alert.botUnshared.body')}</div>
-                      <div className="mt-2">
-                        <Button loading={isLoadingShare} onClick={onClickShare}>
-                          {t('bot.button.share')}
-                        </Button>
-                      </div>
+                      severity="info"
+                      title={t('bot.alert.apiSettings.deploying.title')}>
+                      <div>{t('bot.alert.apiSettings.deploying.body')}</div>
                     </Alert>
                   )}
+                  {hasCreated && (
+                    <Alert
+                      severity="info"
+                      title={t('bot.alert.apiSettings.deployed.title')}>
+                      <div>{t('bot.alert.apiSettings.deployed.body')}</div>
+                    </Alert>
+                  )}
+
+                  {!hasShared && (
+                    <Alert
+                      severity="warning"
+                      title={t('bot.alert.apiSettings.botUnshared.title')}>
+                      <div>{t('bot.alert.apiSettings.botUnshared.body')}</div>
+                    </Alert>
+                  )}
+
+                  {hasCreated && (
+                    <>
+                      <div className="mt-3">
+                        <div className="text-lg font-bold">
+                          {t('bot.label.apiSettings.endpoint')}
+                        </div>
+                        <div className="text-sm text-aws-font-color/50">
+                          {t('bot.help.apiSettings.endpoint')}
+                        </div>
+                        <div className="flex">
+                          <InputText
+                            className="w-full"
+                            value={botPublication?.endpoint ?? ''}
+                            disabled
+                          />
+                          <ButtonCopy text={botPublication?.endpoint ?? ''} />
+                        </div>
+                      </div>
+                      <div className="mt-3">
+                        <div className="text-lg font-bold">
+                          {t('bot.label.apiSettings.apiKeys')}
+                        </div>
+                        <div className="text-sm text-aws-font-color/50">
+                          {t('bot.help.apiSettings.apiKeys')}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
                   {myBot?.isPublic && (
                     <div className="flex flex-col gap-1">
                       <div className="text-lg font-bold">
@@ -224,7 +295,7 @@ const BotApiSettingsPage: React.FC = () => {
                         label={t('bot.item.apiSettings.throttling')}
                         hint={t('bot.help.apiSettings.throttling')}
                         value={enabledThtottle}
-                        disabled={isLoading}
+                        disabled={disabledCreate}
                         onChange={setEnabledThtottle}
                       />
 
@@ -239,7 +310,7 @@ const BotApiSettingsPage: React.FC = () => {
                           label={t('bot.item.apiSettings.rateLimit')}
                           value={rateLimit?.toString() ?? ''}
                           type="number"
-                          disabled={isLoading}
+                          disabled={disabledCreate}
                           onChange={(val) => {
                             setRateLimit(Number.parseInt(val));
                           }}
@@ -250,7 +321,7 @@ const BotApiSettingsPage: React.FC = () => {
                           label={t('bot.item.apiSettings.burstLimit')}
                           value={burstLimit?.toString() ?? ''}
                           type="number"
-                          disabled={isLoading}
+                          disabled={disabledCreate}
                           onChange={(val) => {
                             setBurstLimit(Number.parseInt(val));
                           }}
@@ -262,7 +333,7 @@ const BotApiSettingsPage: React.FC = () => {
                         label={t('bot.item.apiSettings.quota')}
                         hint={t('bot.help.apiSettings.quota')}
                         value={enabledQuota}
-                        disabled={isLoading}
+                        disabled={disabledCreate}
                         onChange={setEnabledQuota}
                       />
                       <div
@@ -277,7 +348,7 @@ const BotApiSettingsPage: React.FC = () => {
                               label={t('bot.item.apiSettings.requestLimit')}
                               value={requestLimit?.toString() ?? ''}
                               type="number"
-                              disabled={isLoading}
+                              disabled={disabledCreate}
                               onChange={(val) => {
                                 setRequestLimit(Number.parseInt(val));
                               }}
@@ -287,9 +358,9 @@ const BotApiSettingsPage: React.FC = () => {
                               className="mt-5 w-40"
                               options={PERIOD_OPTIONS}
                               value={period}
-                              disabled={isLoading}
+                              disabled={disabledCreate}
                               onChange={(val) => {
-                                setPeriod(val as BotPublicationQuota['period']);
+                                setPeriod(val as QuotaPeriod);
                               }}
                             />
                           </div>
@@ -316,7 +387,7 @@ const BotApiSettingsPage: React.FC = () => {
                               <InputText
                                 className="w-full"
                                 value={origins[idx]}
-                                disabled={isLoading}
+                                disabled={disabledCreate}
                                 onChange={(val) => {
                                   setOrigins(
                                     produce(origins, (draft) => {
@@ -328,7 +399,7 @@ const BotApiSettingsPage: React.FC = () => {
                               />
                               <ButtonIcon
                                 className="text-red"
-                                disabled={isLoading}
+                                disabled={disabledCreate}
                                 onClick={() => {
                                   onClickRemoveOrigin(idx);
                                 }}>
@@ -341,19 +412,10 @@ const BotApiSettingsPage: React.FC = () => {
                           <Button
                             outlined
                             icon={<PiPlus />}
-                            disabled={isLoading}
+                            disabled={disabledCreate}
                             onClick={onClickAddOrigin}>
                             {t('button.add')}
                           </Button>
-                        </div>
-                      </div>
-
-                      <div className="mt-3">
-                        <div className="text-lg font-bold">
-                          {t('bot.label.apiSettings.apiKeys')}
-                        </div>
-                        <div className="text-sm text-aws-font-color/50">
-                          {t('bot.help.apiSettings.apiKeys')}
                         </div>
                       </div>
                     </div>
@@ -369,29 +431,20 @@ const BotApiSettingsPage: React.FC = () => {
                   onClick={onClickBack}>
                   {t('button.back')}
                 </Button>
-                <Button
-                  onClick={onClickCreate}
-                  loading={isLoading}
-                  // disabled={disabledRegister}
-                >
-                  {t('bot.button.create')}
-                </Button>
-
-                {/* {isNewBot ? (
-                  <Button
-                    onClick={onClickCreate}
-                    loading={isLoading}
-                    disabled={disabledRegister}>
-                    {t('bot.button.create')}
+                {!hasShared && (
+                  <Button loading={isLoadingShare} onClick={onClickShare}>
+                    {t('bot.button.share')}
                   </Button>
-                ) : (
-                  <Button
-                    onClick={onClickEdit}
-                    loading={isLoading}
-                    disabled={disabledRegister}>
-                    {t('bot.button.edit')}
-                  </Button>
-                )} */}
+                )}
+                {!isLoadingShare && !isInitialLoading && !disabledCreate && (
+                  <>
+                    {hasShared && (
+                      <Button onClick={onClickCreate} loading={isLoading}>
+                        {t('bot.button.create')}
+                      </Button>
+                    )}
+                  </>
+                )}
               </div>
             </div>
           </div>

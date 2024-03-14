@@ -9,7 +9,7 @@ type Props = {
   disabled?: boolean;
   hint?: string;
   errorMessage?: string;
-  onChange: (s: string) => void;
+  onChange?: (s: string) => void;
 };
 
 const InputText: React.FC<Props> = (props) => {

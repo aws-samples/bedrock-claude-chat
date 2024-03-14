@@ -40,6 +40,7 @@ const translation = {
           error: 'ERROR',
         },
         apiSettings: {
+          endpoint: 'API Endpoint',
           usagePlan: 'Usage Plan',
           allowOrigins: 'Allow Origins',
           apiKeys: 'API Keys',
@@ -69,6 +70,7 @@ const translation = {
           file: 'The uploaded files will be used as Knowledge.',
         },
         apiSettings: {
+          endpoint: 'The client can use the Bot from this endpoint.',
           usagePlan:
             'Usage plans specify the number or rate of requests that your API accepts from a client. Associate an API key with a usage plan to track the requests your API receives.',
           throttling: 'Limit the rate that users can call your API.',
@@ -99,9 +101,19 @@ const translation = {
             body: 'This bot has not completed the knowledge synchronization, so the knowledge before the update is used.',
           },
         },
-        botUnshared: {
-          title: 'Please Share The Bot',
-          body: 'You cannot publish an API for the bot that is not shared.',
+        apiSettings: {
+          botUnshared: {
+            title: 'Please Share The Bot',
+            body: 'You cannot publish an API for the bot that is not shared.',
+          },
+          deploying: {
+            title: 'The API deployment is in PROGRESS.',
+            body: 'Please wait until the deployment is complete.',
+          },
+          deployed: {
+            title: 'The API has DEPLOYED.',
+            body: 'You can access the API from the Client using the API Endpoint and API Key.',
+          },
         },
       },
       samples: {

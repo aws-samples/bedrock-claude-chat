@@ -22,11 +22,17 @@ const useBotPublicationApi = () => {
     },
     getBotPublication: (botId?: string, req?: GetBotPublicationRequest) => {
       return http.get<GetBotPublicationRespose>(
-        botId ? [`/bot/${botId}/publication`, req] : null
+        botId ? [`/bot/${botId}/publication`, req] : null,
+        {
+          errorRetryCount: 0,
+        }
       );
     },
     publishBot: (botId: string, req: PublishBotRequest) => {
-      return http.post<PublishBotResponse>(`/bot/${botId}/publication`, req);
+      return http.post<PublishBotResponse, PublishBotRequest>(
+        `/bot/${botId}/publication`,
+        req
+      );
     },
     deleteBotPublication: (
       botId: string,

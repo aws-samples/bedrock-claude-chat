@@ -12,7 +12,7 @@ type Props = {
 
 const Toggle: React.FC<Props> = (props) => {
   return (
-    <div className="my-2 flex w-full flex-col pr-3">
+    <div className="my-2 flex flex-col pr-3">
       <label
         className={twMerge(
           'relative inline-flex items-center',
@@ -32,9 +32,11 @@ const Toggle: React.FC<Props> = (props) => {
             "peer h-6 w-11 rounded-full bg-light-gray after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray after:bg-white after:transition-all after:content-[''] peer-checked:bg-aws-sea-blue peer-checked:after:translate-x-full peer-checked:after:border-white rtl:peer-checked:after:-translate-x-full",
             props.disabled ? 'opacity-20' : ''
           )}></div>
-        <div className=" ml-2">
-          <div className="text-sm">{props.label}</div>
-        </div>
+        {props.label && (
+          <div className=" ml-2">
+            <div className="text-sm">{props.label}</div>
+          </div>
+        )}
       </label>
       {props.hint && (
         <div className="ml-11 w-full pl-2 text-xs text-gray">{props.hint}</div>

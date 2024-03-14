@@ -9,11 +9,12 @@ const useBotPublication = (botId: string) => {
     createBotPublicationApiKey,
   } = useBotPublicationApi();
 
-  const { data, isLoading } = getBotPublication(botId);
+  const { data, isLoading, error } = getBotPublication(botId);
 
   return {
     botPublication: data,
     isLoading,
+    error,
     deleteBotPublication: () => {
       return deleteBotPublication(botId);
     },

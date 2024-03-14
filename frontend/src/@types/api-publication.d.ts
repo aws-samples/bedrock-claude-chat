@@ -1,12 +1,14 @@
+export type QuotaPeriod = 'DAY' | 'WEEK' | 'MONTH';
+
 export type BotPublicationQuota = {
-  limit: number;
-  offset?: number;
-  period: 'DAY' | 'WEEK' | 'MONTH';
+  limit: number | null;
+  offset: number | null;
+  period: QuotaPeriod | null;
 };
 
 export type BotPublicationThrottle = {
-  rateLimit: number;
-  burstLimit: number;
+  rateLimit: number | null;
+  burstLimit: number | null;
 };
 
 export type ListPublicBotsRequest = {
@@ -27,8 +29,8 @@ export type ListPublicBotsResponse = {
 
 export type PublishBotRequest = {
   stage?: string;
-  quota?: BotPublicationQuota;
-  throttle?: BotPublicationThrottle;
+  quota: BotPublicationQuota;
+  throttle: BotPublicationThrottle;
   allowedOrigins: string[];
 };
 
@@ -40,8 +42,8 @@ export type GetBotPublicationRequest = {
 
 export type GetBotPublicationRespose = {
   stage: string;
-  quota?: BotPublicationQuota;
-  throttle?: BotPublicationThrottle;
+  quota: BotPublicationQuota;
+  throttle: BotPublicationThrottle;
   allowedOrigins: string[];
   cfnStatus: string;
   codebuildId: string;
