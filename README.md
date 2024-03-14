@@ -32,6 +32,7 @@ Add your own instruction and give external knowledge as URL or files (a.k.a [RAG
 - 日本語 💬 (ドキュメントは[こちら](./docs/README_ja.md))
 - 한국어 💬
 - 中文 💬
+- Français 💬
 
 ## 🚀 Super-easy Deployment
 
