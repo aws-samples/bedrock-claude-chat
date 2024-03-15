@@ -9,8 +9,5 @@ python-ulid==1.1.0
 pyhumps==3.8.0
 anthropic==0.18.1
 anthropic[bedrock]==0.18.1
-unstructured==0.11.6
-unstructured[pdf]==0.11.6
-unstructured[docx]==0.11.6
-unstructured[xlsx]==0.11.6
-unstructured[pptx]==0.11.6
+unstructured==0.12.6
+unstructured[all-docs]==0.12.6

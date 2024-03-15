@@ -121,6 +121,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         description=bot_input.description if bot_input.description else "",
         create_time=current_time,
         last_used_time=current_time,
+        model_id=bot_input.model_id if bot_input.model_id else "claude-v3-sonnet",
         is_public=False,
         is_pinned=False,
         owned=True,

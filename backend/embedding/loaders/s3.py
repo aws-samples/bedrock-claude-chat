@@ -43,7 +43,9 @@ class S3FileLoader(BaseLoader):
                     metadata.update(element.metadata.to_dict())
                 if hasattr(element, "category"):
                     metadata["category"] = element.category
-                docs.append(Document(page_content=str(element), metadata=metadata))
+                docs.append(
+                    Document(page_content=str(element), metadata=metadata)
+                )
         elif self.mode == "paged":
             text_dict: dict[int, str] = {}
             meta_dict: dict[int, dict] = {}
@@ -71,9 +73,13 @@ class S3FileLoader(BaseLoader):
             ]
         elif self.mode == "single":
             metadata = self._get_metadata()
-            # Unstructured is used for creating elements, so it should be used for splitting
+            # Unstructured is used for creating elements, so it should be used
+            # for splitting
             chunks = chunk_elements(elements)
-            docs = [Document(page_content=str(chunk), metadata=metadata) for chunk in chunks]
+            docs = [
+                Document(page_content=str(chunk), metadata=metadata)
+                for chunk in chunks
+            ]
         else:
             raise ValueError(f"mode of {self.mode} not supported.")
         return docs

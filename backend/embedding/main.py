@@ -6,7 +6,6 @@ import os
 import boto3
 import pg8000
 import requests
-from app.bedrock import calculate_document_embeddings
 from app.config import EMBEDDING_CONFIG
 from app.repositories.common import _get_table_client
 from app.repositories.custom_bot import compose_bot_id, decompose_bot_id
@@ -68,11 +67,10 @@ def insert_to_postgres(
                 delete_query = "DELETE FROM items WHERE botid = %s"
                 cursor.execute(delete_query, (bot_id,))
             elif len(expired_sources) > 0:
-                delete_query = "DELETE FROM items WHERE botid = %s AND source IN %s"
+                delete_query = "DELETE FROM items WHERE botid = :1 AND source IN (SELECT UNNEST(CAST(:2 AS TEXT[])))"
                 expired_source_array = list(set(expired_sources))
-                expired_source_sql_array = f"({','.join(expired_source_array)})"
-                print(f"Expired sources: {expired_source_sql_array}")
-                cursor.execute(delete_query, (bot_id, expired_source_sql_array,))
+                print(f"Expired sources: {expired_source_array}")
+                cursor.execute(delete_query, (bot_id, expired_source_array))
             else:
                 print("No expired sources to delete.")
 
