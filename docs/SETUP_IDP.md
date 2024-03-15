@@ -35,12 +35,6 @@ The key names must exactly match the strings 'clientId' and 'clientSecret'.
 
 In your cdk.json file, add the configuration for your identity providers
 
-### Attention
-
-#### Uniqueness
-
-The userPoolDomainPrefix must be globally unique across all Amazon Cognito users. If you choose a prefix that's already in use by another AWS account, the creation of the user pool domain will fail. It's a good practice to include identifiers, project names, or environment names in the prefix to ensure uniqueness.
-
 like so:
 
 ```json
@@ -58,6 +52,12 @@ like so:
   }
 }
 ```
+
+### Attention
+
+#### Uniqueness
+
+The userPoolDomainPrefix must be globally unique across all Amazon Cognito users. If you choose a prefix that's already in use by another AWS account, the creation of the user pool domain will fail. It's a good practice to include identifiers, project names, or environment names in the prefix to ensure uniqueness.
 
 ## Step 4: Deploy Your CDK Stack
 
