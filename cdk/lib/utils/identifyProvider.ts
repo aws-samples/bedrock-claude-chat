@@ -5,8 +5,7 @@ export type Idp = ReturnType<typeof identifyProvider>;
 
 export type TProvider = {
   service: string;
-  clientId: string;
-  clientSecret: string;
+  secretName: string;
 };
 
 type NotFoundIdpArray = {

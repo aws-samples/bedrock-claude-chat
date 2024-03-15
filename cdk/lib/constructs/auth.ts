@@ -1,10 +1,11 @@
-import { CfnOutput, Duration, SecretValue, Stack } from "aws-cdk-lib";
+import { CfnOutput, Duration, Stack } from "aws-cdk-lib";
 import {
   ProviderAttribute,
   UserPool,
   UserPoolClient,
   UserPoolIdentityProviderGoogle,
 } from "aws-cdk-lib/aws-cognito";
+import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 
 import { Construct } from "constructs";
 import { Idp } from "../utils/identifyProvider";
@@ -61,21 +62,25 @@ export class Auth extends Construct {
       for (const provider of props.idp.getProviders()) {
         switch (provider.service) {
           case "google": {
+            const secret = secretsmanager.Secret.fromSecretNameV2(
+              this,
+              "Secret",
+              provider.secretName
+            );
+
+            const clientId = secret
+              .secretValueFromJson("clientId")
+              .unsafeUnwrap()
+              .toString();
+            const clientSecret = secret.secretValueFromJson("clientSecret");
+
             const googleProvider = new UserPoolIdentityProviderGoogle(
               this,
               "GoogleProvider",
               {
                 userPool,
-                clientId: SecretValue.secretsManager(provider.clientId, {
-                  jsonField: "clientId",
-                }).unsafeUnwrap(),
-                clientSecretValue: SecretValue.secretsManager(
-                  provider.clientSecret,
-                  {
-                    jsonField: "clientSecret",
-                  }
-                ),
-
+                clientId: clientId,
+                clientSecretValue: clientSecret,
                 scopes: ["openid", "email"],
                 attributeMapping: {
                   email: ProviderAttribute.GOOGLE_EMAIL,
