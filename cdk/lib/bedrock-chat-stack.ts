@@ -24,6 +24,7 @@ export interface BedrockChatStackProps extends StackProps {
   readonly webAclId: string;
   readonly enableUsageAnalysis: boolean;
   readonly providers: TProvider[];
+  readonly userPoolDomainPrefixKey: string;
 }
 
 export class BedrockChatStack extends cdk.Stack {
@@ -38,9 +39,7 @@ export class BedrockChatStack extends cdk.Stack {
       vpc: vpc,
     });
     const idp = identifyProvider(props.providers);
-    const userPoolDomainPrefixKey: string = this.node.tryGetContext(
-      "userPoolDomainPrefix"
-    );
+
     const dbConfig = {
       host: vectorStore.cluster.clusterEndpoint.hostname,
       username: vectorStore.secret
@@ -83,7 +82,7 @@ export class BedrockChatStack extends cdk.Stack {
 
     const auth = new Auth(this, "Auth", {
       origin: frontend.getOrigin(),
-      userPoolDomainPrefixKey,
+      userPoolDomainPrefixKey: props.userPoolDomainPrefixKey,
       idp,
     });
     const database = new Database(this, "Database", {
@@ -116,7 +115,7 @@ export class BedrockChatStack extends cdk.Stack {
     frontend.buildViteApp({
       backendApiEndpoint: backendApi.api.apiEndpoint,
       webSocketApiEndpoint: websocket.apiEndpoint,
-      userPoolDomainPrefixKey,
+      userPoolDomainPrefixKey: props.userPoolDomainPrefixKey,
       auth,
       idp,
     });

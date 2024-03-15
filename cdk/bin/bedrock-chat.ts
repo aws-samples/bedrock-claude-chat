@@ -30,7 +30,9 @@ const waf = new FrontendWafStack(app, `FrontendWafStack`, {
 });
 
 const providers: TProvider[] = app.node.tryGetContext("identifyProviders");
-
+const userPoolDomainPrefixKey: string = app.node.tryGetContext(
+  "userPoolDomainPrefix"
+);
 new BedrockChatStack(app, `BedrockChatStack`, {
   env: {
     region: process.env.CDK_DEFAULT_REGION,
@@ -40,4 +42,5 @@ new BedrockChatStack(app, `BedrockChatStack`, {
   webAclId: waf.webAclArn.value,
   enableUsageAnalysis: ENABLE_USAGE_ANALYSIS,
   providers,
+  userPoolDomainPrefixKey,
 });
