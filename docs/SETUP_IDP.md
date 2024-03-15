@@ -24,7 +24,7 @@ For the detail, visit [Google's official document](https://support.google.com/cl
    1. Key: clientId, Value: <YOUR_GOOGLE_CLIENT_ID>
    2. Key: clientSecret, Value: <YOUR_GOOGLE_CLIENT_SECRET>
 
-5. Follow the prompts to name and describe the secret. Remember the secret name as you will need it in your CDK code. For example, googleOAuthCredentials.
+5. Follow the prompts to name and describe the secret. Remember the secret name as you will need it in your CDK code. For example, googleOAuthCredentials.(Use in Step 3 variable name <YOUR_SECRET_NAME>)
 6. Review and store the secret.
 
 ### Attention
@@ -33,7 +33,7 @@ The key names must exactly match the strings 'clientId' and 'clientSecret'.
 
 ## Step 3: Update cdk.json
 
-In your cdk.json file, add the configuration for your identity providers
+In your cdk.json file, add the ID Provider and SecretName to the cdk.json file.
 
 like so:
 
@@ -44,8 +44,7 @@ like so:
     "identityProviders": [
       {
         "service": "google",
-        "clientId": "<YOUR_GOOGLE_CLIENT_ID_SECRET_NAME>",
-        "clientSecret": "<YOUR_GOOGLE_CLIENT_SECRET_NAME>"
+        "secretName": "<YOUR_SECRET_NAME>"
       }
     ],
     "userPoolDomainPrefix": "<UNIQUE_DOMAIN_PREFIX_FOR_YOUR_USER_POOL>"

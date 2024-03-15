@@ -24,7 +24,7 @@
    1. キー: clientId, 値: <YOUR_GOOGLE_CLIENT_ID>
    2. キー: clientSecret, 値: <YOUR_GOOGLE_CLIENT_SECRET>
 
-5. シークレットの名前と説明を入力して進んでください。CDK コードで必要になるので、シークレット名を覚えておいてください。例：googleOAuthCredentials。
+5. シークレットの名前と説明を入力して進んでください。CDK コードで必要になるので、シークレット名を覚えておいてください。例：googleOAuthCredentials (ステップ 3 の変数名<YOUR_SECRET_NAME>で使用します)
 6. シークレットを確認して保存します。
 
 ### 注意
@@ -33,7 +33,7 @@
 
 ## ステップ 3: cdk.json を更新する
 
-cdk.json ファイルに、あなたのアイデンティティプロバイダーの設定を追加します。
+cdk.json ファイルに、あなたのアイデンティティプロバイダーと SecretName の設定を追加します。
 
 以下のようにします：
 
@@ -44,8 +44,7 @@ cdk.json ファイルに、あなたのアイデンティティプロバイダ�
     "identityProviders": [
       {
         "service": "google",
-        "clientId": "<YOUR_GOOGLE_CLIENT_ID_SECRET_NAME>",
-        "clientSecret": "<YOUR_GOOGLE_CLIENT_SECRET_NAME>"
+        "secretName": "<YOUR_SECRET_NAME>"
       }
     ],
     "userPoolDomainPrefix": "<UNIQUE_DOMAIN_PREFIX_FOR_YOUR_USER_POOL>"
