@@ -3,7 +3,9 @@ from typing import Literal, Optional
 from app.routes.schemas.base import BaseSchema
 from pydantic import Field
 
-type_model_name = Literal["claude-instant-v1", "claude-v2", "claude-v3-sonnet"]
+type_model_name = Literal[
+    "claude-instant-v1", "claude-v2", "claude-v3-sonnet", "claude-v3-haiku"
+]
 
 
 class Content(BaseSchema):

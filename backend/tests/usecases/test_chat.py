@@ -7,21 +7,33 @@ from pprint import pprint
 from anthropic.types import MessageStopEvent
 from app.bedrock import get_model_id
 from app.config import GENERATION_CONFIG
-from app.repositories.conversation import (delete_conversation_by_id,
-                                           delete_conversation_by_user_id,
-                                           find_conversation_by_id,
-                                           store_conversation)
-from app.repositories.custom_bot import (delete_alias_by_id, delete_bot_by_id,
-                                         store_bot, update_bot_visibility)
-from app.repositories.models.conversation import (ContentModel,
-                                                  ConversationModel,
-                                                  MessageModel)
+from app.repositories.conversation import (
+    delete_conversation_by_id,
+    delete_conversation_by_user_id,
+    find_conversation_by_id,
+    store_conversation,
+)
+from app.repositories.custom_bot import (
+    delete_alias_by_id,
+    delete_bot_by_id,
+    store_bot,
+    update_bot_visibility,
+)
+from app.repositories.models.conversation import (
+    ContentModel,
+    ConversationModel,
+    MessageModel,
+)
 from app.repositories.models.custom_bot import BotModel, KnowledgeModel
-from app.routes.schemas.conversation import (ChatInput, ChatOutput, Content,
-                                             MessageInput)
-from app.usecases.chat import (chat, fetch_conversation, insert_knowledge,
-                               prepare_conversation,
-                               propose_conversation_title, trace_to_root)
+from app.routes.schemas.conversation import ChatInput, ChatOutput, Content, MessageInput
+from app.usecases.chat import (
+    chat,
+    fetch_conversation,
+    insert_knowledge,
+    prepare_conversation,
+    propose_conversation_title,
+    trace_to_root,
+)
 from app.utils import get_anthropic_client
 from app.vector_search import SearchResult
 
