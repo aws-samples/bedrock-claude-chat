@@ -190,10 +190,10 @@ How would you categorize this email?`,
         title: 'Delete?',
         content: 'Are you sure to delete <Bold>{{title}}</Bold>?',
       },
-      deleteApi: {
+      deleteApiDaialog: {
         title: 'Delete?',
         content:
-          'Are you sure to delete <Bold>{{title}}</Bold>? The API endpoint will be deleted, and the client will no longer have access to it.',
+          'Are you sure to delete the API? The API endpoint will be deleted, and the client will no longer have access to it.',
       },
       addApiKeyDialog: {
         title: 'Add API Key',
@@ -218,6 +218,7 @@ How would you categorize this email?`,
       error: {
         notSupportedFile: 'This file is not supported.',
         duplicatedFile: 'A file with the same name has been uploaded.',
+        failDeleteApi: 'Failed to delete the API.',
       },
     },
     deleteDialog: {

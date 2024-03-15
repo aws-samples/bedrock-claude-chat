@@ -19,6 +19,8 @@ import ButtonCopy from '../components/ButtonCopy';
 import ApiKeyItem from '../components/ApiKeyItem';
 import DialogConfirmAddApiKey from '../components/DialogConfirmAddApiKey';
 import Help from '../components/Help';
+import DialogConfirmDeleteApi from '../components/DialogConfirmDeleteApi';
+import useSnackbar from '../hooks/useSnackbar';
 
 const PERIOD_OPTIONS: {
   label: string;
@@ -52,6 +54,7 @@ const BotApiSettingsPage: React.FC = () => {
     publishBot,
     createApiKey,
     mutateBotPublication,
+    deleteBotPublication,
   } = useBotApiSettings(botId ?? '');
 
   const [isLoading, setIsLoading] = useState(false);
@@ -111,20 +114,40 @@ const BotApiSettingsPage: React.FC = () => {
     [origins]
   );
 
+  const fillApiSettings = useCallback(() => {
+    if (!botPublication) {
+      return;
+    }
+    setHasCreated(true);
+    setEnabledThtottle(!!botPublication.throttle);
+    setEnabledQuota(!!botPublication.quota);
+    setRateLimit(botPublication.throttle.rateLimit);
+    setBurstLimit(botPublication.throttle.burstLimit);
+    setRequestLimit(botPublication.quota.limit);
+    setPeriod(botPublication.quota.period ?? 'MONTH');
+    setOrigins(botPublication.allowedOrigins);
+  }, [botPublication]);
+
+  const clearApiSettings = useCallback(() => {
+    setHasCreated(false);
+    setEnabledThtottle(true);
+    setEnabledQuota(true);
+    setRateLimit(null);
+    setBurstLimit(null);
+    setRequestLimit(null);
+    setPeriod('MONTH');
+    setOrigins(['']);
+  }, []);
+
   useEffect(() => {
     if (!botPublication) {
       return;
     }
 
     if (botPublication.cfnStatus === 'CREATE_COMPLETE') {
-      setHasCreated(true);
-      setRateLimit(botPublication.throttle.rateLimit);
-      setBurstLimit(botPublication.throttle.burstLimit);
-      setRequestLimit(botPublication.quota.limit);
-      setPeriod(botPublication.quota.period ?? 'MONTH');
-      setOrigins(botPublication.allowedOrigins);
+      fillApiSettings();
     }
-  }, [botPublication]);
+  }, [botPublication, fillApiSettings]);
 
   const onClickCreate = useCallback(() => {
     clearErrorMessages();
@@ -230,6 +253,17 @@ const BotApiSettingsPage: React.FC = () => {
     [createApiKey, mutateBotPublication]
   );
 
+  const { open } = useSnackbar();
+  const [isOpenDeleteApiDialog, setIsOpenDeleteApiDialog] = useState(false);
+  const deleteApi = useCallback(() => {
+    clearApiSettings();
+    setIsOpenDeleteApiDialog(false);
+    deleteBotPublication().catch(() => {
+      fillApiSettings();
+      open(t('bot.error.failDeleteApi'));
+    });
+  }, [clearApiSettings, deleteBotPublication, fillApiSettings, open, t]);
+
   return (
     <>
       <DialogConfirmAddApiKey
@@ -238,6 +272,13 @@ const BotApiSettingsPage: React.FC = () => {
         onAdd={addApiKey}
         onClose={() => {
           setIsOpenAddApiKeyDialog(false);
+        }}
+      />
+      <DialogConfirmDeleteApi
+        isOpen={isOpenDeleteApiDialog}
+        onDelete={deleteApi}
+        onClose={() => {
+          setIsOpenDeleteApiDialog(false);
         }}
       />
       <div className="mb-20 flex justify-center">
@@ -501,7 +542,11 @@ const BotApiSettingsPage: React.FC = () => {
                     </Button>
                   )}
                 {hasCreated && (
-                  <Button className="bg-red" onClick={() => {}}>
+                  <Button
+                    className="bg-red"
+                    onClick={() => {
+                      setIsOpenDeleteApiDialog(true);
+                    }}>
                     {t('button.delete')}
                   </Button>
                 )}

@@ -37,11 +37,10 @@ const Select: React.FC<Props> = (props) => {
         value={props.value}
         disabled={props.disabled}
         onChange={props.onChange}>
-        <div
-          className={twMerge('relative', props.disabled ? 'opacity-50' : '')}>
+        <div className={twMerge('relative')}>
           <Listbox.Button
             className={twMerge(
-              'relative h-9 w-full cursor-default rounded border border-aws-font-color py-1 pl-3 pr-10 text-left focus:outline-none',
+              'relative h-9 w-full cursor-default rounded border border-aws-font-color/50 py-1 pl-3 pr-10 text-left focus:outline-none',
               !props.disabled && 'bg-white'
             )}>
             <span className="block truncate">{selectedLabel}</span>
