@@ -17,9 +17,7 @@ const ALLOWED_IP_V6_ADDRESS_RANGES: string[] = app.node.tryGetContext(
 const ENABLE_USAGE_ANALYSIS: boolean = app.node.tryGetContext(
   "enableUsageAnalysis"
 );
-
 const PROVIDERS: TProvider[] = app.node.tryGetContext("identifyProviders");
-
 const USER_POOL_DOMAIN_PREFIX_KEY: string = app.node.tryGetContext(
   "userPoolDomainPrefix"
 );
