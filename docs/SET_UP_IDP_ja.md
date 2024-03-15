@@ -9,7 +9,7 @@
 3. 「認証情報」に移動し、「認証情報を作成」をクリックして「OAuth クライアント ID」を選択します。
 4. 促された場合、同意画面を設定します。
 5. アプリケーションタイプとして「Web アプリケーション」を選択します。
-6. 承認されたリダイレクト URI を追加します。これらは、認証後に Google がリダイレクトする Cognito の URL になります。一般的に、これらは https://${your_domain}.auth.region.amazoncognito.com/oauth2/idpresponse のように見えます。Cognito の設定で後ほど正確な値を設定します。[Step5 を参照](#ステップ-5-cognito-リダイレクト-uri-で-google-oauth-クライアントを更新する)
+6. リダイレクト URI は後に設定するため空欄にして一旦保存します。[Step5 を参照](#ステップ-5-cognito-リダイレクト-uri-で-google-oauth-クライアントを更新する)
 7. 作成されたら、クライアント ID とクライアント シークレットをメモしてください。
 
 詳細については、[Google の公式ドキュメント](https://support.google.com/cloud/answer/6158849?hl=ja)をご覧ください。

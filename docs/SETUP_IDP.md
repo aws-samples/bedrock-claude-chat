@@ -9,7 +9,7 @@ Currently we support Google for external Idp.
 3. Navigate to "Credentials", then click on "Create Credentials" and choose "OAuth client ID".
 4. Configure the consent screen if prompted.
 5. For the application type, select "Web application".
-6. Add authorized redirect URIs. These will be the Cognito URLs which Google will redirect to after authentication. Typically, they look like https://${your_domain}.auth.region.amazoncognito.com/oauth2/idpresponse. You'll set the exact value in the Cognito setup later.[See Step5](#step-5-update-google-oauth-client-with-cognito-redirect-uris)
+6. Leave the redirect URI blank for now to set it later, and save temporarily.[See Step5](#step-5-update-google-oauth-client-with-cognito-redirect-uris)
 7. Once created, note down the Client ID and Client Secret.
 
 For the detail, visit [Google's official document](https://support.google.com/cloud/answer/6158849?hl=en)
