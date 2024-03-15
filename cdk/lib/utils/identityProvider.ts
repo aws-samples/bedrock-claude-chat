@@ -1,9 +1,9 @@
 import { Effect, pipe } from "effect";
 import { aws_cognito } from "aws-cdk-lib";
 
-export type Idp = ReturnType<typeof identifyProvider>;
+export type Idp = ReturnType<typeof identityProvider>;
 
-export type TIdentifyProvider = {
+export type TIdentityProvider = {
   service: string;
   secretName: string;
 };
@@ -17,19 +17,19 @@ type InvalidSocialProvider = {
 };
 type Errors = NotFoundIdpArray | InvalidSocialProvider;
 
-export const identifyProvider = (identifyProviders: TIdentifyProvider[]) => {
-  const isExist = () => identifyProviders.length > 0;
+export const identityProvider = (identityProviders: TIdentityProvider[]) => {
+  const isExist = () => identityProviders.length > 0;
 
-  const getProviders = (): TIdentifyProvider[] => {
+  const getProviders = (): TIdentityProvider[] => {
     const program = pipe(
-      identifyProviders,
+      identityProviders,
       isIdpAsArray,
       Effect.flatMap(validateProviders)
     );
     const result = Effect.match(program, {
       onSuccess: (providers) => providers,
       onFailure: (error: Errors) => {
-        if (error.type === "NotFoundIdpArray") return [] as TIdentifyProvider[];
+        if (error.type === "NotFoundIdpArray") return [] as TIdentityProvider[];
         if (error.type === "InvalidSocialProvider")
           throw new Error("InvalidSocialProvider");
         return error;
@@ -70,14 +70,14 @@ export const identifyProvider = (identifyProviders: TIdentifyProvider[]) => {
   };
 };
 
-const validateProviders = (identifyProviders: TIdentifyProvider[]) =>
-  Effect.all(identifyProviders.map(validateSocialProvider));
+const validateProviders = (identityProviders: TIdentityProvider[]) =>
+  Effect.all(identityProviders.map(validateSocialProvider));
 
 const validateSocialProvider = (
-  provider: TIdentifyProvider
+  provider: TIdentityProvider
 ):
   | Effect.Effect<never, InvalidSocialProvider, never>
-  | Effect.Effect<TIdentifyProvider, never, never> =>
+  | Effect.Effect<TIdentityProvider, never, never> =>
   !["google", "facebook", "amazon", "apple"].includes(provider.service)
     ? Effect.fail({
         type: "InvalidSocialProvider",
@@ -85,10 +85,10 @@ const validateSocialProvider = (
     : Effect.succeed(provider);
 
 const isIdpAsArray = (
-  identifyProviders: TIdentifyProvider[]
+  identityProviders: TIdentityProvider[]
 ):
-  | Effect.Effect<TIdentifyProvider[], never, never>
+  | Effect.Effect<TIdentityProvider[], never, never>
   | Effect.Effect<never, NotFoundIdpArray, never> =>
-  Array.isArray(identifyProviders)
-    ? Effect.succeed(identifyProviders as TIdentifyProvider[])
+  Array.isArray(identityProviders)
+    ? Effect.succeed(identityProviders as TIdentityProvider[])
     : Effect.fail({ type: "NotFoundIdpArray" });
