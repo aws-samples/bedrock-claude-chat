@@ -82,13 +82,13 @@ export class Frontend extends Construct {
   buildViteApp({
     backendApiEndpoint,
     webSocketApiEndpoint,
-    userPoolDomainPrefixKey,
+    userPoolDomainPrefix,
     auth,
     idp,
   }: {
     backendApiEndpoint: string;
     webSocketApiEndpoint: string;
-    userPoolDomainPrefixKey: string;
+    userPoolDomainPrefix: string;
     auth: Auth;
     idp: Idp;
   }) {
@@ -108,7 +108,7 @@ export class Frontend extends Construct {
       const oAuthProps = {
         VITE_APP_REDIRECT_SIGNIN_URL: this.getOrigin(),
         VITE_APP_REDIRECT_SIGNOUT_URL: this.getOrigin(),
-        VITE_APP_COGNITO_DOMAIN: `${userPoolDomainPrefixKey}.auth.${region}.amazoncognito.com/`,
+        VITE_APP_COGNITO_DOMAIN: `${userPoolDomainPrefix}.auth.${region}.amazoncognito.com/`,
         VITE_APP_SOCIAL_PROVIDERS: idp.getSocialProviders(),
       };
       return { ...defaultProps, ...oAuthProps };

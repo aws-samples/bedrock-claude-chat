@@ -3,7 +3,7 @@ import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
 import { BedrockChatStack } from "../lib/bedrock-chat-stack";
 import { FrontendWafStack } from "../lib/frontend-waf-stack";
-import { TProvider } from "../lib/utils/identifyProvider";
+import { TIdentifyProvider } from "../lib/utils/identifyProvider";
 
 const app = new cdk.App();
 
@@ -17,8 +17,9 @@ const ALLOWED_IP_V6_ADDRESS_RANGES: string[] = app.node.tryGetContext(
 const ENABLE_USAGE_ANALYSIS: boolean = app.node.tryGetContext(
   "enableUsageAnalysis"
 );
-const PROVIDERS: TProvider[] = app.node.tryGetContext("identifyProviders");
-const USER_POOL_DOMAIN_PREFIX_KEY: string = app.node.tryGetContext(
+const IDENTIFY_PROVIDERS: TIdentifyProvider[] =
+  app.node.tryGetContext("identifyProviders");
+const USER_POOL_DOMAIN_PREFIX: string = app.node.tryGetContext(
   "userPoolDomainPrefix"
 );
 
@@ -41,6 +42,6 @@ new BedrockChatStack(app, `BedrockChatStack`, {
   bedrockRegion: BEDROCK_REGION,
   webAclId: waf.webAclArn.value,
   enableUsageAnalysis: ENABLE_USAGE_ANALYSIS,
-  providers: PROVIDERS,
-  userPoolDomainPrefixKey: USER_POOL_DOMAIN_PREFIX_KEY,
+  identifyProviders: IDENTIFY_PROVIDERS,
+  userPoolDomainPrefix: USER_POOL_DOMAIN_PREFIX,
 });

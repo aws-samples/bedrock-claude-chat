@@ -17,14 +17,14 @@ import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { Embedding } from "./constructs/embedding";
 import { VectorStore } from "./constructs/vectorstore";
 import { UsageAnalysis } from "./constructs/usage-analysis";
-import { TProvider, identifyProvider } from "./utils/identifyProvider";
+import { TIdentifyProvider, identifyProvider } from "./utils/identifyProvider";
 
 export interface BedrockChatStackProps extends StackProps {
   readonly bedrockRegion: string;
   readonly webAclId: string;
   readonly enableUsageAnalysis: boolean;
-  readonly providers: TProvider[];
-  readonly userPoolDomainPrefixKey: string;
+  readonly identifyProviders: TIdentifyProvider[];
+  readonly userPoolDomainPrefix: string;
 }
 
 export class BedrockChatStack extends cdk.Stack {
@@ -38,7 +38,7 @@ export class BedrockChatStack extends cdk.Stack {
     const vectorStore = new VectorStore(this, "VectorStore", {
       vpc: vpc,
     });
-    const idp = identifyProvider(props.providers);
+    const idp = identifyProvider(props.identifyProviders);
 
     const dbConfig = {
       host: vectorStore.cluster.clusterEndpoint.hostname,
@@ -82,7 +82,7 @@ export class BedrockChatStack extends cdk.Stack {
 
     const auth = new Auth(this, "Auth", {
       origin: frontend.getOrigin(),
-      userPoolDomainPrefixKey: props.userPoolDomainPrefixKey,
+      userPoolDomainPrefixKey: props.userPoolDomainPrefix,
       idp,
     });
     const database = new Database(this, "Database", {
@@ -115,7 +115,7 @@ export class BedrockChatStack extends cdk.Stack {
     frontend.buildViteApp({
       backendApiEndpoint: backendApi.api.apiEndpoint,
       webSocketApiEndpoint: websocket.apiEndpoint,
-      userPoolDomainPrefixKey: props.userPoolDomainPrefixKey,
+      userPoolDomainPrefix: props.userPoolDomainPrefix,
       auth,
       idp,
     });
