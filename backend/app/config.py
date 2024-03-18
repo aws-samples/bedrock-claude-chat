@@ -36,6 +36,7 @@ ANTHROPIC_PRICING = {
             "input": 0.00080,
             "output": 0.00240,
         },
+        "claude-v3-haiku": {"input": 0.00025, "output": 0.00125},
         "claude-v3-sonnet": {"input": 0.00300, "output": 0.01500},
     },
     "us-west-2": {
@@ -68,6 +69,7 @@ ANTHROPIC_PRICING = {
             "input": 0.00080,
             "output": 0.00240,
         },
+        "claude-v3-haiku": {"input": 0.00025, "output": 0.00125},
         "claude-v3-sonnet": {"input": 0.00300, "output": 0.01500},
     },
 }

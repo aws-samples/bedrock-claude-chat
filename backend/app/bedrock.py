@@ -65,14 +65,16 @@ def compose_args_for_anthropic_client(
 def calculate_price(
     model: str, input_tokens: int, output_tokens: int, region: str = BEDROCK_REGION
 ) -> float:
-    if region in ("us-east-1", "us-west-2", "ap-northeast-1"):
-        input_price = ANTHROPIC_PRICING[region][model]["input"]
-        output_price = ANTHROPIC_PRICING[region][model]["output"]
-
-    else:
-        logger.warning(f"Unsupported region: {region}. Using default pricing.")
-        input_price = ANTHROPIC_PRICING["default"][model]["input"]
-        output_price = ANTHROPIC_PRICING["default"][model]["output"]
+    input_price = (
+        ANTHROPIC_PRICING.get(region, {})
+        .get(model, {})
+        .get("input", ANTHROPIC_PRICING["default"][model]["input"])
+    )
+    output_price = (
+        ANTHROPIC_PRICING.get(region, {})
+        .get(model, {})
+        .get("output", ANTHROPIC_PRICING["default"][model]["output"])
+    )
 
     return input_price * input_tokens / 1000.0 + output_price * output_tokens / 1000.0
 
