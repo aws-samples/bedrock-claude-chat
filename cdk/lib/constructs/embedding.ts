@@ -211,6 +211,11 @@ export class Embedding extends Construct {
     const removeHandlerRole = new iam.Role(this, "RemovalHandlerRole", {
       assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
     });
+    removeHandlerRole.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        "service-role/AWSLambdaVPCAccessExecutionRole"
+      )
+    );
     removeHandlerRole.addToPolicy(
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
