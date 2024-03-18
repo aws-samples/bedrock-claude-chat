@@ -27,13 +27,13 @@ def find_usage_plan_by_id(usage_plan_id: str) -> ApiUsagePlanModel:
         id=plan_response["id"],
         name=plan_response["name"],
         quota=ApiUsagePlanQuotaModel(
-            limit=plan_response["quota"]["limit"],
-            offset=plan_response["quota"]["offset"],
-            period=plan_response["quota"]["period"],
+            limit=plan_response.get("quota", {}).get("limit"),
+            offset=plan_response.get("quota", {}).get("offset"),
+            period=plan_response.get("quota", {}).get("period"),
         ),
         throttle=ApiUsagePlanThrottleModel(
-            rate_limit=plan_response["throttle"]["rateLimit"],
-            burst_limit=plan_response["throttle"]["burstLimit"],
+            rate_limit=plan_response.get("throttle", {}).get("rateLimit"),
+            burst_limit=plan_response.get("throttle", {}).get("burstLimit"),
         ),
         key_ids=[key["id"] for key in key_response["items"]],
     )

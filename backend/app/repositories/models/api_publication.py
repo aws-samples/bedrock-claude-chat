@@ -4,14 +4,14 @@ from pydantic import BaseModel
 
 
 class ApiUsagePlanQuotaModel(BaseModel):
-    limit: int
-    offset: int
-    period: Literal["DAY", "WEEK", "MONTH"]
+    limit: int | None
+    offset: int | None
+    period: Literal["DAY", "WEEK", "MONTH"] | None
 
 
 class ApiUsagePlanThrottleModel(BaseModel):
-    rate_limit: float
-    burst_limit: int
+    rate_limit: float | None
+    burst_limit: int | None
 
 
 class ApiUsagePlanModel(BaseModel):

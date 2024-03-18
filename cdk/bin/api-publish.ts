@@ -121,16 +121,22 @@ const publishedApi = new ApiPublishmentStack(
     webAclArn: webAclArn,
     largeMessageBucketName: largeMessageBucketName,
     usagePlan: {
-      throttle: {
-        rateLimit: PUBLISHED_API_THROTTLE_RATE_LIMIT,
-        burstLimit: PUBLISHED_API_THROTTLE_BURST_LIMIT,
-      },
-      quota: {
-        limit: PUBLISHED_API_QUOTA_LIMIT,
-        period: PUBLISHED_API_QUOTA_PERIOD
-          ? apigateway.Period[PUBLISHED_API_QUOTA_PERIOD]
+      throttle:
+        PUBLISHED_API_THROTTLE_RATE_LIMIT !== undefined &&
+        PUBLISHED_API_THROTTLE_BURST_LIMIT !== undefined
+          ? {
+              rateLimit: PUBLISHED_API_THROTTLE_RATE_LIMIT,
+              burstLimit: PUBLISHED_API_THROTTLE_BURST_LIMIT,
+            }
           : undefined,
-      },
+      quota:
+        PUBLISHED_API_QUOTA_LIMIT !== undefined &&
+        PUBLISHED_API_QUOTA_PERIOD !== undefined
+          ? {
+              limit: PUBLISHED_API_QUOTA_LIMIT,
+              period: apigateway.Period[PUBLISHED_API_QUOTA_PERIOD],
+            }
+          : undefined,
     },
     deploymentStage: PUBLISHED_API_DEPLOYMENT_STAGE,
     corsOptions: {

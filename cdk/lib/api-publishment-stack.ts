@@ -41,6 +41,8 @@ export class ApiPublishmentStack extends Stack {
   constructor(scope: Construct, id: string, props: ApiPublishmentStackProps) {
     super(scope, id, props);
 
+    console.log(`usagePlan: ${JSON.stringify(props.usagePlan)}`); // DEBUG
+
     const dbSecret = secretsmanager.Secret.fromSecretCompleteArn(
       this,
       "DbSecret",

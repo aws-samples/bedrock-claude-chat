@@ -111,8 +111,23 @@ def fetch_bot_publication(user_id: str, bot_id: str) -> BotPublishOutput:
         raise ValueError(f"Bot {bot_id} is not published.")
 
     codebuild_status = find_build_status_by_build_id(bot.published_api_codebuild_id)
-    stack = find_stack_by_bot_id(bot_id)
+    try:
+        stack = find_stack_by_bot_id(bot_id)
+    except RecordNotFoundError:
+        # Codebuild started but stack creation is not started
+        return BotPublishOutput(
+            stage="",
+            quota=PublishedApiQuota(limit=None, offset=None, period=None),
+            throttle=PublishedApiThrottle(rate_limit=None, burst_limit=None),
+            allowed_origins=[],
+            cfn_status="",
+            codebuild_id=bot.published_api_codebuild_id,
+            codebuild_status=codebuild_status,
+            endpoint="",
+            api_key_ids=[],
+        )
     if codebuild_status != "SUCCEEDED":
+        # Return with cloudformation status
         return BotPublishOutput(
             stage="",
             quota=PublishedApiQuota(limit=None, offset=None, period=None),
@@ -166,10 +181,6 @@ def remove_bot_publication(user_id: str, bot_id: str):
             raise ValueError(
                 f"Bot {bot_id} publication is requested (build id: {bot.published_api_codebuild_id}) but not completed. Wait until the publication is completed."
             )
-        if codebuild_status == "FAILED":
-            # Delete bot attribute
-            delete_bot_publication(user_id, bot_id)
-            return
 
     # Before delete cfn stack, delete all api keys
     try:
