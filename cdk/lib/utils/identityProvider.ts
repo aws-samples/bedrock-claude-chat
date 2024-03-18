@@ -18,7 +18,7 @@ type InvalidSocialProvider = {
 type Errors = NotFoundIdpArray | InvalidSocialProvider;
 
 export const identityProvider = (identityProviders: TIdentityProvider[]) => {
-  const isExist = () => identityProviders.length > 0;
+  const isExist = () => identityProviders?.length > 0;
 
   const getProviders = (): TIdentityProvider[] => {
     const program = pipe(
