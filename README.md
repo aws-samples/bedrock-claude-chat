@@ -33,6 +33,7 @@ Add your own instruction and give external knowledge as URL or files (a.k.a [RAG
 - 한국어 💬
 - 中文 💬
 - Français 💬
+- Deutsch 💬
 
 ## 🚀 Super-easy Deployment
 
