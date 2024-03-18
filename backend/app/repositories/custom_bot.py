@@ -670,3 +670,50 @@ async def find_public_bots_by_ids(bot_ids: list[str]) -> list[BotMetaWithOwnerUs
             )
 
     return bots
+
+
+def find_all_published_bots(
+    limit: int = 1000, next_token: str | None = None
+) -> tuple[list[BotMetaWithOwnerUserId], str | None]:
+    """Find all published bots. This method is intended for administrator use."""
+    table = _get_table_public_client()
+
+    query_params = {
+        "IndexName": "PublicBotIdIndex",
+        "FilterExpression": Attr("ApiPublishmentStackName").exists()
+        & Attr("ApiPublishmentStackName").ne(None),
+        "Limit": limit,
+    }
+    if next_token:
+        query_params["ExclusiveStartKey"] = json.loads(
+            base64.b64decode(next_token).decode("utf-8")
+        )
+
+    response = table.scan(**query_params)
+
+    bots = [
+        BotMetaWithOwnerUserId(
+            id=decompose_bot_id(item["SK"]),
+            owner_user_id=item["PK"],
+            title=item["Title"],
+            create_time=float(item["CreateTime"]),
+            last_used_time=float(item["LastBotUsed"]),
+            owned=True,
+            available=True,
+            is_pinned=item["IsPinned"],
+            description=item["Description"],
+            is_public="PublicBotId" in item,
+            sync_status=item["SyncStatus"],
+            published_api_stack_name=item["ApiPublishmentStackName"],
+            published_api_datetime=item.get("ApiPublishedDatetime", None),
+        )
+        for item in response["Items"]
+    ]
+
+    next_token = None
+    if "LastEvaluatedKey" in response:
+        next_token = base64.b64encode(
+            json.dumps(response["LastEvaluatedKey"]).encode("utf-8")
+        ).decode("utf-8")
+
+    return bots, next_token

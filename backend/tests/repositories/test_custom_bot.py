@@ -3,11 +3,14 @@ import unittest
 
 sys.path.append(".")
 
+from pprint import pprint
+
 from app.repositories.custom_bot import (
     delete_alias_by_id,
     delete_bot_by_id,
     delete_bot_publication,
     find_all_bots_by_user_id,
+    find_all_published_bots,
     find_private_bot_by_id,
     find_private_bots_by_user_id,
     find_public_bots_by_ids,
@@ -438,6 +441,15 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
         bots = await find_public_bots_by_ids(["public1", "public2", "1", "2"])
         # 2 public bots and 2 private bots
         self.assertEqual(len(bots), 2)
+
+    async def test_find_all_published_bots(self):
+        bots, next_token = find_all_published_bots()
+        # Bot should not contain unpublished bots
+        for bot in bots:
+            self.assertIsNotNone(bot.published_api_stack_name)
+            self.assertIsNotNone(bot.published_api_datetime)
+        # Next token should be None
+        self.assertIsNone(next_token)
 
 
 class TestUpdateBotVisibility(unittest.TestCase):

@@ -1,15 +1,45 @@
 from datetime import date
 
 from app.dependencies import check_admin
+from app.repositories.custom_bot import find_all_published_bots
 from app.repositories.usage_analysis import (
     find_bots_sorted_by_price,
     find_users_sorted_by_price,
 )
-from app.routes.schemas.admin import UsagePerBotOutput, UsagePerUserOutput
+from app.routes.schemas.admin import (
+    PublishedBotOutput,
+    PublishedBotOutputsWithNextToken,
+    UsagePerBotOutput,
+    UsagePerUserOutput,
+)
 from app.user import User
 from fastapi import APIRouter, Depends, Request
 
 router = APIRouter(tags=["admin"])
+
+
+@router.get("/admin/published-bots", response_model=PublishedBotOutputsWithNextToken)
+def get_all_published_bots(
+    next_token: str | None = None,
+    limit: int = 1000,
+    admin_check=Depends(check_admin),
+):
+    """Get all published bots. This is intended to be used by admin."""
+    bots, next_token = find_all_published_bots(next_token=next_token, limit=limit)
+
+    bot_outputs = [
+        PublishedBotOutput(
+            id=bot.id,
+            title=bot.title,
+            description=bot.description,
+            published_stack_name=bot.published_api_stack_name,
+            published_datetime=bot.published_api_datetime,
+            owner_user_id=bot.owner_user_id,
+        )
+        for bot in bots
+    ]
+
+    return PublishedBotOutputsWithNextToken(bots=bot_outputs, next_token=next_token)
 
 
 @router.get("/admin/public-bots", response_model=list[UsagePerBotOutput])

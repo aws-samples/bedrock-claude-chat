@@ -11,17 +11,23 @@ const app = new cdk.App();
 const BEDROCK_REGION = app.node.tryGetContext("bedrockRegion");
 
 // Usage plan for the published API
-const PUBLISHED_API_THROTTLE_RATE_LIMIT: string = app.node.tryGetContext(
-  "publishedApiThrottleRateLimit"
-);
-const PUBLISHED_API_THROTTLE_BURST_LIMIT: string = app.node.tryGetContext(
-  "publishedApiThrottleBurstLimit"
-);
-const PUBLISHED_API_QUOTA_LIMIT: string = app.node.tryGetContext(
+const PUBLISHED_API_THROTTLE_RATE_LIMIT: number | undefined =
+  app.node.tryGetContext("publishedApiThrottleRateLimit")
+    ? Number(app.node.tryGetContext("publishedApiThrottleRateLimit"))
+    : undefined;
+const PUBLISHED_API_THROTTLE_BURST_LIMIT: number | undefined =
+  app.node.tryGetContext("publishedApiThrottleBurstLimit")
+    ? Number(app.node.tryGetContext("publishedApiThrottleBurstLimit"))
+    : undefined;
+const PUBLISHED_API_QUOTA_LIMIT: number | undefined = app.node.tryGetContext(
   "publishedApiQuotaLimit"
-);
-const PUBLISHED_API_QUOTA_PERIOD: "DAY" | "WEEK" | "MONTH" =
-  app.node.tryGetContext("publishedApiQuotaPeriod");
+)
+  ? Number(app.node.tryGetContext("publishedApiQuotaLimit"))
+  : undefined;
+const PUBLISHED_API_QUOTA_PERIOD: "DAY" | "WEEK" | "MONTH" | undefined =
+  app.node.tryGetContext("publishedApiQuotaPeriod")
+    ? app.node.tryGetContext("publishedApiQuotaPeriod")
+    : undefined;
 const PUBLISHED_API_DEPLOYMENT_STAGE = app.node.tryGetContext(
   "publishedApiDeploymentStage"
 );
@@ -71,8 +77,7 @@ const dbConfigHostname = cdk.Fn.importValue(
 const dbConfigPort = cdk.Token.asNumber(
   cdk.Fn.importValue("BedrockClaudeChatDbConfigPort")
 );
-// TODO: remove
-console.log(dbConfigPort);
+
 const dbConfigSecretArn = cdk.Fn.importValue(
   "BedrockClaudeChatDbConfigSecretArn"
 );
@@ -103,12 +108,14 @@ const publishedApi = new ApiPublishmentStack(
     largeMessageBucketName: largeMessageBucketName,
     usagePlan: {
       throttle: {
-        rateLimit: Number(PUBLISHED_API_THROTTLE_RATE_LIMIT),
-        burstLimit: Number(PUBLISHED_API_THROTTLE_BURST_LIMIT),
+        rateLimit: PUBLISHED_API_THROTTLE_RATE_LIMIT,
+        burstLimit: PUBLISHED_API_THROTTLE_BURST_LIMIT,
       },
       quota: {
-        limit: Number(PUBLISHED_API_QUOTA_LIMIT),
-        period: apigateway.Period[PUBLISHED_API_QUOTA_PERIOD],
+        limit: PUBLISHED_API_QUOTA_LIMIT,
+        period: PUBLISHED_API_QUOTA_PERIOD
+          ? apigateway.Period[PUBLISHED_API_QUOTA_PERIOD]
+          : undefined,
       },
     },
     deploymentStage: PUBLISHED_API_DEPLOYMENT_STAGE,
