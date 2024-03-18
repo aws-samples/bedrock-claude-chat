@@ -80,6 +80,7 @@ def delete_api_key(api_key_id: str):
 
 def find_stack_by_bot_id(bot_id: str) -> PublishedApiStackModel:
     client = boto3.client("cloudformation")
+    # DO NOT change the stack naming rule
     stack_name = f"ApiPublishmentStack{bot_id}"
 
     try:
@@ -88,6 +89,20 @@ def find_stack_by_bot_id(bot_id: str) -> PublishedApiStackModel:
         raise RecordNotFoundError()
 
     stack = response["Stacks"][0]
+
+    if stack["StackStatus"] != "CREATE_COMPLETE":
+        return PublishedApiStackModel(
+            stack_id=stack["StackId"],
+            stack_name=stack["StackName"],
+            stack_status=stack["StackStatus"],
+            api_id=None,
+            api_name=None,
+            api_usage_plan_id=None,
+            api_allowed_origins=None,
+            api_stage=None,
+            create_time=int(stack["CreationTime"].timestamp() * 1000),
+        )
+
     return PublishedApiStackModel(
         stack_id=stack["StackId"],
         stack_name=stack["StackName"],

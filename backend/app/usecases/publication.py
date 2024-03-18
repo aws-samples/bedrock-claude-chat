@@ -111,13 +111,14 @@ def fetch_bot_publication(user_id: str, bot_id: str) -> BotPublishOutput:
         raise ValueError(f"Bot {bot_id} is not published.")
 
     codebuild_status = find_build_status_by_build_id(bot.published_api_codebuild_id)
+    stack = find_stack_by_bot_id(bot_id)
     if codebuild_status != "SUCCEEDED":
         return BotPublishOutput(
             stage="",
             quota=PublishedApiQuota(limit=None, offset=None, period=None),
             throttle=PublishedApiThrottle(rate_limit=None, burst_limit=None),
             allowed_origins=[],
-            cfn_status="",
+            cfn_status=stack.stack_status,
             codebuild_id=bot.published_api_codebuild_id,
             codebuild_status=codebuild_status,
             endpoint="",
@@ -126,10 +127,9 @@ def fetch_bot_publication(user_id: str, bot_id: str) -> BotPublishOutput:
 
     logger.info(f"Bot {bot_id} is published. Fetching API Gateway information.")
 
-    stack = find_stack_by_bot_id(bot_id)
-    usage_plan = find_usage_plan_by_id(stack.api_usage_plan_id)
+    usage_plan = find_usage_plan_by_id(stack.api_usage_plan_id)  # type: ignore
     return BotPublishOutput(
-        stage=stack.api_stage,
+        stage=stack.api_stage,  # type: ignore
         quota=PublishedApiQuota(
             limit=usage_plan.quota.limit,
             offset=usage_plan.quota.offset,
@@ -139,7 +139,7 @@ def fetch_bot_publication(user_id: str, bot_id: str) -> BotPublishOutput:
             rate_limit=usage_plan.throttle.rate_limit,
             burst_limit=usage_plan.throttle.burst_limit,
         ),
-        allowed_origins=stack.api_allowed_origins,
+        allowed_origins=stack.api_allowed_origins,  # type: ignore
         cfn_status=stack.stack_status,
         codebuild_id=bot.published_api_codebuild_id,
         codebuild_status=codebuild_status,
@@ -177,9 +177,11 @@ def remove_bot_publication(user_id: str, bot_id: str):
     except RecordNotFoundError:
         delete_bot_publication(user_id, bot_id)
         return
-    usage_plan = find_usage_plan_by_id(stack.api_usage_plan_id)
-    for key_id in usage_plan.key_ids:
-        delete_api_key(key_id)
+
+    if stack.stack_status == "CREATE_COMPLETED":
+        usage_plan = find_usage_plan_by_id(stack.api_usage_plan_id)  # type: ignore
+        for key_id in usage_plan.key_ids:
+            delete_api_key(key_id)
 
     # Delete `ApiPublishmentStack` by CloudFormation
     delete_stack_by_bot_id(bot_id)
@@ -194,7 +196,10 @@ def fetch_api_key(user_id: str, bot_id: str, api_key: str) -> ApiKeyOutput:
     try:
         bot = find_private_bot_by_id(user_id, bot_id)
         stack = find_stack_by_bot_id(bot_id)
-        usage_plan = find_usage_plan_by_id(stack.api_usage_plan_id)
+        assert (
+            stack.stack_status == "CREATE_COMPLETE"
+        ), f"Bot {bot_id} stack creation is not completed."
+        usage_plan = find_usage_plan_by_id(stack.api_usage_plan_id)  # type: ignore
     except RecordNotFoundError:
         raise RecordNotFoundError(f"Bot {bot_id} is not owned by user {user_id}.")
 
@@ -220,7 +225,10 @@ def create_new_api_key(
     try:
         bot = find_private_bot_by_id(user_id, bot_id)
         stack = find_stack_by_bot_id(bot_id)
-        usage_plan = find_usage_plan_by_id(stack.api_usage_plan_id)
+        assert (
+            stack.stack_status == "CREATE_COMPLETE"
+        ), f"Bot {bot_id} stack creation is not completed."
+        usage_plan = find_usage_plan_by_id(stack.api_usage_plan_id)  # type: ignore
     except RecordNotFoundError:
         raise RecordNotFoundError(f"Bot {bot_id} is not owned by user {user_id}.")
 
@@ -240,7 +248,10 @@ def remove_api_key(user_id: str, bot_id: str, api_key_id: str):
     try:
         bot = find_private_bot_by_id(user_id, bot_id)
         stack = find_stack_by_bot_id(bot_id)
-        usage_plan = find_usage_plan_by_id(stack.api_usage_plan_id)
+        assert (
+            stack.stack_status == "CREATE_COMPLETE"
+        ), f"Bot {bot_id} stack creation is not completed."
+        usage_plan = find_usage_plan_by_id(stack.api_usage_plan_id)  # type: ignore
     except RecordNotFoundError:
         raise RecordNotFoundError(f"Bot {bot_id} is not owned by user {user_id}.")
 

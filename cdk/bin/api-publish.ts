@@ -39,6 +39,20 @@ const PUBLISHED_API_ALLOWED_ORIGINS: string[] = JSON.parse(
   PUBLISHED_API_ALLOWED_ORIGINS_STRING || '["*"]'
 );
 
+console.log(
+  `PUBLISHED_API_THROTTLE_RATE_LIMIT: ${PUBLISHED_API_THROTTLE_RATE_LIMIT}`
+);
+console.log(
+  `PUBLISHED_API_THROTTLE_BURST_LIMIT: ${PUBLISHED_API_THROTTLE_BURST_LIMIT}`
+);
+console.log(`PUBLISHED_API_QUOTA_LIMIT: ${PUBLISHED_API_QUOTA_LIMIT}`);
+console.log(`PUBLISHED_API_QUOTA_PERIOD: ${PUBLISHED_API_QUOTA_PERIOD}`);
+console.log(
+  `PUBLISHED_API_DEPLOYMENT_STAGE: ${PUBLISHED_API_DEPLOYMENT_STAGE}`
+);
+console.log(`PUBLISHED_API_ID: ${PUBLISHED_API_ID}`);
+console.log(`PUBLISHED_API_ALLOWED_ORIGINS: ${PUBLISHED_API_ALLOWED_ORIGINS}`);
+
 const webAclArn = cdk.Fn.importValue("PublishedApiWebAclArn");
 const vpcId = cdk.Fn.importValue("BedrockClaudeChatVpcId");
 const availabilityZone0 = cdk.Fn.importValue(

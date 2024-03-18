@@ -14,7 +14,7 @@ from app.repositories.api_publication import (
 
 # Edit before running (Need to create a api stack. To do so, run codebuild project).
 usage_plan_id = "rov58p"
-bot_id = "01HQPHC27J6K5PD9RMXNZA8QVG"
+bot_id = "01HRA01CB4H6GQPAG78YG49CQ4"
 
 
 class TestApiGateway(unittest.TestCase):

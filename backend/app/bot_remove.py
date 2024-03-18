@@ -95,6 +95,7 @@ def handler(event, context):
     try:
         stack = find_stack_by_bot_id(bot_id)
     except RecordNotFoundError:
+        print(f"Bot {bot_id} cloudformation stack not found. Skipping deletion.")
         return
 
     # Before delete cfn stack, delete all api keys

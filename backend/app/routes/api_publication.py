@@ -45,8 +45,8 @@ def get_bot_publication(
     """Get bot publication
     This can be used by both owner and admin.
     NOTE:
-    - If not published yet, returns 404.
-    - If codebuild for cfn deploy is not succeeded, All value will be empty except for `codebuild_id` and `codebuild_status`.
+    - If not shared yet, returns 404.
+    - If codebuild for cfn deploy is not succeeded, All value will be empty except for `codebuild_id`, `codebuild_status` and `cfn_status`.
     - Need to pass `owner_user_id` if the user is admin.
     """
     current_user: User = request.state.current_user
