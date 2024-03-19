@@ -49,7 +49,7 @@ const translation = {
         overview:
           'Bots arbeiten nach vordefinierten Anweisungen. Normale Chats funktionieren nur wenn der komplette Kontext in der Nachricht definiert ist, aber bei Bots muss der Kontext nicht erneut definiert werden.',
         instructions:
-          'Legen Sie fest, wie sich der Bot verhalten soll. Unklare Anweisungen können zu unerwünschten Ergebnissen führen, geben Sie aslo klare und präzise Anweisungen.',
+          'Legen Sie fest, wie sich der Bot verhalten soll. Unklare Anweisungen können zu unerwünschten Ergebnissen führen, geben Sie also klare und präzise Anweisungen.',
         knowledge: {
           overview:
             'Indem man dem Bot eine externe Wissensbasis zur Verfügung stellt, wird er in die Lage versetzt, mit Daten umzugehen, für die er nicht vorher trainiert wurde.',
