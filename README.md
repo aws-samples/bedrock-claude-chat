@@ -16,9 +16,6 @@ Not only text but also images are available with [Anthropic's Claude 3](https://
 
 ![](./docs/imgs/demo.gif)
 
-> [!Note]
-> Currently the image will be compressed into 800px jpeg due to DynamoDB [item size limitation](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/ServiceQuotas.html#limits-items). [Issue](https://github.com/aws-samples/bedrock-claude-chat/issues/131)
-
 ### Bot Personalization
 
 Add your own instruction and give external knowledge as URL or files (a.k.a [RAG](./docs/RAG.md)). The bot can be shared among application users.
@@ -96,7 +93,8 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 
 ## Features and Roadmap
 
-### Basic chat features
+<details>
+<summary>Basic chat features</summary>
 
 - [x] Authentication (Sign-up, Sign-in)
 - [x] Creation, storage, and deletion of conversations
@@ -108,25 +106,35 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 - [x] IP address restriction
 - [x] Edit message & re-send
 - [x] I18n
-- [x] Model switch (Claude Instant / Claude)
+- [x] Model switch
+</details>
 
-### Customized bot features
+<details>
+<summary>Customized bot features</summary>
 
 - [x] Customized bot creation
 - [x] Customized bot sharing
 - [x] Publish as stand-alone API
+</details>
 
-### RAG features
+<details>
+<summary>RAG features</summary>
 
 - [x] Web (html)
 - [x] Text data (txt, csv, markdown and etc)
 - [x] PDF
 - [x] Microsoft office files (pptx, docx, xlsx)
 - [x] Youtube transcript
+- [ ] Import from S3 bucket
+- [ ] Import external existing Kendra / OpenSearch / KnowledgeBase
+</details>
 
-### Admin features
+<details>
+<summary>Admin features</summary>
 
 - [x] Tracking usage fees per bot
+- [x] List all published bot
+</details>
 
 ## Deploy using CDK
 

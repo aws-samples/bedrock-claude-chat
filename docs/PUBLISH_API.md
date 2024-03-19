@@ -2,7 +2,7 @@
 
 ## Overview
 
-This sample includes a feature for publishing APIs. It is designed to be integrated into actual production environments without the need for a frontend, as the existing services do not require a chat interface for integration. The user experience (UX) desired to be provided to the end-user is not in the form of a chat. While a chat UI is convenient for preliminary validation, the actual implementation is more suited for backend reuse. After simple validation through chat is completed, it is often more convenient to have a clearly specified API provided as a standalone feature. Therefore, this sample comes equipped with the capability to publish customized bots. By entering settings for quotas, throttling, origins, etc., an endpoint is published along with an API key.
+This sample includes a feature for publishing APIs. While a chat interface can be convenient for preliminary validation, the actual implementation depends on the specific use case and user experience (UX) desired for the end-user. In some scenarios, a chat UI may be the preferred choice, while in others, stand-alone API might be more suitable. After initial validation, this sample provides the capability to publish customized bots according to the project's needs. By entering settings for quotas, throttling, origins, etc., an endpoint can be published along with an API key, offering flexibility for diverse integration options.
 
 ## Security
 
@@ -10,10 +10,23 @@ Using only an API key is not recommended as described in: [AWS API Gateway Devel
 
 ## How to publish customized bot API
 
-TODO
+### Prerequisites
 
-- Add user to cognito group
-- Screenshots
+For governance reasons, only limited users are able to publish bots. Before publishing, the user must be a member of group called `PublishAllowed`, which can be set up via the management console or aws cli.
+
+![](./imgs/group_membership_publish_allowed.png)
+
+### API Publish Settings
+
+After logging in as a `PublishedAllowed` user and create a bot, choose `API PublishSettings`. Note that only a shared bot can be published.
+![](./imgs/bot_api_publish_screenshot.png)
+
+On the following screen, we can configure several parameters regarding throttling. For the detail, please also see: [Throttle API requests for better throughput](https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-request-throttling.html).
+![](./imgs/bot_api_publish_screenshot2.png)
+
+After deployment, following screen will appear where you can get the endpoint url and a api key. We can also add and delete api keys.
+
+![](./imgs/bot_api_publish_screenshot3.png)
 
 ## Architecture
 
@@ -30,5 +43,3 @@ Client needs to set `x-api-key` on the request header.
 ## API specification
 
 See [here](https://aws-samples.github.io/bedrock-claude-chat).
-
-TODO

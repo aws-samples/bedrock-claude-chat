@@ -17,8 +17,6 @@ export interface UsageAnalysisProps {
 }
 
 export class UsageAnalysis extends Construct {
-  // public readonly databaseName: string;
-  // public readonly ddbExportTableName: string;
   public readonly database: glue.IDatabase;
   public readonly ddbExportTable: glue.ITable;
   public readonly ddbBucket: s3.IBucket;
@@ -253,8 +251,6 @@ export class UsageAnalysis extends Construct {
       value: `s3://${queryResultBucket.bucketName}`,
     });
 
-    // this.databaseName = GLUE_DATABASE_NAME;
-    // this.ddbExportTableName = DDB_EXPORT_TABLE_NAME;
     this.database = database;
     this.ddbBucket = ddbBucket;
     this.ddbExportTable = ddbExportTable;
