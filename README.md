@@ -1,6 +1,6 @@
 # Bedrock Claude Chat
 
-![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/test.yml/badge.svg)
+![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/cdk.yml/badge.svg)
 
 > [!Tip]
 > 🔔**Multi-modal chat by [Claude v3 (Haiku, Sonnet)](https://aws.amazon.com/jp/about-aws/whats-new/2024/03/anthropics-claude-3-sonnet-model-amazon-bedrock/) is available for now**. See [Release](https://github.com/aws-samples/bedrock-claude-chat/releases/tag/v0.4.4) for the detail.
