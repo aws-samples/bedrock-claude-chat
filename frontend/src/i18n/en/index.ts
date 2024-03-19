@@ -234,7 +234,7 @@ How would you categorize this email?`,
           pageTitle: 'Public Bot Usages',
           noPublicBotUsages:
             'During the Calculation Period, the public bots were not utilized.',
-          published: 'The Bot API is published.',
+          published: 'API is published.',
           SearchCondition: {
             title: 'Calculation Period',
             from: 'From',
@@ -245,7 +245,17 @@ How would you categorize this email?`,
         help: {
           overview:
             'Monitor the usage status of Shared Bots and Published Bot APIs.',
+          calculationPeriod:
+            'If the Calculation Period is not set, the cost for today will be displayed.',
         },
+      },
+      publishApis: {
+        label: {
+          pageTitle: 'Bot Publish APIs',
+        },
+      },
+      validationError: {
+        period: 'Enter both From and To',
       },
     },
     deleteDialog: {

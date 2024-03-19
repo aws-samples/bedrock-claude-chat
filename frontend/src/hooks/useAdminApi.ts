@@ -14,7 +14,9 @@ const useAdminApi = () => {
       return http.get<ListBotApisResponse>(['/admin/published-bots', req]);
     },
     listPublicBots: (req: ListPublicBotsRequest) => {
-      return http.get<ListPublicBotsResponse>(['/admin/public-bots', req]);
+      return http.get<ListPublicBotsResponse>(
+        !!req.start === !!req.end ? ['/admin/public-bots', req] : null
+      );
     },
   };
 };

@@ -1,56 +1,59 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Help from '../components/Help';
 import usePublicBotsForAdmin from '../hooks/usePublicBotsForAdmin';
 import ListItemBot from '../components/ListItemBot';
-import { addDate, formatDate } from '../utils/DateUtils';
+import { formatDate, formatDatetime } from '../utils/DateUtils';
 
 import InputText from '../components/InputText';
 import Button from '../components/Button';
 import { PiArrowDown } from 'react-icons/pi';
 import Skeleton from '../components/Skeleton';
-import { twMerge } from 'tailwind-merge';
 
-const DATA_FORMAT = 'YYYYMMDD';
-
-const AdminPublicBotsPage: React.FC = () => {
+const AdminBotApisPage: React.FC = () => {
   const { t } = useTranslation();
+  // const navigate = useNavigate();
 
-  const [searchDateFrom, setSearchDateFrom] = useState<null | string>(
-    formatDate(addDate(new Date(), -1, 'month'), DATA_FORMAT)
-  );
-  const [searchDateTo, setSearchDateTo] = useState<null | string>(
-    formatDate(new Date(), DATA_FORMAT)
-  );
-  const [isDescCost, setIsDescCost] = useState(true);
+  const [searchDateFrom, setSearchDateFrom] = useState<null | string>(null);
+  const [searchDateTo, setSearchDateTo] = useState<null | string>(null);
 
   const { publicBots, isLoading: isLoadingPublicBots } = usePublicBotsForAdmin({
     start: searchDateFrom ? searchDateFrom + '00' : undefined,
     end: searchDateTo ? searchDateTo + '23' : undefined,
   });
 
-  const sortedBots = useMemo(() => {
-    const tmp = isDescCost ? -1 : 1;
-    return publicBots?.sort((a, b) =>
-      a.totalPrice > b.totalPrice ? tmp : tmp * -1
-    );
-  }, [isDescCost, publicBots]);
-
-  const validationErrorMessage = useMemo(() => {
-    return !!searchDateFrom === !!searchDateTo
-      ? null
-      : t('admin.validationError.period');
-  }, [searchDateFrom, searchDateTo, t]);
+  // const onClickViewBot = useCallback(
+  //   (botId: string) => {
+  //     navigate(`/bot/edit/${botId}`);
+  //   },
+  //   [navigate]
+  // );
 
   return (
     <>
+      {/* <DialogConfirmDeleteBot
+        isOpen={isOpenDeleteDialog}
+        target={targetDelete}
+        onDelete={onDeleteMyBot}
+        onClose={() => {
+          setIsOpenDeleteDialog(false);
+        }}
+      />
+      <DialogConfirmShareBot
+        isOpen={isOpenShareDialog}
+        target={targetShareBot}
+        onToggleShare={onToggleShare}
+        onClose={() => {
+          setIsOpenShareDialog(false);
+        }}
+      /> */}
       <div className="flex h-full justify-center">
         <div className="w-2/3">
           <div className="h-full w-full pt-8">
             <div className="flex items-end justify-between">
               <div className="flex items-center gap-2">
                 <div className="text-xl font-bold">
-                  {t('admin.publicBotUsages.label.pageTitle')}
+                  {t('admin.publishApis.label.pageTitle')}
                 </div>
                 <Help
                   direction="right"
@@ -60,11 +63,8 @@ const AdminPublicBotsPage: React.FC = () => {
             </div>
 
             <div className="my-2 rounded border p-2">
-              <div className="flex items-center gap-1 text-sm font-bold">
+              <div className="text-sm font-bold">
                 {t('admin.publicBotUsages.label.SearchCondition.title')}
-                <Help
-                  message={t('admin.publicBotUsages.help.calculationPeriod')}
-                />
               </div>
 
               <div className="flex gap-2 sm:w-full md:w-3/4">
@@ -74,17 +74,8 @@ const AdminPublicBotsPage: React.FC = () => {
                   label={t('admin.publicBotUsages.label.SearchCondition.from')}
                   value={formatDate(searchDateFrom, 'YYYY-MM-DD')}
                   onChange={(val) => {
-                    if (val === '') {
-                      setSearchDateFrom(null);
-                      return;
-                    }
-                    setSearchDateFrom(formatDate(val, DATA_FORMAT));
+                    setSearchDateFrom(formatDate(val, 'YYYYMMDD'));
                   }}
-                  errorMessage={
-                    searchDateFrom
-                      ? undefined
-                      : validationErrorMessage ?? undefined
-                  }
                 />
                 <InputText
                   className="w-full"
@@ -92,35 +83,14 @@ const AdminPublicBotsPage: React.FC = () => {
                   label={t('admin.publicBotUsages.label.SearchCondition.to')}
                   value={formatDate(searchDateTo, 'YYYY-MM-DD')}
                   onChange={(val) => {
-                    if (val === '') {
-                      setSearchDateTo(null);
-                      return;
-                    }
-                    setSearchDateTo(formatDate(val, DATA_FORMAT));
+                    setSearchDateTo(formatDate(val, 'YYYYMMDD'));
                   }}
-                  errorMessage={
-                    searchDateTo
-                      ? undefined
-                      : validationErrorMessage ?? undefined
-                  }
                 />
               </div>
             </div>
 
             <div className="my-2 flex justify-end">
-              <Button
-                outlined
-                rightIcon={
-                  <PiArrowDown
-                    className={twMerge(
-                      'transition',
-                      isDescCost ? 'rotate-0' : 'rotate-180'
-                    )}
-                  />
-                }
-                onClick={() => {
-                  setIsDescCost(!isDescCost);
-                }}>
+              <Button outlined rightIcon={<PiArrowDown />} onClick={() => {}}>
                 {t('admin.publicBotUsages.label.sortByCost')}
               </Button>
             </div>
@@ -141,7 +111,7 @@ const AdminPublicBotsPage: React.FC = () => {
                   {t('admin.publicBotUsages.label.noPublicBotUsages')}
                 </div>
               )}
-              {sortedBots?.map((bot, idx) => (
+              {publicBots?.map((bot, idx) => (
                 <ListItemBot
                   key={idx}
                   bot={{
@@ -151,16 +121,19 @@ const AdminPublicBotsPage: React.FC = () => {
                   onClick={() => {
                     // onClickViewBot(bot.id);
                   }}>
-                  <div className="relative flex h-full items-center">
-                    <div className="text-lg font-bold">
+                  <div className="flex gap-3">
+                    <div className="flex gap-1 text-lg font-bold">
                       {(Math.floor(bot.totalPrice * 100) / 100).toFixed(2)} USD
                     </div>
 
-                    <div className="absolute bottom-0 right-0 flex origin-bottom-right whitespace-nowrap text-xs font-light">
+                    <div className="flex flex-col gap-1 text-sm">
                       {bot.isPublished ? (
                         <>
-                          {bot.isPublished
-                            ? t('admin.publicBotUsages.label.published')
+                          <div className="font-bold">
+                            {/* {t('admin.label.publishedDate')}: */}
+                          </div>
+                          {bot.publishedDatetime
+                            ? formatDatetime(bot.publishedDatetime)
                             : null}
                         </>
                       ) : (
@@ -178,4 +151,4 @@ const AdminPublicBotsPage: React.FC = () => {
   );
 };
 
-export default AdminPublicBotsPage;
+export default AdminBotApisPage;
