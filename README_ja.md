@@ -15,9 +15,6 @@
 [Claude 3](https://www.anthropic.com/news/claude-3-family)によるテキストと画像の両方を利用したチャットが可能です。現在`Haiku`および`Sonnet`をサポートしています。
 ![](./imgs/demo_ja.gif)
 
-> [!Note]
-> 現在画像は DynamoDB [アイテムサイズ制限](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/ServiceQuotas.html#limits-items) のため 800px jpeg へ変換されます。[Issue](https://github.com/aws-samples/bedrock-claude-chat/issues/131)
-
 ### ボットのカスタマイズ
 
 外部のナレッジおよび具体的なインストラクションを組み合わせ、ボットをカスタマイズすることが可能です（外部のナレッジを利用した方法は[RAG](./RAG_ja.md)として知られています）。なお、作成したボットはアプリケーションのユーザー間で共有することができます。
@@ -76,36 +73,48 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 
 ## 機能・ロードマップ
 
-### 基本
+<details>
+<summary>基本的なチャット機能</summary>
 
-- [x] 認証 (サインアップ・サインイン)
-- [x] 会話の新規作成・保存・削除
-- [x] チャットボットの返信内容のコピー
-- [x] 会話の件名自動提案
-- [x] コードのシンタックスハイライト
-- [x] マークダウンのレンダリング
-- [x] ストリーミングレスポンス
-- [x] IP アドレス制限
-- [x] メッセージの編集と再送
-- [x] I18n
-- [x] モデルの切り替え (Claude Instant / Claude)
+- [x] 認証 (サインアップ、サインイン)
+- [x] 会話の作成、保存、削除
+- [x] チャットボットの返答のコピー
+- [x] 会話のための自動的なトピックの提案
+- [x] コードの構文強調表示
+- [x] Markdown の表示
+- [x] ストリーミング応答
+- [x] IP アドレスの制限
+- [x] メッセージの編集と再送信
+- [x] 国際化
+- [x] モデルの切り替え
+</details>
 
-### カスタマイズボット
+<details>
+<summary>カスタマイズされたボットの機能</summary>
 
-- [x] カスタマイズボットの作成
-- [x] カスタマイズボットのシェア
+- [x] カスタマイズされたボットの作成
+- [x] カスタマイズされたボットの共有
+- [x] 独立した API として公開
+</details>
 
-### RAG
+<details>
+<summary>RAG機能</summary>
 
 - [x] Web (html)
-- [x] テキストデータ (txt, csv, markdown and etc)
+- [x] テキストデータ (txt、csv、markdown など)
 - [x] PDF
-- [x] Microsoft オフィス (pptx, docx, xlsx)
-- [x] Youtube 字幕
+- [x] Microsoft Office ファイル (pptx、docx、xlsx)
+- [x] YouTube の字幕
+- [ ] S3 バケットからのインポート
+- [ ] 既存の Kendra / OpenSearch / KnowledgeBase からのインポート
+</details>
 
-### 管理者用機能
+<details>
+<summary>管理者機能</summary>
 
-- [ ] ユーザーの利用状況分析
+- [x] ボットごとの使用料の追跡
+- [x] 公開されたボットの一覧表示
+</details>
 
 ## Deploy using CDK
 
