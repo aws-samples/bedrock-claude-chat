@@ -9,6 +9,7 @@ from app.repositories.conversation import (
 )
 from app.repositories.custom_bot import (
     find_all_bots_by_user_id,
+    find_all_public_bots,
     find_private_bot_by_id,
     find_private_bots_by_user_id,
     update_bot_visibility,
@@ -167,13 +168,14 @@ def patch_bot_visibility(
 @router.get("/bot", response_model=list[BotMetaOutput])
 def get_all_bots(
     request: Request,
-    kind: Literal["private", "mixed"] = "private",
+    kind: Literal["private", "mixed", "public"] = "private",
     pinned: bool = False,
     limit: int | None = None,
 ):
     """Get all bots. The order is descending by `last_used_time`.
     - If `kind` is `private`, only private bots will be returned.
         - If `mixed` must give either `pinned` or `limit`.
+        - If `public`, we can use `limit`.
     - If `pinned` is True, only pinned bots will be returned.
         - When kind is `private`, this will be ignored.
     - If `limit` is specified, only the first n bots will be returned.
@@ -184,6 +186,8 @@ def get_all_bots(
     bots = []
     if kind == "private":
         bots = find_private_bots_by_user_id(current_user.id, limit=limit)
+    elif kind == "public":
+        bots = find_all_public_bots(limit=limit)
     elif kind == "mixed":
         bots = find_all_bots_by_user_id(
             current_user.id, limit=limit, only_pinned=pinned

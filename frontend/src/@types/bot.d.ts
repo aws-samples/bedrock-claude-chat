@@ -1,4 +1,4 @@
-export type BotKind = 'private' | 'mixed';
+export type BotKind = 'private' | 'mixed' | 'public';
 
 export type BotMeta = {
   id: string;
@@ -100,6 +100,10 @@ export type GetBotsRequest =
   | {
       kind: 'mixed';
       pinned: boolean;
+    }
+  | {
+      kind: 'public';
+      limit: number;
     };
 
 export type GetBotsResponse = BotListItem[];

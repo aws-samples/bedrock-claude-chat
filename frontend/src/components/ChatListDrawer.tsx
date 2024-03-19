@@ -181,7 +181,7 @@ const ChatListDrawer: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const { opened, switchOpen } = useDrawer();
   const { conversations } = useConversation();
-  const { starredBots, recentlyUsedUnsterredBots } = useBot();
+  const {publicBots, starredBots, recentlyUsedUnsterredBots } = useBot();
 
   const [prevConversations, setPrevConversations] =
     useState<typeof conversations>();
@@ -307,7 +307,20 @@ const ChatListDrawer: React.FC<Props> = (props) => {
               to="bot/explore"
               labelComponent={t('button.botConsole')}
             />
-
+            <ExpandableDrawerGroup
+              label={t('app.publicBots')}
+              className="border-t pt-1">
+              {publicBots?.map((bot) => (
+                <DrawerItem
+                  key={bot.id}
+                  isActive={botId === bot.id && !conversationId}
+                  to={`bot/${bot.id}`}
+                  icon={<PiRobot />}
+                  labelComponent={bot.title}
+                  onClick={onClickNewBotChat}
+                />
+              ))}
+            </ExpandableDrawerGroup>
             <ExpandableDrawerGroup
               label={t('app.starredBots')}
               className="border-t pt-1">

@@ -7,6 +7,7 @@ const translation = {
       recentlyUsedBots: 'Recently Used Bots',
       conversationHistory: 'History',
       chatWaitingSymbol: '▍',
+      publicBots: 'Available bots',
     },
     bot: {
       label: {
