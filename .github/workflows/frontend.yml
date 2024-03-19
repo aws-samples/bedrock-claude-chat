@@ -28,7 +28,7 @@ jobs:
       - name: Check build status
         run: |
           cd frontend
-          if [ -d "build" ]; then
+          if [ -d "dist" ]; then
             echo "Build successful"
           else
             echo "Build failed"
