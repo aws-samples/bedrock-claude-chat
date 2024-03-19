@@ -14,10 +14,12 @@ type Props = BaseProps & {
 const DialogConfirmDeleteApiKey: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   return (
-    <ModalDialog title={t('bot.deleteApiKeyDialog.title')} {...props}>
+    <ModalDialog
+      title={t('bot.apiSettings.deleteApiKeyDialog.title')}
+      {...props}>
       <div>
         <Trans
-          i18nKey="bot.deleteApiKeyDialog.content"
+          i18nKey="bot.apiSettings.deleteApiKeyDialog.content"
           values={{
             title: props.apiKeyTitle,
           }}

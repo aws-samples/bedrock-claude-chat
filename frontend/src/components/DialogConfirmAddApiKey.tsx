@@ -23,8 +23,8 @@ const DialogConfirmAddApiKey: React.FC<Props> = (props) => {
   }, [props.isOpen]);
 
   return (
-    <ModalDialog title={t('bot.addApiKeyDialog.title')} {...props}>
-      <div>{t('bot.addApiKeyDialog.content')}</div>
+    <ModalDialog title={t('bot.apiSettings.addApiKeyDialog.title')} {...props}>
+      <div>{t('bot.apiSettings.addApiKeyDialog.content')}</div>
       <InputText
         value={description}
         disabled={props.loading}

@@ -27,15 +27,15 @@ const PERIOD_OPTIONS: {
   value: QuotaPeriod;
 }[] = [
   {
-    label: i18next.t('bot.label.apiSettings.period.day'),
+    label: i18next.t('bot.apiSettings.label.period.day'),
     value: 'DAY',
   },
   {
-    label: i18next.t('bot.label.apiSettings.period.week'),
+    label: i18next.t('bot.apiSettings.label.period.week'),
     value: 'WEEK',
   },
   {
-    label: i18next.t('bot.label.apiSettings.period.month'),
+    label: i18next.t('bot.apiSettings.label.period.month'),
     value: 'MONTH',
   },
 ];
@@ -288,7 +288,7 @@ const BotApiSettingsPage: React.FC = () => {
               <div className="text-xl font-bold">
                 {t('bot.apiSettings.pageTitle')}
               </div>
-              <Help message={t('bot.help.apiSettings.overview')} />
+              <Help message={t('bot.apiSettings.help.overview')} />
             </div>
             <div className="mt-3 flex flex-col gap-3">
               {isInitialLoading ? (
@@ -315,23 +315,23 @@ const BotApiSettingsPage: React.FC = () => {
                   {isDeploying && (
                     <Alert
                       severity="info"
-                      title={t('bot.alert.apiSettings.deploying.title')}>
-                      <div>{t('bot.alert.apiSettings.deploying.body')}</div>
+                      title={t('bot.apiSettings.alert.deploying.title')}>
+                      <div>{t('bot.apiSettings.alert.deploying.body')}</div>
                     </Alert>
                   )}
                   {hasCreated && (
                     <Alert
                       severity="info"
-                      title={t('bot.alert.apiSettings.deployed.title')}>
-                      <div>{t('bot.alert.apiSettings.deployed.body')}</div>
+                      title={t('bot.apiSettings.alert.deployed.title')}>
+                      <div>{t('bot.apiSettings.alert.deployed.body')}</div>
                     </Alert>
                   )}
 
                   {!hasShared && (
                     <Alert
                       severity="warning"
-                      title={t('bot.alert.apiSettings.botUnshared.title')}>
-                      <div>{t('bot.alert.apiSettings.botUnshared.body')}</div>
+                      title={t('bot.apiSettings.alert.botUnshared.title')}>
+                      <div>{t('bot.apiSettings.alert.botUnshared.body')}</div>
                     </Alert>
                   )}
 
@@ -339,10 +339,10 @@ const BotApiSettingsPage: React.FC = () => {
                     <>
                       <div className="mt-3">
                         <div className="text-lg font-bold">
-                          {t('bot.label.apiSettings.endpoint')}
+                          {t('bot.apiSettings.label.endpoint')}
                         </div>
                         <div className="text-sm text-aws-font-color/50">
-                          {t('bot.help.apiSettings.endpoint')}
+                          {t('bot.apiSettings.label.endpoint')}
                         </div>
                         <div className="flex">
                           <InputText
@@ -355,10 +355,10 @@ const BotApiSettingsPage: React.FC = () => {
                       </div>
                       <div className="mt-3">
                         <div className="text-lg font-bold">
-                          {t('bot.label.apiSettings.apiKeys')}
+                          {t('bot.apiSettings.label.apiKeys')}
                         </div>
                         <div className="text-sm text-aws-font-color/50">
-                          {t('bot.help.apiSettings.apiKeys')}
+                          {t('bot.apiSettings.help.apiKeys')}
                         </div>
 
                         <div className="mt-1 flex flex-col gap-1">
@@ -382,15 +382,15 @@ const BotApiSettingsPage: React.FC = () => {
                   {myBot?.isPublic && (
                     <div className="flex flex-col gap-1">
                       <div className="text-lg font-bold">
-                        {t('bot.label.apiSettings.usagePlan')}
+                        {t('bot.apiSettings.label.usagePlan')}
                       </div>
                       <div className="text-sm text-aws-font-color/50">
-                        {t('bot.help.apiSettings.usagePlan')}
+                        {t('bot.apiSettings.help.usagePlan')}
                       </div>
 
                       <Toggle
-                        label={t('bot.item.apiSettings.throttling')}
-                        hint={t('bot.help.apiSettings.throttling')}
+                        label={t('bot.apiSettings.item.throttling')}
+                        hint={t('bot.apiSettings.help.throttling')}
                         value={enabledThtottle}
                         disabled={disabledCreate}
                         onChange={setEnabledThtottle}
@@ -404,7 +404,7 @@ const BotApiSettingsPage: React.FC = () => {
                             : 'invisible h-0 scale-y-0'
                         )}>
                         <InputText
-                          label={t('bot.item.apiSettings.rateLimit')}
+                          label={t('bot.apiSettings.item.rateLimit')}
                           value={rateLimit?.toString() ?? ''}
                           type="number"
                           disabled={disabledCreate}
@@ -412,10 +412,10 @@ const BotApiSettingsPage: React.FC = () => {
                             setRateLimit(Number.parseInt(val));
                           }}
                           errorMessage={errorMessages['rateLimit']}
-                          hint={t('bot.help.apiSettings.rateLimit')}
+                          hint={t('bot.apiSettings.help.rateLimit')}
                         />
                         <InputText
-                          label={t('bot.item.apiSettings.burstLimit')}
+                          label={t('bot.apiSettings.item.burstLimit')}
                           value={burstLimit?.toString() ?? ''}
                           type="number"
                           disabled={disabledCreate}
@@ -423,12 +423,12 @@ const BotApiSettingsPage: React.FC = () => {
                             setBurstLimit(Number.parseInt(val));
                           }}
                           errorMessage={errorMessages['burstLimit']}
-                          hint={t('bot.help.apiSettings.burstLimit')}
+                          hint={t('bot.apiSettings.help.burstLimit')}
                         />
                       </div>
                       <Toggle
-                        label={t('bot.item.apiSettings.quota')}
-                        hint={t('bot.help.apiSettings.quota')}
+                        label={t('bot.apiSettings.item.quota')}
+                        hint={t('bot.apiSettings.item.quota')}
                         value={enabledQuota}
                         disabled={disabledCreate}
                         onChange={setEnabledQuota}
@@ -442,7 +442,7 @@ const BotApiSettingsPage: React.FC = () => {
                           <div className="flex w-full gap-1">
                             <InputText
                               className="w-full"
-                              label={t('bot.item.apiSettings.requestLimit')}
+                              label={t('bot.apiSettings.item.requestLimit')}
                               value={requestLimit?.toString() ?? ''}
                               type="number"
                               disabled={disabledCreate}
@@ -463,19 +463,19 @@ const BotApiSettingsPage: React.FC = () => {
                           </div>
                           {!errorMessages['requestLimit'] && (
                             <div className="text-xs text-gray">
-                              {t('bot.help.apiSettings.requestLimit')}
+                              {t('bot.apiSettings.help.requestLimit')}
                             </div>
                           )}
                         </div>
                       </div>
                       <div className="mt-3">
                         <div className="text-lg font-bold">
-                          {t('bot.label.apiSettings.allowOrigins')}
+                          {t('bot.apiSettings.label.allowOrigins')}
                         </div>
                         <div className="text-sm text-aws-font-color/50">
-                          <div>{t('bot.help.apiSettings.allowOrigins')}</div>
+                          <div>{t('bot.apiSettings.help.allowOrigins')}</div>
                           <div>
-                            {t('bot.help.apiSettings.allowOriginsExample')}
+                            {t('bot.apiSettings.help.allowOriginsExample')}
                           </div>
                         </div>
                         <div className="mt-1 flex flex-col gap-1">

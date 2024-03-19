@@ -327,7 +327,7 @@ const ChatListDrawer: React.FC<Props> = (props) => {
                   isActive={false}
                   icon={<PiGlobe />}
                   to="admin/published-bot-apis"
-                  labelComponent={t('button.publishedBotApis')}
+                  labelComponent={t('button.botPublishApis')}
                 />
                 <DrawerItem
                   isActive={false}

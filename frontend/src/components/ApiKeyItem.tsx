@@ -72,17 +72,17 @@ const ApiKeyItem: React.FC<Props> = (props) => {
               {botApiKey?.enabled ? (
                 <div className="flex w-24 items-center gap-1 text-aws-aqua">
                   <PiCheckCircleBold />
-                  {t('bot.label.apiSettings.apiKeyDetail.active')}
+                  {t('bot.apiSettings.label.apiKeyDetail.active')}
                 </div>
               ) : (
                 <div className="flex w-24 items-center gap-1 text-red">
                   <PiXCircleBold />
-                  {t('bot.label.apiSettings.apiKeyDetail.inactive')}
+                  {t('bot.apiSettings.label.apiKeyDetail.inactive')}
                 </div>
               )}
               <div className="text-xs text-aws-font-color/70">
                 <div className="mr-1 inline">
-                  {t('bot.label.apiSettings.apiKeyDetail.creationDate')}:
+                  {t('bot.apiSettings.label.apiKeyDetail.creationDate')}:
                 </div>
                 {botApiKey?.createdDate
                   ? formatDatetime(botApiKey.createdDate)
@@ -92,7 +92,7 @@ const ApiKeyItem: React.FC<Props> = (props) => {
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <div className="mr-1">
-                  {t('bot.label.apiSettings.apiKeyDetail.key')}:
+                  {t('bot.apiSettings.label.apiKeyDetail.key')}:
                 </div>
                 <div>{isHideKey ? '***************' : botApiKey?.value}</div>
                 <ButtonCopy text={botApiKey?.value ?? ''} className="-my-2" />
@@ -103,8 +103,8 @@ const ApiKeyItem: React.FC<Props> = (props) => {
                     setIsHideKey(!isHideKey);
                   }}>
                   {isHideKey
-                    ? t('bot.button.ApiKeyShow')
-                    : t('bot.button.ApiKeyHide')}
+                    ? t('bot.apiSettings.button.ApiKeyShow')
+                    : t('bot.apiSettings.button.ApiKeyHide')}
                 </Button>
               </div>
               <div>

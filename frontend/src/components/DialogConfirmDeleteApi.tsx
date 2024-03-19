@@ -13,8 +13,8 @@ type Props = BaseProps & {
 const DialogConfirmDeleteApi: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   return (
-    <ModalDialog title={t('bot.deleteApiDaialog.title')} {...props}>
-      <div>{t('bot.deleteApiDaialog.content')}</div>
+    <ModalDialog title={t('bot.apiSettings.deleteApiDaialog.title')} {...props}>
+      <div>{t('bot.apiSettings.deleteApiDaialog.content')}</div>
 
       <div className="mt-4 flex justify-end gap-2">
         <Button onClick={props.onClose} className="p-2" outlined>

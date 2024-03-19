@@ -40,23 +40,6 @@ const translation = {
           uploaded: 'Uploaded',
           error: 'ERROR',
         },
-        apiSettings: {
-          endpoint: 'API Endpoint',
-          usagePlan: 'Usage Plan',
-          allowOrigins: 'Allow Origins',
-          apiKeys: 'API Keys',
-          period: {
-            day: 'Per day',
-            week: 'Per week',
-            month: 'Per month',
-          },
-          apiKeyDetail: {
-            creationDate: 'Creation date',
-            active: 'Active',
-            inactive: 'Inactive',
-            key: 'API Key',
-          },
-        },
       },
       titleSubmenu: {
         edit: 'Edit',
@@ -76,28 +59,6 @@ const translation = {
             'By specifying the URL of the sitemap, the information obtained through automatically scraping websites within it will be used as Knowledge.',
           file: 'The uploaded files will be used as Knowledge.',
         },
-        apiSettings: {
-          overview:
-            "Creating an API enables the Bot's functions to be accessed by external clients; APIs enable integration with external applications.",
-          endpoint: 'The client can use the Bot from this endpoint.',
-          usagePlan:
-            'Usage plans specify the number or rate of requests that your API accepts from a client. Associate an API key with a usage plan to track the requests your API receives.',
-          throttling: 'Limit the rate that users can call your API.',
-          rateLimit:
-            'Enter the rate, in requests per second, that clients can call your API.',
-          burstLimit:
-            'Enter the number of concurrent requests that a client can make to your API.',
-          quota:
-            'Turn on quotas to limit the number of requests a user can make to your API in a given time period.',
-          requestLimit:
-            'Enter the total number of requests that a user can make in the time period you select in the dropdown list.',
-          allowOrigins:
-            'Allowed client origins for access. If the origin is not allowed, the caller receives a 403 Forbidden response and is denied access to the API. The Origin must follow the format: (http|https)://host-name or (http|https)://host-name:port. ',
-          allowOriginsExample:
-            'e.g. [https://your-host-name.com], [http://localhost:8000] ',
-          apiKeys:
-            'An API key is an alphanumeric string that used to identify a client of your API. Otherwise, the caller receives a 403 Forbidden response and is denied access to the API.',
-        },
       },
       alert: {
         sync: {
@@ -108,20 +69,6 @@ const translation = {
           incomplete: {
             title: 'NOT Ready',
             body: 'This bot has not completed the knowledge synchronization, so the knowledge before the update is used.',
-          },
-        },
-        apiSettings: {
-          botUnshared: {
-            title: 'Please Share The Bot',
-            body: 'You cannot publish an API for the bot that is not shared.',
-          },
-          deploying: {
-            title: 'The API deployment is in PROGRESS.',
-            body: 'Please wait until the deployment is complete.',
-          },
-          deployed: {
-            title: 'The API has DEPLOYED.',
-            body: 'You can access the API from the Client using the API Endpoint and API Key.',
           },
         },
       },
@@ -160,20 +107,92 @@ How would you categorize this email?`,
       edit: {
         pageTitle: 'Edit My Bot',
       },
-      apiSettings: {
-        pageTitle: 'Shared Bot API Settings',
-      },
+
       item: {
         title: 'Name',
         description: 'Description',
         instruction: 'Instructions',
-        apiSettings: {
+      },
+      apiSettings: {
+        pageTitle: 'Shared Bot Publish API Settings',
+        label: {
+          endpoint: 'API Endpoint',
+          usagePlan: 'Usage Plan',
+          allowOrigins: 'Allow Origins',
+          apiKeys: 'API Keys',
+          period: {
+            day: 'Per day',
+            week: 'Per week',
+            month: 'Per month',
+          },
+          apiKeyDetail: {
+            creationDate: 'Creation date',
+            active: 'Active',
+            inactive: 'Inactive',
+            key: 'API Key',
+          },
+        },
+        item: {
           throttling: 'Throttling',
           burstLimit: 'Burst',
           rateLimit: 'Rate',
           quota: 'Quota',
           requestLimit: 'Requests',
           offset: 'Offset',
+        },
+        help: {
+          overview:
+            "Creating an API enables the Bot's functions to be accessed by external clients; APIs enable integration with external applications.",
+          endpoint: 'The client can use the Bot from this endpoint.',
+          usagePlan:
+            'Usage plans specify the number or rate of requests that your API accepts from a client. Associate an API key with a usage plan to track the requests your API receives.',
+          throttling: 'Limit the rate that users can call your API.',
+          rateLimit:
+            'Enter the rate, in requests per second, that clients can call your API.',
+          burstLimit:
+            'Enter the number of concurrent requests that a client can make to your API.',
+          quota:
+            'Turn on quotas to limit the number of requests a user can make to your API in a given time period.',
+          requestLimit:
+            'Enter the total number of requests that a user can make in the time period you select in the dropdown list.',
+          allowOrigins:
+            'Allowed client origins for access. If the origin is not allowed, the caller receives a 403 Forbidden response and is denied access to the API. The Origin must follow the format: (http|https)://host-name or (http|https)://host-name:port. ',
+          allowOriginsExample:
+            'e.g. [https://your-host-name.com], [http://localhost:8000] ',
+          apiKeys:
+            'An API key is an alphanumeric string that used to identify a client of your API. Otherwise, the caller receives a 403 Forbidden response and is denied access to the API.',
+        },
+        button: {
+          ApiKeyShow: 'Show',
+          ApiKeyHide: 'Hide',
+        },
+        alert: {
+          botUnshared: {
+            title: 'Please Share The Bot',
+            body: 'You cannot publish an API for the bot that is not shared.',
+          },
+          deploying: {
+            title: 'The API deployment is in PROGRESS.',
+            body: 'Please wait until the deployment is complete.',
+          },
+          deployed: {
+            title: 'The API has DEPLOYED.',
+            body: 'You can access the API from the Client using the API Endpoint and API Key.',
+          },
+        },
+        deleteApiDaialog: {
+          title: 'Delete?',
+          content:
+            'Are you sure to delete the API? The API endpoint will be deleted, and the client will no longer have access to it.',
+        },
+        addApiKeyDialog: {
+          title: 'Add API Key',
+          content: 'Enter a name to identify the API Key.',
+        },
+        deleteApiKeyDialog: {
+          title: 'Delete?',
+          content:
+            'Are you sure to delete <Bold>{{title}}</Bold>?\nClients using this API Key will be denied access to the API.',
         },
       },
       button: {
@@ -182,31 +201,15 @@ How would you categorize this email?`,
         edit: 'Edit',
         delete: 'Delete',
         share: 'Share',
-        apiSettings: 'API Settings',
+        apiSettings: 'API Publish Settings',
         copy: 'Copy',
         copied: 'Copied',
         instructionsSamples: 'Samples',
         chooseFiles: 'Choose files',
-        ApiKeyShow: 'Show',
-        ApiKeyHide: 'Hide',
       },
       deleteDialog: {
         title: 'Delete?',
         content: 'Are you sure to delete <Bold>{{title}}</Bold>?',
-      },
-      deleteApiDaialog: {
-        title: 'Delete?',
-        content:
-          'Are you sure to delete the API? The API endpoint will be deleted, and the client will no longer have access to it.',
-      },
-      addApiKeyDialog: {
-        title: 'Add API Key',
-        content: 'Enter a name to identify the API Key.',
-      },
-      deleteApiKeyDialog: {
-        title: 'Delete?',
-        content:
-          'Are you sure to delete <Bold>{{title}}</Bold>?\nClients using this API Key will be denied access to the API.',
       },
       shareDialog: {
         title: 'Share',
@@ -260,7 +263,7 @@ How would you categorize this email?`,
       newChat: 'New Chat',
       botConsole: 'Bot Console',
       publicBotUsages: 'Public Bot Usages',
-      publishedBotApis: 'Published Bot APIs',
+      botPublishApis: 'Bot Publish APIs',
       userUsages: 'User Usages',
       SaveAndSubmit: 'Save & Submit',
       resend: 'Resend',
