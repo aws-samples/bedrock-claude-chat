@@ -73,8 +73,11 @@ const translation = {
       },
       samples: {
         title: "Exemple d'instructions",
-        reference:
-          'Reference: https://docs.anthropic.com/claude/docs/how-to-use-system-prompts',
+        anthropicLibrary: {
+          title: 'Bibliothèque de prompt d\'Anthropic',
+          sentence: 'Avez-vous besoin de plus d\'exemples ? Visitez : ',
+          url: 'https://docs.anthropic.com/claude/prompt-library',
+        },
         pythonCodeAssistant: {
           title: 'Assistant de code Python',
           prompt: `Écrivez un script Python court et de haute qualité pour la tâche donnée, quelque chose qu'un expert Python très qualifié écrirait. Vous écrivez du code pour un développeur expérimenté, ajoutez donc des commentaires uniquement pour les éléments non évidents. Assurez-vous d'inclure toutes les importations requises.
