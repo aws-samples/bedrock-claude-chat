@@ -118,7 +118,7 @@ How would you categorize this email?`,
         label: {
           endpoint: 'API Endpoint',
           usagePlan: 'Usage Plan',
-          allowOrigins: 'Allow Origins',
+          allowOrigins: 'Allowed Origins',
           apiKeys: 'API Keys',
           period: {
             day: 'Per day',
@@ -176,7 +176,7 @@ How would you categorize this email?`,
             body: 'Please wait until the deployment is complete.',
           },
           deployed: {
-            title: 'The API has DEPLOYED.',
+            title: 'The API has been DEPLOYED.',
             body: 'You can access the API from the Client using the API Endpoint and API Key.',
           },
         },
@@ -233,7 +233,7 @@ How would you categorize this email?`,
         label: {
           pageTitle: 'Public Bot Usages',
           noPublicBotUsages:
-            'During the Calculation Period, the public bots were not utilized.',
+            'During the Calculation Period, no public bots were utilized.',
           published: 'API is published.',
           SearchCondition: {
             title: 'Calculation Period',
