@@ -39,7 +39,7 @@ const Button = forwardRef<HTMLButtonElement, Props>((props, ref) => {
       )}
       {props.loading && <PiSpinnerGap className="-ml-1 mr-2 animate-spin" />}
       {props.children}
-      {props.rightIcon && <div className="mr-2">{props.rightIcon}</div>}
+      {props.rightIcon && <div className="ml-2">{props.rightIcon}</div>}
     </button>
   );
 });

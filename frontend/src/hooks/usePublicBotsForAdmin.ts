@@ -1,8 +1,8 @@
 import { ListPublicBotsRequest } from '../@types/api-publication';
-import useBotPublicationApi from './useBotPublicationApi';
+import useAdminApi from './useAdminApi';
 
 const usePublicBotsForAdmin = (params: ListPublicBotsRequest) => {
-  const { listPublicBots } = useBotPublicationApi();
+  const { listPublicBots } = useAdminApi();
 
   const { data, isLoading, mutate } = listPublicBots(params);
 

@@ -14,10 +14,13 @@ import {
   PiChat,
   PiCheck,
   PiCompass,
+  PiGlobe,
   PiNotePencil,
   PiPencilLine,
   PiRobot,
+  PiShareNetwork,
   PiTrash,
+  PiUsersThree,
   PiX,
 } from 'react-icons/pi';
 import { PiCircleNotch } from 'react-icons/pi';
@@ -32,6 +35,7 @@ import Menu from './Menu';
 import useBot from '../hooks/useBot';
 import DrawerItem from './DrawerItem';
 import ExpandableDrawerGroup from './ExpandableDrawerGroup';
+import useUser from '../hooks/useUser';
 
 type Props = BaseProps & {
   onSignOut: () => void;
@@ -183,6 +187,8 @@ const ChatListDrawer: React.FC<Props> = (props) => {
   const { conversations } = useConversation();
   const { starredBots, recentlyUsedUnsterredBots } = useBot();
 
+  const { isAdmin } = useUser();
+
   const [prevConversations, setPrevConversations] =
     useState<typeof conversations>();
   const [generateTitleIndex, setGenerateTitleIndex] = useState(-1);
@@ -307,6 +313,30 @@ const ChatListDrawer: React.FC<Props> = (props) => {
               to="bot/explore"
               labelComponent={t('button.botConsole')}
             />
+            {isAdmin && (
+              <ExpandableDrawerGroup
+                label={t('app.adminConsoles')}
+                className="border-t pt-1">
+                <DrawerItem
+                  isActive={false}
+                  icon={<PiShareNetwork />}
+                  to="admin/public-bots"
+                  labelComponent={t('button.publicBotUsages')}
+                />
+                <DrawerItem
+                  isActive={false}
+                  icon={<PiGlobe />}
+                  to="admin/published-bot-apis"
+                  labelComponent={t('button.publishedBotApis')}
+                />
+                <DrawerItem
+                  isActive={false}
+                  icon={<PiUsersThree />}
+                  to="admin/user-usages"
+                  labelComponent={t('button.userUsages')}
+                />
+              </ExpandableDrawerGroup>
+            )}
 
             <ExpandableDrawerGroup
               label={t('app.starredBots')}

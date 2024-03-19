@@ -11,6 +11,23 @@ export type BotPublicationThrottle = {
   burstLimit: number | null;
 };
 
+export type ListBotApisRequest = {
+  nextToken?: string;
+  limit?: number;
+};
+
+export type ListBotApisResponse = {
+  bots: {
+    id: string;
+    title: string;
+    description: string;
+    publishedStackName: string;
+    publishedDatetile: Date;
+    ownerUserId: string;
+  };
+  nextToken?: string;
+};
+
 export type ListPublicBotsRequest = {
   limit?: number;
   start?: string;
@@ -78,3 +95,15 @@ export type CreateBotPublicationApiKeyResponse = {
   enabled: boolean;
   createdDate: Date;
 };
+
+export type GetUserUsagesRequest = {
+  limit?: number;
+  start?: string;
+  end?: string;
+};
+
+export type GetUserUsagesResponse = {
+  id: string;
+  email: string;
+  totalPrice: number;
+}[];

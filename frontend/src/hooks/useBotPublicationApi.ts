@@ -8,8 +8,6 @@ import {
   GetBotPublicationApiKeyResponse,
   GetBotPublicationRequest,
   GetBotPublicationRespose,
-  ListPublicBotsRequest,
-  ListPublicBotsResponse,
   PublishBotRequest,
   PublishBotResponse,
 } from '../@types/api-publication';
@@ -18,9 +16,6 @@ const useBotPublicationApi = () => {
   const http = useHttp();
 
   return {
-    listPublicBots: (req: ListPublicBotsRequest) => {
-      return http.get<ListPublicBotsResponse>(['/admin/public-bots', req]);
-    },
     getBotPublication: (botId?: string, req?: GetBotPublicationRequest) => {
       return http.get<GetBotPublicationRespose>(
         botId ? [`/bot/${botId}/publication`, req] : null,

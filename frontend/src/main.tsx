@@ -9,6 +9,7 @@ import './i18n';
 import BotExplorePage from './pages/BotExplorePage.tsx';
 import BotEditPage from './pages/BotEditPage.tsx';
 import BotApiSettingsPage from './pages/BotApiSettingsPage.tsx';
+import AdminPublicBotsPage from './pages/AdminPublicBotsPage.tsx';
 
 const router = createBrowserRouter([
   {
@@ -38,6 +39,10 @@ const router = createBrowserRouter([
       {
         path: '/bot/:botId',
         element: <ChatPage />,
+      },
+      {
+        path: '/admin/public-bots',
+        element: <AdminPublicBotsPage />,
       },
       {
         path: '/:conversationId',

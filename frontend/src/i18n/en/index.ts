@@ -7,6 +7,7 @@ const translation = {
       recentlyUsedBots: 'Recently Used Bots',
       conversationHistory: 'History',
       chatWaitingSymbol: '▍',
+      adminConsoles: 'Admin Only',
     },
     bot: {
       label: {
@@ -224,6 +225,26 @@ How would you categorize this email?`,
         failDeleteApi: 'Failed to delete the API.',
       },
     },
+    admin: {
+      publicBotUsages: {
+        label: {
+          pageTitle: 'Public Bot Usages',
+          noPublicBotUsages:
+            'During the Calculation Period, the public bots were not utilized.',
+          published: 'The Bot API is published.',
+          SearchCondition: {
+            title: 'Calculation Period',
+            from: 'From',
+            to: 'To',
+          },
+          sortByCost: 'Sort by Cost',
+        },
+        help: {
+          overview:
+            'Monitor the usage status of Shared Bots and Published Bot APIs.',
+        },
+      },
+    },
     deleteDialog: {
       title: 'Delete?',
       content: 'Are you sure to delete <Bold>{{title}}</Bold>?',
@@ -238,6 +259,9 @@ How would you categorize this email?`,
     button: {
       newChat: 'New Chat',
       botConsole: 'Bot Console',
+      publicBotUsages: 'Public Bot Usages',
+      publishedBotApis: 'Published Bot APIs',
+      userUsages: 'User Usages',
       SaveAndSubmit: 'Save & Submit',
       resend: 'Resend',
       regenerate: 'Regenerate',
