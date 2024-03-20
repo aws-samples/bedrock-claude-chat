@@ -80,22 +80,22 @@ const BotEditPage: React.FC = () => {
 
   const onChangeUrl = useCallback(
     (url: string, idx: number) => {
-      setUrls(
+      setUrls(urls =>
         produce(urls, (draft) => {
           draft[idx] = url;
         })
       );
     },
-    [urls]
+    []
   );
 
   const onClickAddUrl = useCallback(() => {
-    setUrls([...urls, '']);
-  }, [urls]);
+    setUrls(urls => [...urls, '']);
+  }, []);
 
   const onClickRemoveUrl = useCallback(
     (idx: number) => {
-      setUrls(
+      setUrls(urls =>
         produce(urls, (draft) => {
           draft.splice(idx, 1);
           if (draft.length === 0) {
@@ -105,7 +105,7 @@ const BotEditPage: React.FC = () => {
         })
       );
     },
-    [urls]
+    []
   );
 
   const removeUnchangedFilenames = useCallback(
@@ -114,7 +114,7 @@ const BotEditPage: React.FC = () => {
         (unchangedFilename) => unchangedFilename === filename
       );
       if (idx > -1) {
-        setUnchangedFilenames(
+        setUnchangedFilenames(unchangedFilenames =>
           produce(unchangedFilenames, (draft) => {
             draft.splice(idx, 1);
             return;
@@ -131,7 +131,7 @@ const BotEditPage: React.FC = () => {
         (addedFilename) => addedFilename === filename
       );
       if (idx > -1) {
-        setAddedFilenames(
+        setAddedFilenames(addedFilenames =>
           produce(addedFilenames, (draft) => {
             draft.splice(idx, 1);
             return;
@@ -148,7 +148,7 @@ const BotEditPage: React.FC = () => {
         (deletedFilename) => deletedFilename === filename
       );
       if (idx > -1) {
-        setDeletedFilenames(
+        setDeletedFilenames(deletedFilenames =>
           produce(deletedFilenames, (draft) => {
             draft.splice(idx, 1);
           })
@@ -165,7 +165,7 @@ const BotEditPage: React.FC = () => {
       botFiles.forEach((file) => {
         if (file.status === 'UPLOADING') {
           if (!addedFilenames.includes(file.filename)) {
-            setAddedFilenames(
+            setAddedFilenames(addedFilenames =>
               produce(addedFilenames, (draft) => {
                 draft.push(file.filename);
               })
@@ -188,7 +188,7 @@ const BotEditPage: React.FC = () => {
       setFiles(botFiles);
 
       if (!deletedFilenames.includes(deletedFilename)) {
-        setDeletedFilenames(
+        setDeletedFilenames(deletedFilenames =>
           produce(deletedFilenames, (draft) => {
             draft.push(deletedFilename);
           })

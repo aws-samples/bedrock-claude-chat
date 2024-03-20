@@ -31,6 +31,79 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
+def get_rag_query(conversation, user_msg_id, chat_input):
+    """Get query for RAG model."""
+    query = ""
+
+    model_id = chat_input.message.model
+
+    messages = trace_to_root(
+        node_id=chat_input.message.parent_message_id,
+        message_map=conversation.message_map,
+    )
+
+    formatted_conversation = ""
+    for message in messages:
+        if message.role == "user":
+            formatted_conversation += f"User: {message.content[-1].body}\n\n"
+        if message.role == "assistant":
+            formatted_conversation += f"Assistant: {message.content[-1].body}\n\n"
+    formatted_conversation += f"User: {chat_input.message.content[-1].body}\n\n"
+
+    # Ask the model what product are we taling about
+    no_product_response = "<NO_PRODUCT>"
+    template = """Based on the following conversation:
+    {}
+
+    What is the name of the last product being enquired about?
+    If there are multiple products, please provide the name of the product that is most relevant to the conversation.
+    If there are no product names, please type "{}".
+    """.format(formatted_conversation, no_product_response)
+
+    print(f"Formatted conversation: {formatted_conversation}")
+    print(f"Model id: {model_id}")
+    print(f"Template: {template}")
+
+    # Invoke Bedrock
+    args = compose_args_for_anthropic_client(
+        [
+            MessageModel(
+                role="user",
+                content=[ContentModel(content_type="text", body=template, media_type=None)],
+                model=model_id,
+                children=[],
+                parent=None,
+                create_time=get_current_time(),
+            ),
+        ],
+        model_id,
+        instruction="""You are analysing the conversation to find the last product name.
+        If there are multiple products, please provide the name of the product that is most relevant to the conversation.
+        If there are no product names, please type "{}".
+        """.format(no_product_response),
+        stream=False,
+    )
+    print(f"Invoking bedrock with args: {args}")
+    try:
+        # Invoke bedrock api
+        response = client.messages.create(**args)
+        print(f"Response from bedrock: {response}")
+        if (
+            response.content[0].type == "text" and
+            no_product_response in response.content[0].text
+        ):
+            # Use the last user message as the query
+            query = conversation.message_map[user_msg_id].content[-1].body
+        else:
+            # Use the product name returned by the LLM
+            query = response.content[0].text
+        return query
+    except Exception as e:
+        print(f"Failed to invoke bedrock: {e}")
+        # Use the last user message as the query
+        return conversation.message_map[user_msg_id].content[-1].body
+
+
 def process_chat_input(
     chat_input: ChatInputWithToken, gatewayapi, connection_id: str
 ) -> dict:
@@ -80,7 +153,13 @@ def process_chat_input(
         )
         # Fetch most related documents from vector store
         # NOTE: Currently embedding not support multi-modal. For now, use the last text content.
-        query = conversation.message_map[user_msg_id].content[-1].body
+        # query = conversation.message_map[user_msg_id].content[-1].body
+        query = get_rag_query(
+            conversation,
+            user_msg_id,
+            chat_input
+        )
+        print(f"Query for RAG model: {query}")
         results = search_related_docs(
             bot_id=bot.id, limit=SEARCH_CONFIG["max_results"], query=query
         )
