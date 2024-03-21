@@ -1,4 +1,4 @@
-name: Synth
+name: CDK tests
 on:
   pull_request:
     branches: ["main"]

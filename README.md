@@ -1,6 +1,6 @@
 # Bedrock Claude Chat
 
-![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/test.yml/badge.svg)
+![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/cdk.yml/badge.svg)
 
 > [!Tip]
 > 🔔**API publication feature released.** See [release](TODO) for the detail.
@@ -40,6 +40,7 @@ TODO
 - 한국어 💬
 - 中文 💬
 - Français 💬
+- Deutsch 💬
 
 ## 🚀 Super-easy Deployment
 
