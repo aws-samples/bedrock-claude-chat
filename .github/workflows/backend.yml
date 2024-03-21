@@ -41,6 +41,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r backend/requirements.txt
       - name: Run Uvicorn
+        env:
+          AWS_DEFAULT_REGION: us-east-1
         run: |
           cd backend
           timeout 10s uvicorn app.main:app --host 0.0.0.0 --port 8000 &
