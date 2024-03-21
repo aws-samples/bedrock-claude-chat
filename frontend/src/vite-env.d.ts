@@ -9,6 +9,7 @@ interface ImportMetaEnv {
   readonly VITE_APP_COGNITO_DOMAIN: string;
   readonly VITE_APP_REDIRECT_SIGNIN_URL: string;
   readonly VITE_APP_REDIRECT_SIGNOUT_URL: string;
+  readonly VITE_APP_SOCIAL_PROVIDERS: string;
 }
 
 interface ImportMeta {
