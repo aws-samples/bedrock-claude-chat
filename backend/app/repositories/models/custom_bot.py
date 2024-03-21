@@ -1,5 +1,3 @@
-from typing import Literal, Optional
-
 from app.routes.schemas.bot import type_sync_status
 from pydantic import BaseModel
 
@@ -27,6 +25,13 @@ class BotModel(BaseModel):
     published_api_stack_name: str | None
     published_api_datetime: int | None
     published_api_codebuild_id: str | None
+
+    def has_knowledge(self) -> bool:
+        return (
+            len(self.knowledge.source_urls) > 0
+            or len(self.knowledge.sitemap_urls) > 0
+            or len(self.knowledge.filenames) > 0
+        )
 
 
 class BotAliasModel(BaseModel):

@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 
 from app.routes.schemas.conversation import type_model_name
 from pydantic import BaseModel
@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 class ContentModel(BaseModel):
     content_type: Literal["text", "image"]
-    media_type: Optional[str]
+    media_type: str | None
     body: str
 
 

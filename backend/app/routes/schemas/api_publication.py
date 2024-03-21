@@ -1,13 +1,13 @@
-from typing import Literal, Optional
+from typing import Literal
 
 from app.routes.schemas.base import BaseSchema
 from pydantic import Field, root_validator
 
 
 class PublishedApiQuota(BaseSchema):
-    limit: Optional[int]
-    offset: Optional[int]
-    period: Optional[Literal["DAY", "WEEK", "MONTH"]]
+    limit: int | None
+    offset: int | None
+    period: Literal["DAY", "WEEK", "MONTH"] | None
 
     @root_validator(pre=True)
     def validate_quota(cls, values):
@@ -20,8 +20,8 @@ class PublishedApiQuota(BaseSchema):
 
 
 class PublishedApiThrottle(BaseSchema):
-    rate_limit: Optional[float]
-    burst_limit: Optional[int]
+    rate_limit: float | None
+    burst_limit: int | None
 
     @root_validator(pre=True)
     def validate_throttle(cls, values):
@@ -38,7 +38,7 @@ class PublishedApiThrottle(BaseSchema):
 
 
 class BotPublishInput(BaseSchema):
-    stage: Optional[str]  # "dev" | "stg" | "prd" | etc.
+    stage: str | None  # "dev" | "stg" | "prd" | etc.
     quota: PublishedApiQuota
     throttle: PublishedApiThrottle
     allowed_origins: list[str]

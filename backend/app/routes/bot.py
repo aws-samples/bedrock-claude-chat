@@ -1,7 +1,6 @@
 from typing import Literal
 
 from app.repositories.custom_bot import (
-    find_all_bots_by_user_id,
     find_private_bot_by_id,
     find_private_bots_by_user_id,
     update_bot_visibility,
@@ -19,6 +18,7 @@ from app.routes.schemas.bot import (
 )
 from app.usecases.bot import (
     create_new_bot,
+    fetch_all_bots_by_user_id,
     fetch_bot_summary,
     issue_presigned_url,
     modify_owned_bot,
@@ -84,7 +84,7 @@ def get_all_bots(
     if kind == "private":
         bots = find_private_bots_by_user_id(current_user.id, limit=limit)
     elif kind == "mixed":
-        bots = find_all_bots_by_user_id(
+        bots = fetch_all_bots_by_user_id(
             current_user.id, limit=limit, only_pinned=pinned
         )
     else:

@@ -10,6 +10,7 @@ import boto3
 from app.repositories.custom_bot import find_public_bots_by_ids
 from app.repositories.models.usage_analysis import UsagePerBot, UsagePerUser
 
+REGION = os.environ.get("REGION", "us-east-1")
 USAGE_ANALYSIS_DATABASE = os.environ.get(
     "USAGE_ANALYSIS_DATABASE", "bedrockchatstack_usage_analysis"
 )
@@ -25,7 +26,7 @@ QUERY_LIMIT = 1000
 
 
 logger = logging.getLogger(__name__)
-athena = boto3.client("athena")
+athena = boto3.client("athena", region_name=REGION)
 
 
 def _find_cognito_user_by_id(user_id: str) -> dict | None:

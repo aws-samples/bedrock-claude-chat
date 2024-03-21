@@ -9,7 +9,6 @@ from app.repositories.custom_bot import (
     delete_alias_by_id,
     delete_bot_by_id,
     delete_bot_publication,
-    find_all_bots_by_user_id,
     find_all_published_bots,
     find_private_bot_by_id,
     find_private_bots_by_user_id,
@@ -392,50 +391,6 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
         fetched_bot_ids = set(bot.id for bot in bots)
         expected_bot_ids = {"1", "2", "3", "4"}
         self.assertTrue(fetched_bot_ids.issubset(expected_bot_ids))
-
-        # Private + public bots
-        bots = find_all_bots_by_user_id("user1", limit=3)
-        self.assertEqual(len(bots), 3)
-        fetched_bot_ids = set(bot.id for bot in bots)
-        expected_bot_ids = {"public1", "public2", "1", "2", "3", "4"}
-        self.assertTrue(fetched_bot_ids.issubset(expected_bot_ids))
-
-    def test_find_pinned_bots(self):
-        # Only pinned bots fetched
-        bots = find_all_bots_by_user_id("user1", only_pinned=True)
-        self.assertEqual(len(bots), 3)
-
-        fetched_bot_ids = set(bot.id for bot in bots)
-        expected_bot_ids = {"1", "2", "public1"}
-
-        self.assertTrue(expected_bot_ids.issubset(fetched_bot_ids))
-
-    def test_order_is_descending(self):
-        # 1 -> 3 -> alias1 (public1) -> 2 -> 4 -> alias2 (public2)
-        update_bot_last_used_time("user1", "1")
-        update_bot_last_used_time("user1", "3")
-        update_alias_last_used_time("user1", "alias1")
-        update_bot_last_used_time("user1", "2")
-        update_bot_last_used_time("user1", "4")
-        update_alias_last_used_time("user1", "alias2")
-
-        # Should be 4 -> 2 -> 3 -> 1
-        bots = find_private_bots_by_user_id("user1")
-        self.assertEqual(len(bots), 4)
-        self.assertEqual(bots[0].id, "4")
-        self.assertEqual(bots[1].id, "2")
-        self.assertEqual(bots[2].id, "3")
-        self.assertEqual(bots[3].id, "1")
-
-        # Should be alias2 -> 4 -> 2 -> alias1 -> 3 -> 1
-        bots = find_all_bots_by_user_id("user1", limit=6)
-        self.assertEqual(len(bots), 6)
-        self.assertEqual(bots[0].id, "public2")
-        self.assertEqual(bots[1].id, "4")
-        self.assertEqual(bots[2].id, "2")
-        self.assertEqual(bots[3].id, "public1")
-        self.assertEqual(bots[4].id, "3")
-        self.assertEqual(bots[5].id, "1")
 
     async def test_find_public_bots_by_ids(self):
         bots = await find_public_bots_by_ids(["public1", "public2", "1", "2"])

@@ -62,13 +62,7 @@ def process_chat_input(
             return {"statusCode": 400, "body": "Invalid request."}
 
     message_map = conversation.message_map
-    if (
-        bot
-        and len(bot.knowledge.source_urls)
-        + len(bot.knowledge.sitemap_urls)
-        + len(bot.knowledge.filenames)
-        > 0
-    ):
+    if bot and bot.has_knowledge():
         gatewayapi.post_to_connection(
             ConnectionId=connection_id,
             Data=json.dumps(
@@ -114,8 +108,8 @@ def process_chat_input(
         logger.error(f"Failed to invoke bedrock: {e}")
         return {"statusCode": 500, "body": "Failed to invoke bedrock."}
 
-    completions = []
-    last_data_to_send = {}
+    completions: list[str] = []
+    last_data_to_send: bytes
     for event in response:
         # NOTE: following is the example of event sequence:
         # MessageStartEvent(message=Message(id='compl_01GwmkwncsptaeBopeaR4eWE', content=[], model='claude-instant-1.2', role='assistant', stop_reason=None, stop_sequence=None, type='message', usage=Usage(input_tokens=21, output_tokens=1)), type='message_start')
@@ -195,7 +189,7 @@ def process_chat_input(
 
     # Send last completion after saving conversation
     try:
-        logger.debug(f"Sending last completion: {last_data_to_send}")
+        logger.debug(f"Sending last completion: {last_data_to_send.decode('utf-8')}")
         gatewayapi.post_to_connection(
             ConnectionId=connection_id, Data=last_data_to_send
         )

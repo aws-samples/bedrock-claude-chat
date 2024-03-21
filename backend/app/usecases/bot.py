@@ -1,12 +1,19 @@
+import logging
 import os
 
-from app.repositories.common import RecordNotFoundError
+from app.repositories.common import (
+    RecordNotFoundError,
+    _get_table_client,
+    decompose_bot_alias_id,
+    decompose_bot_id,
+)
 from app.repositories.custom_bot import (
     delete_alias_by_id,
     delete_bot_by_id,
     find_alias_by_id,
     find_private_bot_by_id,
     find_public_bot_by_id,
+    store_alias,
     store_bot,
     update_alias_last_used_time,
     update_alias_pin_status,
@@ -14,7 +21,12 @@ from app.repositories.custom_bot import (
     update_bot_last_used_time,
     update_bot_pin_status,
 )
-from app.repositories.models.custom_bot import BotModel, KnowledgeModel
+from app.repositories.models.custom_bot import (
+    BotAliasModel,
+    BotMeta,
+    BotModel,
+    KnowledgeModel,
+)
 from app.routes.schemas.bot import (
     BotInput,
     BotModifyInput,
@@ -22,6 +34,7 @@ from app.routes.schemas.bot import (
     BotOutput,
     BotSummaryOutput,
     Knowledge,
+    type_sync_status,
 )
 from app.utils import (
     compose_upload_document_s3_path,
@@ -33,6 +46,10 @@ from app.utils import (
     get_current_time,
     move_file_in_s3,
 )
+from boto3.dynamodb.conditions import Attr, Key
+from botocore.exceptions import ClientError
+
+logger = logging.getLogger(__name__)
 
 DOCUMENT_BUCKET = os.environ.get("DOCUMENT_BUCKET", "bedrock-documents")
 
@@ -63,7 +80,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         or len(bot_input.knowledge.sitemap_urls) > 0
         or len(bot_input.knowledge.filenames) > 0
     )
-    sync_status = "QUEUED" if has_knowledge else "SUCCEEDED"
+    sync_status: type_sync_status = "QUEUED" if has_knowledge else "SUCCEEDED"
 
     source_urls = []
     sitemap_urls = []
@@ -198,6 +215,117 @@ def fetch_bot(user_id: str, bot_id: str) -> tuple[bool, BotModel]:
         )
 
 
+def fetch_all_bots_by_user_id(
+    user_id: str, limit: int | None = None, only_pinned: bool = False
+) -> list[BotMeta]:
+    """Find all private & shared bots of a user.
+    The order is descending by `last_used_time`.
+    """
+    if not only_pinned and not limit:
+        raise ValueError("Must specify either `limit` or `only_pinned`")
+    if limit and only_pinned:
+        raise ValueError("Cannot specify both `limit` and `only_pinned`")
+    if limit and (limit < 0 or limit > 100):
+        raise ValueError("Limit must be between 0 and 100")
+
+    table = _get_table_client(user_id)
+    logger.info(f"Finding pinned bots for user: {user_id}")
+
+    # Fetch all pinned bots
+    query_params = {
+        "IndexName": "LastBotUsedIndex",
+        "KeyConditionExpression": Key("PK").eq(user_id),
+        "ScanIndexForward": False,
+    }
+    if limit:
+        query_params["Limit"] = limit
+    if only_pinned:
+        query_params["FilterExpression"] = Attr("IsPinned").eq(True)
+
+    response = table.query(**query_params)
+
+    bots = []
+    for item in response["Items"]:
+        if "OriginalBotId" in item:
+            # Fetch original bots of alias bots
+            is_original_available = True
+            try:
+                bot = find_public_bot_by_id(item["OriginalBotId"])
+                logger.info(f"Found original bot: {bot.id}")
+                meta = BotMeta(
+                    id=bot.id,
+                    title=bot.title,
+                    create_time=float(bot.create_time),
+                    last_used_time=float(bot.last_used_time),
+                    is_pinned=item["IsPinned"],
+                    owned=False,
+                    available=True,
+                    description=bot.description,
+                    is_public=True,
+                    sync_status=bot.sync_status,
+                )
+            except RecordNotFoundError:
+                # Original bot is removed
+                is_original_available = False
+                logger.info(f"Original bot {item['OriginalBotId']} has been removed")
+                meta = BotMeta(
+                    id=item["OriginalBotId"],
+                    title=item["Title"],
+                    create_time=float(item["CreateTime"]),
+                    last_used_time=float(item["LastBotUsed"]),
+                    is_pinned=item["IsPinned"],
+                    owned=False,
+                    # NOTE: Original bot is removed
+                    available=False,
+                    description="This item is no longer available",
+                    is_public=False,
+                    sync_status="ORIGINAL_NOT_FOUND",
+                )
+
+            if is_original_available and (
+                bot.title != item["Title"]
+                or bot.description != item["Description"]
+                or bot.sync_status != item["SyncStatus"]
+                or bot.has_knowledge() != item["HasKnowledge"]
+            ):
+                # Update alias to the latest original bot
+                store_alias(
+                    user_id,
+                    BotAliasModel(
+                        id=decompose_bot_alias_id(item["SK"]),
+                        # Update title and description
+                        title=bot.title,
+                        description=bot.description,
+                        original_bot_id=item["OriginalBotId"],
+                        create_time=float(item["CreateTime"]),
+                        last_used_time=float(item["LastBotUsed"]),
+                        is_pinned=item["IsPinned"],
+                        sync_status=bot.sync_status,
+                        has_knowledge=bot.has_knowledge(),
+                    ),
+                )
+
+            bots.append(meta)
+        else:
+            # Private bots
+            bots.append(
+                BotMeta(
+                    id=decompose_bot_id(item["SK"]),
+                    title=item["Title"],
+                    create_time=float(item["CreateTime"]),
+                    last_used_time=float(item["LastBotUsed"]),
+                    is_pinned=item["IsPinned"],
+                    owned=True,
+                    available=True,
+                    description=item["Description"],
+                    is_public="PublicBotId" in item,
+                    sync_status=item["SyncStatus"],
+                )
+            )
+
+    return bots
+
+
 def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
     try:
         bot = find_private_bot_by_id(user_id, bot_id)
@@ -211,11 +339,7 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
             is_public=True if bot.public_bot_id else False,
             owned=True,
             sync_status=bot.sync_status,
-            has_knowledge=(
-                len(bot.knowledge.source_urls) > 0
-                or len(bot.knowledge.sitemap_urls) > 0
-                or len(bot.knowledge.filenames) > 0
-            ),
+            has_knowledge=bot.has_knowledge(),
         )
 
     except RecordNotFoundError:
@@ -251,11 +375,7 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
             is_public=True,
             owned=False,
             sync_status=bot.sync_status,
-            has_knowledge=(
-                len(bot.knowledge.source_urls) > 0
-                or len(bot.knowledge.sitemap_urls) > 0
-                or len(bot.knowledge.filenames) > 0
-            ),
+            has_knowledge=bot.has_knowledge(),
         )
     except RecordNotFoundError:
         raise RecordNotFoundError(

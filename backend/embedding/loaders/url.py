@@ -58,7 +58,7 @@ def check_content_type(url) -> Literal["web", "unstructured", "youtube"]:
 
 
 def group_urls_by_content_type(urls: list[str]) -> dict:
-    res = {
+    res: dict = {
         "web": [],
         "unstructured": [],
         "youtube": [],

@@ -74,7 +74,7 @@ def error_handler_factory(status_code: int) -> Callable[[Exception], JSONRespons
         logger.error("".join(traceback.format_tb(exc.__traceback__)))
         return JSONResponse({"errors": [str(exc)]}, status_code=status_code)
 
-    return error_handler
+    return error_handler  # type: ignore
 
 
 app.add_exception_handler(RecordNotFoundError, error_handler_factory(404))
@@ -109,7 +109,7 @@ def add_current_user_to_request(request: Request, call_next: ASGIApp):
     else:
         request.state.current_user = User(id="test_user", name="test_user", groups=[])
 
-    response = call_next(request)
+    response = call_next(request)  # type: ignore
     return response
 
 
@@ -120,7 +120,7 @@ async def add_log_requests(request: Request, call_next: ASGIApp):
     logger.info(f"Request headers: {request.headers}")
 
     body = await request.body()
-    logger.info(f"Request body: {body}")
+    logger.info(f"Request body: {body.decode('utf-8')[:100]}...")
 
     # Avoid application blocking
     # See: https://github.com/tiangolo/fastapi/issues/394
@@ -128,6 +128,6 @@ async def add_log_requests(request: Request, call_next: ASGIApp):
         return {"type": "http.request", "body": body}
 
     request._receive = receive
-    response = await call_next(request)
+    response = await call_next(request)  # type: ignore
 
     return response

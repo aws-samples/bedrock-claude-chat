@@ -1,5 +1,3 @@
-from typing import Literal, Optional
-
 from app.routes.schemas.base import BaseSchema
 from app.routes.schemas.conversation import Content, MessageOutput, type_model_name
 from pydantic import Field

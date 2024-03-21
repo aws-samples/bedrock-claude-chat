@@ -1,5 +1,3 @@
-from typing import Literal, Optional
-
 from app.routes.schemas.base import BaseSchema
 from pydantic import Field
 

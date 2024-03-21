@@ -28,7 +28,7 @@ def compose_args_for_anthropic_client(
     arg_messages = []
     for message in messages:
         if message.role not in ["system", "instruction"]:
-            content = []
+            content: list[dict] = []
             for c in message.content:
                 if c.content_type == "text":
                     content.append(

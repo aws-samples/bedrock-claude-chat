@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 
 from app.routes.schemas.base import BaseSchema
 from pydantic import Field
@@ -12,7 +12,7 @@ class Content(BaseSchema):
     content_type: Literal["text", "image"] = Field(
         ..., description="Content type. Note that image is only available for claude 3."
     )
-    media_type: Optional[str] = Field(
+    media_type: str | None = Field(
         None,
         description="MIME type of the image. Must be specified if `content_type` is `image`.",
     )
@@ -40,7 +40,7 @@ class MessageOutput(BaseSchema):
 class ChatInput(BaseSchema):
     conversation_id: str
     message: MessageInput
-    bot_id: Optional[str | None] = Field(None)
+    bot_id: str | None = Field(None)
 
 
 class ChatInputWithToken(ChatInput):

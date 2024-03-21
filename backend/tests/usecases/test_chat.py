@@ -25,7 +25,13 @@ from app.repositories.models.conversation import (
     MessageModel,
 )
 from app.repositories.models.custom_bot import BotModel, KnowledgeModel
-from app.routes.schemas.conversation import ChatInput, ChatOutput, Content, MessageInput
+from app.routes.schemas.conversation import (
+    ChatInput,
+    ChatOutput,
+    Content,
+    MessageInput,
+    type_model_name,
+)
 from app.usecases.chat import (
     chat,
     fetch_conversation,
@@ -37,8 +43,7 @@ from app.usecases.chat import (
 from app.utils import get_anthropic_client
 from app.vector_search import SearchResult
 
-MODEL = "claude-instant-v1"
-# MODEL = "claude-v2"
+MODEL: type_model_name = "claude-instant-v1"
 
 
 class TestTraceToRoot(unittest.TestCase):
