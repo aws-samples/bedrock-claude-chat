@@ -14,7 +14,7 @@ import useChat from './hooks/useChat';
 import SnackbarProvider from './providers/SnackbarProvider';
 import { useTranslation } from 'react-i18next';
 import './i18n';
-import { validateSocialProvider } from './libs/validateSocialProvider';
+import { validateSocialProvider } from './utils/SocialProviderUtils';
 
 const App: React.FC = () => {
   const { t, i18n } = useTranslation();
