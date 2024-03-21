@@ -18,6 +18,12 @@ const Markdown: React.FC<Props> = ({ className, children }) => {
       children={children}
       remarkPlugins={[remarkGfm, remarkBreaks]}
       components={{
+        a({ children, href, ...props }) {
+          if (href?.endsWith('.jpg') || href?.endsWith('.png') || href?.endsWith('.gif')) {
+            return <img src={href} alt={String(children)} />;
+          }
+          return <a {...props} target="_blank" rel="noopener noreferrer">{children}</a>;
+        },
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         code({ node, inline, className, children, ...props }) {
           const match = /language-(\w+)/.exec(className || '');
