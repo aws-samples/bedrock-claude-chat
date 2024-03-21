@@ -1,0 +1,13 @@
+{
+  "name": "Bedrock Claude Chat",
+  "short_name": "Cloude Chat",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "/assets/bedrock-icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
