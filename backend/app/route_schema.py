@@ -65,6 +65,7 @@ class ChatInput(BaseSchema):
 class ChatInputWithToken(ChatInput):
     token: str
 
+
 class ChatOutput(BaseSchema):
     conversation_id: str
     message: MessageOutput
