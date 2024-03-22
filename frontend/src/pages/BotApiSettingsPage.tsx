@@ -91,6 +91,11 @@ const BotApiSettingsPage: React.FC = () => {
     clearAll: clearErrorMessages,
   } = useErrorMessage();
 
+  useEffect(() => {
+    clearErrorMessages();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [origins, setOrigins] = useState<string[]>(['']);
   const onClickAddOrigin = useCallback(() => {
     setOrigins(
@@ -139,13 +144,16 @@ const BotApiSettingsPage: React.FC = () => {
     setOrigins(['']);
   }, []);
 
+  const [hasFailedDeploy, setHasFailedDeploy] = useState(false);
   useEffect(() => {
+    setHasFailedDeploy(false);
     if (!botPublication) {
       return;
     }
-
     if (botPublication.cfnStatus === 'CREATE_COMPLETE') {
       fillApiSettings();
+    } else if (botPublication.cfnStatus === 'ROLLBACK_COMPLETE') {
+      setHasFailedDeploy(true);
     }
   }, [botPublication, fillApiSettings]);
 
@@ -334,6 +342,13 @@ const BotApiSettingsPage: React.FC = () => {
                       <div>{t('bot.apiSettings.alert.botUnshared.body')}</div>
                     </Alert>
                   )}
+                  {hasFailedDeploy && (
+                    <Alert
+                      severity="error"
+                      title={t('bot.apiSettings.alert.deployError.title')}>
+                      {t('bot.apiSettings.alert.deployError.body')}
+                    </Alert>
+                  )}
 
                   {hasCreated && (
                     <>
@@ -379,7 +394,7 @@ const BotApiSettingsPage: React.FC = () => {
                     </>
                   )}
 
-                  {myBot?.isPublic && (
+                  {myBot?.isPublic && !hasFailedDeploy && (
                     <div className="flex flex-col gap-1">
                       <div className="text-lg font-bold">
                         {t('bot.apiSettings.label.usagePlan')}
@@ -536,12 +551,13 @@ const BotApiSettingsPage: React.FC = () => {
                 {!isLoadingShare &&
                   !hasCreated &&
                   !isDeploying &&
-                  hasShared && (
+                  hasShared &&
+                  !hasFailedDeploy && (
                     <Button onClick={onClickCreate} loading={isLoading}>
                       {t('bot.button.create')}
                     </Button>
                   )}
-                {hasCreated && (
+                {(hasCreated || hasFailedDeploy) && (
                   <Button
                     className="bg-red"
                     onClick={() => {

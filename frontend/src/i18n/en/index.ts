@@ -172,12 +172,16 @@ How would you categorize this email?`,
             body: 'You cannot publish an API for the bot that is not shared.',
           },
           deploying: {
-            title: 'The API deployment is in PROGRESS.',
+            title: 'The API deployment is in PROGRESS',
             body: 'Please wait until the deployment is complete.',
           },
           deployed: {
-            title: 'The API has been DEPLOYED.',
+            title: 'The API has been DEPLOYED',
             body: 'You can access the API from the Client using the API Endpoint and API Key.',
+          },
+          deployError: {
+            title: 'FAILED to deploy the API',
+            body: 'Please delete the API and re-create the API.',
           },
         },
         deleteApiDaialog: {

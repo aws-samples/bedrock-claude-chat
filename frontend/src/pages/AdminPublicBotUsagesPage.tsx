@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Help from '../components/Help';
 import usePublicBotsForAdmin from '../hooks/usePublicBotsForAdmin';
@@ -10,10 +10,11 @@ import Button from '../components/Button';
 import { PiArrowDown } from 'react-icons/pi';
 import Skeleton from '../components/Skeleton';
 import { twMerge } from 'tailwind-merge';
+import { useNavigate } from 'react-router-dom';
 
 const DATA_FORMAT = 'YYYYMMDD';
 
-const AdminPublicBotsPage: React.FC = () => {
+const AdminPublicBotUsagesPage: React.FC = () => {
   const { t } = useTranslation();
 
   const [searchDateFrom, setSearchDateFrom] = useState<null | string>(
@@ -41,6 +42,15 @@ const AdminPublicBotsPage: React.FC = () => {
       ? null
       : t('admin.validationError.period');
   }, [searchDateFrom, searchDateTo, t]);
+
+  const navigate = useNavigate();
+
+  const onClickViewBot = useCallback(
+    (botId: string) => {
+      navigate(`/admin/bot/${botId}`);
+    },
+    [navigate]
+  );
 
   return (
     <>
@@ -149,7 +159,7 @@ const AdminPublicBotsPage: React.FC = () => {
                     available: true,
                   }}
                   onClick={() => {
-                    // onClickViewBot(bot.id);
+                    onClickViewBot(bot.id);
                   }}>
                   <div className="relative flex h-full items-center">
                     <div className="text-lg font-bold">
@@ -178,4 +188,4 @@ const AdminPublicBotsPage: React.FC = () => {
   );
 };
 
-export default AdminPublicBotsPage;
+export default AdminPublicBotUsagesPage;

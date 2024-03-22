@@ -9,7 +9,7 @@ import './i18n';
 import BotExplorePage from './pages/BotExplorePage.tsx';
 import BotEditPage from './pages/BotEditPage.tsx';
 import BotApiSettingsPage from './pages/BotApiSettingsPage.tsx';
-import AdminPublicBotsPage from './pages/AdminPublicBotsPage.tsx';
+import AdminPublicBotUsagesPage from './pages/AdminPublicBotUsagesPage.tsx';
 import AdminBotApisPage from './pages/AdminBotApisPage.tsx';
 import AdminBotApiManagePage from './pages/AdminBotApiManagePage.tsx';
 
@@ -44,7 +44,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/admin/public-bot/usages',
-        element: <AdminPublicBotsPage />,
+        element: <AdminPublicBotUsagesPage />,
       },
       {
         path: '/admin/publish-apis',
