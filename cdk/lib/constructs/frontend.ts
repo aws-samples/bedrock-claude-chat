@@ -1,5 +1,5 @@
 import { Construct } from "constructs";
-import { RemovalPolicy, Stack } from "aws-cdk-lib";
+import { CfnOutput, RemovalPolicy, Stack } from "aws-cdk-lib";
 import {
   BlockPublicAccess,
   Bucket,
@@ -93,6 +93,7 @@ export class Frontend extends Construct {
     idp: Idp;
   }) {
     const region = Stack.of(auth.userPool).region;
+    const cognitoDomain = `${userPoolDomainPrefix}.auth.${region}.amazoncognito.com/`;
 
     const buildEnvProps = (() => {
       const defaultProps = {
@@ -105,10 +106,11 @@ export class Frontend extends Construct {
       };
 
       if (!idp.isExist()) return defaultProps;
+
       const oAuthProps = {
         VITE_APP_REDIRECT_SIGNIN_URL: this.getOrigin(),
         VITE_APP_REDIRECT_SIGNOUT_URL: this.getOrigin(),
-        VITE_APP_COGNITO_DOMAIN: `${userPoolDomainPrefix}.auth.${region}.amazoncognito.com/`,
+        VITE_APP_COGNITO_DOMAIN: cognitoDomain,
         VITE_APP_SOCIAL_PROVIDERS: idp.getSocialProviders(),
       };
       return { ...defaultProps, ...oAuthProps };
@@ -128,5 +130,12 @@ export class Frontend extends Construct {
       distribution: this.cloudFrontWebDistribution,
       outputSourceDirectory: "dist",
     });
+
+    if (idp.isExist()) {
+      new CfnOutput(this, "CognitoDomain", { value: cognitoDomain });
+      new CfnOutput(this, "SocialProviders", {
+        value: idp.getSocialProviders(),
+      });
+    }
   }
 }
