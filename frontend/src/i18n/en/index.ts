@@ -262,6 +262,10 @@ How would you categorize this email?`,
           apiSettings: 'API Publish Settings',
           noKnowledge: 'This bot has no Knowledge.',
           notPublishApi: "This bot's API is not published.",
+          deployStatus: 'Deploy Status',
+          cfnStatus: 'CloudFormation Status',
+          codebuildStatus: 'CodeBuild Status',
+          codeBuildId: 'CodeBuild ID',
           usagePlanOn: 'ON',
           usagePlanOff: 'OFF',
           rateLimit:
@@ -270,6 +274,12 @@ How would you categorize this email?`,
             'The client can make <Bold>{{limit}}</Bold> concurrent requests to the API.',
           requestsLimit:
             'You can make <Bold>{{limit}}</Bold> requests in a <Bold>{{period}}</Bold>.',
+        },
+        alert: {
+          noApiKeys: {
+            title: 'No API Keys',
+            body: 'All clients cannot access the API.',
+          },
         },
         button: {
           deleteApi: 'Delete API',
