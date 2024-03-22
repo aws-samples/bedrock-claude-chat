@@ -1,0 +1,2 @@
+- Make file processing stream-based
+- Add flag to force clear_all embeddings

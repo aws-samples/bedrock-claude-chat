@@ -226,6 +226,8 @@ def main(
             clear_all
         )
 
+        failures = 0
+
         # Calculate embeddings using LangChain
         if len(sitemap_urls) + len(source_urls) + len(filenames) > 0:
             if len(source_urls) > 0:
@@ -235,17 +237,23 @@ def main(
                     raise NotImplementedError()
             if len(filenames) > 0:
                 for filename in filenames:
-                    embed(
-                        S3FileLoader(
-                            bucket=DOCUMENT_BUCKET,
-                            key=compose_upload_document_s3_path(
-                                user_id,
-                                bot_id,
-                                filename
+                    try:
+                        embed(
+                            S3FileLoader(
+                                bucket=DOCUMENT_BUCKET,
+                                key=compose_upload_document_s3_path(
+                                    user_id,
+                                    bot_id,
+                                    filename
+                                ),
                             ),
-                        ),
-                    )
+                        )
+                    except Exception as e:
+                        print(f"[ERROR] Failed to embed {filename}: {e}")
+                        failures += 1
 
+        if failures > len(filenames) * 0.2:
+            raise Exception("Too many failures.")
         status_reason = "Successfully updated vector store."
     except Exception as e:
         print("[ERROR] Failed to embed.")
@@ -299,7 +307,7 @@ if __name__ == "__main__":
     if (old_image is not None):
         # If old image sync status is failed, re-embbed all contents
         old_sync_status = old_image["SyncStatus"]["S"]
-        if old_sync_status == "FAILED":
+        if old_sync_status == "FAILED" or os.environ.get("CLEAR_ALL", "false") == "true":
             clear_all = True
             print("old_sync_status is FAILED. Clearing all contents.")
         else:

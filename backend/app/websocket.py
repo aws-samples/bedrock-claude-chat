@@ -80,9 +80,8 @@ def get_rag_query(conversation, user_msg_id, chat_input):
         You are extracting relevant information from the conversation to give to the search engine.
         If there are multiple products, provide the name of the product that is mentioned last.
         If there is no specific product, give as much details about what the user is looking for.
-        If there are no product names, please type "{}"
 
-        Format answer as: "<product_name>".
+        Format answer as: "<product_name>" or "<product_details>".
 
         <examples>
             <example>

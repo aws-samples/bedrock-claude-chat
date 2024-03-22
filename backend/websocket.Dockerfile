@@ -5,4 +5,6 @@ RUN pip3 install -r requirements.txt --no-cache-dir
 
 COPY ./app ./app
 
+RUN ls
+
 CMD ["app.websocket.handler"]

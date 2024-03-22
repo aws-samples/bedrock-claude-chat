@@ -20,5 +20,5 @@ EMBEDDING_CONFIG = {
 
 # Configure search parameter to fetch relevant documents from vector store.
 SEARCH_CONFIG = {
-    "max_results": 50,
+    "max_results": 5,
 }

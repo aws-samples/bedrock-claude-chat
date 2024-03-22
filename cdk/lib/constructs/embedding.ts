@@ -100,6 +100,7 @@ export class Embedding extends Construct {
         TABLE_NAME: props.database.tableName,
         TABLE_ACCESS_ROLE_ARN: props.tableAccessRole.roleArn,
         DOCUMENT_BUCKET: props.documentBucket.bucketName,
+        CLEAR_ALL: "false",
       },
     });
     taskLogGroup.grantWrite(container.taskDefinition.executionRole!);
