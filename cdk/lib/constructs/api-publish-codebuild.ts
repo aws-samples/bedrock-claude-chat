@@ -39,6 +39,7 @@ export class ApiPublishCodebuild extends Construct {
             "**/.DS_Store/**",
             "**/.git/**",
             "**/.github/**",
+            "**/.mypy_cache/**",
           ],
         }),
       ],

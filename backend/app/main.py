@@ -102,7 +102,7 @@ def add_current_user_to_request(request: Request, call_next: ASGIApp):
                 request.state.current_user = get_current_user(token)
         else:
             request.state.current_user = User(
-                id=PUBLISHED_API_ID,  # type: ignore
+                id=f"PUBLISHED_API#{PUBLISHED_API_ID}",
                 name=PUBLISHED_API_ID,  # type: ignore
                 groups=[],
             )

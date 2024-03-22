@@ -224,7 +224,7 @@ export class UsageAnalysis extends Construct {
     });
 
     const exportHandler = new python.PythonFunction(this, "ExportHandler", {
-      entry: path.join(__dirname, "../../../backend/usage_analysis/"),
+      entry: path.join(__dirname, "../../../backend/s3_exporter/"),
       runtime: Runtime.PYTHON_3_11,
       environment: {
         BUCKET_NAME: ddbBucket.bucketName,

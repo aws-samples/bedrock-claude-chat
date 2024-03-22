@@ -330,6 +330,7 @@ class TestConversationBotRepository(unittest.TestCase):
             last_used_time=1627984879.9,
             public_bot_id="1",
             is_pinned=False,
+            owner_user_id="user",
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -351,6 +352,7 @@ class TestConversationBotRepository(unittest.TestCase):
             last_used_time=1627984879.9,
             public_bot_id="2",
             is_pinned=False,
+            owner_user_id="user",
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],

@@ -14,8 +14,10 @@ from app.repositories.common import RecordNotFoundError, ResourceConflictError
 from app.repositories.custom_bot import (
     delete_bot_publication,
     find_private_bot_by_id,
+    find_public_bot_by_id,
     update_bot_publication,
 )
+from app.repositories.models.custom_bot import BotModel
 from app.routes.schemas.api_publication import (
     ApiKeyInput,
     ApiKeyOutput,
@@ -24,20 +26,38 @@ from app.routes.schemas.api_publication import (
     PublishedApiQuota,
     PublishedApiThrottle,
 )
+from app.user import User
 from app.utils import start_codebuild_project
 
 logger = logging.getLogger(__name__)
 
 
-def create_bot_publication(
-    user_id: str, bot_id: str, bot_publish_input: BotPublishInput
-):
+def _fetch_bot_with_permission_check(user: User, bot_id: str) -> BotModel:
+    if user.is_admin():
+        # If admin, fetch public (shared) bot
+        try:
+            bot = find_public_bot_by_id(bot_id)
+        except RecordNotFoundError:
+            raise RecordNotFoundError(f"Bot {bot_id} is not found or shared.")
+        return bot
+
+    # If not admin, fetch private bot
+    try:
+        bot = find_private_bot_by_id(user.id, bot_id)
+    except RecordNotFoundError:
+        raise RecordNotFoundError(
+            f"Bot {bot_id} is not published or not owned by user {user.id}."
+        )
+    return bot
+
+
+def create_bot_publication(user: User, bot_id: str, bot_publish_input: BotPublishInput):
     """Publish an API for the bot."""
     # Check existence and permission of the bot
     try:
-        bot = find_private_bot_by_id(user_id, bot_id)
+        bot = find_private_bot_by_id(user.id, bot_id)
     except RecordNotFoundError:
-        raise RecordNotFoundError(f"Bot {bot_id} is not owned by user {user_id}.")
+        raise RecordNotFoundError(f"Bot {bot_id} is not found.")
 
     if bot.public_bot_id is None:
         raise ValueError(f"Bot {bot_id} is not shared. Cannot publish.")
@@ -94,19 +114,14 @@ def create_bot_publication(
 
     # Update bot attribute
     update_bot_publication(
-        user_id, bot_id, published_api_id=published_api_id, build_id=build_id
+        user.id, bot_id, published_api_id=published_api_id, build_id=build_id
     )
     return
 
 
-def fetch_bot_publication(user_id: str, bot_id: str) -> BotPublishOutput:
+def fetch_bot_publication(user: User, bot_id: str) -> BotPublishOutput:
     """Get published bot by id."""
-    # Check existence and permission of the bot
-    try:
-        bot = find_private_bot_by_id(user_id, bot_id)
-    except RecordNotFoundError:
-        raise RecordNotFoundError(f"Bot {bot_id} is not owned by user {user_id}.")
-
+    bot = _fetch_bot_with_permission_check(user, bot_id)
     if bot.published_api_codebuild_id is None:
         raise ValueError(f"Bot {bot_id} is not published.")
 
@@ -163,13 +178,9 @@ def fetch_bot_publication(user_id: str, bot_id: str) -> BotPublishOutput:
     )
 
 
-def remove_bot_publication(user_id: str, bot_id: str):
+def remove_bot_publication(user: User, bot_id: str):
     """Remove published bot by id."""
-    # Check existence of the bot
-    try:
-        bot = find_private_bot_by_id(user_id, bot_id)
-    except RecordNotFoundError:
-        raise RecordNotFoundError(f"Bot {bot_id} is not published.")
+    bot = _fetch_bot_with_permission_check(user, bot_id)
 
     if bot.published_api_codebuild_id is None:
         raise ValueError(f"Bot {bot_id} is not published.")
@@ -186,7 +197,7 @@ def remove_bot_publication(user_id: str, bot_id: str):
     try:
         stack = find_stack_by_bot_id(bot_id)
     except RecordNotFoundError:
-        delete_bot_publication(user_id, bot_id)
+        delete_bot_publication(bot.owner_user_id, bot_id)
         return
 
     if stack.stack_status == "CREATE_COMPLETED":
@@ -198,21 +209,18 @@ def remove_bot_publication(user_id: str, bot_id: str):
     delete_stack_by_bot_id(bot_id)
 
     # Delete bot attribute
-    delete_bot_publication(user_id, bot_id)
+    delete_bot_publication(bot.owner_user_id, bot_id)
     return
 
 
-def fetch_api_key(user_id: str, bot_id: str, api_key: str) -> ApiKeyOutput:
-    # Check existence and permission
-    try:
-        bot = find_private_bot_by_id(user_id, bot_id)
-        stack = find_stack_by_bot_id(bot_id)
-        assert (
-            stack.stack_status == "CREATE_COMPLETE"
-        ), f"Bot {bot_id} stack creation is not completed."
-        usage_plan = find_usage_plan_by_id(stack.api_usage_plan_id)  # type: ignore
-    except RecordNotFoundError:
-        raise RecordNotFoundError(f"Bot {bot_id} is not owned by user {user_id}.")
+def fetch_api_key(user: User, bot_id: str, api_key: str) -> ApiKeyOutput:
+    bot = _fetch_bot_with_permission_check(user, bot_id)
+
+    stack = find_stack_by_bot_id(bot_id)
+    assert (
+        stack.stack_status == "CREATE_COMPLETE"
+    ), f"Bot {bot_id} stack creation is not completed."
+    usage_plan = find_usage_plan_by_id(stack.api_usage_plan_id)  # type: ignore
 
     # Check if the API key is associated with the bot and user
     if api_key not in usage_plan.key_ids:
@@ -230,18 +238,15 @@ def fetch_api_key(user_id: str, bot_id: str, api_key: str) -> ApiKeyOutput:
 
 
 def create_new_api_key(
-    user_id: str, bot_id: str, api_key_input: ApiKeyInput
+    user: User, bot_id: str, api_key_input: ApiKeyInput
 ) -> ApiKeyOutput:
-    # Check existence and permission
-    try:
-        bot = find_private_bot_by_id(user_id, bot_id)
-        stack = find_stack_by_bot_id(bot_id)
-        assert (
-            stack.stack_status == "CREATE_COMPLETE"
-        ), f"Bot {bot_id} stack creation is not completed."
-        usage_plan = find_usage_plan_by_id(stack.api_usage_plan_id)  # type: ignore
-    except RecordNotFoundError:
-        raise RecordNotFoundError(f"Bot {bot_id} is not owned by user {user_id}.")
+    bot = _fetch_bot_with_permission_check(user, bot_id)
+
+    stack = find_stack_by_bot_id(bot_id)
+    assert (
+        stack.stack_status == "CREATE_COMPLETE"
+    ), f"Bot {bot_id} stack creation is not completed."
+    usage_plan = find_usage_plan_by_id(stack.api_usage_plan_id)  # type: ignore
 
     # Create API Key
     key = create_api_key(usage_plan.id, api_key_input.description)
@@ -254,17 +259,14 @@ def create_new_api_key(
     )
 
 
-def remove_api_key(user_id: str, bot_id: str, api_key_id: str):
-    # Check existence and permission
-    try:
-        bot = find_private_bot_by_id(user_id, bot_id)
-        stack = find_stack_by_bot_id(bot_id)
-        assert (
-            stack.stack_status == "CREATE_COMPLETE"
-        ), f"Bot {bot_id} stack creation is not completed."
-        usage_plan = find_usage_plan_by_id(stack.api_usage_plan_id)  # type: ignore
-    except RecordNotFoundError:
-        raise RecordNotFoundError(f"Bot {bot_id} is not owned by user {user_id}.")
+def remove_api_key(user: User, bot_id: str, api_key_id: str):
+    bot = _fetch_bot_with_permission_check(user, bot_id)
+
+    stack = find_stack_by_bot_id(bot_id)
+    assert (
+        stack.stack_status == "CREATE_COMPLETE"
+    ), f"Bot {bot_id} stack creation is not completed."
+    usage_plan = find_usage_plan_by_id(stack.api_usage_plan_id)  # type: ignore
 
     # Check if the API key is associated with the bot and user
     if api_key_id not in usage_plan.key_ids:

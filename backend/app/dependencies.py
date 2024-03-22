@@ -31,3 +31,11 @@ def check_admin(user: User = Depends(get_current_user)):
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Only admin can access this API.",
         )
+
+
+def check_publish_allowed(user: User = Depends(get_current_user)):
+    if not user.is_publish_allowed():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User is not allowed to publish bot.",
+        )

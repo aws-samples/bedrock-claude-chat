@@ -43,6 +43,16 @@ class BotPublishInput(BaseSchema):
     throttle: PublishedApiThrottle
     allowed_origins: list[str]
 
+    @root_validator(pre=True)
+    def validate_allowed_origins(cls, values):
+        allowed_origins = values.get("allowed_origins", [])
+        for origin in allowed_origins:
+            if not (origin.startswith(("http://", "https://")) or origin == "*"):
+                raise ValueError(
+                    f"Invalid origin: {origin}. Origin must start with 'http://' or 'https://' or be '*'"
+                )
+        return values
+
 
 class BotPublishOutput(BaseSchema):
     stage: str = Field(

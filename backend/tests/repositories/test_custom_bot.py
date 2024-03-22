@@ -22,6 +22,7 @@ from app.repositories.custom_bot import (
     update_bot_visibility,
 )
 from app.repositories.models.custom_bot import BotAliasModel, BotModel, KnowledgeModel
+from app.usecases.bot import fetch_all_bots_by_user_id
 
 
 class TestCustomBotRepository(unittest.TestCase):
@@ -35,6 +36,7 @@ class TestCustomBotRepository(unittest.TestCase):
             last_used_time=1627984879.9,
             is_pinned=False,
             public_bot_id=None,
+            owner_user_id="user1",
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -93,6 +95,7 @@ class TestCustomBotRepository(unittest.TestCase):
             last_used_time=1627984879.9,
             is_pinned=False,
             public_bot_id=None,
+            owner_user_id="user1",
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -124,6 +127,7 @@ class TestCustomBotRepository(unittest.TestCase):
             last_used_time=1627984879.9,
             is_pinned=False,
             public_bot_id=None,
+            owner_user_id="user1",
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/jp"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml/jp"],
@@ -164,6 +168,7 @@ class TestCustomBotRepository(unittest.TestCase):
             last_used_time=1627984879.9,
             is_pinned=False,
             public_bot_id=None,
+            owner_user_id="user1",
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/jp"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml/jp"],
@@ -217,6 +222,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             # Pinned
             is_pinned=True,
             public_bot_id=None,
+            owner_user_id="user1",
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -239,6 +245,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             # Pinned
             is_pinned=True,
             public_bot_id=None,
+            owner_user_id="user1",
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -261,6 +268,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             # Not Pinned
             is_pinned=False,
             public_bot_id=None,
+            owner_user_id="user1",
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -283,6 +291,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             # Not Pinned
             is_pinned=False,
             public_bot_id=None,
+            owner_user_id="user1",
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -304,6 +313,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             last_used_time=1627984879.9,
             is_pinned=True,
             public_bot_id=None,
+            owner_user_id="user2",
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -325,6 +335,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             last_used_time=1627984879.9,
             is_pinned=True,
             public_bot_id=None,
+            owner_user_id="user2",
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -418,6 +429,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             last_used_time=1627984879.9,
             is_pinned=True,
             public_bot_id=None,
+            owner_user_id="user1",
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -439,6 +451,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             last_used_time=1627984879.9,
             is_pinned=True,
             public_bot_id=None,
+            owner_user_id="user1",
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -460,6 +473,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             last_used_time=1627984879.9,
             is_pinned=False,
             public_bot_id="public1",
+            owner_user_id="user2",
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -507,7 +521,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             sync_status="RUNNING",
             sync_status_reason="",
         )
-        bots = find_all_bots_by_user_id("user1", limit=3)
+        bots = fetch_all_bots_by_user_id("user1", limit=3)
         self.assertEqual(len(bots), 3)
         self.assertEqual(bots[0].id, "1")
         self.assertEqual(bots[1].id, "2")
@@ -517,7 +531,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
 
         # Make private
         update_bot_visibility("user2", "public1", False)
-        bots = find_all_bots_by_user_id("user1", limit=3)
+        bots = fetch_all_bots_by_user_id("user1", limit=3)
         self.assertEqual(len(bots), 3)
         self.assertEqual(bots[0].id, "1")
         self.assertEqual(bots[1].id, "2")

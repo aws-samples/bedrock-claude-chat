@@ -20,7 +20,7 @@ from app.repositories.common import (
 from app.repositories.models.custom_bot import (
     BotAliasModel,
     BotMeta,
-    BotMetaWithOwnerUserId,
+    BotMetaWithStackInfo,
     BotModel,
     KnowledgeModel,
 )
@@ -296,6 +296,7 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
         last_used_time=float(item["LastBotUsed"]),
         is_pinned=item["IsPinned"],
         public_bot_id=None if "PublicBotId" not in item else item["PublicBotId"],
+        owner_user_id=user_id,
         knowledge=KnowledgeModel(**item["Knowledge"]),
         sync_status=item["SyncStatus"],
         sync_status_reason=item["SyncStatusReason"],
@@ -340,6 +341,7 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
         last_used_time=float(item["LastBotUsed"]),
         is_pinned=item["IsPinned"],
         public_bot_id=item["PublicBotId"],
+        owner_user_id=item["PK"],
         knowledge=KnowledgeModel(**item["Knowledge"]),
         sync_status=item["SyncStatus"],
         sync_status_reason=item["SyncStatusReason"],
@@ -510,7 +512,7 @@ def delete_alias_by_id(user_id: str, bot_id: str):
     return response
 
 
-async def find_public_bots_by_ids(bot_ids: list[str]) -> list[BotMetaWithOwnerUserId]:
+async def find_public_bots_by_ids(bot_ids: list[str]) -> list[BotMetaWithStackInfo]:
     """Find all public bots by ids. This method is intended for administrator use."""
     table = _get_table_public_client()
     loop = asyncio.get_running_loop()
@@ -532,7 +534,7 @@ async def find_public_bots_by_ids(bot_ids: list[str]) -> list[BotMetaWithOwnerUs
     for items in results:
         for item in items:
             bots.append(
-                BotMetaWithOwnerUserId(
+                BotMetaWithStackInfo(
                     id=decompose_bot_id(item["SK"]),
                     owner_user_id=item["PK"],
                     title=item["Title"],
@@ -554,7 +556,7 @@ async def find_public_bots_by_ids(bot_ids: list[str]) -> list[BotMetaWithOwnerUs
 
 def find_all_published_bots(
     limit: int = 1000, next_token: str | None = None
-) -> tuple[list[BotMetaWithOwnerUserId], str | None]:
+) -> tuple[list[BotMetaWithStackInfo], str | None]:
     """Find all published bots. This method is intended for administrator use."""
     table = _get_table_public_client()
 
@@ -572,7 +574,7 @@ def find_all_published_bots(
     response = table.scan(**query_params)
 
     bots = [
-        BotMetaWithOwnerUserId(
+        BotMetaWithStackInfo(
             id=decompose_bot_id(item["SK"]),
             owner_user_id=item["PK"],
             title=item["Title"],

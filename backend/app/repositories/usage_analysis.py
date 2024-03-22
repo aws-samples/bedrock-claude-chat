@@ -26,7 +26,7 @@ QUERY_LIMIT = 1000
 
 
 logger = logging.getLogger(__name__)
-athena = boto3.client("athena", region_name=REGION)
+athena = boto3.client("athena")
 
 
 def _find_cognito_user_by_id(user_id: str) -> dict | None:

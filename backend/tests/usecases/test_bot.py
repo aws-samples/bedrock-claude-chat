@@ -38,6 +38,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             # Pinned
             is_pinned=True,
             public_bot_id=None,
+            owner_user_id="user1",
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -60,6 +61,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             # Pinned
             is_pinned=True,
             public_bot_id=None,
+            owner_user_id="user1",
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -82,6 +84,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             # Not Pinned
             is_pinned=False,
             public_bot_id=None,
+            owner_user_id="user1",
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -104,6 +107,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             # Not Pinned
             is_pinned=False,
             public_bot_id=None,
+            owner_user_id="user1",
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -125,6 +129,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             last_used_time=1627984879.9,
             is_pinned=True,
             public_bot_id=None,
+            owner_user_id="user2",
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -146,6 +151,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             last_used_time=1627984879.9,
             is_pinned=True,
             public_bot_id=None,
+            owner_user_id="user2",
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],

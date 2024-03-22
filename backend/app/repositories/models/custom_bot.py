@@ -17,6 +17,7 @@ class BotModel(BaseModel):
     last_used_time: float
     # This can be used as the bot is public or not. Also used for GSI PK
     public_bot_id: str | None
+    owner_user_id: str
     is_pinned: bool
     knowledge: KnowledgeModel
     sync_status: type_sync_status
@@ -62,7 +63,7 @@ class BotMeta(BaseModel):
     sync_status: type_sync_status
 
 
-class BotMetaWithOwnerUserId(BotMeta):
+class BotMetaWithStackInfo(BotMeta):
     owner_user_id: str
     published_api_stack_name: str | None
     published_api_datetime: int | None

@@ -110,6 +110,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             last_used_time=current_time,
             public_bot_id=None,
             is_pinned=False,
+            owner_user_id=user_id,  # Owner is the creator
             knowledge=KnowledgeModel(
                 source_urls=source_urls, sitemap_urls=sitemap_urls, filenames=filenames
             ),
