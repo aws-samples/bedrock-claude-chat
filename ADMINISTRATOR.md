@@ -16,3 +16,55 @@ Screenshot
 - In public bot usages, bots that have not been used at all during the specified period will not be listed.
 
 - In user usages, users who have not used the system at all during the specified period will not be listed.
+
+## Download conversation data
+
+You can query the conversation logs by Athena, using SQL. To download logs, open Athena Query Editor from management console and run SQL. Followings are some example queries which are useful to analyze use-cases.
+
+### Query per User ID
+
+Edit `user-id` and `datehour`. `user-id` can be referred on
+TODO
+
+```sql
+SELECT
+    d.newimage.PK.S AS UserId,
+    d.newimage.SK.S AS ConversationId,
+    d.newimage.MessageMap AS MessageMap,
+    d.newimage.TotalPrice.N AS TotalPrice,
+    d.newimage.CreateTime.N AS CreateTime,
+    d.newimage.LastMessageId.S AS LastMessageId,
+    d.datehour AS DateHour
+FROM
+    bedrockchatstack_usage_analysis.ddb_export d
+WHERE
+    d.newimage.PK.S = '<user-id>'
+    AND d.datehour BETWEEN '<yyyy/mm/dd/hh>' AND '<yyyy/mm/dd/hh>'
+    AND d.Keys.SK.S LIKE CONCAT(d.Keys.PK.S, '#CONV#%')
+ORDER BY
+    d.datehour DESC;
+```
+
+### Query per Bot ID
+
+Edit `bot-id` and `datehour`. `bot-id` can be referred on Bot Management screen, where can be accessed from Bot Publish APIs, showing on the left sidebar. Note the end part of the URL like `https://xxxx.cloudfront.net/admin/bot/<bot-id>`.
+
+```sql
+SELECT
+    d.newimage.PK.S AS UserId,
+    d.newimage.SK.S AS ConversationId,
+    d.newimage.MessageMap AS MessageMap,
+    d.newimage.TotalPrice.N AS TotalPrice,
+    d.newimage.CreateTime.N AS CreateTime,
+    d.newimage.LastMessageId.S AS LastMessageId,
+    d.newimage.BotId.S AS BotId,
+    d.datehour AS DateHour
+FROM
+    bedrockchatstack_usage_analysis.ddb_export d
+WHERE
+    d.newimage.BotId.S = '<bot-id>'
+    AND d.datehour BETWEEN '<yyyy/mm/dd/hh>' AND '<yyyy/mm/dd/hh>'
+    AND d.Keys.SK.S LIKE CONCAT(d.Keys.PK.S, '#CONV#%')
+ORDER BY
+    d.datehour DESC;
+```
