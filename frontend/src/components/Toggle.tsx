@@ -7,7 +7,7 @@ type Props = {
   value: boolean;
   disabled?: boolean;
   hint?: string;
-  onChange: (b: boolean) => void;
+  onChange?: (b: boolean) => void;
 };
 
 const Toggle: React.FC<Props> = (props) => {
@@ -24,7 +24,7 @@ const Toggle: React.FC<Props> = (props) => {
           checked={props.value}
           disabled={props.disabled}
           onChange={() => {
-            props.onChange(!props.value);
+            props.onChange ? props.onChange(!props.value) : null;
           }}
         />
         <div

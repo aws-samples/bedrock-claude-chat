@@ -260,8 +260,19 @@ How would you categorize this email?`,
           pageTitle: 'Bot Management',
           sharedUrl: 'Shared Bot URL',
           apiSettings: 'API Publish Settings',
-          noKnowledge: 'This bot has no Knowledge',
+          noKnowledge: 'This bot has no Knowledge.',
           notPublishApi: "This bot's API is not published.",
+          usagePlanOn: 'ON',
+          usagePlanOff: 'OFF',
+          rateLimit:
+            '<Bold>{{limit}}</Bold> requests per second, that clients can call the API.',
+          burstLimit:
+            'The client can make <Bold>{{limit}}</Bold> concurrent requests to the API.',
+          requestsLimit:
+            'You can make <Bold>{{limit}}</Bold> requests in a <Bold>{{period}}</Bold>.',
+        },
+        button: {
+          deleteApi: 'Delete API',
         },
       },
       validationError: {

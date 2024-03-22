@@ -22,9 +22,9 @@ export type ListBotApisResponse = {
     title: string;
     description: string;
     publishedStackName: string;
-    publishedDatetile: Date;
+    publishedDatetime: Date;
     ownerUserId: string;
-  };
+  }[];
   nextToken?: string;
 };
 

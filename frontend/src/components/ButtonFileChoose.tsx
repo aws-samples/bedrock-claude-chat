@@ -13,7 +13,6 @@ type Props = BaseProps & {
 const ButtonFileChoose: React.FC<Props> = (props) => {
   const onChange: React.ChangeEventHandler<HTMLInputElement> = useCallback(
     (e) => {
-      console.log(e.target);
       if (e.target.files) {
         props.onChange(e.target.files);
       }
@@ -32,7 +31,6 @@ const ButtonFileChoose: React.FC<Props> = (props) => {
         props.disabled ? 'opacity-30 ' : 'cursor-pointer'
       )}>
       {props.children}
-
       <input
         type="file"
         hidden

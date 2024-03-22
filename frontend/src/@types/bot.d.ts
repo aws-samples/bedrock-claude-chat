@@ -108,6 +108,8 @@ export type GetMyBotResponse = BotDetails;
 
 export type GetBotSummaryResponse = BotSummary;
 
+export type GetPublicBotResponse = BotDetails;
+
 export type GetPresignedUrlResponse = {
   url: string;
 };

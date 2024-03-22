@@ -320,7 +320,7 @@ const ChatListDrawer: React.FC<Props> = (props) => {
                 <DrawerItem
                   isActive={false}
                   icon={<PiShareNetwork />}
-                  to="admin/public-bots"
+                  to="admin/public-bot/usages"
                   labelComponent={t('button.publicBotUsages')}
                 />
                 <DrawerItem
