@@ -145,7 +145,7 @@ How would you categorize this email?`,
             "Creating an API enables the Bot's functions to be accessed by external clients; APIs enable integration with external applications.",
           endpoint: 'The client can use the Bot from this endpoint.',
           usagePlan:
-            'Usage plans specify the number or rate of requests that your API accepts from a client. Associate an API key with a usage plan to track the requests your API receives.',
+            'Usage plans specify the number or rate of requests that your API accepts from a client. Associate an API with a usage plan to track the requests your API receives.',
           throttling: 'Limit the rate that users can call your API.',
           rateLimit:
             'Enter the rate, in requests per second, that clients can call your API.',
@@ -156,9 +156,9 @@ How would you categorize this email?`,
           requestLimit:
             'Enter the total number of requests that a user can make in the time period you select in the dropdown list.',
           allowOrigins:
-            'Allowed client origins for access. If the origin is not allowed, the caller receives a 403 Forbidden response and is denied access to the API. The Origin must follow the format: (http|https)://host-name or (http|https)://host-name:port. ',
+            'Allowed client origins for access. If the origin is not allowed, the caller receives a 403 Forbidden response and is denied access to the API. The Origin must follow the format: "(http|https)://host-name" or "(http|https)://host-name:port" and wildcards(*) can be used.',
           allowOriginsExample:
-            'e.g. [https://your-host-name.com], [http://localhost:8000] ',
+            'e.g. https://your-host-name.com, https://*.your-host-name.com, http://localhost:8000',
           apiKeys:
             'An API key is an alphanumeric string that used to identify a client of your API. Otherwise, the caller receives a 403 Forbidden response and is denied access to the API.',
         },
@@ -252,6 +252,16 @@ How would you categorize this email?`,
       publishApis: {
         label: {
           pageTitle: 'Bot Publish APIs',
+          publishedDate: 'Published Date',
+        },
+      },
+      botManagement: {
+        label: {
+          pageTitle: 'Bot Management',
+          sharedUrl: 'Shared Bot URL',
+          apiSettings: 'API Publish Settings',
+          noKnowledge: 'This bot has no Knowledge',
+          notPublishApi: "This bot's API is not published.",
         },
       },
       validationError: {
