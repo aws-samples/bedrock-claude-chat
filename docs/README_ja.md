@@ -203,6 +203,10 @@ cli および CDK を利用されている場合、`cdk destroy`を実行して�
 
 このサンプルはデフォルトでセルフサインアップが有効化してあります。セルフサインアップを無効にするには、[auth.ts](./cdk/lib/constructs/auth.ts)を開き、`selfSignUpEnabled` を `false` に切り替えてから再デプロイしてください。
 
+### 外部のアイデンティティプロバイダー
+
+このサンプルは外部のアイデンティティプロバイダーをサポートしています。現在、Google のみをサポートしています。設定するには、[こちら](./SET_UP_IDP_ja.md)をご覧ください。
+
 ```ts
 const userPool = new UserPool(this, "UserPool", {
   passwordPolicy: {
