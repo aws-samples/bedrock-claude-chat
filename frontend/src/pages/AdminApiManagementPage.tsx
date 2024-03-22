@@ -1,16 +1,13 @@
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import Help from '../components/Help';
 import ListItemBot from '../components/ListItemBot';
 import { formatDatetime } from '../utils/DateUtils';
 
-import Button from '../components/Button';
-import { PiArrowDown } from 'react-icons/pi';
 import Skeleton from '../components/Skeleton';
 import usePublishApiForAdmin from '../hooks/usePublishApiForAdmin';
 import { useNavigate } from 'react-router-dom';
 
-const AdminBotApisPage: React.FC = () => {
+const AdminApiManagementPage: React.FC = () => {
   const { t } = useTranslation();
 
   const { botApis, isLoading: isLoadingApis } = usePublishApiForAdmin();
@@ -32,19 +29,9 @@ const AdminBotApisPage: React.FC = () => {
             <div className="flex items-end justify-between">
               <div className="flex items-center gap-2">
                 <div className="text-xl font-bold">
-                  {t('admin.publishApis.label.pageTitle')}
+                  {t('admin.apiManagement.label.pageTitle')}
                 </div>
-                <Help
-                  direction="right"
-                  message={t('admin.publicBotUsages.help.overview')}
-                />
               </div>
-            </div>
-
-            <div className="my-2 flex justify-end">
-              <Button outlined rightIcon={<PiArrowDown />} onClick={() => {}}>
-                {t('admin.publicBotUsages.label.sortByCost')}
-              </Button>
             </div>
 
             <div className="mt-2 border-b border-gray"></div>
@@ -60,7 +47,7 @@ const AdminBotApisPage: React.FC = () => {
 
               {botApis?.length === 0 && (
                 <div className="flex h-full w-full items-center justify-center italic text-dark-gray">
-                  {t('admin.publicBotUsages.label.noPublicBotUsages')}
+                  {t('admin.apiManagement.label.noApi')}
                 </div>
               )}
               {botApis?.map((api, idx) => (
@@ -77,7 +64,7 @@ const AdminBotApisPage: React.FC = () => {
                     <div className="text-xs">{api.publishedStackName}</div>
                     <div className="text-xs">
                       <div className="mr-1 inline font-bold">
-                        {t('admin.publishApis.label.publishedDate')}:
+                        {t('admin.apiManagement.label.publishedDate')}:
                       </div>
                       {formatDatetime(api.publishedDatetime)}
                     </div>
@@ -92,4 +79,4 @@ const AdminBotApisPage: React.FC = () => {
   );
 };
 
-export default AdminBotApisPage;
+export default AdminApiManagementPage;

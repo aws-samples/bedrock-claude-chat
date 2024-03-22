@@ -20,7 +20,6 @@ import {
   PiRobot,
   PiShareNetwork,
   PiTrash,
-  PiUsersThree,
   PiX,
 } from 'react-icons/pi';
 import { PiCircleNotch } from 'react-icons/pi';
@@ -320,21 +319,21 @@ const ChatListDrawer: React.FC<Props> = (props) => {
                 <DrawerItem
                   isActive={false}
                   icon={<PiShareNetwork />}
-                  to="admin/public-bot/usages"
-                  labelComponent={t('button.publicBotUsages')}
+                  to="admin/shared-bot-analytics"
+                  labelComponent={t('button.sharedBotAnalytics')}
                 />
                 <DrawerItem
                   isActive={false}
                   icon={<PiGlobe />}
-                  to="admin/publish-apis"
-                  labelComponent={t('button.botPublishApis')}
+                  to="admin/api-management"
+                  labelComponent={t('button.apiManagement')}
                 />
-                <DrawerItem
+                {/* <DrawerItem
                   isActive={false}
                   icon={<PiUsersThree />}
                   to="admin/user-usages"
                   labelComponent={t('button.userUsages')}
-                />
+                /> */}
               </ExpandableDrawerGroup>
             )}
 

@@ -9,9 +9,9 @@ import './i18n';
 import BotExplorePage from './pages/BotExplorePage.tsx';
 import BotEditPage from './pages/BotEditPage.tsx';
 import BotApiSettingsPage from './pages/BotApiSettingsPage.tsx';
-import AdminPublicBotUsagesPage from './pages/AdminPublicBotUsagesPage.tsx';
-import AdminBotApisPage from './pages/AdminBotApisPage.tsx';
-import AdminBotApiManagePage from './pages/AdminBotApiManagePage.tsx';
+import AdminSharedBotAnalyticsPage from './pages/AdminSharedBotAnalyticsPage.tsx';
+import AdminApiManagementPage from './pages/AdminApiManagementPage.tsx';
+import AdminBotManagementPage from './pages/AdminBotManagementPage.tsx';
 
 const router = createBrowserRouter([
   {
@@ -43,16 +43,16 @@ const router = createBrowserRouter([
         element: <ChatPage />,
       },
       {
-        path: '/admin/public-bot/usages',
-        element: <AdminPublicBotUsagesPage />,
+        path: '/admin/shared-bot-analytics',
+        element: <AdminSharedBotAnalyticsPage />,
       },
       {
-        path: '/admin/publish-apis',
-        element: <AdminBotApisPage />,
+        path: '/admin/api-management',
+        element: <AdminApiManagementPage />,
       },
       {
         path: '/admin/bot/:botId',
-        element: <AdminBotApiManagePage />,
+        element: <AdminBotManagementPage />,
       },
       {
         path: '/:conversationId',

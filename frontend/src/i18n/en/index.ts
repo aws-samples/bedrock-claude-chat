@@ -233,9 +233,9 @@ How would you categorize this email?`,
       },
     },
     admin: {
-      publicBotUsages: {
+      sharedBotAnalytics: {
         label: {
-          pageTitle: 'Public Bot Usages',
+          pageTitle: 'Shared Bot Analytics',
           noPublicBotUsages:
             'During the Calculation Period, no public bots were utilized.',
           published: 'API is published.',
@@ -253,10 +253,11 @@ How would you categorize this email?`,
             'If the Calculation Period is not set, the cost for today will be displayed.',
         },
       },
-      publishApis: {
+      apiManagement: {
         label: {
-          pageTitle: 'Bot Publish APIs',
+          pageTitle: 'API Management',
           publishedDate: 'Published Date',
+          noApi: 'No APIs.',
         },
       },
       botManagement: {
@@ -307,8 +308,8 @@ How would you categorize this email?`,
     button: {
       newChat: 'New Chat',
       botConsole: 'Bot Console',
-      publicBotUsages: 'Public Bot Usages',
-      botPublishApis: 'Bot Publish APIs',
+      sharedBotAnalytics: 'Shared Bot Analytics',
+      apiManagement: 'API Management',
       userUsages: 'User Usages',
       SaveAndSubmit: 'Save & Submit',
       resend: 'Resend',

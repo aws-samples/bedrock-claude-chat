@@ -14,7 +14,7 @@ import { useNavigate } from 'react-router-dom';
 
 const DATA_FORMAT = 'YYYYMMDD';
 
-const AdminPublicBotUsagesPage: React.FC = () => {
+const AdminSharedBotAnalyticsPage: React.FC = () => {
   const { t } = useTranslation();
 
   const [searchDateFrom, setSearchDateFrom] = useState<null | string>(
@@ -60,20 +60,20 @@ const AdminPublicBotUsagesPage: React.FC = () => {
             <div className="flex items-end justify-between">
               <div className="flex items-center gap-2">
                 <div className="text-xl font-bold">
-                  {t('admin.publicBotUsages.label.pageTitle')}
+                  {t('admin.sharedBotAnalytics.label.pageTitle')}
                 </div>
                 <Help
                   direction="right"
-                  message={t('admin.publicBotUsages.help.overview')}
+                  message={t('admin.sharedBotAnalytics.help.overview')}
                 />
               </div>
             </div>
 
             <div className="my-2 rounded border p-2">
               <div className="flex items-center gap-1 text-sm font-bold">
-                {t('admin.publicBotUsages.label.SearchCondition.title')}
+                {t('admin.sharedBotAnalytics.label.SearchCondition.title')}
                 <Help
-                  message={t('admin.publicBotUsages.help.calculationPeriod')}
+                  message={t('admin.sharedBotAnalytics.help.calculationPeriod')}
                 />
               </div>
 
@@ -81,7 +81,9 @@ const AdminPublicBotUsagesPage: React.FC = () => {
                 <InputText
                   className="w-full"
                   type="date"
-                  label={t('admin.publicBotUsages.label.SearchCondition.from')}
+                  label={t(
+                    'admin.sharedBotAnalytics.label.SearchCondition.from'
+                  )}
                   value={formatDate(searchDateFrom, 'YYYY-MM-DD')}
                   onChange={(val) => {
                     if (val === '') {
@@ -99,7 +101,7 @@ const AdminPublicBotUsagesPage: React.FC = () => {
                 <InputText
                   className="w-full"
                   type="date"
-                  label={t('admin.publicBotUsages.label.SearchCondition.to')}
+                  label={t('admin.sharedBotAnalytics.label.SearchCondition.to')}
                   value={formatDate(searchDateTo, 'YYYY-MM-DD')}
                   onChange={(val) => {
                     if (val === '') {
@@ -131,7 +133,7 @@ const AdminPublicBotUsagesPage: React.FC = () => {
                 onClick={() => {
                   setIsDescCost(!isDescCost);
                 }}>
-                {t('admin.publicBotUsages.label.sortByCost')}
+                {t('admin.sharedBotAnalytics.label.sortByCost')}
               </Button>
             </div>
 
@@ -148,7 +150,7 @@ const AdminPublicBotUsagesPage: React.FC = () => {
 
               {publicBots?.length === 0 && (
                 <div className="flex h-full w-full items-center justify-center italic text-dark-gray">
-                  {t('admin.publicBotUsages.label.noPublicBotUsages')}
+                  {t('admin.sharedBotAnalytics.label.noPublicBotUsages')}
                 </div>
               )}
               {sortedBots?.map((bot, idx) => (
@@ -170,7 +172,7 @@ const AdminPublicBotUsagesPage: React.FC = () => {
                       {bot.isPublished ? (
                         <>
                           {bot.isPublished
-                            ? t('admin.publicBotUsages.label.published')
+                            ? t('admin.sharedBotAnalytics.label.published')
                             : null}
                         </>
                       ) : (
@@ -188,4 +190,4 @@ const AdminPublicBotUsagesPage: React.FC = () => {
   );
 };
 
-export default AdminPublicBotUsagesPage;
+export default AdminSharedBotAnalyticsPage;

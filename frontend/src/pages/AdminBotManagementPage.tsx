@@ -17,7 +17,7 @@ import ButtonCopy from '../components/ButtonCopy';
 import Skeleton from '../components/Skeleton';
 import Alert from '../components/Alert';
 
-const AdminBotApiManagePage: React.FC = () => {
+const AdminBotManagementPage: React.FC = () => {
   const { t } = useTranslation();
   const { botId } = useParams();
 
@@ -50,14 +50,19 @@ const AdminBotApiManagePage: React.FC = () => {
 
   const { open } = useSnackbar();
   const [isOpenDeleteApiDialog, setIsOpenDeleteApiDialog] = useState(false);
+  const [isDeletingApi, setIsDeletingApi] = useState(false);
   const deleteApi = useCallback(() => {
-    setIsOpenDeleteApiDialog(false);
+    setIsDeletingApi(true);
     deleteBotPublication()
       .then(() => {
-        mutateBotPublication();
+        mutateBotPublication(undefined);
+        setIsOpenDeleteApiDialog(false);
       })
       .catch(() => {
         open(t('bot.error.failDeleteApi'));
+      })
+      .finally(() => {
+        setIsDeletingApi(true);
       });
   }, [deleteBotPublication, mutateBotPublication, open, t]);
 
@@ -69,6 +74,7 @@ const AdminBotApiManagePage: React.FC = () => {
     <>
       <DialogConfirmDeleteApi
         isOpen={isOpenDeleteApiDialog}
+        loading={isDeletingApi}
         onDelete={deleteApi}
         onClose={() => {
           setIsOpenDeleteApiDialog(false);
@@ -360,7 +366,7 @@ const AdminBotApiManagePage: React.FC = () => {
                       </div>
 
                       <div className="mt-1 flex w-full flex-col gap-1">
-                        {['http://localhost'].map((url, idx) => (
+                        {botPublication.allowedOrigins.map((url, idx) => (
                           <div className="flex w-full gap-2" key={idx}>
                             <InputText
                               className="w-full"
@@ -405,4 +411,4 @@ const AdminBotApiManagePage: React.FC = () => {
   );
 };
 
-export default AdminBotApiManagePage;
+export default AdminBotManagementPage;
