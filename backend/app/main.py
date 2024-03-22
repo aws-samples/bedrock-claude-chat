@@ -56,9 +56,9 @@ app.add_exception_handler(Exception, error_handler_factory(500))
 security = HTTPBearer()
 
 
-def get_current_user(access_token: str=None, token: HTTPAuthorizationCredentials = Depends(security)):
+def get_current_user(token: HTTPAuthorizationCredentials = Depends(security)):
     try:
-        decoded = verify_token(token.credentials,access_token)
+        decoded = verify_token(token.credentials)
         # Return user information
         return User(
             id=decoded["sub"],
@@ -81,8 +81,7 @@ def add_current_user_to_request(request: Request, call_next: ASGIApp):
             token = HTTPAuthorizationCredentials(
                 scheme="Bearer", credentials=token_str
             )
-            access_token = request.headers.get("X-Access-Token")
-            request.state.current_user = get_current_user(access_token, token)
+            request.state.current_user = get_current_user(token)
     else:
         request.state.current_user = User(id="test_user", name="test_user")
 

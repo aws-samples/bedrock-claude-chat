@@ -20,10 +20,11 @@ const usePostMessageStreaming = create<{
       } else {
         dispatch(i18next.t('app.chatWaitingSymbol'));
       }
-      const session = await Auth.currentSession();
-      const token = session.getIdToken().getJwtToken();
-      const accessToken = session.getAccessToken().getJwtToken();
-      const payloadString = JSON.stringify({ ...input, token, accessToken });
+      const token = (await Auth.currentSession()).getIdToken().getJwtToken();
+      const payloadString = JSON.stringify({
+        ...input,
+        token,
+      });
 
       // chunking
       const chunkedPayloads: string[] = [];

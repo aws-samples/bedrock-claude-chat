@@ -13,11 +13,8 @@ api.interceptors.request.use(async (config) => {
   // If Authenticated, append ID Token to Request Header
   const user = await Auth.currentAuthenticatedUser();
   if (user) {
-    const session = await Auth.currentSession();
-    const token = session.getIdToken().getJwtToken();
-    const accessToken = session.getAccessToken().getJwtToken();
+    const token = (await Auth.currentSession()).getIdToken().getJwtToken();
     config.headers['Authorization'] = 'Bearer ' + token;
-    config.headers['X-Access-Token'] = accessToken;
   }
   config.headers['Content-Type'] = 'application/json';
 
