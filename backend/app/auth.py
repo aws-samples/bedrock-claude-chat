@@ -15,5 +15,6 @@ def verify_token(token: str) -> dict:
     keys = response.json()["keys"]
     header = jwt.get_unverified_header(token)
     key = [k for k in keys if k["kid"] == header["kid"]][0]
+    # The JWT returned from the Identity Provider may contain an at_hash, so we will disable the verify_at_hash check.
     decoded = jwt.decode(token, key, algorithms=["RS256"], options={"verify_at_hash": False }, audience=CLIENT_ID)
     return decoded
