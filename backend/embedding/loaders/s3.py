@@ -5,6 +5,7 @@ import boto3
 from embedding.loaders.base import BaseLoader, Document
 from unstructured.partition.auto import partition
 from unstructured.chunking.basic import chunk_elements
+from pandas import read_csv, DataFrame
 
 
 class S3FileLoader(BaseLoader):
@@ -12,19 +13,31 @@ class S3FileLoader(BaseLoader):
     Reference: `langchain_community.document_loaders.S3FileLoader` class
     """
 
-    def __init__(self, bucket: str, key: str, mode: str = "single"):
+    def __init__(self, bucket: str, key: str):
         self.bucket = bucket
         self.key = key
-        self.mode = mode
+        self.reader = None
 
-    def _get_elements(self) -> list:
+    def _get_reader(self) -> list:
         """Get elements."""
         s3 = boto3.client("s3")
         with tempfile.TemporaryDirectory() as temp_dir:
             file_path = f"{temp_dir}/{self.key}"
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
             s3.download_file(self.bucket, self.key, file_path)
-            return partition(filename=file_path)
+            if self.key.endswith(".csv"):
+                self.reader = read_csv(
+                    file_path,
+                    iterator=True,
+                    chunksize=1500,
+                    low_memory=True
+                )
+            else:
+                elements = partition(filename=file_path)
+                # Unstructured is used for creating elements, so it should be used
+                # for splitting
+                chunks = chunk_elements(elements)
+                self.reader = iter([DataFrame(chunks, columns=["text"])])
 
     def _get_metadata(self) -> dict:
         return {"source": f"s3://{self.bucket}/{self.key}"}
@@ -34,52 +47,29 @@ class S3FileLoader(BaseLoader):
 
     def load(self) -> list[Document]:
         """Load file."""
-        elements = self._get_elements()
-        if self.mode == "elements":
-            docs: list[Document] = list()
-            for element in elements:
-                metadata = self._get_metadata()
-                if hasattr(element, "metadata"):
-                    metadata.update(element.metadata.to_dict())
-                if hasattr(element, "category"):
-                    metadata["category"] = element.category
-                docs.append(
-                    Document(page_content=str(element), metadata=metadata)
-                )
-        elif self.mode == "paged":
-            text_dict: dict[int, str] = {}
-            meta_dict: dict[int, dict] = {}
-
-            for idx, element in enumerate(elements):
-                metadata = self._get_metadata()
-                if hasattr(element, "metadata"):
-                    metadata.update(element.metadata.to_dict())
-                page_number = metadata.get("page_number", 1)
-
-                # Check if this page_number already exists in docs_dict
-                if page_number not in text_dict:
-                    # If not, create new entry with initial text and metadata
-                    text_dict[page_number] = str(element) + "\n\n"
-                    meta_dict[page_number] = metadata
-                else:
-                    # If exists, append to text and update the metadata
-                    text_dict[page_number] += str(element) + "\n\n"
-                    meta_dict[page_number].update(metadata)
-
-            # Convert the dict to a list of Document objects
-            docs = [
-                Document(page_content=text_dict[key], metadata=meta_dict[key])
-                for key in text_dict.keys()
-            ]
-        elif self.mode == "single":
+        if self.reader is None:
+            self.reader = self._get_reader()
+        try:
+            elements = next(self.reader, [])
+            if len(elements) == 0:
+                return []
+            docs = []
             metadata = self._get_metadata()
-            # Unstructured is used for creating elements, so it should be used
-            # for splitting
-            chunks = chunk_elements(elements)
-            docs = [
-                Document(page_content=str(chunk), metadata=metadata)
-                for chunk in chunks
-            ]
-        else:
-            raise ValueError(f"mode of {self.mode} not supported.")
-        return docs
+            for i in elements.itertuples(index=False):
+                row_metadata = i._asdict()
+                content = ''
+                for key, value in row_metadata.items():
+                    if key == 'text':
+                        content = value
+                    else:
+                        content += f" {key}: {value}\n"
+                row_metadata.update(metadata)
+                docs.append(
+                    Document(
+                        page_content=content,
+                        metadata=row_metadata
+                    )
+                )
+            return docs
+        except StopIteration:
+            return []

@@ -79,6 +79,7 @@ class YoutubeLoader(BaseLoader):
             self.language = language
         self.translation = translation
         self.continue_on_failure = continue_on_failure
+        self.loaded = False
 
     @staticmethod
     def extract_video_id(youtube_url: str) -> str:
@@ -96,6 +97,9 @@ class YoutubeLoader(BaseLoader):
 
     def load(self) -> List[Document]:
         """Load documents."""
+        if self.loaded is True:
+            return []
+
         metadata = {"source": self.video_id}
 
         try:
@@ -115,6 +119,7 @@ class YoutubeLoader(BaseLoader):
 
         transcript = " ".join([t["text"].strip(" ") for t in transcript_pieces])
 
+        self.loaded = True
         return [Document(page_content=transcript, metadata=metadata)]
 
 

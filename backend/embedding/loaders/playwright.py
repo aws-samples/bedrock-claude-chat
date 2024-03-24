@@ -130,6 +130,7 @@ class PlaywrightURLLoader(BaseLoader):
         self.urls = urls
         self.continue_on_failure = continue_on_failure
         self.headless = headless
+        self.loaded = False
 
         if remove_selectors and evaluator:
             raise ValueError(
@@ -153,6 +154,9 @@ class PlaywrightURLLoader(BaseLoader):
         Returns:
             List[Document]: A list of Document instances with loaded content.
         """
+        if self.loaded:
+            return []
+
         from playwright.sync_api import sync_playwright
 
         docs: List[Document] = list()
@@ -177,4 +181,5 @@ class PlaywrightURLLoader(BaseLoader):
                     else:
                         raise e
             browser.close()
+        self.loaded = True
         return docs

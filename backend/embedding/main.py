@@ -138,9 +138,6 @@ def update_sync_status(
 def embed(
     loader: BaseLoader,
 ):
-    contents = []
-    sources = []
-    embeddings = []
     splitter = DocumentSplitter(
         splitter=SentenceSplitter(
             paragraph_separator=r"\n\n\n",
@@ -153,22 +150,27 @@ def embed(
     embedder = Embedder(verbose=True)
 
     documents = loader.load()
-    splitted = splitter.split_documents(documents)
-    splitted_embeddings = embedder.embed_documents(splitted)
+    while documents is not None and len(documents) > 0:
+        contents = []
+        sources = []
+        embeddings = []
+        splitted = splitter.split_documents(documents)
+        splitted_embeddings = embedder.embed_documents(splitted)
 
-    contents.extend([t.page_content for t in splitted])
-    sources.extend([t.metadata["source"] for t in splitted])
-    embeddings.extend(splitted_embeddings)
+        contents.extend([t.page_content for t in splitted])
+        sources.extend([t.metadata["source"] for t in splitted])
+        embeddings.extend(splitted_embeddings)
 
-    # Insert records into postgres
-    print(f"Number of chunks: {len(contents)}")
+        # Insert records into postgres
+        print(f"Number of chunks: {len(contents)}")
 
-    insert_to_postgres(
-        bot_id,
-        contents,
-        sources,
-        embeddings,
-    )
+        insert_to_postgres(
+            bot_id,
+            contents,
+            sources,
+            embeddings,
+        )
+        documents = loader.load()
 
 
 def main(

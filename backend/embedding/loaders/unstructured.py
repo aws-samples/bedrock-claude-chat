@@ -32,6 +32,7 @@ class UnstructuredURLLoader(BaseLoader):
         self.headers = headers
         self.unstructured_kwargs = unstructured_kwargs
         self.show_progress_bar = show_progress_bar
+        self.loaded = False
 
     def _validate_mode(self, mode: str) -> None:
         _valid_modes = {"single", "elements"}
@@ -49,6 +50,9 @@ class UnstructuredURLLoader(BaseLoader):
 
     def load(self) -> List[Document]:
         """Load file."""
+        if self.loaded:
+            return []
+
         docs: List[Document] = list()
         if self.show_progress_bar:
             try:
@@ -86,4 +90,5 @@ class UnstructuredURLLoader(BaseLoader):
                     metadata["category"] = element.category
                     docs.append(Document(page_content=str(element), metadata=metadata))
 
+        self.loaded = True
         return docs
