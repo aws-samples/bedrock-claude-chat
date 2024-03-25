@@ -379,6 +379,39 @@ def find_all_bots_by_user_id(
     return bots
 
 
+# find all bot tagged as public
+def find_all_public_bots(limit: int | None = None) -> list[BotMeta]:
+    """Find all public bots."""
+    table = _get_table_public_client()  # Use public client
+    # Should be better pre-filtered to avoid filtering after reponse
+    response = table.scan(Limit=limit)
+    logger.info("Finding all public bots")
+    # only retrieve results on PublicBotIDIndex and filter when PublicBotId exists
+    bots = []
+
+    for item in response["Items"]:
+        # If only PublicBotId exists and not empty string
+        if "PublicBotId" in item and item["PublicBotId"] != "":
+            logger.info(f"Found all public bots: {item}")
+            bots.append(
+                BotMeta(
+                    id=item["PublicBotId"],
+                    title=item["Title"],
+                    create_time=float(item["CreateTime"]),
+                    last_used_time=float(item["LastBotUsed"]),
+                    is_pinned=item["IsPinned"],
+                    owned=False,
+                    available=True,
+                    description=item["Description"],
+                    is_public=True,
+                    sync_status=item["SyncStatus"],
+                )
+            )
+    logger.info(f"Found all public bots available: {bots}")
+
+    return bots
+
+
 def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
     """Find private bot."""
     table = _get_table_client(user_id)

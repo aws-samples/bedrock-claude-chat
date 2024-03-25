@@ -10,6 +10,7 @@ const translation = {
       recentlyUsedBots: '最近使用したボット',
       conversationHistory: '会話履歴',
       chatWaitingSymbol: '▍',
+      publicBots: 'Available bots',
     },
     bot: {
       label: {

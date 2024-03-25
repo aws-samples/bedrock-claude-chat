@@ -22,6 +22,11 @@ const useBot = (shouldAutoRefreshMyBots?: boolean) => {
       : undefined
   );
 
+  const { data: publicBots, mutate: mutateAllBots } = api.bots({
+    kind: 'public',
+    limit: 100,
+  });
+
   const { data: starredBots, mutate: mutateStarredBots } = api.bots({
     kind: 'mixed',
     pinned: true,
@@ -130,6 +135,20 @@ const useBot = (shouldAutoRefreshMyBots?: boolean) => {
         }
       );
 
+      mutateAllBots(
+        produce(publicBots, (draft) => {
+          if (myBots && isStarred) {
+            draft?.unshift({
+              ...myBots[idxMybots],
+            });
+          } else if (!isStarred) {
+            const idxStarred =
+              draft?.findIndex((bot) => bot.id === botId) ?? -1;
+            draft?.splice(idxStarred, 1);
+          }
+        })
+      );
+      
       mutateStarredBots(
         produce(starredBots, (draft) => {
           if (myBots && isStarred) {
