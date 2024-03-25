@@ -24,7 +24,7 @@
    1. キー: clientId, 値: <YOUR_GOOGLE_CLIENT_ID>
    2. キー: clientSecret, 値: <YOUR_GOOGLE_CLIENT_SECRET>
 
-5. シークレットの名前と説明を入力して進んでください。CDK コードで必要になるので、シークレット名を覚えておいてください。例：googleOAuthCredentials (ステップ 3 の変数名<YOUR_SECRET_NAME>で使用します)
+5. シークレットの名前と説明を入力して進んでください。CDK コードで必要になるので、シークレット名を控えておいてください。例：googleOAuthCredentials (ステップ 3 の変数名<YOUR_SECRET_NAME>で使用します)
 6. シークレットを確認して保存します。
 
 ### 注意

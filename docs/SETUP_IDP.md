@@ -24,7 +24,7 @@ For the detail, visit [Google's official document](https://support.google.com/cl
    1. Key: clientId, Value: <YOUR_GOOGLE_CLIENT_ID>
    2. Key: clientSecret, Value: <YOUR_GOOGLE_CLIENT_SECRET>
 
-5. Follow the prompts to name and describe the secret. Remember the secret name as you will need it in your CDK code. For example, googleOAuthCredentials.(Use in Step 3 variable name <YOUR_SECRET_NAME>)
+5. Follow the prompts to name and describe the secret. Note the secret name as you will need it in your CDK code. For example, googleOAuthCredentials.(Use in Step 3 variable name <YOUR_SECRET_NAME>)
 6. Review and store the secret.
 
 ### Attention
