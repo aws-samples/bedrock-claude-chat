@@ -1,6 +1,10 @@
 from app.routes.schemas.bot import type_sync_status
 from pydantic import BaseModel
 
+class ChunkParamsModel(BaseModel):
+    size: int
+    overlap: int
+
 
 class KnowledgeModel(BaseModel):
     source_urls: list[str]
@@ -20,6 +24,7 @@ class BotModel(BaseModel):
     owner_user_id: str
     is_pinned: bool
     knowledge: KnowledgeModel
+    chunk_params: ChunkParamsModel
     sync_status: type_sync_status
     sync_status_reason: str
     sync_last_exec_id: str
