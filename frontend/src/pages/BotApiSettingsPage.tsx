@@ -356,8 +356,9 @@ const BotApiSettingsPage: React.FC = () => {
                   {hasCreated && (
                     <>
                       <div className="mt-3">
-                        <div className="text-lg font-bold">
+                        <div className="flex items-center gap-1 text-lg font-bold">
                           {t('bot.apiSettings.label.endpoint')}
+                          <Help message={t('bot.apiSettings.help.endpoint')} />
                         </div>
                         <div className="text-sm text-aws-font-color/50">
                           {t('bot.apiSettings.label.endpoint')}
@@ -446,7 +447,7 @@ const BotApiSettingsPage: React.FC = () => {
                       </div>
                       <Toggle
                         label={t('bot.apiSettings.item.quota')}
-                        hint={t('bot.apiSettings.item.quota')}
+                        hint={t('bot.apiSettings.help.quota')}
                         value={enabledQuota}
                         disabled={disabledCreate}
                         onChange={setEnabledQuota}
@@ -480,7 +481,7 @@ const BotApiSettingsPage: React.FC = () => {
                             />
                           </div>
                           {!errorMessages['requestLimit'] && (
-                            <div className="text-xs text-gray">
+                            <div className="mt-0.5 text-xs text-gray">
                               {t('bot.apiSettings.help.requestLimit')}
                             </div>
                           )}

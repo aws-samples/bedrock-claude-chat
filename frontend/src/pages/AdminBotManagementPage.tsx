@@ -48,6 +48,19 @@ const AdminBotManagementPage: React.FC = () => {
     return botPublication?.quota.limit;
   }, [botPublication?.quota.limit]);
 
+  const displayQuotaPeriod = useMemo(() => {
+    switch (botPublication?.quota.period) {
+      case 'DAY':
+        return t('bot.apiSettings.label.period.day');
+      case 'WEEK':
+        return t('bot.apiSettings.label.period.week');
+      case 'MONTH':
+        return t('bot.apiSettings.label.period.month');
+      default:
+        return '';
+    }
+  }, [botPublication?.quota.period, t]);
+
   const { open } = useSnackbar();
   const [isOpenDeleteApiDialog, setIsOpenDeleteApiDialog] = useState(false);
   const [isDeletingApi, setIsDeletingApi] = useState(false);
@@ -108,19 +121,17 @@ const AdminBotManagementPage: React.FC = () => {
                     </div>
                   )}
 
-                  {bot?.isPublic && (
-                    <div className="flex items-center text-sm text-dark-gray">
-                      {t('admin.botManagement.label.sharedUrl')}:
-                      <div
-                        className="flex cursor-pointer items-center text-aws-sea-blue underline hover:text-aws-sea-blue-hover"
-                        onClick={() => {
-                          window.open(getBotUrl(bot.id), '_blank');
-                        }}>
-                        <div className="mx-1">{getBotUrl(bot.id)} </div>
-                        <PiArrowSquareOut />
-                      </div>
+                  <div className="flex items-center text-sm text-dark-gray">
+                    {t('admin.botManagement.label.sharedUrl')}:
+                    <div
+                      className="flex cursor-pointer items-center text-aws-sea-blue underline hover:text-aws-sea-blue-hover"
+                      onClick={() => {
+                        window.open(getBotUrl(bot?.id ?? ''), '_blank');
+                      }}>
+                      <div className="mx-1">{getBotUrl(bot?.id ?? '')} </div>
+                      <PiArrowSquareOut />
                     </div>
-                  )}
+                  </div>
 
                   <div className="mt-2">
                     <Textarea
@@ -343,7 +354,7 @@ const AdminBotManagementPage: React.FC = () => {
                                 i18nKey="admin.botManagement.label.requestsLimit"
                                 values={{
                                   limit: botPublication.quota.limit,
-                                  period: botPublication.quota.period,
+                                  period: displayQuotaPeriod,
                                 }}
                                 components={{
                                   Bold: <div className="inline font-bold" />,

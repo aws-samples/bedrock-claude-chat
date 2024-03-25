@@ -121,9 +121,9 @@ How would you categorize this email?`,
           allowOrigins: 'Allowed Origins',
           apiKeys: 'API Keys',
           period: {
-            day: 'Per day',
-            week: 'Per week',
-            month: 'Per month',
+            day: 'Per DAY',
+            week: 'Per WEEK',
+            month: 'Per MONTH',
           },
           apiKeyDetail: {
             creationDate: 'Creation date',
@@ -278,7 +278,7 @@ How would you categorize this email?`,
           burstLimit:
             'The client can make <Bold>{{limit}}</Bold> concurrent requests to the API.',
           requestsLimit:
-            'You can make <Bold>{{limit}}</Bold> requests in a <Bold>{{period}}</Bold>.',
+            'You can make <Bold>{{limit}}</Bold> requests <Bold>{{period}}</Bold>.',
         },
         alert: {
           noApiKeys: {
