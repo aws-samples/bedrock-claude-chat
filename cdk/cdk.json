@@ -55,7 +55,7 @@
       "8000:0000:0000:0000:0000:0000:0000:0000/1"
     ],
     "enableUsageAnalysis": false,
-    "identifyProviders": [],
+    "identityProviders": [],
     "userPoolDomainPrefix": ""
   }
 }
