@@ -14,3 +14,4 @@ unstructured[pdf]==0.12.6
 unstructured[docx]==0.12.6
 unstructured[xlsx]==0.12.6
 unstructured[pptx]==0.12.6
+unstructured[md]==0.12.6

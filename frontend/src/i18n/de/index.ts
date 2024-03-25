@@ -47,9 +47,9 @@ const translation = {
       },
       help: {
         overview:
-          'Bots arbeiten nach vordefinierten Anweisungen. Normale Chats funktionieren nur wenn der Kontext in der Nachricht definiert ist, aber bei Bots muss der Kontext nicht definiert werden.',
+          'Bots arbeiten nach vordefinierten Anweisungen. Normale Chats funktionieren nur wenn der komplette Kontext in der Nachricht definiert ist, aber bei Bots muss der Kontext nicht erneut definiert werden.',
         instructions:
-          'Legen Sie fest, wie sich der Bot verhalten soll. Unklare Anweisungen können zu unvorhersehbaren Aktionen führen, also geben Sie klare und spezifische Anweisungen.',
+          'Legen Sie fest, wie sich der Bot verhalten soll. Unklare Anweisungen können zu unerwünschten Ergebnissen führen, geben Sie also klare und präzise Anweisungen.',
         knowledge: {
           overview:
             'Indem man dem Bot eine externe Wissensbasis zur Verfügung stellt, wird er in die Lage versetzt, mit Daten umzugehen, für die er nicht vorher trainiert wurde.',
@@ -75,12 +75,12 @@ const translation = {
         title: 'Beispiel Anweisungen',
         anthropicLibrary: {
           title: 'Anthropic Prompt Bibliothek',
-          sentence: 'Benötigen Sie mehr Beispiele? Besuchen Sie:',
+          sentence: 'Benötigen Sie mehr Beispiele? Besuchen Sie: ',
           url: 'https://docs.anthropic.com/claude/prompt-library',
         },
         pythonCodeAssistant: {
           title: 'Python Coding Assistent',
-          prompt: `Write a short and high-quality python script for the given task, something a very skilled python expert would write. You are writing code for an experienced developer so only add comments for things that are non-obvious. Make sure to include any imports required. 
+          prompt: `Schreiben Sie ein kurzes Python-Skript für die gestellte Aufgabe, wie es ein sehr erfahrener Python-Experte schreiben würde. Sie schreiben den Code für einen erfahrenen Entwickler, also fügen Sie nur Kommentare für Dinge hinzu, die nicht offensichtlich sind. Stellen Sie sicher, dass Sie alle erforderlichen Importe inkludieren.
 Schreiben Sie NIEMALS etwas vor dem \`\`\`python\`\`\` block. Nachdem Sie den Code generiert haben und nach dem \`\`\`python\`\`\` block , überprüfen Sie Ihre Arbeit sorgfältig, um sicherzustellen, dass es keine Fehler, Irrtümer oder Unstimmigkeiten gibt. Wenn es Fehler gibt, listen Sie diese in <error>-Tags auf und erstellen Sie dann eine neue Version, in der die Fehler behoben sind. Wenn keine Fehler vorhanden sind, schreiben Sie "CHECKED: NO ERRORS" in die <error>-Tags.`,
         },
         mailCategorizer: {
@@ -167,7 +167,7 @@ Wie würden Sie diese E-Mail kategorisieren?`,
       back: 'Zurück',
       menu: 'Menü',
       language: 'Sprache',
-      clearConversation: 'ALLE Unterhaltungen löschen',
+      clearConversation: 'ALLE Chats löschen',
       signOut: 'Abmelden',
       close: 'Schließen',
       add: 'Hinzufügen',
