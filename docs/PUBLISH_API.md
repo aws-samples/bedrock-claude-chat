@@ -12,7 +12,7 @@ Using only an API key is not recommended as described in: [AWS API Gateway Devel
 
 ### Prerequisites
 
-For governance reasons, only limited users are able to publish bots. Before publishing, the user must be a member of group called `PublishAllowed`, which can be set up via the management console or aws cli.
+For governance reasons, only limited users are able to publish bots. Before publishing, the user must be a member of group called `PublishAllowed`, which can be set up via the management console > Amazon Cognito User pools or aws cli. Note that the user pool id can be referred by accessing CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
 
 ![](./imgs/group_membership_publish_allowed.png)
 

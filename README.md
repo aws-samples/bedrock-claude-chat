@@ -18,20 +18,16 @@ Not only text but also images are available with [Anthropic's Claude 3](https://
 
 ### Bot Personalization
 
-Add your own instruction and give external knowledge as URL or files (a.k.a [RAG](./docs/RAG.md)). The bot can be shared among application users.
+Add your own instruction and give external knowledge as URL or files (a.k.a [RAG](./docs/RAG.md)). The bot can be shared among application users. The customized bot also can be published as stand-alone API (See the [detail](./docs/PUBLISH_API.md)).
 
 ![](./docs/imgs/bot_creation.png)
 ![](./docs/imgs/bot_chat.png)
-
-### Publish personalized bot as stand-alone API
-
-TODO
-[publish_api.md](./docs/PUBLISH_API.md)
+![](./docs/imgs/bot_api_publish_screenshot3.png)
 
 ### Administrator dashboard
 
-TODO
-[administrator_dashboard.md](./docs/ADMINISTRATOR.md)
+Analyze usage for each user / bot on administrator dashboard. [detail](./docs/ADMINISTRATOR.md)
+![](./docs/imgs/admin_bot_analytics.png)
 
 ## 📚 Supported Languages
 

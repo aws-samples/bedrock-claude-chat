@@ -22,8 +22,6 @@ export class WebAclForPublishedApi extends Construct {
       scope: "REGIONAL",
       addresses: props.allowedIpV6AddressRanges,
     });
-    // TODO: create if no web acl, but if exists, use it
-    // use a singleton constructor (need to implement?)
     const webAcl = new wafv2.CfnWebACL(this, "WebAcl", {
       defaultAction: { block: {} },
       name: `ApiWebAcl-${id}`,
