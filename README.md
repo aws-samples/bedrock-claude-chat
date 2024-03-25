@@ -3,10 +3,10 @@
 ![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/cdk.yml/badge.svg)
 
 > [!Tip]
-> 🔔**Multi-modal chat by [Claude v3 (Haiku, Sonnet)](https://aws.amazon.com/jp/about-aws/whats-new/2024/03/anthropics-claude-3-sonnet-model-amazon-bedrock/) is available for now**. See [Release](https://github.com/aws-samples/bedrock-claude-chat/releases/tag/v0.4.4) for the detail.
+> 🔔**Multi-modal chat by [Claude v3 (Haiku, Sonnet)](https://aws.amazon.com/jp/about-aws/whats-new/2024/03/anthropics-claude-3-sonnet-model-amazon-bedrock/) is available now**. See [Release](https://github.com/aws-samples/bedrock-claude-chat/releases/tag/v0.4.4) for details.
 
 > [!Warning]
-> The current version (`v0.4.x`) has no compatibility with ex version (~`v0.3.0`) due to the change of DynamoDB table schema. **Please note that UPDATE (i.e. `cdk deploy`) FROM EX VERSION TO `v0.4.x` WILL DESTROY ALL OF EXISTING CONVERSATIONS.**
+> The current version (`v0.4.x`) has no compatibility with the previous version (~`v0.3.0`) due to changes in the DynamoDB table schema. **Please note that the UPDATE (i.e. `cdk deploy`) FROM PREVIOuS VERSION TO `v0.4.x` WILL DESTROY ALL OF THE EXISTING CONVERSATIONS.**
 
 This repository is a sample chatbot using the Anthropic company's LLM [Claude](https://www.anthropic.com/), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI.
 
@@ -17,7 +17,7 @@ Not only text but also images are available with [Anthropic's Claude 3](https://
 ![](./docs/imgs/demo.gif)
 
 > [!Note]
-> Currently the image will be compressed into 800px jpeg due to DynamoDB [item size limitation](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/ServiceQuotas.html#limits-items). [Issue](https://github.com/aws-samples/bedrock-claude-chat/issues/131)
+> Currently the image will be compressed into 800px jpeg due to DynamoDB's [item size limitation](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/ServiceQuotas.html#limits-items). [Issue](https://github.com/aws-samples/bedrock-claude-chat/issues/131)
 
 ### Bot Personalization
 
@@ -37,7 +37,7 @@ Add your own instruction and give external knowledge as URL or files (a.k.a [RAG
 
 ## 🚀 Super-easy Deployment
 
-- On us-east-1 region, open [Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > Check `Anthropic / Claude 3 Haiku`, `Anthropic / Claude 3 Sonnet` and `Cohere / Embed Multilingual` then `Save changes`.
+- In the us-east-1 region, open [Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > Check `Anthropic / Claude 3 Haiku`, `Anthropic / Claude 3 Sonnet` and `Cohere / Embed Multilingual` then `Save changes`.
 
 <details>
 <summary>Screenshot</summary>
@@ -203,7 +203,7 @@ EMBEDDING_CONFIG = {
 
 ### Remove resources
 
-If using cli and CDK, please `cdk destroy`. If not, access to [CloudFormation](https://console.aws.amazon.com/cloudformation/home) then delete `BedrockChatStack` and `FrontendWafStack` manually. Please note that `FrontendWafStack` is on `us-east-1` region.
+If using cli and CDK, please `cdk destroy`. If not, access [CloudFormation](https://console.aws.amazon.com/cloudformation/home) and then delete `BedrockChatStack` and `FrontendWafStack` manually. Please note that `FrontendWafStack` is in `us-east-1` region.
 
 ### Language Settings
 
@@ -238,7 +238,7 @@ See [LOCAL DEVELOPMENT](./docs/LOCAL_DEVELOPMENT.md).
 
 ### Contribution
 
-Thank you for considering contribution on this repository! We welcome for bug fixes, language translation, feature enhancements, and other improvements. Please see following:
+Thank you for considering contributing to this repository! We welcome bug fixes, language translation, feature enhancements, and other improvements. Please see following:
 
 - [Local Development](./docs/LOCAL_DEVELOPMENT.md)
 - [CONTRIBUTING](./CONTRIBUTING.md)
