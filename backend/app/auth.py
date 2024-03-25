@@ -23,8 +23,8 @@ def verify_token(token: str) -> dict:
     decoded = jwt.decode(
         token,
         key,
-        algorithms=["RS256"], 
-        options={"verify_at_hash": False }, 
-        audience=CLIENT_ID
+        algorithms=["RS256"],
+        options={"verify_at_hash": False},
+        audience=CLIENT_ID,
     )
     return decoded
