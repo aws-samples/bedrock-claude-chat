@@ -1,4 +1,4 @@
-fastapi==0.104.1
+fastapi==0.109.1
 requests==2.31.0
 types-requests==2.31.0
 pydantic==2.1.1
