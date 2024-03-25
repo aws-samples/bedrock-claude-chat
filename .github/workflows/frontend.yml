@@ -21,6 +21,10 @@ jobs:
         run: |
           cd frontend
           npm ci
+      - name: Lint frontend
+        run: |
+          cd frontend
+          npm run lint
       - name: Build frontend
         run: |
           cd frontend
