@@ -152,7 +152,10 @@ const BotApiSettingsPage: React.FC = () => {
     }
     if (botPublication.cfnStatus === 'CREATE_COMPLETE') {
       fillApiSettings();
-    } else if (botPublication.cfnStatus === 'ROLLBACK_COMPLETE') {
+    } else if (
+      botPublication.cfnStatus === 'ROLLBACK_COMPLETE' ||
+      botPublication.codebuildStatus === 'FAILED'
+    ) {
       setHasFailedDeploy(true);
     }
   }, [botPublication, fillApiSettings]);
