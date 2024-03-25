@@ -102,12 +102,15 @@ def embed(
     contents: list[str],
     sources: list[str],
     embeddings: list[list[float]],
+    cunk_size: int = EMBEDDING_CONFIG["chunk_size"],
+    chunk_overlap: int = EMBEDDING_CONFIG["chunk_overlap"],
+
 ):
     splitter = DocumentSplitter(
         splitter=SentenceSplitter(
             paragraph_separator=r"\n\n\n",
-            chunk_size=EMBEDDING_CONFIG["chunk_size"],
-            chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+            chunk_size=cunk_size,
+            chunk_overlap=chunk_overlap,
             # Use length of text as token count for cohere-multilingual-v3
             tokenizer=lambda text: [0] * len(text),
         )
