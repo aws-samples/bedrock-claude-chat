@@ -4,6 +4,7 @@ import {
   UserPool,
   UserPoolClient,
   UserPoolIdentityProviderGoogle,
+  CfnUserPoolGroup,
 } from "aws-cdk-lib/aws-cognito";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 
@@ -102,6 +103,20 @@ export class Auth extends Construct {
         },
       });
     }
+
+    const adminGroup = new CfnUserPoolGroup(this, "AdminGroup", {
+      groupName: "Admin",
+      userPoolId: userPool.userPoolId,
+    });
+
+    const publishAllowedGroup = new CfnUserPoolGroup(
+      this,
+      "PublishAllowedGroup",
+      {
+        groupName: "PublishAllowed",
+        userPoolId: userPool.userPoolId,
+      }
+    );
 
     this.client = client;
     this.userPool = userPool;

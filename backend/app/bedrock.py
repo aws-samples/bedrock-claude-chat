@@ -1,10 +1,19 @@
 import json
+import logging
+import os
 
-from app.config import EMBEDDING_CONFIG, GENERATION_CONFIG
-from app.repositories.model import MessageModel
+from anthropic import AnthropicBedrock
+from app.config import ANTHROPIC_PRICING, EMBEDDING_CONFIG, GENERATION_CONFIG
+from app.repositories.models.conversation import MessageModel
 from app.utils import get_bedrock_client
 
+logger = logging.getLogger(__name__)
+
+BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
+
+
 client = get_bedrock_client()
+anthropic_client = AnthropicBedrock()
 
 
 def compose_args_for_anthropic_client(
@@ -19,7 +28,7 @@ def compose_args_for_anthropic_client(
     arg_messages = []
     for message in messages:
         if message.role not in ["system", "instruction"]:
-            content = []
+            content: list[dict] = []
             for c in message.content:
                 if c.content_type == "text":
                     content.append(
@@ -53,14 +62,33 @@ def compose_args_for_anthropic_client(
     return args
 
 
+def calculate_price(
+    model: str, input_tokens: int, output_tokens: int, region: str = BEDROCK_REGION
+) -> float:
+    input_price = (
+        ANTHROPIC_PRICING.get(region, {})
+        .get(model, {})
+        .get("input", ANTHROPIC_PRICING["default"][model]["input"])
+    )
+    output_price = (
+        ANTHROPIC_PRICING.get(region, {})
+        .get(model, {})
+        .get("output", ANTHROPIC_PRICING["default"][model]["output"])
+    )
+
+    return input_price * input_tokens / 1000.0 + output_price * output_tokens / 1000.0
+
+
 def get_model_id(model: str) -> str:
     # Ref: https://docs.aws.amazon.com/bedrock/latest/userguide/model-ids-arns.html
     if model == "claude-v2":
-        return "anthropic.claude-v2"
+        return "anthropic.claude-v2:1"
     elif model == "claude-instant-v1":
         return "anthropic.claude-instant-v1"
     elif model == "claude-v3-sonnet":
         return "anthropic.claude-3-sonnet-20240229-v1:0"
+    elif model == "claude-v3-haiku":
+        return "anthropic.claude-3-haiku-20240307-v1:0"
     else:
         raise NotImplementedError()
 

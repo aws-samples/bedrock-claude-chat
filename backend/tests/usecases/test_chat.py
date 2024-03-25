@@ -4,27 +4,46 @@ sys.path.append(".")
 import unittest
 from pprint import pprint
 
-from anthropic.types import MessageDeltaEvent, MessageStopEvent
+from anthropic.types import MessageStopEvent
 from app.bedrock import get_model_id
 from app.config import GENERATION_CONFIG
-from app.repositories.conversation import (delete_conversation_by_id,
-                                           delete_conversation_by_user_id,
-                                           find_conversation_by_id,
-                                           store_conversation)
-from app.repositories.custom_bot import (delete_alias_by_id, delete_bot_by_id,
-                                         store_bot, update_bot_visibility)
-from app.repositories.model import (BotModel, ContentModel, ConversationModel,
-                                    KnowledgeModel, MessageModel)
-from app.route_schema import (ChatInput, ChatOutput, Content, MessageInput,
-                              MessageOutput)
-from app.usecases.chat import (chat, fetch_conversation, insert_knowledge,
-                               prepare_conversation,
-                               propose_conversation_title, trace_to_root)
+from app.repositories.conversation import (
+    delete_conversation_by_id,
+    delete_conversation_by_user_id,
+    find_conversation_by_id,
+    store_conversation,
+)
+from app.repositories.custom_bot import (
+    delete_alias_by_id,
+    delete_bot_by_id,
+    store_bot,
+    update_bot_visibility,
+)
+from app.repositories.models.conversation import (
+    ContentModel,
+    ConversationModel,
+    MessageModel,
+)
+from app.repositories.models.custom_bot import BotModel, KnowledgeModel
+from app.routes.schemas.conversation import (
+    ChatInput,
+    ChatOutput,
+    Content,
+    MessageInput,
+    type_model_name,
+)
+from app.usecases.chat import (
+    chat,
+    fetch_conversation,
+    insert_knowledge,
+    prepare_conversation,
+    propose_conversation_title,
+    trace_to_root,
+)
 from app.utils import get_anthropic_client
 from app.vector_search import SearchResult
 
-MODEL = "claude-instant-v1"
-# MODEL = "claude-v2"
+MODEL: type_model_name = "claude-instant-v1"
 
 
 class TestTraceToRoot(unittest.TestCase):
@@ -123,6 +142,7 @@ class TestStartChat(unittest.TestCase):
                 ],
                 model=MODEL,
                 parent_message_id=None,
+                message_id=None,
             ),
             bot_id=None,
         )
@@ -149,6 +169,7 @@ class TestStartChat(unittest.TestCase):
         self.assertEqual(second_message.parent, first_key)
         self.assertEqual(first_message.children, [second_key])
         self.assertEqual(conv.last_message_id, second_key)
+        self.assertNotEqual(conv.total_price, 0)
 
     def tearDown(self) -> None:
         delete_conversation_by_id("user1", self.output.conversation_id)
@@ -178,6 +199,7 @@ class TestMultimodalChat(unittest.TestCase):
                 ],
                 model="claude-v3-sonnet",  # Specify v3 model
                 parent_message_id=None,
+                message_id=None,
             ),
             bot_id=None,
         )
@@ -198,6 +220,7 @@ class TestContinueChat(unittest.TestCase):
                 id=self.conversation_id,
                 create_time=1627984879.9,
                 title="Test Conversation",
+                total_price=0,
                 message_map={
                     "1-user": MessageModel(
                         role="user",
@@ -246,6 +269,7 @@ class TestContinueChat(unittest.TestCase):
                 ],
                 model=MODEL,
                 parent_message_id="1-assistant",
+                message_id=None,
             ),
             bot_id=None,
         )
@@ -280,6 +304,7 @@ class TestRegenerateChat(unittest.TestCase):
                 id=self.conversation_id,
                 create_time=1627984879.9,
                 title="Test Conversation",
+                total_price=0,
                 message_map={
                     "a-1": MessageModel(
                         role="user",
@@ -358,6 +383,7 @@ class TestRegenerateChat(unittest.TestCase):
                 model=MODEL,
                 # a-2: en, b-2: zh
                 parent_message_id="a-2",
+                message_id=None,
             ),
             bot_id=None,
         )
@@ -383,6 +409,7 @@ class TestRegenerateChat(unittest.TestCase):
                 model=MODEL,
                 # a-2: en, b-2: zh
                 parent_message_id="b-2",
+                message_id=None,
             ),
             bot_id=None,
         )
@@ -413,6 +440,7 @@ class TestProposeTitle(unittest.TestCase):
                 ],
                 model=MODEL,
                 parent_message_id=None,
+                message_id=None,
             ),
             bot_id=None,
         )
@@ -440,10 +468,14 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             last_used_time=1627984879.9,
             is_pinned=True,
             public_bot_id=None,
+            owner_user_id="user1",
             knowledge=KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[]),
             sync_status="SUCCEEDED",
             sync_status_reason="",
             sync_last_exec_id="",
+            published_api_codebuild_id="",
+            published_api_datetime=0,
+            published_api_stack_name="",
         )
         public_bot = BotModel(
             id="public1",
@@ -455,10 +487,14 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             # Pinned
             is_pinned=True,
             public_bot_id="public1",
+            owner_user_id="user2",
             knowledge=KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[]),
             sync_status="SUCCEEDED",
             sync_status_reason="",
             sync_last_exec_id="",
+            published_api_codebuild_id="",
+            published_api_datetime=0,
+            published_api_stack_name="",
         )
         store_bot("user1", private_bot)
         store_bot("user2", public_bot)
@@ -484,6 +520,7 @@ class TestChatWithCustomizedBot(unittest.TestCase):
                 ],
                 model=MODEL,
                 parent_message_id=None,
+                message_id=None,
             ),
             bot_id="private1",
         )
@@ -509,6 +546,7 @@ class TestChatWithCustomizedBot(unittest.TestCase):
                 ],
                 model=MODEL,
                 parent_message_id=conv.last_message_id,
+                message_id=None,
             ),
             bot_id="private1",
         )
@@ -529,6 +567,7 @@ class TestChatWithCustomizedBot(unittest.TestCase):
                 ],
                 model=MODEL,
                 parent_message_id="system",
+                message_id=None,
             ),
             bot_id="private1",
         )
@@ -553,6 +592,7 @@ class TestChatWithCustomizedBot(unittest.TestCase):
                 ],
                 model=MODEL,
                 parent_message_id=None,
+                message_id=None,
             ),
             bot_id="public1",
         )
@@ -574,6 +614,7 @@ class TestChatWithCustomizedBot(unittest.TestCase):
                 ],
                 model=MODEL,
                 parent_message_id=conv.last_message_id,
+                message_id=None,
             ),
             bot_id="private1",
         )
@@ -597,6 +638,7 @@ class TestChatWithCustomizedBot(unittest.TestCase):
                 ],
                 model=MODEL,
                 parent_message_id=None,
+                message_id=None,
             ),
             bot_id="private1",
         )
@@ -640,6 +682,7 @@ class TestInsertKnowledge(unittest.TestCase):
             id="conversation1",
             create_time=1627984879.9,
             title="Test Conversation",
+            total_price=0,
             message_map={
                 "instruction": MessageModel(
                     role="bot",
@@ -693,6 +736,7 @@ class TestStreamingApi(unittest.TestCase):
                 ],
                 model=MODEL,
                 parent_message_id=None,
+                message_id=None,
             ),
             bot_id=None,
         )
@@ -706,7 +750,7 @@ class TestStreamingApi(unittest.TestCase):
             **GENERATION_CONFIG,
             "model": get_model_id(chat_input.message.model),
             "messages": [
-                {"role": message.role, "content": message.content.body}
+                {"role": message.role, "content": message.content[0].body}
                 for message in messages
                 if message.role not in ["system", "instruction"]
             ],

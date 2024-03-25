@@ -4,11 +4,15 @@ from typing import List
 
 import boto3
 from anthropic import AnthropicBedrock
-from app.repositories.model import MessageModel
+from app.repositories.models.conversation import MessageModel
 from botocore.client import Config
 from botocore.exceptions import ClientError
 
+REGION = os.environ.get("REGION", "us-east-1")
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
+PUBLISH_API_CODEBUILD_PROJECT_NAME = os.environ.get(
+    "PUBLISH_API_CODEBUILD_PROJECT_NAME", ""
+)
 
 
 def is_running_on_lambda():
@@ -32,11 +36,17 @@ def get_current_time():
 
 
 def generate_presigned_url(bucket: str, key: str, content_type: str, expiration=3600):
-    client = boto3.client("s3", config=Config(signature_version="s3v4"))
+    # See: https://github.com/boto/boto3/issues/421#issuecomment-1849066655
+    client = boto3.client(
+        "s3",
+        region_name=REGION,
+        config=Config(signature_version="v4", s3={"addressing_style": "path"}),
+    )
     response = client.generate_presigned_url(
-        "put_object",
+        ClientMethod="put_object",
         Params={"Bucket": bucket, "Key": key, "ContentType": content_type},
         ExpiresIn=expiration,
+        HttpMethod="PUT",
     )
 
     return response
@@ -121,3 +131,15 @@ def move_file_in_s3(bucket: str, key: str, new_key: str):
     )
     response = client.delete_object(Bucket=bucket, Key=key)
     return response
+
+
+def start_codebuild_project(environment_variables: dict) -> str:
+    environment_variables_override = [
+        {"name": key, "value": value} for key, value in environment_variables.items()
+    ]
+    client = boto3.client("codebuild")
+    response = client.start_build(
+        projectName=PUBLISH_API_CODEBUILD_PROJECT_NAME,
+        environmentVariablesOverride=environment_variables_override,
+    )
+    return response["build"]["id"]

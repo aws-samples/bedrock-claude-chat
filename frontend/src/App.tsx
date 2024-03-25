@@ -51,7 +51,7 @@ const App: React.FC = () => {
   const { isGeneratedTitle } = useChat();
 
   const onClickNewChat = useCallback(() => {
-    navigate('');
+    navigate('/');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
