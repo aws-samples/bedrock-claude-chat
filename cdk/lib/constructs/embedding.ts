@@ -2,7 +2,7 @@ import { Construct } from "constructs";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as path from "path";
 import { Duration, RemovalPolicy, Stack } from "aws-cdk-lib";
-import { Platform } from "aws-cdk-lib/aws-ecr-assets";
+import { DockerImageAsset, Platform } from "aws-cdk-lib/aws-ecr-assets";
 import * as iam from "aws-cdk-lib/aws-iam";
 import { ITable } from "aws-cdk-lib/aws-dynamodb";
 import { CfnPipe } from "aws-cdk-lib/aws-pipes";
@@ -16,6 +16,7 @@ import {
   IFunction,
 } from "aws-cdk-lib/aws-lambda";
 import { DynamoEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
+import { SociIndexBuild } from "deploy-time-build";
 
 export interface DbConfig {
   readonly host: string;
@@ -76,14 +77,15 @@ export class Embedding extends Construct {
       retention: logs.RetentionDays.ONE_WEEK,
     });
 
+    const asset = new DockerImageAsset(this, "Image", {
+      directory: path.join(__dirname, "../../../backend"),
+      file: "embedding.Dockerfile",
+      platform: Platform.LINUX_AMD64,
+    });
+    SociIndexBuild.fromDockerImageAsset(this, "Index", asset);
+
     const container = taskDefinition.addContainer("Container", {
-      image: ecs.ContainerImage.fromAsset(
-        path.join(__dirname, "../../../backend"),
-        {
-          file: "embedding.Dockerfile",
-          platform: Platform.LINUX_AMD64,
-        }
-      ),
+      image: ecs.AssetImage.fromDockerImageAsset(asset),
       logging: ecs.LogDriver.awsLogs({
         streamPrefix: "embed-task",
         logGroup: taskLogGroup,
