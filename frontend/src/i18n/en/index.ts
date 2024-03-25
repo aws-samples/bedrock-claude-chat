@@ -7,6 +7,7 @@ const translation = {
       recentlyUsedBots: 'Recently Used Bots',
       conversationHistory: 'History',
       chatWaitingSymbol: '▍',
+      adminConsoles: 'Admin Only',
     },
     bot: {
       label: {
@@ -106,10 +107,97 @@ How would you categorize this email?`,
       edit: {
         pageTitle: 'Edit My Bot',
       },
+
       item: {
         title: 'Name',
         description: 'Description',
         instruction: 'Instructions',
+      },
+      apiSettings: {
+        pageTitle: 'Shared Bot Publish API Settings',
+        label: {
+          endpoint: 'API Endpoint',
+          usagePlan: 'Usage Plan',
+          allowOrigins: 'Allowed Origins',
+          apiKeys: 'API Keys',
+          period: {
+            day: 'Per DAY',
+            week: 'Per WEEK',
+            month: 'Per MONTH',
+          },
+          apiKeyDetail: {
+            creationDate: 'Creation date',
+            active: 'Active',
+            inactive: 'Inactive',
+            key: 'API Key',
+          },
+        },
+        item: {
+          throttling: 'Throttling',
+          burstLimit: 'Burst',
+          rateLimit: 'Rate',
+          quota: 'Quota',
+          requestLimit: 'Requests',
+          offset: 'Offset',
+        },
+        help: {
+          overview:
+            "Creating an API enables the Bot's functions to be accessed by external clients; APIs enable integration with external applications.",
+          endpoint: 'The client can use the Bot from this endpoint.',
+          usagePlan:
+            'Usage plans specify the number or rate of requests that your API accepts from a client. Associate an API with a usage plan to track the requests your API receives.',
+          throttling: 'Limit the rate that users can call your API.',
+          rateLimit:
+            'Enter the rate, in requests per second, that clients can call your API.',
+          burstLimit:
+            'Enter the number of concurrent requests that a client can make to your API.',
+          quota:
+            'Turn on quotas to limit the number of requests a user can make to your API in a given time period.',
+          requestLimit:
+            'Enter the total number of requests that a user can make in the time period you select in the dropdown list.',
+          allowOrigins:
+            'Allowed client origins for access. If the origin is not allowed, the caller receives a 403 Forbidden response and is denied access to the API. The Origin must follow the format: "(http|https)://host-name" or "(http|https)://host-name:port" and wildcards(*) can be used.',
+          allowOriginsExample:
+            'e.g. https://your-host-name.com, https://*.your-host-name.com, http://localhost:8000',
+          apiKeys:
+            'An API key is an alphanumeric string that used to identify a client of your API. Otherwise, the caller receives a 403 Forbidden response and is denied access to the API.',
+        },
+        button: {
+          ApiKeyShow: 'Show',
+          ApiKeyHide: 'Hide',
+        },
+        alert: {
+          botUnshared: {
+            title: 'Please Share The Bot',
+            body: 'You cannot publish an API for the bot that is not shared.',
+          },
+          deploying: {
+            title: 'The API deployment is in PROGRESS',
+            body: 'Please wait until the deployment is complete.',
+          },
+          deployed: {
+            title: 'The API has been DEPLOYED',
+            body: 'You can access the API from the Client using the API Endpoint and API Key.',
+          },
+          deployError: {
+            title: 'FAILED to deploy the API',
+            body: 'Please delete the API and re-create the API.',
+          },
+        },
+        deleteApiDaialog: {
+          title: 'Delete?',
+          content:
+            'Are you sure to delete the API? The API endpoint will be deleted, and the client will no longer have access to it.',
+        },
+        addApiKeyDialog: {
+          title: 'Add API Key',
+          content: 'Enter a name to identify the API Key.',
+        },
+        deleteApiKeyDialog: {
+          title: 'Delete?',
+          content:
+            'Are you sure to delete <Bold>{{title}}</Bold>?\nClients using this API Key will be denied access to the API.',
+        },
       },
       button: {
         newBot: 'Create New Bot',
@@ -117,6 +205,7 @@ How would you categorize this email?`,
         edit: 'Edit',
         delete: 'Delete',
         share: 'Share',
+        apiSettings: 'API Publish Settings',
         copy: 'Copy',
         copied: 'Copied',
         instructionsSamples: 'Samples',
@@ -140,6 +229,69 @@ How would you categorize this email?`,
       error: {
         notSupportedFile: 'This file is not supported.',
         duplicatedFile: 'A file with the same name has been uploaded.',
+        failDeleteApi: 'Failed to delete the API.',
+      },
+    },
+    admin: {
+      sharedBotAnalytics: {
+        label: {
+          pageTitle: 'Shared Bot Analytics',
+          noPublicBotUsages:
+            'During the Calculation Period, no public bots were utilized.',
+          published: 'API is published.',
+          SearchCondition: {
+            title: 'Calculation Period',
+            from: 'From',
+            to: 'To',
+          },
+          sortByCost: 'Sort by Cost',
+        },
+        help: {
+          overview:
+            'Monitor the usage status of Shared Bots and Published Bot APIs.',
+          calculationPeriod:
+            'If the Calculation Period is not set, the cost for today will be displayed.',
+        },
+      },
+      apiManagement: {
+        label: {
+          pageTitle: 'API Management',
+          publishedDate: 'Published Date',
+          noApi: 'No APIs.',
+        },
+      },
+      botManagement: {
+        label: {
+          pageTitle: 'Bot Management',
+          sharedUrl: 'Shared Bot URL',
+          apiSettings: 'API Publish Settings',
+          noKnowledge: 'This bot has no Knowledge.',
+          notPublishApi: "This bot's API is not published.",
+          deployStatus: 'Deploy Status',
+          cfnStatus: 'CloudFormation Status',
+          codebuildStatus: 'CodeBuild Status',
+          codeBuildId: 'CodeBuild ID',
+          usagePlanOn: 'ON',
+          usagePlanOff: 'OFF',
+          rateLimit:
+            '<Bold>{{limit}}</Bold> requests per second, that clients can call the API.',
+          burstLimit:
+            'The client can make <Bold>{{limit}}</Bold> concurrent requests to the API.',
+          requestsLimit:
+            'You can make <Bold>{{limit}}</Bold> requests <Bold>{{period}}</Bold>.',
+        },
+        alert: {
+          noApiKeys: {
+            title: 'No API Keys',
+            body: 'All clients cannot access the API.',
+          },
+        },
+        button: {
+          deleteApi: 'Delete API',
+        },
+      },
+      validationError: {
+        period: 'Enter both From and To',
       },
     },
     deleteDialog: {
@@ -156,6 +308,9 @@ How would you categorize this email?`,
     button: {
       newChat: 'New Chat',
       botConsole: 'Bot Console',
+      sharedBotAnalytics: 'Shared Bot Analytics',
+      apiManagement: 'API Management',
+      userUsages: 'User Usages',
       SaveAndSubmit: 'Save & Submit',
       resend: 'Resend',
       regenerate: 'Regenerate',
@@ -175,6 +330,10 @@ How would you categorize this email?`,
     input: {
       hint: {
         required: '* Required',
+      },
+      validationError: {
+        required: 'This field is required.',
+        invalidOriginFormat: 'Invalid Origin format.',
       },
     },
     error: {

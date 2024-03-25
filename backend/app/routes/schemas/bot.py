@@ -1,28 +1,13 @@
-from typing import Literal, Optional
+from typing import Literal
 
-from humps import camelize
-from pydantic import BaseModel, Field
+from app.routes.schemas.base import BaseSchema
+from pydantic import Field
 
 # Knowledge sync status type
 # NOTE: `ORIGINAL_NOT_FOUND` is used when the original bot is removed.
 type_sync_status = Literal[
     "QUEUED", "RUNNING", "SUCCEEDED", "FAILED", "ORIGINAL_NOT_FOUND"
 ]
-
-
-class BaseSchema(BaseModel):
-    class Config:
-        alias_generator = camelize
-        populate_by_name = True
-
-
-class Content(BaseSchema):
-    content_type: Literal["text", "image"]
-    media_type: Optional[str] = Field(
-        None,
-        description="MIME type of the image. Must be specified if `content_type` is `image`.",
-    )
-    body: str = Field(..., description="Content body. Text or base64 encoded image.")
 
 
 class Knowledge(BaseSchema):
@@ -38,72 +23,6 @@ class KnowledgeDiffInput(BaseSchema):
     # updated_filenames: list[str]
     deleted_filenames: list[str]
     unchanged_filenames: list[str]
-
-
-class MessageInput(BaseSchema):
-    role: str
-    content: list[Content]
-    model: Literal[
-        "claude-instant-v1", "claude-v2", "claude-v3-sonnet", "claude-v3-haiku"
-    ]
-    parent_message_id: str | None
-
-
-class MessageOutput(BaseSchema):
-    role: str
-    content: list[Content]
-    # NOTE: "claude" will be deprecated (same as "claude-v2")
-    model: Literal[
-        "claude-instant-v1",
-        "claude-v2",
-        "claude",
-        "claude-v3-sonnet",
-        "claude-v3-haiku",
-    ]
-    children: list[str]
-    parent: str | None
-
-
-class ChatInput(BaseSchema):
-    conversation_id: str
-    message: MessageInput
-    bot_id: Optional[str | None] = Field(None)
-
-
-class ChatInputWithToken(ChatInput):
-    token: str
-
-
-class ChatOutput(BaseSchema):
-    conversation_id: str
-    message: MessageOutput
-    bot_id: str | None
-    create_time: float
-
-
-class ConversationMetaOutput(BaseSchema):
-    id: str
-    title: str
-    create_time: float
-    model: str
-    bot_id: str | None
-
-
-class Conversation(BaseSchema):
-    id: str
-    title: str
-    create_time: float
-    message_map: dict[str, MessageOutput]
-    last_message_id: str
-    bot_id: str | None
-
-
-class NewTitleInput(BaseSchema):
-    new_title: str
-
-
-class ProposedTitle(BaseSchema):
-    title: str
 
 
 class BotInput(BaseSchema):
@@ -184,8 +103,3 @@ class BotPinnedInput(BaseSchema):
 
 class BotPresignedUrlOutput(BaseSchema):
     url: str
-
-
-class User(BaseSchema):
-    id: str
-    name: str

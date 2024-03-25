@@ -7,17 +7,16 @@ from decimal import Decimal as decimal
 import boto3
 from anthropic.types import ContentBlockDeltaEvent, MessageDeltaEvent, MessageStopEvent
 from app.auth import verify_token
-from app.bedrock import compose_args_for_anthropic_client, get_model_id
+from app.bedrock import calculate_price, compose_args_for_anthropic_client
 from app.config import GENERATION_CONFIG, SEARCH_CONFIG
 from app.repositories.conversation import RecordNotFoundError, store_conversation
-from app.repositories.model import ContentModel, MessageModel
-from app.route_schema import ChatInputWithToken
+from app.repositories.models.conversation import ContentModel, MessageModel
+from app.routes.schemas.conversation import ChatInputWithToken
 from app.usecases.bot import modify_bot_last_used_time
 from app.usecases.chat import insert_knowledge, prepare_conversation, trace_to_root
 from app.utils import get_anthropic_client, get_current_time
-from app.vector_search import SearchResult, search_related_docs
+from app.vector_search import search_related_docs
 from boto3.dynamodb.conditions import Key
-from botocore.exceptions import ClientError
 from ulid import ULID
 
 WEBSOCKET_SESSION_TABLE_NAME = os.environ["WEBSOCKET_SESSION_TABLE_NAME"]
@@ -28,7 +27,7 @@ dynamodb_client = boto3.resource("dynamodb")
 table = dynamodb_client.Table(WEBSOCKET_SESSION_TABLE_NAME)
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 
 def process_chat_input(
@@ -41,7 +40,7 @@ def process_chat_input(
         # Verify JWT token
         decoded = verify_token(chat_input.token)
     except Exception as e:
-        print(f"Invalid token: {e}")
+        logger.error(f"Invalid token: {e}")
         return {"statusCode": 403, "body": "Invalid token."}
 
     user_id = decoded["sub"]
@@ -63,13 +62,7 @@ def process_chat_input(
             return {"statusCode": 400, "body": "Invalid request."}
 
     message_map = conversation.message_map
-    if (
-        bot
-        and len(bot.knowledge.source_urls)
-        + len(bot.knowledge.sitemap_urls)
-        + len(bot.knowledge.filenames)
-        > 0
-    ):
+    if bot and bot.has_knowledge():
         gatewayapi.post_to_connection(
             ConnectionId=connection_id,
             Data=json.dumps(
@@ -112,11 +105,11 @@ def process_chat_input(
         # Invoke bedrock streaming api
         response = client.messages.create(**args)
     except Exception as e:
-        print(f"Failed to invoke bedrock: {e}")
+        logger.error(f"Failed to invoke bedrock: {e}")
         return {"statusCode": 500, "body": "Failed to invoke bedrock."}
 
-    completions = []
-    last_data_to_send = {}
+    completions: list[str] = []
+    last_data_to_send: bytes
     for event in response:
         # NOTE: following is the example of event sequence:
         # MessageStartEvent(message=Message(id='compl_01GwmkwncsptaeBopeaR4eWE', content=[], model='claude-instant-1.2', role='assistant', stop_reason=None, stop_sequence=None, type='message', usage=Usage(input_tokens=21, output_tokens=1)), type='message_start')
@@ -141,7 +134,7 @@ def process_chat_input(
                     ConnectionId=connection_id, Data=data_to_send
                 )
             except Exception as e:
-                print(f"Failed to post message: {str(e)}")
+                logger.error(f"Failed to post message: {str(e)}")
                 return {
                     "statusCode": 500,
                     "body": "Failed to send message to connection.",
@@ -176,25 +169,32 @@ def process_chat_input(
             conversation.message_map[user_msg_id].children.append(assistant_msg_id)
             conversation.last_message_id = assistant_msg_id
 
-            store_conversation(user_id, conversation)
-
-            # TODO: implement cost calculation
+            # Update total pricing
             metrics = event.model_dump()["amazon-bedrock-invocationMetrics"]
             input_token_count = metrics.get("inputTokenCount")
             output_token_count = metrics.get("outputTokenCount")
-            logger.debug(f"Input token count: {input_token_count}")
-            logger.debug(f"Output token count: {output_token_count}")
+
+            logger.debug(
+                f"Input token count: {input_token_count}, output token count: {output_token_count}"
+            )
+
+            price = calculate_price(
+                chat_input.message.model, input_token_count, output_token_count
+            )
+            conversation.total_price += price
+
+            store_conversation(user_id, conversation)
         else:
             continue
 
     # Send last completion after saving conversation
     try:
-        logger.debug(f"Sending last completion: {last_data_to_send}")
+        logger.debug(f"Sending last completion: {last_data_to_send.decode('utf-8')}")
         gatewayapi.post_to_connection(
             ConnectionId=connection_id, Data=last_data_to_send
         )
     except Exception as e:
-        print(f"Failed to post message: {str(e)}")
+        logger.error(f"Failed to post message: {str(e)}")
         return {
             "statusCode": 500,
             "body": "Failed to send message to connection.",
@@ -209,7 +209,7 @@ def process_chat_input(
 
 
 def handler(event, context):
-    print(f"Received event: {event}")
+    logger.info(f"Received event: {event}")
     route_key = event["requestContext"]["routeKey"]
 
     if route_key == "$connect":
@@ -224,7 +224,7 @@ def handler(event, context):
     gatewayapi = boto3.client("apigatewaymanagementapi", endpoint_url=endpoint_url)
 
     now = datetime.now()
-    expire = int(now.timestamp()) + (2 * 60 * 60)  # 2 hours from now
+    expire = int(now.timestamp()) + 60 * 2  # 2 minute from now
     body = event["body"]
 
     try:
@@ -253,13 +253,16 @@ def handler(event, context):
             response = table.query(
                 KeyConditionExpression=Key("ConnectionId").eq(connection_id)
             )
-            for item in response["Items"]:
-                table.delete_item(
-                    Key={
-                        "ConnectionId": item["ConnectionId"],
-                        "MessagePartId": item["MessagePartId"],
-                    }
-                )
+
+            # Delete the message parts
+            # Note: commented out for now to improve TTFT (time-to-first-token)
+            # for item in response["Items"]:
+            #     table.delete_item(
+            #         Key={
+            #             "ConnectionId": item["ConnectionId"],
+            #             "MessagePartId": item["MessagePartId"],
+            #         }
+            #     )
 
             # Process the concatenated full message
             chat_input = ChatInputWithToken(**json.loads(full_message))

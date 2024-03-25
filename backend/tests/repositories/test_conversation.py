@@ -3,6 +3,9 @@ import unittest
 
 sys.path.append(".")
 from app.repositories.conversation import (
+    ContentModel,
+    ConversationModel,
+    MessageModel,
     RecordNotFoundError,
     _get_table_client,
     change_conversation_title,
@@ -19,13 +22,7 @@ from app.repositories.custom_bot import (
     find_private_bots_by_user_id,
     store_bot,
 )
-from app.repositories.model import (
-    BotModel,
-    ContentModel,
-    ConversationModel,
-    KnowledgeModel,
-    MessageModel,
-)
+from app.repositories.models.custom_bot import BotModel, KnowledgeModel
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
@@ -115,6 +112,7 @@ class TestConversationRepository(unittest.TestCase):
             id="1",
             create_time=1627984879.9,
             title="Test Conversation",
+            total_price=100,
             message_map={
                 "a": MessageModel(
                     role="user",
@@ -169,6 +167,7 @@ class TestConversationRepository(unittest.TestCase):
         self.assertEqual(message_map["a"].parent, "z")
         self.assertEqual(message_map["a"].create_time, 1627984879.9)
         self.assertEqual(found_conversation.last_message_id, "x")
+        self.assertEqual(found_conversation.total_price, 100)
         self.assertEqual(found_conversation.bot_id, None)
 
         # Test update title
@@ -194,6 +193,77 @@ class TestConversationRepository(unittest.TestCase):
         conversations = find_conversation_by_user_id(user_id="user")
         self.assertEqual(len(conversations), 0)
 
+    def test_store_and_find_large_conversation(self):
+        large_message_map = {
+            f"msg_{i}": MessageModel(
+                role="user",
+                content=[
+                    ContentModel(
+                        content_type="text",
+                        body="This is a large message."
+                        * 1000,  # Repeating to make it large
+                        media_type=None,
+                    )
+                ],
+                model="claude-instant-v1",
+                children=[],
+                parent=None,
+                create_time=1627984879.9,
+            )
+            for i in range(10)  # Create 10 large messages
+        }
+
+        large_conversation = ConversationModel(
+            id="2",
+            create_time=1627984879.9,
+            title="Large Conversation",
+            total_price=200,
+            message_map=large_message_map,
+            last_message_id="msg_9",
+            bot_id=None,
+        )
+
+        # Test storing large conversation with a small threshold
+        response = store_conversation("user", large_conversation, threshold=1)
+        self.assertIsNotNone(response)
+
+        # Test finding large conversation by id
+        found_conversation = find_conversation_by_id(
+            user_id="user", conversation_id="2"
+        )
+        self.assertEqual(found_conversation.id, "2")
+        self.assertEqual(found_conversation.title, "Large Conversation")
+        self.assertEqual(found_conversation.total_price, 200)
+        self.assertEqual(found_conversation.last_message_id, "msg_9")
+        self.assertEqual(found_conversation.bot_id, None)
+
+        message_map = found_conversation.message_map
+        self.assertEqual(len(message_map), 10)
+
+        for i in range(10):
+            message_id = f"msg_{i}"
+            self.assertIn(message_id, message_map)
+            message = message_map[message_id]
+            self.assertEqual(message.role, "user")
+            self.assertEqual(len(message.content), 1)
+            self.assertEqual(message.content[0].content_type, "text")
+            self.assertEqual(message.content[0].body, "This is a large message." * 1000)
+            self.assertEqual(message.content[0].media_type, None)
+            self.assertEqual(message.model, "claude-instant-v1")
+            self.assertEqual(message.children, [])
+            self.assertEqual(message.parent, None)
+            self.assertEqual(message.create_time, 1627984879.9)
+
+        # Test deleting large conversation
+        delete_conversation_by_id(user_id="user", conversation_id="2")
+        with self.assertRaises(RecordNotFoundError):
+            find_conversation_by_id("user", "2")
+
+        store_conversation(user_id="user", conversation=large_conversation)
+        delete_conversation_by_user_id(user_id="user")
+        conversations = find_conversation_by_user_id(user_id="user")
+        self.assertEqual(len(conversations), 0)
+
 
 class TestConversationBotRepository(unittest.TestCase):
     def setUp(self) -> None:
@@ -201,6 +271,7 @@ class TestConversationBotRepository(unittest.TestCase):
             id="1",
             create_time=1627984879.9,
             title="Test Conversation",
+            total_price=100,
             message_map={
                 "a": MessageModel(
                     role="user",
@@ -227,6 +298,7 @@ class TestConversationBotRepository(unittest.TestCase):
             id="2",
             create_time=1627984879.9,
             title="Test Conversation",
+            total_price=100,
             message_map={
                 "a": MessageModel(
                     role="user",
@@ -258,6 +330,7 @@ class TestConversationBotRepository(unittest.TestCase):
             last_used_time=1627984879.9,
             public_bot_id="1",
             is_pinned=False,
+            owner_user_id="user",
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -266,6 +339,9 @@ class TestConversationBotRepository(unittest.TestCase):
             sync_status="RUNNING",
             sync_status_reason="reason",
             sync_last_exec_id="",
+            published_api_codebuild_id="",
+            published_api_datetime=0,
+            published_api_stack_name="",
         )
         bot2 = BotModel(
             id="2",
@@ -276,6 +352,7 @@ class TestConversationBotRepository(unittest.TestCase):
             last_used_time=1627984879.9,
             public_bot_id="2",
             is_pinned=False,
+            owner_user_id="user",
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -284,6 +361,9 @@ class TestConversationBotRepository(unittest.TestCase):
             sync_status="RUNNING",
             sync_status_reason="reason",
             sync_last_exec_id="",
+            published_api_codebuild_id="",
+            published_api_datetime=0,
+            published_api_stack_name="",
         )
 
         store_conversation("user", conversation1)

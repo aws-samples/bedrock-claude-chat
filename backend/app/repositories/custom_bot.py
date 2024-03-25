@@ -1,12 +1,14 @@
+import asyncio
+import base64
 import json
 import logging
 import os
 from datetime import datetime
 from decimal import Decimal as decimal
+from functools import partial
 
 import boto3
 from app.repositories.common import (
-    RecordAccessNotAllowedError,
     RecordNotFoundError,
     _get_table_client,
     _get_table_public_client,
@@ -15,11 +17,19 @@ from app.repositories.common import (
     decompose_bot_alias_id,
     decompose_bot_id,
 )
-from app.repositories.model import BotAliasModel, BotMeta, BotModel, KnowledgeModel
-from app.route_schema import type_sync_status
+from app.repositories.models.custom_bot import (
+    BotAliasModel,
+    BotMeta,
+    BotMetaWithStackInfo,
+    BotModel,
+    KnowledgeModel,
+)
+from app.routes.schemas.bot import type_sync_status
 from app.utils import get_current_time
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
+
+TABLE_NAME = os.environ.get("TABLE_NAME", "")
 
 logger = logging.getLogger(__name__)
 sts_client = boto3.client("sts")
@@ -42,6 +52,9 @@ def store_bot(user_id: str, custom_bot: BotModel):
         "SyncStatus": custom_bot.sync_status,
         "SyncStatusReason": custom_bot.sync_status_reason,
         "LastExecId": custom_bot.sync_last_exec_id,
+        "ApiPublishmentStackName": custom_bot.published_api_stack_name,
+        "ApiPublishedDatetime": custom_bot.published_api_datetime,
+        "ApiPublishCodeBuildId": custom_bot.published_api_codebuild_id,
     }
 
     response = table.put_item(Item=item)
@@ -259,126 +272,6 @@ def find_private_bots_by_user_id(
     return bots
 
 
-def find_all_bots_by_user_id(
-    user_id: str, limit: int | None = None, only_pinned: bool = False
-) -> list[BotMeta]:
-    """Find all private & public bots of a user.
-    The order is descending by `last_used_time`.
-    """
-    if not only_pinned and not limit:
-        raise ValueError("Must specify either `limit` or `only_pinned`")
-    if limit and only_pinned:
-        raise ValueError("Cannot specify both `limit` and `only_pinned`")
-    if limit and (limit < 0 or limit > 100):
-        raise ValueError("Limit must be between 0 and 100")
-
-    table = _get_table_client(user_id)
-    logger.info(f"Finding pinned bots for user: {user_id}")
-
-    # Fetch all pinned bots
-    query_params = {
-        "IndexName": "LastBotUsedIndex",
-        "KeyConditionExpression": Key("PK").eq(user_id),
-        "ScanIndexForward": False,
-    }
-    if limit:
-        query_params["Limit"] = limit
-    if only_pinned:
-        query_params["FilterExpression"] = Attr("IsPinned").eq(True)
-
-    response = table.query(**query_params)
-
-    bots = []
-    for item in response["Items"]:
-        if "OriginalBotId" in item:
-            # Fetch original bots of alias bots
-            is_original_available = True
-            try:
-                bot = find_public_bot_by_id(item["OriginalBotId"])
-                logger.info(f"Found original bot: {bot.id}")
-                meta = BotMeta(
-                    id=bot.id,
-                    title=bot.title,
-                    create_time=float(bot.create_time),
-                    last_used_time=float(bot.last_used_time),
-                    is_pinned=item["IsPinned"],
-                    owned=False,
-                    available=True,
-                    description=bot.description,
-                    is_public=True,
-                    sync_status=bot.sync_status,
-                )
-            except RecordNotFoundError:
-                # Original bot is removed
-                is_original_available = False
-                logger.info(f"Original bot {item['OriginalBotId']} has been removed")
-                meta = BotMeta(
-                    id=item["OriginalBotId"],
-                    title=item["Title"],
-                    create_time=float(item["CreateTime"]),
-                    last_used_time=float(item["LastBotUsed"]),
-                    is_pinned=item["IsPinned"],
-                    owned=False,
-                    # NOTE: Original bot is removed
-                    available=False,
-                    description="This item is no longer available",
-                    is_public=False,
-                    sync_status="ORIGINAL_NOT_FOUND",
-                )
-
-            if is_original_available and (
-                bot.title != item["Title"]
-                or bot.description != item["Description"]
-                or bot.sync_status != item["SyncStatus"]
-                or (
-                    len(bot.knowledge.source_urls) > 0
-                    or len(bot.knowledge.sitemap_urls) > 0
-                    or len(bot.knowledge.filenames) > 0
-                )
-                != item["HasKnowledge"]
-            ):
-                # Update alias to the latest original bot
-                store_alias(
-                    user_id,
-                    BotAliasModel(
-                        id=decompose_bot_alias_id(item["SK"]),
-                        # Update title and description
-                        title=bot.title,
-                        description=bot.description,
-                        original_bot_id=item["OriginalBotId"],
-                        create_time=float(item["CreateTime"]),
-                        last_used_time=float(item["LastBotUsed"]),
-                        is_pinned=item["IsPinned"],
-                        sync_status=bot.sync_status,
-                        has_knowledge=(
-                            len(bot.knowledge.source_urls) > 0
-                            or len(bot.knowledge.sitemap_urls) > 0
-                            or len(bot.knowledge.filenames) > 0
-                        ),
-                    ),
-                )
-
-            bots.append(meta)
-        else:
-            # Private bots
-            bots.append(
-                BotMeta(
-                    id=decompose_bot_id(item["SK"]),
-                    title=item["Title"],
-                    create_time=float(item["CreateTime"]),
-                    last_used_time=float(item["LastBotUsed"]),
-                    is_pinned=item["IsPinned"],
-                    owned=True,
-                    available=True,
-                    description=item["Description"],
-                    is_public="PublicBotId" in item,
-                    sync_status=item["SyncStatus"],
-                )
-            )
-
-    return bots
-
-
 def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
     """Find private bot."""
     table = _get_table_client(user_id)
@@ -403,10 +296,24 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
         last_used_time=float(item["LastBotUsed"]),
         is_pinned=item["IsPinned"],
         public_bot_id=None if "PublicBotId" not in item else item["PublicBotId"],
+        owner_user_id=user_id,
         knowledge=KnowledgeModel(**item["Knowledge"]),
         sync_status=item["SyncStatus"],
         sync_status_reason=item["SyncStatusReason"],
         sync_last_exec_id=item["LastExecId"],
+        published_api_stack_name=(
+            None
+            if "ApiPublishmentStackName" not in item
+            else item["ApiPublishmentStackName"]
+        ),
+        published_api_datetime=(
+            None if "ApiPublishedDatetime" not in item else item["ApiPublishedDatetime"]
+        ),
+        published_api_codebuild_id=(
+            None
+            if "ApiPublishCodeBuildId" not in item
+            else item["ApiPublishCodeBuildId"]
+        ),
     )
 
     logger.info(f"Found bot: {bot}")
@@ -434,10 +341,24 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
         last_used_time=float(item["LastBotUsed"]),
         is_pinned=item["IsPinned"],
         public_bot_id=item["PublicBotId"],
+        owner_user_id=item["PK"],
         knowledge=KnowledgeModel(**item["Knowledge"]),
         sync_status=item["SyncStatus"],
         sync_status_reason=item["SyncStatusReason"],
         sync_last_exec_id=item["LastExecId"],
+        published_api_stack_name=(
+            None
+            if "ApiPublishmentStackName" not in item
+            else item["ApiPublishmentStackName"]
+        ),
+        published_api_datetime=(
+            None if "ApiPublishedDatetime" not in item else item["ApiPublishedDatetime"]
+        ),
+        published_api_codebuild_id=(
+            None
+            if "ApiPublishCodeBuildId" not in item
+            else item["ApiPublishCodeBuildId"]
+        ),
     )
     logger.info(f"Found public bot: {bot}")
     return bot
@@ -509,6 +430,52 @@ def update_bot_visibility(user_id: str, bot_id: str, visible: bool):
     return response
 
 
+def update_bot_publication(
+    user_id: str, bot_id: str, published_api_id: str, build_id: str
+):
+    table = _get_table_client(user_id)
+    current_time = get_current_time()  # epoch time (int) を取得
+    logger.info(f"Updating bot publication: {bot_id}")
+    try:
+        response = table.update_item(
+            Key={"PK": user_id, "SK": compose_bot_id(user_id, bot_id)},
+            UpdateExpression="SET ApiPublishmentStackName = :val, ApiPublishedDatetime = :time, ApiPublishCodeBuildId = :build_id",
+            # NOTE: Stack naming rule: ApiPublishmentStack{published_api_id}.
+            # See bedrock-chat-stack.ts > `ApiPublishmentStack`
+            ExpressionAttributeValues={
+                ":val": f"ApiPublishmentStack{published_api_id}",
+                ":time": current_time,
+                ":build_id": build_id,
+            },
+            ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
+        )
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
+            raise RecordNotFoundError(f"Bot with id {bot_id} not found")
+        else:
+            raise e
+
+    return response
+
+
+def delete_bot_publication(user_id: str, bot_id: str):
+    table = _get_table_client(user_id)
+    logger.info(f"Deleting bot publication: {bot_id}")
+    try:
+        response = table.update_item(
+            Key={"PK": user_id, "SK": compose_bot_id(user_id, bot_id)},
+            UpdateExpression="REMOVE ApiPublishmentStackName, ApiPublishedDatetime, ApiPublishCodeBuildId",
+            ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
+        )
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
+            raise RecordNotFoundError(f"Bot with id {bot_id} not found")
+        else:
+            raise e
+
+    return response
+
+
 def delete_bot_by_id(user_id: str, bot_id: str):
     table = _get_table_client(user_id)
     logger.info(f"Deleting bot with id: {bot_id}")
@@ -543,3 +510,92 @@ def delete_alias_by_id(user_id: str, bot_id: str):
             raise e
 
     return response
+
+
+async def find_public_bots_by_ids(bot_ids: list[str]) -> list[BotMetaWithStackInfo]:
+    """Find all public bots by ids. This method is intended for administrator use."""
+    table = _get_table_public_client()
+    loop = asyncio.get_running_loop()
+
+    def query_dynamodb(table, bot_id):
+        response = table.query(
+            IndexName="PublicBotIdIndex",
+            KeyConditionExpression=Key("PublicBotId").eq(bot_id),
+        )
+        return response["Items"]
+
+    tasks = [
+        loop.run_in_executor(None, partial(query_dynamodb, table, bot_id))
+        for bot_id in bot_ids
+    ]
+    results = await asyncio.gather(*tasks)
+
+    bots = []
+    for items in results:
+        for item in items:
+            bots.append(
+                BotMetaWithStackInfo(
+                    id=decompose_bot_id(item["SK"]),
+                    owner_user_id=item["PK"],
+                    title=item["Title"],
+                    create_time=float(item["CreateTime"]),
+                    last_used_time=float(item["LastBotUsed"]),
+                    owned=True,
+                    available=True,
+                    is_pinned=item["IsPinned"],
+                    description=item["Description"],
+                    is_public="PublicBotId" in item,
+                    sync_status=item["SyncStatus"],
+                    published_api_stack_name=item.get("ApiPublishmentStackName", None),
+                    published_api_datetime=item.get("ApiPublishedDatetime", None),
+                )
+            )
+
+    return bots
+
+
+def find_all_published_bots(
+    limit: int = 1000, next_token: str | None = None
+) -> tuple[list[BotMetaWithStackInfo], str | None]:
+    """Find all published bots. This method is intended for administrator use."""
+    table = _get_table_public_client()
+
+    query_params = {
+        "IndexName": "PublicBotIdIndex",
+        "FilterExpression": Attr("ApiPublishmentStackName").exists()
+        & Attr("ApiPublishmentStackName").ne(None),
+        "Limit": limit,
+    }
+    if next_token:
+        query_params["ExclusiveStartKey"] = json.loads(
+            base64.b64decode(next_token).decode("utf-8")
+        )
+
+    response = table.scan(**query_params)
+
+    bots = [
+        BotMetaWithStackInfo(
+            id=decompose_bot_id(item["SK"]),
+            owner_user_id=item["PK"],
+            title=item["Title"],
+            create_time=float(item["CreateTime"]),
+            last_used_time=float(item["LastBotUsed"]),
+            owned=True,
+            available=True,
+            is_pinned=item["IsPinned"],
+            description=item["Description"],
+            is_public="PublicBotId" in item,
+            sync_status=item["SyncStatus"],
+            published_api_stack_name=item["ApiPublishmentStackName"],
+            published_api_datetime=item.get("ApiPublishedDatetime", None),
+        )
+        for item in response["Items"]
+    ]
+
+    next_token = None
+    if "LastEvaluatedKey" in response:
+        next_token = base64.b64encode(
+            json.dumps(response["LastEvaluatedKey"]).encode("utf-8")
+        ).decode("utf-8")
+
+    return bots, next_token

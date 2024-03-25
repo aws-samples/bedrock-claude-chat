@@ -3,7 +3,7 @@
 ![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/test.yml/badge.svg)
 
 > [!Tip]
-> 🔔**[Claude v3 (Haiku, Sonnet)](https://aws.amazon.com/jp/about-aws/whats-new/2024/03/anthropics-claude-3-sonnet-model-amazon-bedrock/) による画像とテキスト両方を使ったチャットが可能になりました。** 詳細は[Release](https://github.com/aws-samples/bedrock-claude-chat/releases/tag/v0.4.4)をご確認ください。
+> 🔔**API 公開/管理ダッシュボードの機能がリリースされました。** 詳細は[Release](https://github.com/aws-samples/bedrock-claude-chat/releases/tag/v0.4.5)をご確認ください。
 
 > [!Warning]
 > 現在のバージョン(v0.4.x)は、DynamoDB テーブルスキーマの変更のため、過去バージョン(~v0.3.0)とは互換性がありません。**以前のバージョンから v0.4.x へアップデートすると、既存の対話記録は全て破棄されますので注意が必要です。**
@@ -15,15 +15,19 @@
 [Claude 3](https://www.anthropic.com/news/claude-3-family)によるテキストと画像の両方を利用したチャットが可能です。現在`Haiku`および`Sonnet`をサポートしています。
 ![](./imgs/demo_ja.gif)
 
-> [!Note]
-> 現在画像は DynamoDB [アイテムサイズ制限](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/ServiceQuotas.html#limits-items) のため 800px jpeg へ変換されます。[Issue](https://github.com/aws-samples/bedrock-claude-chat/issues/131)
-
 ### ボットのカスタマイズ
 
-外部のナレッジおよび具体的なインストラクションを組み合わせ、ボットをカスタマイズすることが可能です（外部のナレッジを利用した方法は[RAG](./RAG_ja.md)として知られています）。なお、作成したボットはアプリケーションのユーザー間で共有することができます。
+外部のナレッジおよび具体的なインストラクションを組み合わせ、ボットをカスタマイズすることが可能です（外部のナレッジを利用した方法は[RAG](./RAG_ja.md)として知られています）。なお、作成したボットはアプリケーションのユーザー間で共有することができます。カスタマイズされたボットはスタンドアロンの API として公開できます (詳細は[こちら](./docs/PUBLISH_API.md)をご覧ください)。
 
 ![](./imgs/bot_creation_ja.png)
 ![](./imgs/bot_chat_ja.png)
+![](./imgs/bot_api_publish_screenshot3.png)
+
+### 管理者ダッシュボード
+
+管理者ダッシュボードで各ユーザー/ボットの使用状況を分析できます。[詳細](./docs/ADMINISTRATOR.md)
+
+![](./imgs/admin_bot_analytics.png)
 
 ## 🚀 まずはお試し
 
@@ -71,41 +75,54 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 - [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): DynamoDB からのイベントを受け取り、後続の ECS タスクを起動することで、外部のナレッジをカスタマイズ bot に反映します
 - [Amazon Elastic Container Service](https://aws.amazon.com/ecs/): ナレッジをクロール・パースし、埋め込みベクトルと共に Aurora PostgreSQL へ保存します。[Cohere Multilingual](https://txt.cohere.com/multilingual/)がベクトル計算に利用されます
 - [Amazon Aurora PostgreSQL](https://aws.amazon.com/rds/aurora/): [pgvector](https://github.com/pgvector/pgvector) プラグインを利用したスケーラブルなベクトル DB
+- [Amazon Athena](https://aws.amazon.com/athena/): S3 バケット内のデータを分析するクエリサービス
 
 ![](imgs/arch.png)
 
 ## 機能・ロードマップ
 
-### 基本
+<details>
+<summary>基本的なチャット機能</summary>
 
-- [x] 認証 (サインアップ・サインイン)
-- [x] 会話の新規作成・保存・削除
-- [x] チャットボットの返信内容のコピー
-- [x] 会話の件名自動提案
-- [x] コードのシンタックスハイライト
-- [x] マークダウンのレンダリング
-- [x] ストリーミングレスポンス
-- [x] IP アドレス制限
-- [x] メッセージの編集と再送
-- [x] I18n
-- [x] モデルの切り替え (Claude Instant / Claude)
+- [x] 認証 (サインアップ、サインイン)
+- [x] 会話の作成、保存、削除
+- [x] チャットボットの返答のコピー
+- [x] 会話のための自動的なトピックの提案
+- [x] コードの構文強調表示
+- [x] Markdown の表示
+- [x] ストリーミング応答
+- [x] IP アドレスの制限
+- [x] メッセージの編集と再送信
+- [x] 国際化
+- [x] モデルの切り替え
+</details>
 
-### カスタマイズボット
+<details>
+<summary>カスタマイズされたボットの機能</summary>
 
-- [x] カスタマイズボットの作成
-- [x] カスタマイズボットのシェア
+- [x] カスタマイズされたボットの作成
+- [x] カスタマイズされたボットの共有
+- [x] 独立した API として公開
+</details>
 
-### RAG
+<details>
+<summary>RAG機能</summary>
 
 - [x] Web (html)
-- [x] テキストデータ (txt, csv, markdown and etc)
+- [x] テキストデータ (txt、csv、markdown など)
 - [x] PDF
-- [x] Microsoft オフィス (pptx, docx, xlsx)
-- [x] Youtube 字幕
+- [x] Microsoft Office ファイル (pptx、docx、xlsx)
+- [x] YouTube の字幕
+- [ ] S3 バケットからのインポート
+- [ ] 既存の Kendra / OpenSearch / KnowledgeBase からのインポート
+</details>
 
-### 管理者用機能
+<details>
+<summary>管理者機能</summary>
 
-- [ ] ユーザーの利用状況分析
+- [x] ボットごとの使用料の追跡
+- [x] 公開されたボットの一覧表示
+</details>
 
 ## Deploy using CDK
 

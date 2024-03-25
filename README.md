@@ -3,10 +3,10 @@
 ![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/cdk.yml/badge.svg)
 
 > [!Tip]
-> 🔔**Multi-modal chat by [Claude v3 (Haiku, Sonnet)](https://aws.amazon.com/jp/about-aws/whats-new/2024/03/anthropics-claude-3-sonnet-model-amazon-bedrock/) is available now**. See [Release](https://github.com/aws-samples/bedrock-claude-chat/releases/tag/v0.4.4) for details.
+> 🔔**API publication / Admin dashboard feature released.** See [release](https://github.com/aws-samples/bedrock-claude-chat/releases/tag/v0.4.5) for the detail.
 
 > [!Warning]
-> The current version (`v0.4.x`) has no compatibility with the previous version (~`v0.3.0`) due to changes in the DynamoDB table schema. **Please note that the UPDATE (i.e. `cdk deploy`) FROM PREVIOuS VERSION TO `v0.4.x` WILL DESTROY ALL OF THE EXISTING CONVERSATIONS.**
+> The current version (`v0.4.x`) has no compatibility with the previous version (~`v0.3.0`) due to changes in the DynamoDB table schema. **Please note that the UPDATE (i.e. `cdk deploy`) FROM PREVIOUS VERSION TO `v0.4.x` WILL DESTROY ALL OF THE EXISTING CONVERSATIONS.**
 
 This repository is a sample chatbot using the Anthropic company's LLM [Claude](https://www.anthropic.com/), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI.
 
@@ -16,15 +16,19 @@ Not only text but also images are available with [Anthropic's Claude 3](https://
 
 ![](./docs/imgs/demo.gif)
 
-> [!Note]
-> Currently the image will be compressed into 800px jpeg due to DynamoDB's [item size limitation](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/ServiceQuotas.html#limits-items). [Issue](https://github.com/aws-samples/bedrock-claude-chat/issues/131)
-
 ### Bot Personalization
 
-Add your own instruction and give external knowledge as URL or files (a.k.a [RAG](./docs/RAG.md)). The bot can be shared among application users.
+Add your own instruction and give external knowledge as URL or files (a.k.a [RAG](./docs/RAG.md)). The bot can be shared among application users. The customized bot also can be published as stand-alone API (See the [detail](./docs/PUBLISH_API.md)).
 
 ![](./docs/imgs/bot_creation.png)
 ![](./docs/imgs/bot_chat.png)
+![](./docs/imgs/bot_api_publish_screenshot3.png)
+
+### Administrator dashboard
+
+Analyze usage for each user / bot on administrator dashboard. [detail](./docs/ADMINISTRATOR.md)
+
+![](./docs/imgs/admin_bot_analytics.png)
 
 ## 📚 Supported Languages
 
@@ -82,12 +86,14 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 - [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): Receiving event from DynamoDB stream and launching ECS task to embed external knowledge
 - [Amazon Elastic Container Service](https://aws.amazon.com/ecs/): Run crawling, parsing and embedding tasks. [Cohere Multilingual](https://txt.cohere.com/multilingual/) is the model used for embedding.
 - [Amazon Aurora PostgreSQL](https://aws.amazon.com/rds/aurora/): Scalable vector store with [pgvector](https://github.com/pgvector/pgvector) plugin
+- [Amazon Athena](https://aws.amazon.com/athena/): Query service to analyze S3 bucket
 
 ![](docs/imgs/arch.png)
 
 ## Features and Roadmap
 
-### Basic chat features
+<details>
+<summary>Basic chat features</summary>
 
 - [x] Authentication (Sign-up, Sign-in)
 - [x] Creation, storage, and deletion of conversations
@@ -99,24 +105,35 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 - [x] IP address restriction
 - [x] Edit message & re-send
 - [x] I18n
-- [x] Model switch (Claude Instant / Claude)
+- [x] Model switch
+</details>
 
-### Customized bot features
+<details>
+<summary>Customized bot features</summary>
 
 - [x] Customized bot creation
 - [x] Customized bot sharing
+- [x] Publish as stand-alone API
+</details>
 
-### RAG features
+<details>
+<summary>RAG features</summary>
 
 - [x] Web (html)
 - [x] Text data (txt, csv, markdown and etc)
 - [x] PDF
 - [x] Microsoft office files (pptx, docx, xlsx)
 - [x] Youtube transcript
+- [ ] Import from S3 bucket
+- [ ] Import external existing Kendra / OpenSearch / KnowledgeBase
+</details>
 
-### Admin features
+<details>
+<summary>Admin features</summary>
 
-- [ ] Admin console to analyze user usage
+- [x] Tracking usage fees per bot
+- [x] List all published bot
+</details>
 
 ## Deploy using CDK
 

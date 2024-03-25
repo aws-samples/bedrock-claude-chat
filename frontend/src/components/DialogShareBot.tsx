@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { BaseProps } from '../@types/common';
 import Button from './Button';
 import ModalDialog from './ModalDialog';
-import { Trans, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import { BotMeta } from '../@types/bot';
 import Toggle from './Toggle';
 import { copyBotUrl, getBotUrl } from '../utils/BotUtils';
@@ -38,20 +38,12 @@ const DialogShareBot: React.FC<Props> = (props) => {
 
   return (
     <ModalDialog {...props} title={t('bot.shareDialog.title')}>
-      <div className="flex">
-        <Trans
-          i18nKey={
-            isShared
-              ? 'bot.shareDialog.on.content'
-              : 'bot.shareDialog.off.content'
-          }
-          values={{
-            title: props.target?.title,
-          }}
-          components={{
-            Bold: <span className="font-bold" />,
-          }}
-        />
+      <div className="flex w-full">
+        <div className="w-full">
+          {isShared
+            ? t('bot.shareDialog.on.content')
+            : t('bot.shareDialog.off.content')}
+        </div>
 
         <Toggle
           value={props.target?.isPublic ?? false}

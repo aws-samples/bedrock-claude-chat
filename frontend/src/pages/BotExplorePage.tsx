@@ -1,7 +1,8 @@
-import React, { ReactNode, useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Button from '../components/Button';
 import {
+  PiGlobe,
   PiLink,
   PiLockKey,
   PiPlus,
@@ -13,71 +14,22 @@ import {
 } from 'react-icons/pi';
 import { useNavigate } from 'react-router-dom';
 import useBot from '../hooks/useBot';
-import { BotMeta, BotListItem } from '../@types/bot';
+import { BotMeta } from '../@types/bot';
 import DialogConfirmDeleteBot from '../components/DialogConfirmDeleteBot';
 import DialogConfirmShareBot from '../components/DialogShareBot';
 import ButtonIcon from '../components/ButtonIcon';
-import { BaseProps } from '../@types/common';
 import PopoverMenu from '../components/PopoverMenu';
 import PopoverItem from '../components/PopoverItem';
 import useChat from '../hooks/useChat';
 import Help from '../components/Help';
 import StatusSyncBot from '../components/StatusSyncBot';
-
-type ItemBotProps = BaseProps & {
-  bot: BotListItem;
-  onClick: (botId: string) => void;
-  children: ReactNode;
-};
-
-const ItemBot: React.FC<ItemBotProps> = (props) => {
-  const { t } = useTranslation();
-  return (
-    <div
-      key={props.bot.id}
-      className={`${
-        props.className ?? ''
-      } relative flex w-full justify-between border-b border-light-gray`}>
-      <div
-        className={`h-full grow bg-aws-paper p-2 ${
-          props.bot.available
-            ? 'cursor-pointer hover:brightness-90'
-            : 'text-aws-font-color/30'
-        }`}
-        onClick={() => {
-          if (props.bot.available) {
-            props.onClick(props.bot.id);
-          }
-        }}>
-        <div className="w-full overflow-hidden text-ellipsis text-sm font-semibold">
-          {props.bot.title}
-        </div>
-        {props.bot.description ? (
-          <div className="mt-1 overflow-hidden text-ellipsis text-xs">
-            {props.bot.available
-              ? props.bot.description
-              : t('bot.label.notAvailable')}
-          </div>
-        ) : (
-          <div className="mt-1 overflow-hidden text-ellipsis text-xs italic text-gray">
-            {t('bot.label.noDescription')}
-          </div>
-        )}
-      </div>
-
-      <div className="absolute right-0 flex h-full justify-between ">
-        <div className="w-10 bg-gradient-to-r from-transparent to-aws-paper"></div>
-        <div className="flex items-center  gap-2 bg-aws-paper pl-2">
-          {props.children}
-        </div>
-      </div>
-    </div>
-  );
-};
+import useUser from '../hooks/useUser';
+import ListItemBot from '../components/ListItemBot';
 
 const BotExplorePage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { isAllowApiSettings } = useUser();
 
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
   const [isOpenShareDialog, setIsOpenShareDialog] = useState(false);
@@ -134,6 +86,13 @@ const BotExplorePage: React.FC = () => {
     setIsOpenShareDialog(true);
     setTargetShareIndex(targetIndex);
   }, []);
+
+  const onClickApiSettings = useCallback(
+    (botId: string) => {
+      navigate(`/bot/api-settings/${botId}`);
+    },
+    [navigate]
+  );
 
   const onToggleShare = useCallback(() => {
     if (targetShareBot) {
@@ -193,7 +152,7 @@ const BotExplorePage: React.FC = () => {
                 </div>
               )}
               {myBots?.map((bot, idx) => (
-                <ItemBot
+                <ListItemBot
                   key={bot.id}
                   bot={bot}
                   onClick={onClickBot}
@@ -265,7 +224,15 @@ const BotExplorePage: React.FC = () => {
                           <PiUsers />
                           {t('bot.button.share')}
                         </PopoverItem>
-
+                        {isAllowApiSettings && (
+                          <PopoverItem
+                            onClick={() => {
+                              onClickApiSettings(bot.id);
+                            }}>
+                            <PiGlobe />
+                            {t('bot.button.apiSettings')}
+                          </PopoverItem>
+                        )}
                         <PopoverItem
                           className="font-bold text-red"
                           onClick={() => {
@@ -277,7 +244,7 @@ const BotExplorePage: React.FC = () => {
                       </PopoverMenu>
                     </div>
                   </div>
-                </ItemBot>
+                </ListItemBot>
               ))}
             </div>
           </div>
@@ -293,7 +260,7 @@ const BotExplorePage: React.FC = () => {
                 </div>
               )}
               {recentlyUsedSharedBots?.map((bot) => (
-                <ItemBot
+                <ListItemBot
                   key={bot.id}
                   bot={bot}
                   onClick={onClickBot}
@@ -322,7 +289,7 @@ const BotExplorePage: React.FC = () => {
                     }}>
                     <PiTrash />
                   </ButtonIcon>
-                </ItemBot>
+                </ListItemBot>
               ))}
             </div>
           </div>
