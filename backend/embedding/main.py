@@ -102,8 +102,8 @@ def embed(
     contents: list[str],
     sources: list[str],
     embeddings: list[list[float]],
-    cunk_size: int = EMBEDDING_CONFIG["chunk_size"],
-    chunk_overlap: int = EMBEDDING_CONFIG["chunk_overlap"],
+    cunk_size: int,
+    chunk_overlap: int,
 
 ):
     splitter = DocumentSplitter(
@@ -132,6 +132,8 @@ def main(
     sitemap_urls: list[str],
     source_urls: list[str],
     filenames: list[str],
+    cunk_size: int = EMBEDDING_CONFIG["chunk_size"],
+    chunk_overlap: int = EMBEDDING_CONFIG["chunk_overlap"],
 ):
     exec_id = ""
     try:
@@ -167,7 +169,7 @@ def main(
         embeddings: list[list[float]] = []
 
         if len(source_urls) > 0:
-            embed(UrlLoader(source_urls), contents, sources, embeddings)
+            embed(UrlLoader(source_urls), contents, sources, embeddings, cunk_size, chunk_overlap)
         if len(sitemap_urls) > 0:
             for sitemap_url in sitemap_urls:
                 raise NotImplementedError()
