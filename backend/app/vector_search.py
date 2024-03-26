@@ -34,7 +34,6 @@ def get_source_link(source: str) -> tuple[Literal["s3", "url"], str]:
         source_link = generate_presigned_url(
             bucket=bucket_name,
             key=object_key,
-            content_type="text/plain",
             client_method="get_object",
         )
         return "s3", source_link

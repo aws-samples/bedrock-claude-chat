@@ -37,7 +37,7 @@ def get_current_time():
 def generate_presigned_url(
     bucket: str,
     key: str,
-    content_type: str,
+    content_type: str | None = None,
     expiration=3600,
     client_method: Literal["put_object", "get_object"] = "put_object",
 ):
@@ -47,9 +47,12 @@ def generate_presigned_url(
         region_name=REGION,
         config=Config(signature_version="v4", s3={"addressing_style": "path"}),
     )
+    params = {"Bucket": bucket, "Key": key}
+    if content_type:
+        params["ContentType"] = content_type
     response = client.generate_presigned_url(
         ClientMethod=client_method,
-        Params={"Bucket": bucket, "Key": key, "ContentType": content_type},
+        Params=params,
         ExpiresIn=expiration,
         HttpMethod="PUT" if client_method == "put_object" else "GET",
     )
