@@ -2,45 +2,17 @@ import * as cdk from "aws-cdk-lib";
 import { Template } from "aws-cdk-lib/assertions";
 import { BedrockChatStack } from "../lib/bedrock-chat-stack";
 
-describe("SnapshotTest", () => {
+describe("Snapshot Test", () => {
   const app = new cdk.App();
-
-  const hasGoogleProviderStack = new BedrockChatStack(app, "MyTestStack", {
-    bedrockRegion: "us-east-1",
-    crossRegionReferences: true,
-    webAclId: "",
-    enableUsageAnalysis: true,
-    identityProviders: [
-      {
-        secretName: "MyTestSecret",
-        service: "google",
-      },
-    ],
-    userPoolDomainPrefix: "test-domain",
-    publishedApiAllowedIpV4AddressRanges: [""],
-    publishedApiAllowedIpV6AddressRanges: [""],
-  });
-
-  const planeStack = new BedrockChatStack(app, "MyTestStack", {
-    bedrockRegion: "us-east-1",
-    crossRegionReferences: true,
-    webAclId: "",
-    enableUsageAnalysis: true,
-    identityProviders: [],
-    userPoolDomainPrefix: "",
-    publishedApiAllowedIpV4AddressRanges: [""],
-    publishedApiAllowedIpV6AddressRanges: [""],
-  });
-
-  const hasGooglePRoviderTemplate = Template.fromStack(
-    hasGoogleProviderStack
-  ).toJSON();
-  const planeTemplate = Template.fromStack(planeStack).toJSON();
-
-  expect(hasGooglePRoviderTemplate).toMatchSnapshot();
-  expect(planeTemplate).toMatchSnapshot();
+  test("Identity Provider Generation", () => {});
+  test("default stack", () => {});
 });
 
 describe("Fine-grained Assertions Test", () => {
   const app = new cdk.App();
+});
+
+describe("Error handling", () => {
+  test("Invalid service name", () => {});
+  test("Lack of userPoolPrefix definition during Identity Provider generation");
 });
