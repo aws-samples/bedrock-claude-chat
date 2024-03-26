@@ -44,6 +44,57 @@ describe("Snapshot Test", () => {
 
 describe("Fine-grained Assertions Test", () => {
   const app = new cdk.App();
+  test("Identity Provider Generation", () => {
+    const hasGoogleProviderStack = new BedrockChatStack(app, "MyTestStack", {
+      bedrockRegion: "us-east-1",
+      crossRegionReferences: true,
+      webAclId: "",
+      enableUsageAnalysis: true,
+      identityProviders: [
+        {
+          secretName: "MyTestSecret",
+          service: "google",
+        },
+      ],
+      userPoolDomainPrefix: "test-domain",
+      publishedApiAllowedIpV4AddressRanges: [""],
+      publishedApiAllowedIpV6AddressRanges: [""],
+    });
+    const hasGooglePRoviderTemplate = Template.fromStack(
+      hasGoogleProviderStack
+    ).toJSON();
+    hasGooglePRoviderTemplate.resourceCountIs("AWS::Cognito::UserPool", 1);
+    hasGooglePRoviderTemplate.resourceCountIs(
+      "AWS::Cognito::UserPoolIdentityProvider",
+      1
+    );
+    hasGooglePRoviderTemplate.resourceCountIs(
+      "AWS::Cognito::UserPoolClient",
+      1
+    );
+    hasGooglePRoviderTemplate.resourceCountIs("AWS::SecretsManager::Secret", 1);
+
+    // hasGooglePRoviderTemplate.hasResourceProperties()
+  });
+
+  test("default stack", () => {
+    const stack = new BedrockChatStack(app, "MyTestStack", {
+      bedrockRegion: "us-east-1",
+      crossRegionReferences: true,
+      webAclId: "",
+      enableUsageAnalysis: true,
+      identityProviders: [],
+      userPoolDomainPrefix: "",
+      publishedApiAllowedIpV4AddressRanges: [""],
+      publishedApiAllowedIpV6AddressRanges: [""],
+    });
+    const template = Template.fromStack(stack).toJSON();
+    template.resourceCountIs("AWS::Cognito::UserPool", 1);
+    template.resourceCountIs("AWS::Cognito::UserPoolClient", 1);
+    template.resourceCountIs("AWS::SecretsManager::Secret", 0);
+
+    // template.hasResourceProperties()
+  });
 });
 
 describe("Error handling", () => {
