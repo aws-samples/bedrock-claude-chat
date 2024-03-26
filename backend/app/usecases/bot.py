@@ -431,6 +431,7 @@ def issue_presigned_url(
         compose_upload_temp_s3_path(user_id, bot_id, filename),
         content_type=content_type,
         expiration=3600,
+        client_method="put_object",
     )
     return response
 

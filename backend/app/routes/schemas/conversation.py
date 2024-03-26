@@ -54,6 +54,13 @@ class ChatOutput(BaseSchema):
     create_time: float
 
 
+class RelatedDocumentsOutput(BaseSchema):
+    chunk_body: str
+    content_type: Literal["s3", "url"]
+    source_link: str
+    rank: int
+
+
 class ConversationMetaOutput(BaseSchema):
     id: str
     title: str
