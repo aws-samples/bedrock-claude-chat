@@ -2,13 +2,45 @@ import * as cdk from "aws-cdk-lib";
 import { Template } from "aws-cdk-lib/assertions";
 import { BedrockChatStack } from "../lib/bedrock-chat-stack";
 
-test("SnapshotTest", () => {
+describe("SnapshotTest", () => {
   const app = new cdk.App();
-  const stack = new BedrockChatStack(app, "MyTestStack", {
-    bedrockRegion: "us-east-1",
-    bedrockEndpointUrl: "https://bedrock.us-east-1.amazonaws.com",
-  });
-  const template = Template.fromStack(stack).toJSON();
 
-  expect(template).toMatchSnapshot();
+  const hasGoogleProviderStack = new BedrockChatStack(app, "MyTestStack", {
+    bedrockRegion: "us-east-1",
+    crossRegionReferences: true,
+    webAclId: "",
+    enableUsageAnalysis: true,
+    identityProviders: [
+      {
+        secretName: "MyTestSecret",
+        service: "google",
+      },
+    ],
+    userPoolDomainPrefix: "test-domain",
+    publishedApiAllowedIpV4AddressRanges: [""],
+    publishedApiAllowedIpV6AddressRanges: [""],
+  });
+
+  const planeStack = new BedrockChatStack(app, "MyTestStack", {
+    bedrockRegion: "us-east-1",
+    crossRegionReferences: true,
+    webAclId: "",
+    enableUsageAnalysis: true,
+    identityProviders: [],
+    userPoolDomainPrefix: "",
+    publishedApiAllowedIpV4AddressRanges: [""],
+    publishedApiAllowedIpV6AddressRanges: [""],
+  });
+
+  const hasGooglePRoviderTemplate = Template.fromStack(
+    hasGoogleProviderStack
+  ).toJSON();
+  const planeTemplate = Template.fromStack(planeStack).toJSON();
+
+  expect(hasGooglePRoviderTemplate).toMatchSnapshot();
+  expect(planeTemplate).toMatchSnapshot();
+});
+
+describe("Fine-grained Assertions Test", () => {
+  const app = new cdk.App();
 });
