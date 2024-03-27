@@ -39,7 +39,7 @@ describe("Fine-grained Assertions Test", () => {
     );
 
     hasGoogleProviderTemplate.hasResource("AWS::Cognito::UserPoolClient", {
-      DependsOn: [`AuthGoogleProvider${Match.anyValue()}`],
+      DependsOn: ["AuthGoogleProviderA3A93E63"],
     });
     hasGoogleProviderTemplate.hasResourceProperties(
       "AWS::Cognito::UserPoolClient",
