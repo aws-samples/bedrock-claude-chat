@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Sequence, Union
+from typing import Any, Sequence, Union
 from urllib.parse import parse_qs, urlparse
 
 from embedding.loaders.base import BaseLoader, Document
@@ -19,7 +19,7 @@ ALLOWED_NETLOCK = {
 }
 
 
-def _parse_video_id(url: str) -> Optional[str]:
+def _parse_video_id(url: str) -> str | None:
     """Parse a youtube url and return the video id if valid, otherwise None."""
     parsed_url = urlparse(url)
 
@@ -67,7 +67,7 @@ class YoutubeLoader(BaseLoader):
         self,
         video_id: str,
         language: Union[str, Sequence[str]] = "en",
-        translation: Optional[str] = None,
+        translation: str | None = None,
         continue_on_failure: bool = False,
     ):
         """Initialize with YouTube video ID."""
@@ -90,7 +90,7 @@ class YoutubeLoader(BaseLoader):
             )
         return video_id
 
-    def load(self) -> List[Document]:
+    def load(self) -> list[Document]:
         """Load documents."""
         metadata = {"source": self.video_id}
 

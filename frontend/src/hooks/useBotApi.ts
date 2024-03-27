@@ -28,8 +28,11 @@ const useBotApi = () => {
         refreshInterval: refreshIntervalFunction,
       });
     },
-    getMyBot: (botId: string) => {
+    getOnceMyBot: (botId: string) => {
       return http.getOnce<GetMyBotResponse>(`bot/private/${botId}`);
+    },
+    getMyBot: (botId?: string) => {
+      return http.get<GetMyBotResponse>(botId ? `bot/private/${botId}` : null);
     },
     botSummary: (botId?: string) => {
       return http.get<GetBotSummaryResponse>(

@@ -3,7 +3,9 @@ import os
 
 import boto3
 import pg8000
-from app.repositories.common import decompose_bot_id
+from app.repositories.apigateway import delete_api_key, find_usage_plan_by_id
+from app.repositories.cloudformation import delete_stack_by_bot_id, find_stack_by_bot_id
+from app.repositories.common import RecordNotFoundError, decompose_bot_id
 
 DB_HOST = os.environ.get("DB_HOST", "")
 DB_USER = os.environ.get("DB_USER", "postgres")
@@ -68,6 +70,7 @@ def handler(event, context):
     Following resources are deleted asynchronously when bot is deleted:
     - vector store record (postgres)
     - s3 files
+    - cloudformation stack (if exists)
     """
 
     print(f"Received event: {event}")
@@ -87,3 +90,18 @@ def handler(event, context):
 
     delete_from_postgres(bot_id)
     delete_from_s3(user_id, bot_id)
+
+    # Check if cloudformation stack exists
+    try:
+        stack = find_stack_by_bot_id(bot_id)
+    except RecordNotFoundError:
+        print(f"Bot {bot_id} cloudformation stack not found. Skipping deletion.")
+        return
+
+    # Before delete cfn stack, delete all api keys
+    usage_plan = find_usage_plan_by_id(stack.api_usage_plan_id)
+    for key_id in usage_plan.key_ids:
+        delete_api_key(key_id)
+
+    # Delete `ApiPublishmentStack` by CloudFormation
+    delete_stack_by_bot_id(bot_id)

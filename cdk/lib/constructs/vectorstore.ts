@@ -18,7 +18,7 @@ export class VectorStore extends Construct {
    * Vector Store construct.
    * We use Aurora Postgres to store embedding vectors and search them.
    */
-  private readonly securityGroup: ec2.ISecurityGroup;
+  readonly securityGroup: ec2.ISecurityGroup;
   readonly cluster: rds.IDatabaseCluster;
   readonly secret: secretsmanager.ISecret;
   constructor(scope: Construct, id: string, props: VectorStoreProps) {

@@ -3,14 +3,12 @@ import json
 import logging
 import os
 
-import boto3
 import pg8000
 import requests
-from app.bedrock import calculate_document_embeddings
 from app.config import EMBEDDING_CONFIG
 from app.repositories.common import _get_table_client
 from app.repositories.custom_bot import compose_bot_id, decompose_bot_id
-from app.route_schema import type_sync_status
+from app.routes.schemas.bot import type_sync_status
 from app.utils import compose_upload_document_s3_path
 from embedding.loaders import UrlLoader
 from embedding.loaders.base import BaseLoader
@@ -22,9 +20,7 @@ from ulid import ULID
 logging.basicConfig(level=logging.INFO)
 
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
-MODEL_ID = EMBEDDING_CONFIG["model_id"]
-CHUNK_SIZE = EMBEDDING_CONFIG["chunk_size"]
-CHUNK_OVERLAP = EMBEDDING_CONFIG["chunk_overlap"]
+
 
 DB_NAME = os.environ.get("DB_NAME", "postgres")
 DB_HOST = os.environ.get("DB_HOST", "")
@@ -110,8 +106,8 @@ def embed(
     splitter = DocumentSplitter(
         splitter=SentenceSplitter(
             paragraph_separator=r"\n\n\n",
-            chunk_size=CHUNK_SIZE,
-            chunk_overlap=CHUNK_OVERLAP,
+            chunk_size=EMBEDDING_CONFIG["chunk_size"],
+            chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
             # Use length of text as token count for cohere-multilingual-v3
             tokenizer=lambda text: [0] * len(text),
         )
@@ -163,9 +159,9 @@ def main(
             return
 
         # Calculate embeddings using LangChain
-        contents = []
-        sources = []
-        embeddings = []
+        contents: list[str] = []
+        sources: list[str] = []
+        embeddings: list[list[float]] = []
 
         if len(source_urls) > 0:
             embed(UrlLoader(source_urls), contents, sources, embeddings)

@@ -21,7 +21,8 @@ import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as path from "path";
 import { DbConfig } from "./embedding";
 import { IBucket } from "aws-cdk-lib/aws-s3";
-
+import * as codebuild from "aws-cdk-lib/aws-codebuild";
+import { UsageAnalysis } from "./usage-analysis";
 export interface ApiProps {
   readonly vpc: ec2.IVpc;
   readonly database: ITable;
@@ -31,6 +32,9 @@ export interface ApiProps {
   readonly bedrockRegion: string;
   readonly tableAccessRole: iam.IRole;
   readonly documentBucket: IBucket;
+  readonly largeMessageBucket: IBucket;
+  readonly apiPublishProject: codebuild.IProject;
+  readonly usageAnalysis?: UsageAnalysis;
 }
 
 export class Api extends Construct {
@@ -44,6 +48,9 @@ export class Api extends Construct {
       tableAccessRole,
       corsAllowOrigins: allowOrigins = ["*"],
     } = props;
+
+    const usageAnalysisOutputLocation =
+      `s3://${props.usageAnalysis?.resultOutputBucket.bucketName}` || "";
 
     const handlerRole = new iam.Role(this, "HandlerRole", {
       assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
@@ -66,6 +73,96 @@ export class Api extends Construct {
         "service-role/AWSLambdaVPCAccessExecutionRole"
       )
     );
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["codebuild:StartBuild"],
+        resources: [props.apiPublishProject.projectArn],
+      })
+    );
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "cloudformation:DescribeStacks",
+          "cloudformation:DescribeStackEvents",
+          "cloudformation:DescribeStackResource",
+          "cloudformation:DescribeStackResources",
+          "cloudformation:DeleteStack",
+        ],
+        resources: [`*`],
+      })
+    );
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["codebuild:BatchGetBuilds"],
+        resources: [props.apiPublishProject.projectArn],
+      })
+    );
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "apigateway:GET",
+          "apigateway:POST",
+          "apigateway:PUT",
+          "apigateway:DELETE",
+        ],
+        resources: [`arn:aws:apigateway:${Stack.of(this).region}::/*`],
+      })
+    );
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "athena:GetWorkGroup",
+          "athena:StartQueryExecution",
+          "athena:StopQueryExecution",
+          "athena:GetQueryExecution",
+          "athena:GetQueryResults",
+          "athena:GetDataCatalog",
+        ],
+        resources: [props.usageAnalysis?.workgroupArn || ""],
+      })
+    );
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["glue:GetDatabase", "glue:GetDatabases"],
+        resources: [
+          props.usageAnalysis?.database.databaseArn || "",
+          props.usageAnalysis?.database.catalogArn || "",
+        ],
+      })
+    );
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "glue:GetDatabase",
+          "glue:GetTable",
+          "glue:GetTables",
+          "glue:GetPartition",
+          "glue:GetPartitions",
+        ],
+        resources: [
+          props.usageAnalysis?.database.databaseArn || "",
+          props.usageAnalysis?.database.catalogArn || "",
+          props.usageAnalysis?.ddbExportTable.tableArn || "",
+        ],
+      })
+    );
+    handlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: ["cognito-idp:AdminGetUser"],
+        resources: [props.auth.userPool.userPoolArn],
+      })
+    );
+    props.usageAnalysis?.resultOutputBucket.grantReadWrite(handlerRole);
+    props.usageAnalysis?.ddbBucket.grantRead(handlerRole);
+    props.largeMessageBucket.grantReadWrite(handlerRole);
 
     const handler = new DockerImageFunction(this, "Handler", {
       code: DockerImageCode.fromImageAsset(
@@ -78,7 +175,7 @@ export class Api extends Construct {
       vpc: props.vpc,
       vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
       memorySize: 1024,
-      timeout: Duration.seconds(30),
+      timeout: Duration.minutes(15),
       environment: {
         TABLE_NAME: database.tableName,
         CORS_ALLOW_ORIGINS: allowOrigins.join(","),
@@ -94,6 +191,14 @@ export class Api extends Construct {
         DB_PASSWORD: props.dbConfig.password,
         DB_PORT: props.dbConfig.port.toString(),
         DOCUMENT_BUCKET: props.documentBucket.bucketName,
+        LARGE_MESSAGE_BUCKET: props.largeMessageBucket.bucketName,
+        PUBLISH_API_CODEBUILD_PROJECT_NAME: props.apiPublishProject.projectName,
+        USAGE_ANALYSIS_DATABASE:
+          props.usageAnalysis?.database.databaseName || "",
+        USAGE_ANALYSIS_TABLE:
+          props.usageAnalysis?.ddbExportTable.tableName || "",
+        USAGE_ANALYSIS_WORKGROUP: props.usageAnalysis?.workgroupName || "",
+        USAGE_ANALYSIS_OUTPUT_LOCATION: usageAnalysisOutputLocation,
       },
       role: handlerRole,
     });
