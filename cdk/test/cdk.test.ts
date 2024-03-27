@@ -27,7 +27,7 @@ describe("Fine-grained Assertions Test", () => {
     );
     const hasGoogleProviderTemplate = Template.fromStack(
       hasGoogleProviderStack
-    ).toJSON();
+    );
 
     hasGoogleProviderTemplate.resourceCountIs("AWS::SecretsManager::Secret", 1);
 
@@ -62,7 +62,7 @@ describe("Fine-grained Assertions Test", () => {
       publishedApiAllowedIpV4AddressRanges: [""],
       publishedApiAllowedIpV6AddressRanges: [""],
     });
-    const template = Template.fromStack(stack).toJSON();
+    const template = Template.fromStack(stack);
 
     template.resourceCountIs("AWS::SecretsManager::Secret", 0);
 
