@@ -33,7 +33,7 @@ describe("Fine-grained Assertions Test", () => {
     hasGoogleProviderTemplate.hasResourceProperties(
       "AWS::Cognito::UserPoolDomain",
       {
-        Domain: `https://${domainPrefix}.${Match.anyValue()}.amazoncognito.com`,
+        Domain: domainPrefix,
       }
     );
     hasGoogleProviderTemplate.hasResourceProperties(
