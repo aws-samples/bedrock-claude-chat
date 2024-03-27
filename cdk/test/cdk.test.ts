@@ -29,7 +29,7 @@ describe("Fine-grained Assertions Test", () => {
       hasGoogleProviderStack
     ).toJSON();
 
-    // hasGoogleProviderTemplate.resourceCountIs("AWS::SecretsManager::Secret", 1);
+    hasGoogleProviderTemplate.resourceCountIs("AWS::SecretsManager::Secret", 1);
 
     // hasGoogleProviderTemplate.hasResourceProperties("AWS::Cognito::UserPool", {
     //   // WIP
@@ -64,7 +64,7 @@ describe("Fine-grained Assertions Test", () => {
     });
     const template = Template.fromStack(stack).toJSON();
 
-    // template.resourceCountIs("AWS::SecretsManager::Secret", 0);
+    template.resourceCountIs("AWS::SecretsManager::Secret", 0);
 
     // template.hasResourceProperties("AWS::Cognito::UserPool", {
     //   // WIP
