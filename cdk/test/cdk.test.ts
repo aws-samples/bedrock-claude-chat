@@ -29,11 +29,9 @@ describe("Fine-grained Assertions Test", () => {
       hasGoogleProviderStack
     );
 
-    hasGoogleProviderTemplate.resourceCountIs("AWS::SecretsManager::Secret", 1);
-
-    // hasGoogleProviderTemplate.hasResourceProperties("AWS::Cognito::UserPool", {
-    //   // WIP
-    // });
+    hasGoogleProviderTemplate.hasResourceProperties("AWS::Cognito::UserPool", {
+      DomainPrefix: "test-domain",
+    });
     // hasGoogleProviderTemplate.hasResourceProperties(
     //   "AWS::Cognito::UserPoolClient",
     //   {
@@ -63,8 +61,6 @@ describe("Fine-grained Assertions Test", () => {
       publishedApiAllowedIpV6AddressRanges: [""],
     });
     const template = Template.fromStack(stack);
-
-    // template.resourceCountIs("AWS::SecretsManager::Secret", 1);
 
     // template.hasResourceProperties("AWS::Cognito::UserPool", {
     //   // WIP
