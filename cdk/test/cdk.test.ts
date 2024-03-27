@@ -1,6 +1,6 @@
 import * as cdk from "aws-cdk-lib";
 import { BedrockChatStack } from "../lib/bedrock-chat-stack";
-import { Template } from "aws-cdk-lib/assertions";
+import { Match, Template } from "aws-cdk-lib/assertions";
 
 describe("Fine-grained Assertions Test", () => {
   test("Identity Provider Generation", () => {
@@ -29,14 +29,14 @@ describe("Fine-grained Assertions Test", () => {
       hasGoogleProviderStack
     );
 
-    hasGoogleProviderTemplate.hasResourceProperties(
-      "AWS::Cognito::UserPool",
-      {}
-    );
+    hasGoogleProviderTemplate.hasResourceProperties("AWS::Cognito::UserPool", {
+      Domain: "test-domain",
+    });
     hasGoogleProviderTemplate.hasResourceProperties(
       "AWS::Cognito::UserPoolClient",
       {
-        DomainPrefix: "test-domain",
+        DependsOn: [`AuthGoogleProvider${Match.anyValue()}`],
+        SupportedIdentityProviders: ["Google", "COGNITO"],
       }
     );
     hasGoogleProviderTemplate.hasResourceProperties(
