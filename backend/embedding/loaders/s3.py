@@ -26,7 +26,7 @@ class S3FileLoader(BaseLoader):
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
             s3.download_file(self.bucket, self.key, file_path)
             if self.key.endswith(".csv"):
-                self.reader = read_csv(
+                return read_csv(
                     file_path,
                     iterator=True,
                     chunksize=1500,
@@ -37,7 +37,7 @@ class S3FileLoader(BaseLoader):
                 # Unstructured is used for creating elements, so it should be used
                 # for splitting
                 chunks = chunk_elements(elements)
-                self.reader = iter([DataFrame(chunks, columns=["text"])])
+                return iter([DataFrame(chunks, columns=["text"])])
 
     def _get_metadata(self) -> dict:
         return {"source": f"s3://{self.bucket}/{self.key}"}
