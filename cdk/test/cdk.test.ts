@@ -49,7 +49,7 @@ describe("Fine-grained Assertions Test", () => {
   });
 
   test("default stack", () => {
-    const stack = new BedrockChatStack(app, "DefaultStack", {
+    const stack = new BedrockChatStack(app, "MyTestStack", {
       bedrockRegion: "us-east-1",
       crossRegionReferences: true,
       webAclId: "",
