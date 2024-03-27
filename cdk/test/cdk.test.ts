@@ -29,15 +29,16 @@ describe("Fine-grained Assertions Test", () => {
       hasGoogleProviderStack
     );
 
-    hasGoogleProviderTemplate.hasResourceProperties("AWS::Cognito::UserPool", {
-      DomainPrefix: "test-domain",
-    });
-    // hasGoogleProviderTemplate.hasResourceProperties(
-    //   "AWS::Cognito::UserPoolClient",
-    //   {
-    //     // WIP
-    //   }
-    // );
+    hasGoogleProviderTemplate.hasResourceProperties(
+      "AWS::Cognito::UserPool",
+      {}
+    );
+    hasGoogleProviderTemplate.hasResourceProperties(
+      "AWS::Cognito::UserPoolClient",
+      {
+        DomainPrefix: "test-domain",
+      }
+    );
     hasGoogleProviderTemplate.hasResourceProperties(
       "AWS::Cognito::UserPoolIdentityProvider",
       {
