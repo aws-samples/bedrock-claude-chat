@@ -63,7 +63,7 @@ const translation = {
         sync: {
           error: {
             title: 'Erreur de synchronisation des connaissances',
-            body: "Une erreur s'est produite lors de la synchronisation de Knowledge. Veuillez vérifier le message suivant :",
+            body: "Une erreur s'est produite lors de la synchronisation de Knowledge. Veuillez vérifier le message suivant :",
           },
           incomplete: {
             title: 'Pas prêt',
@@ -74,14 +74,14 @@ const translation = {
       samples: {
         title: "Exemple d'instructions",
         anthropicLibrary: {
-          title: 'Bibliothèque de prompt d\'Anthropic',
-          sentence: 'Avez-vous besoin de plus d\'exemples ? Visitez : ',
+          title: "Bibliothèque de prompt d'Anthropic",
+          sentence: "Avez-vous besoin de plus d'exemples ? Visitez : ",
           url: 'https://docs.anthropic.com/claude/prompt-library',
         },
         pythonCodeAssistant: {
           title: 'Assistant de code Python',
           prompt: `Écrivez un script Python court et de haute qualité pour la tâche donnée, quelque chose qu'un expert Python très qualifié écrirait. Vous écrivez du code pour un développeur expérimenté, ajoutez donc des commentaires uniquement pour les éléments non évidents. Assurez-vous d'inclure toutes les importations requises.
-          N'écrivez JAMAIS quoi que ce soit avant le bloc \`\`\`python\`\`\`. Une fois que vous avez fini de générer le code et après le bloc \`\`\`python\`\`\`, vérifiez soigneusement votre travail pour vous assurer qu'il n'y a pas d'erreurs, d'erreurs ou d'incohérences. S'il y a des erreurs, répertoriez ces erreurs dans les balises <error>, puis générez une nouvelle version avec ces erreurs corrigées. S'il n'y a pas d'erreurs, écrivez « CHECKED : NO ERRORS » dans les balises <error>.`,
+          N'écrivez JAMAIS quoi que ce soit avant le bloc \`\`\`python\`\`\`. Une fois que vous avez fini de générer le code et après le bloc \`\`\`python\`\`\`, vérifiez soigneusement votre travail pour vous assurer qu'il n'y a pas d'erreurs, d'erreurs ou d'incohérences. S'il y a des erreurs, répertoriez ces erreurs dans les balises <error>, puis générez une nouvelle version avec ces erreurs corrigées. S'il n'y a pas d'erreurs, écrivez « CHECKED : NO ERRORS » dans les balises <error>.`,
         },
         mailCategorizer: {
           title: 'Classificateur de courrier',
@@ -93,7 +93,7 @@ Les catégories de classification sont :
 (C) Question sur la facturation
 (D) Autre (veuillez expliquer)
           
-Comment catégoriseriez-vous cet e-mail ?`,
+Comment catégoriseriez-vous cet e-mail ?`,
         },
         fitnessCoach: {
           title: 'Coach personnel de remise en forme',

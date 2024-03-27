@@ -10,6 +10,7 @@ client = boto3.client("dynamodb")
 
 
 def handler(event, context):
+    """Export the dynamodb table to S3 for the last hour to analyze the usage for admin."""
     print(event)
 
     execution_time = datetime.strptime(event["time"], "%Y-%m-%dT%H:%M:%SZ")

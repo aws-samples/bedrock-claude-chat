@@ -4,7 +4,8 @@ from copy import deepcopy
 from datetime import datetime
 from typing import Literal
 
-from app.bedrock import compose_args_for_anthropic_client, get_model_id
+from anthropic.types import Message as AnthropicMessage
+from app.bedrock import calculate_price, compose_args_for_anthropic_client, get_model_id
 from app.config import GENERATION_CONFIG, SEARCH_CONFIG
 from app.repositories.conversation import (
     RecordNotFoundError,
@@ -12,14 +13,19 @@ from app.repositories.conversation import (
     store_conversation,
 )
 from app.repositories.custom_bot import find_alias_by_id, store_alias
-from app.repositories.model import (
-    BotAliasModel,
-    BotModel,
+from app.repositories.models.conversation import (
     ContentModel,
     ConversationModel,
     MessageModel,
 )
-from app.route_schema import ChatInput, ChatOutput, Content, Conversation, MessageOutput
+from app.repositories.models.custom_bot import BotAliasModel, BotModel
+from app.routes.schemas.conversation import (
+    ChatInput,
+    ChatOutput,
+    Content,
+    Conversation,
+    MessageOutput,
+)
 from app.usecases.bot import fetch_bot, modify_bot_last_used_time
 from app.utils import get_anthropic_client, get_current_time, is_running_on_lambda
 from app.vector_search import SearchResult, search_related_docs
@@ -32,7 +38,8 @@ client = get_anthropic_client()
 
 
 def prepare_conversation(
-    user_id: str, chat_input: ChatInput
+    user_id: str,
+    chat_input: ChatInput,
 ) -> tuple[str, ConversationModel, BotModel | None]:
     current_time = get_current_time()
     bot = None
@@ -45,6 +52,8 @@ def prepare_conversation(
         if chat_input.message.parent_message_id == "system" and chat_input.bot_id:
             # The case editing first user message and use bot
             parent_id = "instruction"
+        elif chat_input.message.parent_message_id is None:
+            parent_id = conversation.last_message_id
         if chat_input.bot_id:
             logger.info("Bot id is provided. Fetching bot.")
             owned, bot = fetch_bot(user_id, chat_input.bot_id)
@@ -113,12 +122,7 @@ def prepare_conversation(
                             last_used_time=current_time,
                             is_pinned=False,
                             sync_status=bot.sync_status,
-                            has_knowledge=bot.knowledge
-                            and (
-                                len(bot.knowledge.source_urls) > 0
-                                or len(bot.knowledge.sitemap_urls) > 0
-                                or len(bot.knowledge.filenames) > 0
-                            ),
+                            has_knowledge=bot.has_knowledge(),
                         ),
                     )
 
@@ -126,6 +130,7 @@ def prepare_conversation(
         conversation = ConversationModel(
             id=chat_input.conversation_id,
             title="New conversation",
+            total_price=0.0,
             create_time=current_time,
             message_map=initial_message_map,
             last_message_id="",
@@ -133,7 +138,10 @@ def prepare_conversation(
         )
 
     # Append user chat input to the conversation
-    message_id = str(ULID())
+    if chat_input.message.message_id:
+        message_id = chat_input.message.message_id
+    else:
+        message_id = str(ULID())
     new_message = MessageModel(
         role=chat_input.message.role,
         content=[
@@ -242,7 +250,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
             else None
         ),
     )
-    response = client.messages.create(**args)
+    response: AnthropicMessage = client.messages.create(**args)
     reply_txt = response.content[0].text
 
     # Issue id for new assistant message
@@ -261,6 +269,15 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     # Append children to parent
     conversation.message_map[user_msg_id].children.append(assistant_msg_id)
     conversation.last_message_id = assistant_msg_id
+
+    # Update total pricing
+    input_tokens = response.usage.input_tokens
+    output_tokens = response.usage.output_tokens
+
+    logger.debug(f"Input tokens: {input_tokens}, Output tokens: {output_tokens}")
+
+    price = calculate_price(chat_input.message.model, input_tokens, output_tokens)
+    conversation.total_price += price
 
     # Store updated conversation
     store_conversation(user_id, conversation)

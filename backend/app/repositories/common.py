@@ -19,6 +19,10 @@ class RecordAccessNotAllowedError(Exception):
     pass
 
 
+class ResourceConflictError(Exception):
+    pass
+
+
 def compose_conv_id(user_id: str, conversation_id: str):
     # Add user_id prefix for row level security to match with `LeadingKeys` condition
     return f"{user_id}#CONV#{conversation_id}"

@@ -2,7 +2,7 @@ import { Construct } from "constructs";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as path from "path";
 import { Duration, RemovalPolicy, Stack } from "aws-cdk-lib";
-import { Platform } from "aws-cdk-lib/aws-ecr-assets";
+import { DockerImageAsset, Platform } from "aws-cdk-lib/aws-ecr-assets";
 import * as iam from "aws-cdk-lib/aws-iam";
 import { ITable } from "aws-cdk-lib/aws-dynamodb";
 import { CfnPipe } from "aws-cdk-lib/aws-pipes";
@@ -16,6 +16,7 @@ import {
   IFunction,
 } from "aws-cdk-lib/aws-lambda";
 import { DynamoEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
+import { SociIndexBuild } from "deploy-time-build";
 
 export interface DbConfig {
   readonly host: string;
@@ -76,14 +77,15 @@ export class Embedding extends Construct {
       retention: logs.RetentionDays.ONE_WEEK,
     });
 
+    const asset = new DockerImageAsset(this, "Image", {
+      directory: path.join(__dirname, "../../../backend"),
+      file: "embedding.Dockerfile",
+      platform: Platform.LINUX_AMD64,
+    });
+    SociIndexBuild.fromDockerImageAsset(this, "Index", asset);
+
     const container = taskDefinition.addContainer("Container", {
-      image: ecs.ContainerImage.fromAsset(
-        path.join(__dirname, "../../../backend"),
-        {
-          file: "embedding.Dockerfile",
-          platform: Platform.LINUX_AMD64,
-        }
-      ),
+      image: ecs.AssetImage.fromDockerImageAsset(asset),
       logging: ecs.LogDriver.awsLogs({
         streamPrefix: "embed-task",
         logGroup: taskLogGroup,
@@ -208,6 +210,41 @@ export class Embedding extends Construct {
     /**
      * Removal handler
      */
+    const removeHandlerRole = new iam.Role(this, "RemovalHandlerRole", {
+      assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
+    });
+    removeHandlerRole.addManagedPolicy(
+      iam.ManagedPolicy.fromAwsManagedPolicyName(
+        "service-role/AWSLambdaVPCAccessExecutionRole"
+      )
+    );
+    removeHandlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "cloudformation:DescribeStacks",
+          "cloudformation:DescribeStackEvents",
+          "cloudformation:DescribeStackResource",
+          "cloudformation:DescribeStackResources",
+          "cloudformation:DeleteStack",
+        ],
+        resources: [`*`],
+      })
+    );
+    removeHandlerRole.addToPolicy(
+      new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+          "apigateway:GET",
+          "apigateway:POST",
+          "apigateway:PUT",
+          "apigateway:DELETE",
+        ],
+        resources: [`arn:aws:apigateway:${Stack.of(this).region}::/*`],
+      })
+    );
+    props.database.grantStreamRead(removeHandlerRole);
+    props.documentBucket.grantReadWrite(removeHandlerRole);
     const removalHandler = new DockerImageFunction(this, "BotRemovalHandler", {
       code: DockerImageCode.fromImageAsset(
         path.join(__dirname, "../../../backend"),
@@ -228,9 +265,8 @@ export class Embedding extends Construct {
         DB_NAME: props.dbConfig.database,
         DOCUMENT_BUCKET: props.documentBucket.bucketName,
       },
+      role: removeHandlerRole,
     });
-    props.database.grantStreamRead(removalHandler);
-    props.documentBucket.grantReadWrite(removalHandler);
     removalHandler.addEventSource(
       new DynamoEventSource(props.database, {
         startingPosition: lambda.StartingPosition.TRIM_HORIZON,

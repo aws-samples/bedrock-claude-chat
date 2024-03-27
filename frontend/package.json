@@ -17,6 +17,7 @@
     "aws-amplify": "^5.3.5",
     "axios": "^1.4.0",
     "copy-to-clipboard": "^3.3.3",
+    "dayjs": "^1.11.10",
     "i18next": "^23.6.0",
     "i18next-browser-languagedetector": "^7.1.0",
     "immer": "^10.0.2",

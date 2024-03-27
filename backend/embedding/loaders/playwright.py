@@ -1,7 +1,7 @@
 import logging
 import time
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING
 
 from embedding.loaders.base import BaseLoader, Document
 
@@ -55,9 +55,7 @@ class PlaywrightEvaluator(ABC):
 class DelayUnstructuredHtmlEvaluator(PlaywrightEvaluator):
     """UnstructuredHtmlEvaluator with delay."""
 
-    def __init__(
-        self, remove_selectors: Optional[list[str]] = None, delay_sec: int = 0
-    ):
+    def __init__(self, remove_selectors: list[str] | None = None, delay_sec: int = 0):
         """Initialize UnstructuredHtmlEvaluator."""
         try:
             import unstructured  # noqa:F401
@@ -120,11 +118,11 @@ class PlaywrightURLLoader(BaseLoader):
 
     def __init__(
         self,
-        urls: List[str],
+        urls: list[str],
         continue_on_failure: bool = True,
         headless: bool = True,
-        remove_selectors: Optional[List[str]] = None,
-        evaluator: Optional[PlaywrightEvaluator] = None,
+        remove_selectors: list[str] | None = None,
+        evaluator: PlaywrightEvaluator | None = None,
     ):
         """Load a list of URLs using Playwright."""
         self.urls = urls
@@ -139,7 +137,7 @@ class PlaywrightURLLoader(BaseLoader):
             remove_selectors, delay_sec=2
         )
 
-    def load(self) -> List[Document]:
+    def load(self) -> list[Document]:
         """Load the specified URLs using Playwright and create Document instances.
 
         Returns:
@@ -147,7 +145,7 @@ class PlaywrightURLLoader(BaseLoader):
         """
         from playwright.sync_api import sync_playwright
 
-        docs: List[Document] = list()
+        docs: list[Document] = list()
 
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=self.headless)

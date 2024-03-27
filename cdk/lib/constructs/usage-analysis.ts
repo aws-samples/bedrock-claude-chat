@@ -1,6 +1,7 @@
 import { Construct } from "constructs";
 import * as s3 from "aws-cdk-lib/aws-s3";
-import { RemovalPolicy, Stack } from "aws-cdk-lib";
+import * as athena from "aws-cdk-lib/aws-athena";
+import { CfnOutput, RemovalPolicy, Stack } from "aws-cdk-lib";
 import * as glue from "@aws-cdk/aws-glue-alpha";
 import * as events from "aws-cdk-lib/aws-events";
 import * as targets from "aws-cdk-lib/aws-events-targets";
@@ -16,6 +17,12 @@ export interface UsageAnalysisProps {
 }
 
 export class UsageAnalysis extends Construct {
+  public readonly database: glue.IDatabase;
+  public readonly ddbExportTable: glue.ITable;
+  public readonly ddbBucket: s3.IBucket;
+  public readonly resultOutputBucket: s3.IBucket;
+  public readonly workgroupName: string;
+  public readonly workgroupArn: string;
   constructor(scope: Construct, id: string, props: UsageAnalysisProps) {
     super(scope, id);
 
@@ -24,6 +31,7 @@ export class UsageAnalysis extends Construct {
     ).stackName.toLowerCase()}_usage_analysis`;
     const DDB_EXPORT_TABLE_NAME = "ddb_export";
 
+    // Bucket to export DynamoDB data
     const ddbBucket = new s3.Bucket(this, "DdbBucket", {
       encryption: s3.BucketEncryption.S3_MANAGED,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
@@ -31,6 +39,28 @@ export class UsageAnalysis extends Construct {
       removalPolicy: RemovalPolicy.DESTROY,
       objectOwnership: s3.ObjectOwnership.OBJECT_WRITER,
       autoDeleteObjects: true,
+    });
+
+    // Bucket for Athena query results
+    const queryResultBucket = new s3.Bucket(this, "QueryResultBucket", {
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      enforceSSL: true,
+      removalPolicy: RemovalPolicy.DESTROY,
+      objectOwnership: s3.ObjectOwnership.OBJECT_WRITER,
+      autoDeleteObjects: true,
+    });
+
+    // Workgroup for Athena
+    const wg = new athena.CfnWorkGroup(this, "Wg", {
+      name: `${Stack.of(this).stackName.toLowerCase()}_wg`,
+      description: "Workgroup for Athena",
+      recursiveDeleteOption: true,
+      workGroupConfiguration: {
+        resultConfiguration: {
+          outputLocation: `s3://${queryResultBucket.bucketName}`,
+        },
+      },
     });
 
     const database = new glue.Database(this, "Database", {
@@ -63,6 +93,12 @@ export class UsageAnalysis extends Construct {
         type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]),
       },
       {
+        name: "TotalPrice",
+        type: glue.Schema.struct([
+          { name: "N", type: glue.Schema.decimal(20, 10) },
+        ]),
+      },
+      {
         name: "BotId",
         type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]),
       },
@@ -72,6 +108,10 @@ export class UsageAnalysis extends Construct {
       },
       {
         name: "Instruction",
+        type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]),
+      },
+      {
+        name: "PublicBotId",
         type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]),
       },
       {
@@ -104,6 +144,14 @@ export class UsageAnalysis extends Construct {
       },
       {
         name: "SyncStatusReason",
+        type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]),
+      },
+      {
+        name: "PublishedApiStackName",
+        type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]),
+      },
+      {
+        name: "PublishedApiDatetime",
         type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]),
       },
     ]);
@@ -176,7 +224,7 @@ export class UsageAnalysis extends Construct {
     });
 
     const exportHandler = new python.PythonFunction(this, "ExportHandler", {
-      entry: path.join(__dirname, "../../../backend/usage_analysis/"),
+      entry: path.join(__dirname, "../../../backend/s3_exporter/"),
       runtime: Runtime.PYTHON_3_11,
       environment: {
         BUCKET_NAME: ddbBucket.bucketName,
@@ -195,5 +243,21 @@ export class UsageAnalysis extends Construct {
       schedule: events.Schedule.cron({ minute: "5" }),
       targets: [new targets.LambdaFunction(exportHandler)],
     });
+
+    new CfnOutput(this, "UsageAnalysisWorkgroup", {
+      value: wg.name,
+    });
+    new CfnOutput(this, "UsageAnalysisOutputLocation", {
+      value: `s3://${queryResultBucket.bucketName}`,
+    });
+
+    this.database = database;
+    this.ddbBucket = ddbBucket;
+    this.ddbExportTable = ddbExportTable;
+    this.workgroupName = wg.name;
+    this.resultOutputBucket = queryResultBucket;
+    this.workgroupArn = `arn:aws:athena:*:${Stack.of(this).account}:workgroup/${
+      wg.name
+    }`;
   }
 }
