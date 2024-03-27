@@ -3,9 +3,9 @@ import { BedrockChatStack } from "../lib/bedrock-chat-stack";
 import { Template } from "aws-cdk-lib/assertions";
 
 describe("Fine-grained Assertions Test", () => {
-  const app = new cdk.App();
-
   test("Identity Provider Generation", () => {
+    const app = new cdk.App();
+
     const hasGoogleProviderStack = new BedrockChatStack(
       app,
       "IdentityProviderGenerateStack",
@@ -50,6 +50,8 @@ describe("Fine-grained Assertions Test", () => {
   });
 
   test("default stack", () => {
+    const app = new cdk.App();
+
     const stack = new BedrockChatStack(app, "MyTestStack", {
       bedrockRegion: "us-east-1",
       crossRegionReferences: true,
