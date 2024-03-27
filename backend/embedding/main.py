@@ -3,7 +3,6 @@ import json
 import logging
 import os
 
-import boto3
 import pg8000
 import requests
 from app.config import EMBEDDING_CONFIG
@@ -135,6 +134,29 @@ def update_sync_status(
     )
 
 
+def update_index():
+    conn = pg8000.connect(
+        database=DB_NAME,
+        host=DB_HOST,
+        port=DB_PORT,
+        user=DB_USER,
+        password=DB_PASSWORD,
+    )
+
+    try:
+        print("Updating the index...")
+        with conn.cursor() as cursor:
+            reindex_query = "REINDEX INDEX CONCURRENTLY idx_items_embedding;"
+            cursor.execute(reindex_query)
+        conn.commit()
+        print("Successfully updated the index.")
+    except Exception as e:
+        conn.rollback()
+        raise e
+    finally:
+        conn.close()
+
+
 def embed(
     loader: BaseLoader,
 ):
@@ -256,6 +278,9 @@ def main(
 
         if failures > len(filenames) * 0.2:
             raise Exception("Too many failures.")
+
+        update_index()
+
         status_reason = "Successfully updated vector store."
     except Exception as e:
         print("[ERROR] Failed to embed.")

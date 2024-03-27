@@ -48,12 +48,16 @@ def search_related_docs(bot_id: str, limit: int, query: str) -> list[SearchResul
             # If you want to use inner product or cosine distance, use <#> or <=> respectively.
             # It's important to choose the same distance metric as the one used for indexing.
             # Ref: https://github.com/pgvector/pgvector?tab=readme-ov-file#getting-started
+
+            # Using 33 probes as this is the recommended value (sqrt of the number of lists in the index)
+            # See: https://www.timescale.com/blog/nearest-neighbor-indexes-what-are-ivfflat-indexes-in-pgvector-and-how-do-they-work/
             search_query = """
+SET ivfflat.probes = 33;
 SELECT id, botid, content, source, embedding
 FROM items
 WHERE botid = %s
 ORDER BY embedding <-> %s
-LIMIT %s
+LIMIT %s;
 """
             cursor.execute(search_query, (bot_id, json.dumps(query_embedding), limit))
             results = cursor.fetchall()

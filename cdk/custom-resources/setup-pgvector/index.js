@@ -39,6 +39,35 @@ const setUp = async (dbConfig) => {
   }
 };
 
+const updateIndex = async (dbConfig) => {
+  const client = new Client(dbConfig);
+  try {
+    await client.connect();
+    console.log("Connected to the database.");
+
+    // Recreate the index
+    await client.query("DROP INDEX IF EXISTS idx_items_embedding ON items;");
+
+    // `lists` parameter controls the nubmer of clusters created during index building.
+    // Also it's important to choose the same index method as the one used in the query.
+    // Here we use L2 distance for the index method.
+    // See: https://txt.cohere.com/introducing-embed-v3/
+
+    // As we will have dataset with more than one million items, the number of list should be sqrt(~rows) (see blog above)
+    await client.query(`CREATE INDEX idx_items_embedding ON items
+                         USING ivfflat (embedding vector_l2_ops) WITH (lists = 1100);`);
+
+    // Create pgvector table and index
+    // Ref:
+  } catch (err) {
+    console.error("Error executing SQL: ", err.stack);
+    throw err;
+  } finally {
+    await client.end();
+    console.log("Database connection closed.");
+  }
+}
+
 const updateStatus = async (event, status, reason, physicalResourceId) => {
   const body = JSON.stringify({
     Status: status,
@@ -92,6 +121,7 @@ exports.handler = async (event, context) => {
         );
         break;
       case "Update":
+        updateIndex(dbConfig);
       case "Delete":
         await updateStatus(event, "SUCCESS", "", dbClusterIdentifier);
     }
