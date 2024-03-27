@@ -313,10 +313,12 @@ const InputChatContent: React.FC<Props> = (props) => {
               // Set image null after transition end
               onAfterLeave={() => setPreviewImageUrl(null)}
               widthFromContent={true}>
-              <img
-                src={previewImageUrl}
-                className="mx-auto max-h-[80vh] max-w-full rounded-md"
-              />
+              {previewImageUrl && (
+                <img
+                  src={previewImageUrl}
+                  className="mx-auto max-h-[80vh] max-w-full rounded-md"
+                />
+              )}
             </ModalDialog>
           </div>
         )}

@@ -121,10 +121,12 @@ const ChatMessage: React.FC<Props> = (props) => {
                 // Set image null after transition end
                 widthFromContent={true}
                 onAfterLeave={() => setPreviewImageUrl(null)}>
-                <img
-                  src={previewImageUrl}
-                  className="mx-auto max-h-[80vh] max-w-full rounded-md"
-                />
+                {previewImageUrl && (
+                  <img
+                    src={previewImageUrl}
+                    className="mx-auto max-h-[80vh] max-w-full rounded-md"
+                  />
+                )}
               </ModalDialog>
             </div>
           )}
