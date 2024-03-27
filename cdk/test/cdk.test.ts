@@ -5,6 +5,7 @@ import { Match, Template } from "aws-cdk-lib/assertions";
 describe("Fine-grained Assertions Test", () => {
   test("Identity Provider Generation", () => {
     const app = new cdk.App();
+    const domainPrefix = "test-domain";
 
     const hasGoogleProviderStack = new BedrockChatStack(
       app,
@@ -20,7 +21,7 @@ describe("Fine-grained Assertions Test", () => {
             service: "google",
           },
         ],
-        userPoolDomainPrefix: "test-domain",
+        userPoolDomainPrefix: domainPrefix,
         publishedApiAllowedIpV4AddressRanges: [""],
         publishedApiAllowedIpV6AddressRanges: [""],
       }
@@ -29,9 +30,12 @@ describe("Fine-grained Assertions Test", () => {
       hasGoogleProviderStack
     );
 
-    hasGoogleProviderTemplate.hasResourceProperties("AWS::Cognito::UserPool", {
-      Domain: "test-domain",
-    });
+    hasGoogleProviderTemplate.hasResourceProperties(
+      "AWS::Cognito::UserPoolUserPoolDomain",
+      {
+        Domain: `https://${domainPrefix}.${Match.anyValue()}.amazoncognito.com`,
+      }
+    );
     hasGoogleProviderTemplate.hasResourceProperties(
       "AWS::Cognito::UserPoolClient",
       {
