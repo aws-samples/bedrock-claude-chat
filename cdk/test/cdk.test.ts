@@ -40,13 +40,13 @@ describe("Fine-grained Assertions Test", () => {
     //     // WIP
     //   }
     // );
-    // hasGoogleProviderTemplate.hasResourceProperties(
-    //   "AWS::Cognito::UserPoolIdentityProvider",
-    //   {
-    //     ProviderName: "Google",
-    //     ProviderType: "Google",
-    //   }
-    // );
+    hasGoogleProviderTemplate.hasResourceProperties(
+      "AWS::Cognito::UserPoolIdentityProvider",
+      {
+        ProviderName: "Google",
+        ProviderType: "Google",
+      }
+    );
   });
 
   test("default stack", () => {
@@ -72,6 +72,6 @@ describe("Fine-grained Assertions Test", () => {
     // template.hasResourceProperties("AWS::Cognito::UserPoolClient", {
     //   // WIP
     // });
-    // template.resourceCountIs("AWS::Cognito::UserPoolIdentityProvider", 0);
+    template.resourceCountIs("AWS::Cognito::UserPoolIdentityProvider", 0);
   });
 });
