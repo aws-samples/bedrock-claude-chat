@@ -4,10 +4,11 @@ import { BaseProps } from '../@types/common';
 
 type Props = BaseProps & {
   isOpen: boolean;
-  title: string;
+  title?: string;
   widthFromContent?: boolean;
   children: React.ReactNode;
   onClose?: () => void;
+  onAfterLeave?: () => void;
 };
 
 const ModalDialog: React.FC<Props> = (props) => {
@@ -17,9 +18,19 @@ const ModalDialog: React.FC<Props> = (props) => {
     }
   }, [props]);
 
+  const onAfterLeave = useCallback(() => {
+    if (props.onAfterLeave) {
+      props.onAfterLeave();
+    }
+  }, [props]);
+
   return (
     <>
-      <Transition appear show={props.isOpen} as={Fragment}>
+      <Transition
+        appear
+        show={props.isOpen}
+        as={Fragment}
+        afterLeave={onAfterLeave}>
         <Dialog as="div" className="relative z-50" onClose={() => onClose()}>
           <Transition.Child
             as={Fragment}
@@ -49,11 +60,13 @@ const ModalDialog: React.FC<Props> = (props) => {
                   className={`rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all ${
                     !props.widthFromContent && 'w-full max-w-md'
                   }`}>
-                  <Dialog.Title
-                    as="h3"
-                    className="border-b pb-2 text-lg font-medium leading-6 text-aws-font-color">
-                    {props.title}
-                  </Dialog.Title>
+                  {props.title && (
+                    <Dialog.Title
+                      as="h3"
+                      className="border-b pb-2 text-lg font-medium leading-6 text-aws-font-color">
+                      {props.title}
+                    </Dialog.Title>
+                  )}
 
                   <div className="mt-3">
                     <div className="text-sm text-aws-font-color/70">

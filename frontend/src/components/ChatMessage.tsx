@@ -8,7 +8,7 @@ import { MessageContentWithChildren } from '../@types/conversation';
 import ButtonIcon from './ButtonIcon';
 import Textarea from './Textarea';
 import Button from './Button';
-import ImagePreview from './ImagePreview';
+import ModalDialog from './ModalDialog';
 import { useTranslation } from 'react-i18next';
 
 type Props = BaseProps & {
@@ -115,13 +115,17 @@ const ChatMessage: React.FC<Props> = (props) => {
                   );
                 }
               })}
-              <ImagePreview
+              <ModalDialog
                 isOpen={isOpenPreviewImage}
-                imageUrl={previewImageUrl ?? ''}
                 onClose={() => setIsOpenPreviewImage(false)}
                 // Set image null after transition end
-                onAfterLeave={() => setPreviewImageUrl(null)}
-              />
+                widthFromContent={true}
+                onAfterLeave={() => setPreviewImageUrl(null)}>
+                <img
+                  src={previewImageUrl}
+                  className="mx-auto max-h-[80vh] max-w-full rounded-md"
+                />
+              </ModalDialog>
             </div>
           )}
           {isEdit && (
