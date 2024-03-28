@@ -24,7 +24,11 @@ from app.repositories.custom_bot import (
     find_private_bots_by_user_id,
     store_bot,
 )
-from app.repositories.models.custom_bot import BotModel, EmbeddingParamsModel, KnowledgeModel
+from app.repositories.models.custom_bot import (
+    BotModel,
+    EmbeddingParamsModel,
+    KnowledgeModel,
+)
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
