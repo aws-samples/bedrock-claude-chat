@@ -14,6 +14,7 @@ import useChat from './hooks/useChat';
 import SnackbarProvider from './providers/SnackbarProvider';
 import { useTranslation } from 'react-i18next';
 import './i18n';
+import { validateSocialProvider } from './utils/SocialProviderUtils';
 
 const App: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -29,6 +30,13 @@ const App: React.FC = () => {
       userPoolId: import.meta.env.VITE_APP_USER_POOL_ID,
       userPoolWebClientId: import.meta.env.VITE_APP_USER_POOL_CLIENT_ID,
       authenticationFlowType: 'USER_SRP_AUTH',
+      oauth: {
+        domain: import.meta.env.VITE_APP_COGNITO_DOMAIN,
+        scope: ['openid'],
+        redirectSignIn: import.meta.env.VITE_APP_REDIRECT_SIGNIN_URL,
+        redirectSignOut: import.meta.env.VITE_APP_REDIRECT_SIGNOUT_URL,
+        responseType: 'code',
+      },
     },
   });
 
@@ -47,8 +55,14 @@ const App: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const socialProviderFromEnv =
+    import.meta.env.VITE_APP_SOCIAL_PROVIDERS?.split(',').filter(
+      validateSocialProvider
+    );
+
   return (
     <Authenticator
+      socialProviders={socialProviderFromEnv}
       components={{
         Header: () => (
           <div className="mb-5 mt-10 flex justify-center text-3xl text-aws-font-color">

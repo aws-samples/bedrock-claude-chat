@@ -1,5 +1,5 @@
 import { Construct } from "constructs";
-import { RemovalPolicy, Stack } from "aws-cdk-lib";
+import { CfnOutput, RemovalPolicy, Stack } from "aws-cdk-lib";
 import {
   BlockPublicAccess,
   Bucket,
@@ -12,17 +12,16 @@ import {
 } from "aws-cdk-lib/aws-cloudfront";
 import { NodejsBuild } from "deploy-time-build";
 import { Auth } from "./auth";
+import { Idp } from "../utils/identityProvider";
 
 export interface FrontendProps {
-  readonly backendApiEndpoint: string;
-  readonly webSocketApiEndpoint: string;
-  readonly auth: Auth;
   readonly accessLogBucket: IBucket;
   readonly webAclId: string;
 }
 
 export class Frontend extends Construct {
   readonly cloudFrontWebDistribution: CloudFrontWebDistribution;
+  readonly assetBucket: Bucket;
   constructor(scope: Construct, id: string, props: FrontendProps) {
     super(scope, id);
 
@@ -72,6 +71,50 @@ export class Frontend extends Construct {
       },
       webACLId: props.webAclId,
     });
+    this.assetBucket = assetBucket;
+    this.cloudFrontWebDistribution = distribution;
+  }
+
+  getOrigin(): string {
+    return `https://${this.cloudFrontWebDistribution.distributionDomainName}`;
+  }
+
+  buildViteApp({
+    backendApiEndpoint,
+    webSocketApiEndpoint,
+    userPoolDomainPrefix,
+    auth,
+    idp,
+  }: {
+    backendApiEndpoint: string;
+    webSocketApiEndpoint: string;
+    userPoolDomainPrefix: string;
+    auth: Auth;
+    idp: Idp;
+  }) {
+    const region = Stack.of(auth.userPool).region;
+    const cognitoDomain = `${userPoolDomainPrefix}.auth.${region}.amazoncognito.com/`;
+
+    const buildEnvProps = (() => {
+      const defaultProps = {
+        VITE_APP_API_ENDPOINT: backendApiEndpoint,
+        VITE_APP_WS_ENDPOINT: webSocketApiEndpoint,
+        VITE_APP_USER_POOL_ID: auth.userPool.userPoolId,
+        VITE_APP_USER_POOL_CLIENT_ID: auth.client.userPoolClientId,
+        VITE_APP_REGION: region,
+        VITE_APP_USE_STREAMING: "true",
+      };
+
+      if (!idp.isExist()) return defaultProps;
+
+      const oAuthProps = {
+        VITE_APP_REDIRECT_SIGNIN_URL: this.getOrigin(),
+        VITE_APP_REDIRECT_SIGNOUT_URL: this.getOrigin(),
+        VITE_APP_COGNITO_DOMAIN: cognitoDomain,
+        VITE_APP_SOCIAL_PROVIDERS: idp.getSocialProviders(),
+      };
+      return { ...defaultProps, ...oAuthProps };
+    })();
 
     new NodejsBuild(this, "ReactBuild", {
       assets: [
@@ -82,23 +125,17 @@ export class Frontend extends Construct {
         },
       ],
       buildCommands: ["npm run build"],
-      buildEnvironment: {
-        VITE_APP_API_ENDPOINT: props.backendApiEndpoint,
-        VITE_APP_WS_ENDPOINT: props.webSocketApiEndpoint,
-        VITE_APP_USER_POOL_ID: props.auth.userPool.userPoolId,
-        VITE_APP_USER_POOL_CLIENT_ID: props.auth.client.userPoolClientId,
-        VITE_APP_REGION: Stack.of(props.auth.userPool).region,
-        VITE_APP_USE_STREAMING: "true",
-      },
-      destinationBucket: assetBucket,
-      distribution,
+      buildEnvironment: buildEnvProps,
+      destinationBucket: this.assetBucket,
+      distribution: this.cloudFrontWebDistribution,
       outputSourceDirectory: "dist",
     });
 
-    this.cloudFrontWebDistribution = distribution;
-  }
-
-  getOrigin(): string {
-    return `https://${this.cloudFrontWebDistribution.distributionDomainName}`;
+    if (idp.isExist()) {
+      new CfnOutput(this, "CognitoDomain", { value: cognitoDomain });
+      new CfnOutput(this, "SocialProviders", {
+        value: idp.getSocialProviders(),
+      });
+    }
   }
 }
