@@ -35,6 +35,7 @@ class BotInput(BaseSchema):
     title: str
     instruction: str
     description: str | None
+    embedding_params: EmbeddingParams | None
     knowledge: Knowledge | None
     embedding_params: EmbeddingParams | None
 
@@ -65,6 +66,7 @@ class BotOutput(BaseSchema):
     is_pinned: bool
     # Whether the bot is owned by the user
     owned: bool
+    embedding_params: EmbeddingParams
     knowledge: Knowledge
     sync_status: type_sync_status
     sync_status_reason: str
