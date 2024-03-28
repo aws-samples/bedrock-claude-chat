@@ -366,6 +366,22 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
     try:
         # NOTE: At the first time using shared bot, alias is not created yet.
         bot = find_public_bot_by_id(bot_id)
+        current_time = get_current_time()
+        # Store alias when opened shared bot page
+        store_alias(
+            user_id,
+            BotAliasModel(
+                id=bot.id,
+                title=bot.title,
+                description=bot.description,
+                original_bot_id=bot_id,
+                create_time=current_time,
+                last_used_time=current_time,
+                is_pinned=False,
+                sync_status=bot.sync_status,
+                has_knowledge=bot.has_knowledge(),
+            ),
+        )
         return BotSummaryOutput(
             id=bot_id,
             title=bot.title,
