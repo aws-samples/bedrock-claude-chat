@@ -1,10 +1,7 @@
 name: CDK tests
-# on:
-#   pull_request:
-#     branches: ["main"]
-
-on: push
-
+on:
+  pull_request:
+    branches: ["main"]
 jobs:
   cdk-synth:
     runs-on: ubuntu-latest
