@@ -11,8 +11,14 @@ from app.routes.schemas.conversation import (
     ConversationMetaOutput,
     NewTitleInput,
     ProposedTitle,
+    RelatedDocumentsOutput,
 )
-from app.usecases.chat import chat, fetch_conversation, propose_conversation_title
+from app.usecases.chat import (
+    chat,
+    fetch_conversation,
+    fetch_related_documents,
+    propose_conversation_title,
+)
 from app.user import User
 from fastapi import APIRouter, Request
 
@@ -31,6 +37,18 @@ def post_message(request: Request, chat_input: ChatInput):
     current_user: User = request.state.current_user
 
     output = chat(user_id=current_user.id, chat_input=chat_input)
+    return output
+
+
+@router.post(
+    "/conversation/related-documents", response_model=list[RelatedDocumentsOutput]
+)
+def get_related_documents(request: Request, chat_input: ChatInput):
+    """Get related documents
+    NOTE: POST method is used to avoid query string length limit
+    """
+    current_user: User = request.state.current_user
+    output = fetch_related_documents(user_id=current_user.id, chat_input=chat_input)
     return output
 
 

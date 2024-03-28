@@ -25,10 +25,11 @@ from app.routes.schemas.conversation import (
     Content,
     Conversation,
     MessageOutput,
+    RelatedDocumentsOutput,
 )
 from app.usecases.bot import fetch_bot, modify_bot_last_used_time
 from app.utils import get_anthropic_client, get_current_time, is_running_on_lambda
-from app.vector_search import SearchResult, search_related_docs
+from app.vector_search import SearchResult, get_source_link, search_related_docs
 from ulid import ULID
 
 logger = logging.getLogger(__name__)
@@ -397,3 +398,31 @@ def fetch_conversation(user_id: str, conversation_id: str) -> Conversation:
         bot_id=conversation.bot_id,
     )
     return output
+
+
+def fetch_related_documents(
+    user_id: str, chat_input: ChatInput
+) -> list[RelatedDocumentsOutput]:
+    if not chat_input.bot_id:
+        return []
+
+    _, bot = fetch_bot(user_id, chat_input.bot_id)
+
+    chunks = search_related_docs(
+        bot_id=bot.id,
+        limit=SEARCH_CONFIG["max_results"],
+        query=chat_input.message.content[-1].body,
+    )
+
+    documents = []
+    for chunk in chunks:
+        content_type, source_link = get_source_link(chunk.source)
+        documents.append(
+            RelatedDocumentsOutput(
+                chunk_body=chunk.content,
+                content_type=content_type,
+                source_link=source_link,
+                rank=chunk.rank,
+            )
+        )
+    return documents
