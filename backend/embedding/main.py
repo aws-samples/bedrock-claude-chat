@@ -104,7 +104,6 @@ def embed(
     embeddings: list[list[float]],
     cunk_size: int,
     chunk_overlap: int,
-
 ):
     splitter = DocumentSplitter(
         splitter=SentenceSplitter(
@@ -132,7 +131,7 @@ def main(
     sitemap_urls: list[str],
     source_urls: list[str],
     filenames: list[str],
-    cunk_size: int = EMBEDDING_CONFIG["chunk_size"],
+    chunk_size: int = EMBEDDING_CONFIG["chunk_size"],
     chunk_overlap: int = EMBEDDING_CONFIG["chunk_overlap"],
 ):
     exec_id = ""
@@ -169,7 +168,14 @@ def main(
         embeddings: list[list[float]] = []
 
         if len(source_urls) > 0:
-            embed(UrlLoader(source_urls), contents, sources, embeddings, cunk_size, chunk_overlap)
+            embed(
+                UrlLoader(source_urls),
+                contents,
+                sources,
+                embeddings,
+                chunk_size,
+                chunk_overlap
+            )
         if len(sitemap_urls) > 0:
             for sitemap_url in sitemap_urls:
                 raise NotImplementedError()
@@ -183,6 +189,8 @@ def main(
                     contents,
                     sources,
                     embeddings,
+                    chunk_size,
+                    chunk_overlap
                 )
 
         print(f"Number of chunks: {len(contents)}")
