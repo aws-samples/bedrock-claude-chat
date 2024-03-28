@@ -25,6 +25,7 @@ from app.repositories.models.custom_bot import (
     BotAliasModel,
     BotMeta,
     BotModel,
+    EmbeddingParamsModel,
     KnowledgeModel,
 )
 from app.routes.schemas.bot import (
@@ -75,10 +76,16 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
     Bot is created as private and not pinned.
     """
     current_time = get_current_time()
-    has_knowledge = bot_input.knowledge and (
-        len(bot_input.knowledge.source_urls) > 0
-        or len(bot_input.knowledge.sitemap_urls) > 0
-        or len(bot_input.knowledge.filenames) > 0
+    has_knowledge = (
+        bot_input.knowledge
+        and bot_input.embedding_params
+        and (
+            len(bot_input.knowledge.source_urls) > 0
+            or len(bot_input.knowledge.sitemap_urls) > 0
+            or len(bot_input.knowledge.filenames) > 0
+            or len(bot_input.embedding_params.chunk_size) > 0
+            or len(bot_input.embedding_params.chunk_overlap) > 0
+        )
     )
     sync_status: type_sync_status = "QUEUED" if has_knowledge else "SUCCEEDED"
 
@@ -111,6 +118,9 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             public_bot_id=None,
             is_pinned=False,
             owner_user_id=user_id,  # Owner is the creator
+            embedding_params=EmbeddingParamsModel(
+                chunk_size=bot_input.chunk_size, chunk_overlap=bot_input.chunk_overlap
+            ),
             knowledge=KnowledgeModel(
                 source_urls=source_urls, sitemap_urls=sitemap_urls, filenames=filenames
             ),
@@ -132,6 +142,9 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         is_public=False,
         is_pinned=False,
         owned=True,
+        embedding_params=EmbeddingParamsModel(
+            chunk_size=bot_input.chunk_size, chunk_overlap=bot_input.chunk_overlap
+        ),
         knowledge=Knowledge(
             source_urls=source_urls, sitemap_urls=sitemap_urls, filenames=filenames
         ),

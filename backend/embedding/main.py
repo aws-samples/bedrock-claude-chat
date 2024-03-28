@@ -102,12 +102,14 @@ def embed(
     contents: list[str],
     sources: list[str],
     embeddings: list[list[float]],
+    cunk_size: int,
+    chunk_overlap: int,
 ):
     splitter = DocumentSplitter(
         splitter=SentenceSplitter(
             paragraph_separator=r"\n\n\n",
-            chunk_size=EMBEDDING_CONFIG["chunk_size"],
-            chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+            chunk_size=cunk_size,
+            chunk_overlap=chunk_overlap,
             # Use length of text as token count for cohere-multilingual-v3
             tokenizer=lambda text: [0] * len(text),
         )
@@ -129,6 +131,8 @@ def main(
     sitemap_urls: list[str],
     source_urls: list[str],
     filenames: list[str],
+    chunk_size: int = EMBEDDING_CONFIG["chunk_size"],
+    chunk_overlap: int = EMBEDDING_CONFIG["chunk_overlap"],
 ):
     exec_id = ""
     try:
@@ -164,7 +168,14 @@ def main(
         embeddings: list[list[float]] = []
 
         if len(source_urls) > 0:
-            embed(UrlLoader(source_urls), contents, sources, embeddings)
+            embed(
+                UrlLoader(source_urls),
+                contents,
+                sources,
+                embeddings,
+                chunk_size,
+                chunk_overlap,
+            )
         if len(sitemap_urls) > 0:
             for sitemap_url in sitemap_urls:
                 raise NotImplementedError()
@@ -178,6 +189,8 @@ def main(
                     contents,
                     sources,
                     embeddings,
+                    chunk_size,
+                    chunk_overlap,
                 )
 
         print(f"Number of chunks: {len(contents)}")
