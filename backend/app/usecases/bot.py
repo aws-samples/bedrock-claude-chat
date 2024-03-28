@@ -114,7 +114,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             public_bot_id=None,
             is_pinned=False,
             owner_user_id=user_id,  # Owner is the creator
-            embedding_params= EmbeddingParamsModel(chunk_size=bot_input.chunk_size, chunk_overlap=bot_input.chunk_overlap)
+            embedding_params= EmbeddingParamsModel(chunk_size=bot_input.chunk_size, chunk_overlap=bot_input.chunk_overlap),
             knowledge=KnowledgeModel(
                 source_urls=source_urls, sitemap_urls=sitemap_urls, filenames=filenames
             ),
@@ -137,6 +137,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         is_public=False,
         is_pinned=False,
         owned=True,
+        embedding_params= EmbeddingParamsModel(chunk_size=bot_input.chunk_size, chunk_overlap=bot_input.chunk_overlap),
         knowledge=Knowledge(
             source_urls=source_urls, sitemap_urls=sitemap_urls, filenames=filenames
         ),
