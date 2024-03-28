@@ -1,6 +1,7 @@
 from app.routes.schemas.bot import type_sync_status
 from pydantic import BaseModel
 
+
 class EmbeddingParamsModel(BaseModel):
     chunk_size: int
     chunk_overlap: int

@@ -174,7 +174,7 @@ def main(
                 sources,
                 embeddings,
                 chunk_size,
-                chunk_overlap
+                chunk_overlap,
             )
         if len(sitemap_urls) > 0:
             for sitemap_url in sitemap_urls:
@@ -190,7 +190,7 @@ def main(
                     sources,
                     embeddings,
                     chunk_size,
-                    chunk_overlap
+                    chunk_overlap,
                 )
 
         print(f"Number of chunks: {len(contents)}")
