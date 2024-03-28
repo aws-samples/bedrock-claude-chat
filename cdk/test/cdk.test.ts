@@ -1,7 +1,6 @@
 import * as cdk from "aws-cdk-lib";
 import { BedrockChatStack } from "../lib/bedrock-chat-stack";
-import { Match, Template } from "aws-cdk-lib/assertions";
-import { has } from "effect/HashSet";
+import { Template } from "aws-cdk-lib/assertions";
 
 describe("Fine-grained Assertions Test", () => {
   test("Identity Provider Generation", () => {
@@ -71,12 +70,6 @@ describe("Fine-grained Assertions Test", () => {
     });
     const template = Template.fromStack(stack);
 
-    // template.hasResourceProperties("AWS::Cognito::UserPool", {
-    //   // WIP
-    // });
-    // template.hasResourceProperties("AWS::Cognito::UserPoolClient", {
-    //   // WIP
-    // });
     template.resourceCountIs("AWS::Cognito::UserPoolIdentityProvider", 0);
   });
 });
