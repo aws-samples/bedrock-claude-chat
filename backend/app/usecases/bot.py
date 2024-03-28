@@ -25,7 +25,7 @@ from app.repositories.models.custom_bot import (
     BotAliasModel,
     BotMeta,
     BotModel,
-    ChunkParamsModel,
+    EmbeddingParamsModel,
     KnowledgeModel,
 )
 from app.routes.schemas.bot import (
@@ -115,7 +115,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             knowledge=KnowledgeModel(
                 source_urls=source_urls, sitemap_urls=sitemap_urls, filenames=filenames
             ),
-            chunk_params=ChunkParamsModel(size=bot_input.chunk_params.size, overlap=bot_input.chunk_params.overlap),
+            embedding_params=EmbeddingParamsModel(size=bot_input.chunk_params.size, overlap=bot_input.chunk_params.overlap),
             sync_status=sync_status,
             sync_status_reason="",
             sync_last_exec_id="",

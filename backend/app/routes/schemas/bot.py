@@ -9,9 +9,9 @@ type_sync_status = Literal[
     "QUEUED", "RUNNING", "SUCCEEDED", "FAILED", "ORIGINAL_NOT_FOUND"
 ]
 
-class ChunkParams(BaseSchema):
-    size: int
-    overlap: int
+class EmbeddingParams(BaseSchema):
+    chunk_size: int
+    chunk_overlap: int
 
 class Knowledge(BaseSchema):
     source_urls: list[str]
@@ -34,7 +34,7 @@ class BotInput(BaseSchema):
     instruction: str
     description: str | None
     knowledge: Knowledge | None
-    chunk_params : ChunkParams | None
+    embedding_params : EmbeddingParams | None
 
 
 class BotModifyInput(BaseSchema):
