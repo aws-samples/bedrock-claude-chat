@@ -48,6 +48,7 @@ def store_bot(user_id: str, custom_bot: BotModel):
         "CreateTime": decimal(custom_bot.create_time),
         "LastBotUsed": decimal(custom_bot.last_used_time),
         "IsPinned": custom_bot.is_pinned,
+        "EmbeddingParams": custom_bot.embedding_params.model_dump(),
         "Knowledge": custom_bot.knowledge.model_dump(),
         "SyncStatus": custom_bot.sync_status,
         "SyncStatusReason": custom_bot.sync_status_reason,
