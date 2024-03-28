@@ -23,8 +23,8 @@ class BotModel(BaseModel):
     public_bot_id: str | None
     owner_user_id: str
     is_pinned: bool
-    knowledge: KnowledgeModel
     embedding_params: EmbeddingParamsModel
+    knowledge: KnowledgeModel
     sync_status: type_sync_status
     sync_status_reason: str
     sync_last_exec_id: str
