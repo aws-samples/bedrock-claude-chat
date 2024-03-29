@@ -1,47 +1,25 @@
 import sys
 
 sys.path.append(".")
+
 import unittest
 from pprint import pprint
 
+from app.bedrock import calculate_query_embedding
+from app.routes.schemas.conversation import type_model_name
 
-from app.routes.schemas.conversation import (
-    ChatInput,
-    Content,
-    MessageInput,
-    type_model_name,
-)
-from app.usecases.chat import (
-    propose_conversation_title,
-)
+MODEL: type_model_name = "claude-v3-sonnet"
 
 
-MODEL: type_model_name = "mistral-7b-instruct"
+class TestBedrock(unittest.TestCase):
+    def test_calculate_query_embedding(self):
+        question = "こんにちは"
+        embeddings = calculate_query_embedding(question)
+        # NOTE: cohere outputs a list of 1024 floats
+        self.assertEqual(len(embeddings), 1024)
+        self.assertEqual(type(embeddings), list)
+        self.assertEqual(type(embeddings[0]), float)
 
-
-class TestConversationTitlePropose(unittest.TestCase):
-    def test_converstation_title_propose(self):
-        chat_input = ChatInput(
-            conversation_id="test_conversation_id",
-            message=MessageInput(
-                role="user",
-                content=[
-                    Content(
-                        content_type="text",
-                        body="あなたの名前は何ですか？",
-                        media_type=None,
-                    )
-                ],
-                model=MODEL,
-                parent_message_id=None,
-                message_id=None,
-            ),
-            bot_id=None,
-        )
-        output = propose_conversation_title(user_id="user1",
-                                            conversation_id=chat_input.conversation_id, model=MODEL)
-        self.output = output
-        pprint(output)
 
 if __name__ == "__main__":
     unittest.main()
