@@ -52,7 +52,7 @@ class BotModifyOutput(BaseSchema):
     title: str
     instruction: str
     description: str
-    embedding_params: EmbeddingParams | None
+    embedding_params: EmbeddingParams
     knowledge: Knowledge
 
 
