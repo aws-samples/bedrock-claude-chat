@@ -32,12 +32,14 @@
 ## 🚀 まずはお試し
 
 - us-east-1 リージョンにて、[Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > `Anthropic / Claude 3 Haiku`, `Anthropic / Claude 3 Sonnet`, `Cohere / Embed Multilingual`をチェックし、`Save changes`をクリックします
+
 <details>
 <summary>スクリーンショット</summary>
 
 ![](./imgs/model_screenshot.png)
 
 </details>
+
 - [CloudShell](https://console.aws.amazon.com/cloudshell/home)をデプロイしたいリージョン (ap-northeast-1など) で開きます
 
 - 下記のコマンドでデプロイ実行します
@@ -236,6 +238,10 @@ const userPool = new UserPool(this, "UserPool", {
   },
 });
 ```
+
+### 外部のアイデンティティプロバイダー
+
+このサンプルは外部のアイデンティティプロバイダーをサポートしています。現在、Google のみをサポートしています。設定するには、[こちら](./SET_UP_IDP_ja.md)をご覧ください。
 
 ### ローカルでの開発について
 

@@ -1,4 +1,4 @@
-import { CfnOutput, RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
+import { CfnOutput, RemovalPolicy, StackProps } from "aws-cdk-lib";
 import {
   BlockPublicAccess,
   Bucket,
@@ -17,6 +17,7 @@ import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { DbConfig, Embedding } from "./constructs/embedding";
 import { VectorStore } from "./constructs/vectorstore";
 import { UsageAnalysis } from "./constructs/usage-analysis";
+import { TIdentityProvider, identityProvider } from "./utils/identityProvider";
 import { ApiPublishCodebuild } from "./constructs/api-publish-codebuild";
 import { WebAclForPublishedApi } from "./constructs/webacl-for-published-api";
 import { VpcConfig } from "./api-publishment-stack";
@@ -25,6 +26,8 @@ export interface BedrockChatStackProps extends StackProps {
   readonly bedrockRegion: string;
   readonly webAclId: string;
   readonly enableUsageAnalysis: boolean;
+  readonly identityProviders: TIdentityProvider[];
+  readonly userPoolDomainPrefix: string;
   readonly publishedApiAllowedIpV4AddressRanges: string[];
   readonly publishedApiAllowedIpV6AddressRanges: string[];
 }
@@ -40,6 +43,7 @@ export class BedrockChatStack extends cdk.Stack {
     const vectorStore = new VectorStore(this, "VectorStore", {
       vpc: vpc,
     });
+    const idp = identityProvider(props.identityProviders);
     // CodeBuild is used for api publication
     const apiPublishCodebuild = new ApiPublishCodebuild(
       this,
@@ -82,6 +86,16 @@ export class BedrockChatStack extends cdk.Stack {
       autoDeleteObjects: true,
     });
 
+    const frontend = new Frontend(this, "Frontend", {
+      accessLogBucket,
+      webAclId: props.webAclId,
+    });
+
+    const auth = new Auth(this, "Auth", {
+      origin: frontend.getOrigin(),
+      userPoolDomainPrefixKey: props.userPoolDomainPrefix,
+      idp,
+    });
     const largeMessageBucket = new Bucket(this, "LargeMessageBucket", {
       encryption: BucketEncryption.S3_MANAGED,
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
@@ -91,7 +105,6 @@ export class BedrockChatStack extends cdk.Stack {
       autoDeleteObjects: true,
     });
 
-    const auth = new Auth(this, "Auth");
     const database = new Database(this, "Database", {
       // Enable PITR to export data to s3 if usage analysis is enabled
       pointInTimeRecovery: props.enableUsageAnalysis,
@@ -130,13 +143,14 @@ export class BedrockChatStack extends cdk.Stack {
       largeMessageBucket,
     });
 
-    const frontend = new Frontend(this, "Frontend", {
+    frontend.buildViteApp({
       backendApiEndpoint: backendApi.api.apiEndpoint,
       webSocketApiEndpoint: websocket.apiEndpoint,
+      userPoolDomainPrefix: props.userPoolDomainPrefix,
       auth,
-      accessLogBucket,
-      webAclId: props.webAclId,
+      idp,
     });
+
     documentBucket.addCorsRule({
       allowedMethods: [HttpMethods.PUT],
       allowedOrigins: [frontend.getOrigin(), "http://localhost:5173"],
