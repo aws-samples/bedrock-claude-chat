@@ -69,6 +69,7 @@ def update_bot(
     title: str,
     description: str,
     instruction: str,
+    embedding_params: EmbeddingParamsModel,
     knowledge: KnowledgeModel,
     sync_status: type_sync_status,
     sync_status_reason: str,
@@ -82,12 +83,13 @@ def update_bot(
     try:
         response = table.update_item(
             Key={"PK": user_id, "SK": compose_bot_id(user_id, bot_id)},
-            UpdateExpression="SET Title = :title, Description = :description, Instruction = :instruction, Knowledge = :knowledge, SyncStatus = :sync_status, SyncStatusReason = :sync_status_reason",
+            UpdateExpression="SET Title = :title, Description = :description, Instruction = :instruction,EmbeddingParams = embedding_params, Knowledge = :knowledge, SyncStatus = :sync_status, SyncStatusReason = :sync_status_reason",
             ExpressionAttributeValues={
                 ":title": title,
                 ":description": description,
                 ":instruction": instruction,
                 ":knowledge": knowledge.model_dump(),
+                ":embedding_params": embedding_params.model_dump(),
                 ":sync_status": sync_status,
                 ":sync_status_reason": sync_status_reason,
             },

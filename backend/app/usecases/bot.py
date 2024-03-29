@@ -83,8 +83,6 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             len(bot_input.knowledge.source_urls) > 0
             or len(bot_input.knowledge.sitemap_urls) > 0
             or len(bot_input.knowledge.filenames) > 0
-            or len(bot_input.embedding_params.chunk_size) > 0
-            or len(bot_input.embedding_params.chunk_overlap) > 0
         )
     )
     sync_status: type_sync_status = "QUEUED" if has_knowledge else "SUCCEEDED"
@@ -189,6 +187,10 @@ def modify_owned_bot(
         title=modify_input.title,
         instruction=modify_input.instruction,
         description=modify_input.description if modify_input.description else "",
+        embedding_params=EmbeddingParamsModel(
+            chunk_size=modify_input.embedding_params.chunk_size,
+            chunk_overlap=modify_input.embedding_params.chunk_overlap,
+        ),
         knowledge=KnowledgeModel(
             source_urls=source_urls,
             sitemap_urls=sitemap_urls,

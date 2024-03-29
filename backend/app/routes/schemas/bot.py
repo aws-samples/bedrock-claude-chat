@@ -43,6 +43,7 @@ class BotModifyInput(BaseSchema):
     title: str
     instruction: str
     description: str | None
+    embedding_params: EmbeddingParams
     knowledge: KnowledgeDiffInput | None
 
 
@@ -51,6 +52,7 @@ class BotModifyOutput(BaseSchema):
     title: str
     instruction: str
     description: str
+    embedding_params: EmbeddingParams | None
     knowledge: Knowledge
 
 
