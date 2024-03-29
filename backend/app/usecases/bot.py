@@ -34,6 +34,7 @@ from app.routes.schemas.bot import (
     BotModifyOutput,
     BotOutput,
     BotSummaryOutput,
+    EmbeddingParams,
     Knowledge,
     type_sync_status,
 )
@@ -138,7 +139,8 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         is_pinned=False,
         owned=True,
         embedding_params=EmbeddingParamsModel(
-            chunk_size=bot_input.chunk_size, chunk_overlap=bot_input.chunk_overlap
+            chunk_size=bot_input.embedding_params.chunk_size,
+            chunk_overlap=bot_input.embedding_params.chunk_overlap,
         ),
         knowledge=Knowledge(
             source_urls=source_urls, sitemap_urls=sitemap_urls, filenames=filenames
@@ -201,6 +203,10 @@ def modify_owned_bot(
         title=modify_input.title,
         instruction=modify_input.instruction,
         description=modify_input.description if modify_input.description else "",
+        embedding_params=EmbeddingParams(
+            chunk_size=modify_input.embedding_params.chunk_size,
+            chunk_overlap=modify_input.embedding_params.chunk_overlap,
+        ),
         knowledge=Knowledge(
             source_urls=source_urls,
             sitemap_urls=sitemap_urls,

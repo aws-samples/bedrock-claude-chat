@@ -1,5 +1,7 @@
 import sys
 
+from backend.app.config import EMBEDDING_CONFIG
+
 sys.path.append(".")
 import unittest
 
@@ -13,7 +15,12 @@ from app.repositories.custom_bot import (
     update_bot_publication,
     update_bot_visibility,
 )
-from app.repositories.models.custom_bot import BotAliasModel, BotModel, KnowledgeModel
+from app.repositories.models.custom_bot import (
+    BotAliasModel,
+    BotModel,
+    EmbeddingParamsModel,
+    KnowledgeModel,
+)
 from app.usecases.bot import fetch_all_bots_by_user_id, issue_presigned_url
 
 
@@ -39,6 +46,10 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             is_pinned=True,
             public_bot_id=None,
             owner_user_id="user1",
+            embedding_params=EmbeddingParamsModel(
+                chunk_size=EMBEDDING_CONFIG["chunk_size"],
+                chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+            ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -62,6 +73,10 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             is_pinned=True,
             public_bot_id=None,
             owner_user_id="user1",
+            embedding_params=EmbeddingParamsModel(
+                chunk_size=EMBEDDING_CONFIG["chunk_size"],
+                chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+            ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -85,6 +100,10 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             is_pinned=False,
             public_bot_id=None,
             owner_user_id="user1",
+            embedding_params=EmbeddingParamsModel(
+                chunk_size=EMBEDDING_CONFIG["chunk_size"],
+                chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+            ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -108,6 +127,10 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             is_pinned=False,
             public_bot_id=None,
             owner_user_id="user1",
+            embedding_params=EmbeddingParamsModel(
+                chunk_size=EMBEDDING_CONFIG["chunk_size"],
+                chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+            ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -130,6 +153,10 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             is_pinned=True,
             public_bot_id=None,
             owner_user_id="user2",
+            embedding_params=EmbeddingParamsModel(
+                chunk_size=EMBEDDING_CONFIG["chunk_size"],
+                chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+            ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -152,6 +179,10 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             is_pinned=True,
             public_bot_id=None,
             owner_user_id="user2",
+            embedding_params=EmbeddingParamsModel(
+                chunk_size=EMBEDDING_CONFIG["chunk_size"],
+                chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+            ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
