@@ -3,9 +3,10 @@ import logging
 from copy import deepcopy
 from datetime import datetime
 from typing import Literal
+from langchain_community.llms import Bedrock
 
 from anthropic.types import Message as AnthropicMessage
-from app.bedrock import calculate_price, compose_args_for_anthropic_client, get_model_id
+from app.bedrock import calculate_price, compose_args
 from app.config import GENERATION_CONFIG, SEARCH_CONFIG
 from app.repositories.conversation import (
     RecordNotFoundError,
@@ -27,7 +28,7 @@ from app.routes.schemas.conversation import (
     MessageOutput,
 )
 from app.usecases.bot import fetch_bot, modify_bot_last_used_time
-from app.utils import get_anthropic_client, get_current_time, is_running_on_lambda
+from app.utils import get_bedrock_client, get_anthropic_client, get_current_time, is_running_on_lambda, is_anthropic_model, is_mistral_model
 from app.vector_search import SearchResult, search_related_docs
 from ulid import ULID
 
@@ -217,8 +218,38 @@ In addition, *YOU MUST OBEY THE FOLLOWING RULE*:
     return conversation_with_context
 
 
+def get_bedrock_response(args: dict):
+
+    client = get_bedrock_client()
+    messages = args['messages']
+
+    logger.debug(f"model: {args['model']}")
+
+    prompt = "\n".join(
+        [message['content'][0]['text'] for message in messages if message['content'][0]['type'] == "text"])
+
+    if is_mistral_model(args['model']):
+        prompt = f"<s>[INST] {prompt} [/INST]"
+
+    logger.info(f"Final Prompt: {prompt}")
+    body = json.dumps({
+        "prompt": prompt,
+        "max_tokens": args['max_tokens'],
+        "temperature": args['temperature'],
+    })
+
+    response = client.invoke_model(
+        modelId=args['model'],
+        body=body,
+    )
+    response_body = json.loads(response.get('body').read())
+    logger.debug(response_body)
+    return response_body
+
+
 def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     user_msg_id, conversation, bot = prepare_conversation(user_id, chat_input)
+
 
     message_map = conversation.message_map
     if bot and is_running_on_lambda():
@@ -238,20 +269,28 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     messages = trace_to_root(
         node_id=chat_input.message.parent_message_id, message_map=message_map
     )
+    messages = []
     messages.append(chat_input.message)  # type: ignore
-
     # Create payload to invoke Bedrock
-    args = compose_args_for_anthropic_client(
+    args = compose_args(
         messages=messages,
         model=chat_input.message.model,
         instruction=(
             message_map["instruction"].content[0].body
             if "instruction" in message_map
             else None
-        ),
+        )
     )
-    response: AnthropicMessage = client.messages.create(**args)
-    reply_txt = response.content[0].text
+    logger.debug(args)
+    print(args)  # TODO: remove it before commit
+
+    if is_anthropic_model(args['model']):
+        client = get_anthropic_client()
+        response: AnthropicMessage = client.messages.create(**args)
+        reply_txt = response.content[0].text
+    else:
+        response: AnthropicMessage = get_bedrock_response(args)['outputs'][0]
+        reply_txt = response['text']
 
     # Issue id for new assistant message
     assistant_msg_id = str(ULID())
@@ -270,11 +309,16 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     conversation.message_map[user_msg_id].children.append(assistant_msg_id)
     conversation.last_message_id = assistant_msg_id
 
-    # Update total pricing
-    input_tokens = response.usage.input_tokens
-    output_tokens = response.usage.output_tokens
+    if is_anthropic_model(args['model']):
+        # Update total pricing
+        input_tokens = response.usage.input_tokens
+        output_tokens = response.usage.output_tokens
 
-    logger.debug(f"Input tokens: {input_tokens}, Output tokens: {output_tokens}")
+        logger.debug(
+            f"Input tokens: {input_tokens}, Output tokens: {output_tokens}")
+    else:
+        input_tokens = 256
+        output_tokens = 1024
 
     price = calculate_price(chat_input.message.model, input_tokens, output_tokens)
     conversation.total_price += price
@@ -314,7 +358,7 @@ def propose_conversation_title(
     user_id: str,
     conversation_id: str,
     model: Literal[
-        "claude-instant-v1", "claude-v2", "claude-v3-sonnet", "claude-v3-haiku"
+        "claude-instant-v1", "claude-v2", "claude-v3-sonnet", "claude-v3-haiku", "mistral-7b-instruct", "mixtral-8x7b-instruct"
     ] = "claude-v3-haiku",
 ) -> str:
     PROMPT = """Reading the conversation above, what is the appropriate title for the conversation? When answering the title, please follow the rules below:
@@ -351,12 +395,16 @@ def propose_conversation_title(
     messages.append(new_message)
 
     # Invoke Bedrock
-    args = compose_args_for_anthropic_client(
+    args = compose_args(
         messages=messages,
         model=model,
     )
-    response = client.messages.create(**args)
-    reply_txt = response.content[0].text
+    if is_anthropic_model(args['model']):
+        response = client.messages.create(**args)
+        reply_txt = response.content[0].text
+    else:
+        response: AnthropicMessage = get_bedrock_response(args)['outputs'][0]
+        reply_txt = response['text']
     return reply_txt
 
 

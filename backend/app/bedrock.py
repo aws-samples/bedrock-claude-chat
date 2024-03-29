@@ -3,9 +3,9 @@ import logging
 import os
 
 from anthropic import AnthropicBedrock
-from app.config import ANTHROPIC_PRICING, EMBEDDING_CONFIG, GENERATION_CONFIG
+from app.config import ANTHROPIC_PRICING, EMBEDDING_CONFIG, GENERATION_CONFIG, MISTRAL_GENERATION_CONFIG
 from app.repositories.models.conversation import MessageModel
-from app.utils import get_bedrock_client
+from app.utils import get_bedrock_client, is_anthropic_model
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +14,54 @@ BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
 
 client = get_bedrock_client()
 anthropic_client = AnthropicBedrock()
+
+
+def compose_args(
+    messages: list[MessageModel],
+    model: str,
+    instruction: str | None = None,
+    stream: bool = False,
+) -> dict:
+    # if model is from Anthropic, use AnthropicBedrock
+    # otherwise, use bedrock client
+    model_id = get_model_id(model)
+    if is_anthropic_model(model_id):
+        return compose_args_for_anthropic_client(
+            messages, model, instruction, stream
+        )
+    else:
+        return compose_args_for_other_client(messages, model, instruction, stream)
+
+def compose_args_for_other_client(
+    messages: list[MessageModel],
+    model: str,
+    instruction: str | None = None,
+    stream: bool = False,
+) -> dict:
+    arg_messages = []
+    for message in messages:
+        if message.role not in ["system", "instruction"]:
+            content: list[dict] = []
+            for c in message.content:
+                if c.content_type == "text":
+                    content.append(
+                        {
+                            "type": "text",
+                            "text": c.body,
+                        }
+                    )
+            m = {"role": message.role, "content": content}
+            arg_messages.append(m)
+
+    args = {
+        **MISTRAL_GENERATION_CONFIG,
+        "model": get_model_id(model),
+        "messages": arg_messages,
+        "stream": stream,
+    }
+    if instruction:
+        args["system"] = instruction
+    return args
 
 
 def compose_args_for_anthropic_client(
@@ -89,6 +137,12 @@ def get_model_id(model: str) -> str:
         return "anthropic.claude-3-sonnet-20240229-v1:0"
     elif model == "claude-v3-haiku":
         return "anthropic.claude-3-haiku-20240307-v1:0"
+    elif model == "claude-v2-1":
+        return "anthropic.claude-v2:1"
+    elif model == "mistral-7b-instruct":
+        return "mistral.mistral-7b-instruct-v0:2"
+    elif model == "mixtral-8x7b-instruct":
+        return "mistral.mixtral-8x7b-instruct-v0:1"
     else:
         raise NotImplementedError()
 

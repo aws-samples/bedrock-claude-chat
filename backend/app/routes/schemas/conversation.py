@@ -4,7 +4,8 @@ from app.routes.schemas.base import BaseSchema
 from pydantic import Field
 
 type_model_name = Literal[
-    "claude-instant-v1", "claude-v2", "claude-v3-sonnet", "claude-v3-haiku"
+    "claude-instant-v1", "claude-v2", "claude-v3-sonnet", "claude-v3-haiku", "claude-v2-1", "mistral-7b-instruct",
+    "mixtral-8x7b-instruct"
 ]
 
 

@@ -4,6 +4,7 @@
     "include": ["**", "../backend"],
     "exclude": [
       "README.md",
+      "**/__pycache__/*.pyc",
       "cdk*.json",
       "**/*.d.ts",
       "**/*.js",

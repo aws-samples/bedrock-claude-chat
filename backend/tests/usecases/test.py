@@ -1,53 +1,18 @@
-import json
 import os
-
+import json
 import boto3
 
-DDB_ENDPOINT_URL = os.environ.get("DDB_ENDPOINT_URL")
+DDB_ENDPOINT_URL = os.environ.get("DDB_ENDPOINT_URL", "localhost:8080")
+# DDB_ENDPOINT_URL = "http://localhost:8080"
 TABLE_NAME = os.environ.get("TABLE_NAME", "")
 ACCOUNT = os.environ.get("ACCOUNT", "")
-REGION = os.environ.get("REGION", "ap-northeast-1")
+REGION = os.environ.get("REGION", "ddblocal")
 TABLE_ACCESS_ROLE_ARN = os.environ.get("TABLE_ACCESS_ROLE_ARN", "")
 TRANSACTION_BATCH_SIZE = 25
 
-
-class RecordNotFoundError(Exception):
-    pass
-
-
-class RecordAccessNotAllowedError(Exception):
-    pass
-
-
-class ResourceConflictError(Exception):
-    pass
-
-
-def compose_conv_id(user_id: str, conversation_id: str):
-    # Add user_id prefix for row level security to match with `LeadingKeys` condition
-    return f"{user_id}#CONV#{conversation_id}"
-
-
-def decompose_conv_id(conv_id: str):
-    return conv_id.split("#")[-1]
-
-
-def compose_bot_id(user_id: str, bot_id: str):
-    # Add user_id prefix for row level security to match with `LeadingKeys` condition
-    return f"{user_id}#BOT#{bot_id}"
-
-
-def decompose_bot_id(composed_bot_id: str):
-    return composed_bot_id.split("#")[-1]
-
-
-def compose_bot_alias_id(user_id: str, alias_id: str):
-    # Add user_id prefix for row level security to match with `LeadingKeys` condition
-    return f"{user_id}#BOT_ALIAS#{alias_id}"
-
-
-def decompose_bot_alias_id(composed_alias_id: str):
-    return composed_alias_id.split("#")[-1]
+print(f"REGION: {REGION}")
+print(f"TABLE_NAME: {TABLE_NAME}")
+print(f"DDB_DDB_ENDPOINT_URL: {DDB_ENDPOINT_URL}")
 
 
 def _get_aws_resource(service_name, user_id=None):
@@ -61,7 +26,7 @@ def _get_aws_resource(service_name, user_id=None):
                 endpoint_url=DDB_ENDPOINT_URL,
                 aws_access_key_id="key",
                 aws_secret_access_key="key",
-                region_name="ddblocal",
+                region_name=REGION,
             )
         else:
             return boto3.resource(service_name)
@@ -111,18 +76,5 @@ def _get_aws_resource(service_name, user_id=None):
     return session.resource(service_name, region_name=REGION)
 
 
-def _get_dynamodb_client(user_id=None):
-    """Get a DynamoDB client, optionally with row-level access control."""
-    return _get_aws_resource("dynamodb", user_id=user_id).meta.client
-
-
-def _get_table_client(user_id):
-    """Get a DynamoDB table client with row-level access."""
-    return _get_aws_resource("dynamodb", user_id=user_id).Table(TABLE_NAME)
-
-
-def _get_table_public_client():
-    """Get a DynamoDB table client.
-    Warning: No row-level access. Use for only limited use case.
-    """
-    return _get_aws_resource("dynamodb").Table(TABLE_NAME)
+client = _get_aws_resource("dynamodb").Table(TABLE_NAME)
+print(client.table_status)

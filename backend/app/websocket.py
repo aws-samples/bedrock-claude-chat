@@ -7,7 +7,7 @@ from decimal import Decimal as decimal
 import boto3
 from anthropic.types import ContentBlockDeltaEvent, MessageDeltaEvent, MessageStopEvent
 from app.auth import verify_token
-from app.bedrock import calculate_price, compose_args_for_anthropic_client
+from app.bedrock import calculate_price, compose_args
 from app.config import GENERATION_CONFIG, SEARCH_CONFIG
 from app.repositories.conversation import RecordNotFoundError, store_conversation
 from app.repositories.models.conversation import ContentModel, MessageModel
@@ -90,7 +90,7 @@ def process_chat_input(
     messages.append(chat_input.message)  # type: ignore
 
     # Invoke Bedrock
-    args = compose_args_for_anthropic_client(
+    args = compose_args(
         messages,
         chat_input.message.model,
         instruction=(

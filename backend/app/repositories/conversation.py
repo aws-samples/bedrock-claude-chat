@@ -97,6 +97,8 @@ def find_conversation_by_user_id(user_id: str) -> list[ConversationMeta]:
     logger.info(f"Finding conversations for user: {user_id}")
     table = _get_table_client(user_id)
 
+    print(f"####### #{table}")
+
     query_params = {
         "KeyConditionExpression": Key("PK").eq(user_id)
         # NOTE: Need SK to fetch only conversations
