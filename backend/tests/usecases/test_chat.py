@@ -6,7 +6,7 @@ from pprint import pprint
 
 from anthropic.types import MessageStopEvent
 from app.bedrock import get_model_id
-from app.config import GENERATION_CONFIG
+from app.config import EMBEDDING_CONFIG, GENERATION_CONFIG
 from app.repositories.conversation import (
     delete_conversation_by_id,
     delete_conversation_by_user_id,
@@ -24,7 +24,7 @@ from app.repositories.models.conversation import (
     ConversationModel,
     MessageModel,
 )
-from app.repositories.models.custom_bot import BotModel, KnowledgeModel
+from app.repositories.models.custom_bot import BotModel, EmbeddingParamsModel, KnowledgeModel
 from app.routes.schemas.conversation import (
     ChatInput,
     ChatOutput,
@@ -469,6 +469,10 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             is_pinned=True,
             public_bot_id=None,
             owner_user_id="user1",
+            embedding_params=EmbeddingParamsModel(
+                chunk_size=EMBEDDING_CONFIG["chunk_size"],
+                chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+            ),
             knowledge=KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[]),
             sync_status="SUCCEEDED",
             sync_status_reason="",
@@ -488,6 +492,10 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             is_pinned=True,
             public_bot_id="public1",
             owner_user_id="user2",
+            embedding_params=EmbeddingParamsModel(
+                chunk_size=EMBEDDING_CONFIG["chunk_size"],
+                chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+            ),
             knowledge=KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[]),
             sync_status="SUCCEEDED",
             sync_status_reason="",
