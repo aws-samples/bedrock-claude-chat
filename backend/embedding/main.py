@@ -131,8 +131,8 @@ def main(
     sitemap_urls: list[str],
     source_urls: list[str],
     filenames: list[str],
-    chunk_size: int = EMBEDDING_CONFIG["chunk_size"],
-    chunk_overlap: int = EMBEDDING_CONFIG["chunk_overlap"],
+    chunk_size: int,
+    chunk_overlap: int,
 ):
     exec_id = ""
     try:
@@ -232,9 +232,9 @@ if __name__ == "__main__":
     sitemap_urls = [x["S"] for x in knowledge["sitemap_urls"]["L"]]
     source_urls = [x["S"] for x in knowledge["source_urls"]["L"]]
     filenames = [x["S"] for x in knowledge["filenames"]["L"]]
-    chunk_size = [x["S"] for x in embedding_params["chunk_size"]["L"]]
-    chunk_overlap = [x["S"] for x in embedding_params["chunk_overlap"]["L"]]
-    
+    chunk_size = embedding_params["chunk_size"]
+    chunk_overlap = embedding_params["chunk_overlap"]
+
     sk = new_image["SK"]["S"]
     bot_id = decompose_bot_id(sk)
 
@@ -245,4 +245,4 @@ if __name__ == "__main__":
     print(f"sitemap_urls to crawl: {sitemap_urls}")
     print(f"filenames: {filenames}")
 
-    main(user_id, bot_id, sitemap_urls, source_urls, filenames)
+    main(user_id, bot_id, sitemap_urls, source_urls, filenames, chunk_size, chunk_overlap)
