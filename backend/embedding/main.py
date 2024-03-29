@@ -247,5 +247,6 @@ if __name__ == "__main__":
     print(f"chunk_size: {chunk_size}")
     print(f"chunk_overlap: {chunk_overlap}")
 
-
-    main(user_id, bot_id, sitemap_urls, source_urls, filenames, chunk_size, chunk_overlap)
+    main(
+        user_id, bot_id, sitemap_urls, source_urls, filenames, chunk_size, chunk_overlap
+    )
