@@ -282,7 +282,6 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         )
     )
     logger.debug(args)
-    print(args)  # TODO: remove it before commit
 
     if is_anthropic_model(args['model']):
         client = get_anthropic_client()
