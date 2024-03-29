@@ -268,8 +268,8 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     messages = trace_to_root(
         node_id=chat_input.message.parent_message_id, message_map=message_map
     )
-    messages = []
     messages.append(chat_input.message)  # type: ignore
+
     # Create payload to invoke Bedrock
     args = compose_args(
         messages=messages,
