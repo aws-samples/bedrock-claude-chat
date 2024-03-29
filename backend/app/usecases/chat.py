@@ -3,7 +3,6 @@ import logging
 from copy import deepcopy
 from datetime import datetime
 from typing import Literal
-from langchain_community.llms import Bedrock
 
 from anthropic.types import Message as AnthropicMessage
 from app.bedrock import calculate_price, compose_args
