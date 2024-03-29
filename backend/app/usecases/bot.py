@@ -78,7 +78,6 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
     current_time = get_current_time()
     has_knowledge = (
         bot_input.knowledge
-        and bot_input.embedding_params
         and (
             len(bot_input.knowledge.source_urls) > 0
             or len(bot_input.knowledge.sitemap_urls) > 0
@@ -117,7 +116,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             is_pinned=False,
             owner_user_id=user_id,  # Owner is the creator
             embedding_params=EmbeddingParamsModel(
-                chunk_size=bot_input.chunk_size, chunk_overlap=bot_input.chunk_overlap
+                chunk_size=bot_input.embedding_params.chunk_size, chunk_overlap=bot_input.embedding_params.chunk_overlap
             ),
             knowledge=KnowledgeModel(
                 source_urls=source_urls, sitemap_urls=sitemap_urls, filenames=filenames

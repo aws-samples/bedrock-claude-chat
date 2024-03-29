@@ -35,7 +35,7 @@ class BotInput(BaseSchema):
     title: str
     instruction: str
     description: str | None
-    embedding_params: EmbeddingParams | None
+    embedding_params: EmbeddingParams
     knowledge: Knowledge | None
 
 
