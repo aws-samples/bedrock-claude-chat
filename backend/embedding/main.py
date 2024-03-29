@@ -228,10 +228,13 @@ if __name__ == "__main__":
     new_image = json.loads(args.new_image)
 
     knowledge = new_image["Knowledge"]["M"]
+    embedding_params = new_image["EmbeddingParams"]["M"]
     sitemap_urls = [x["S"] for x in knowledge["sitemap_urls"]["L"]]
     source_urls = [x["S"] for x in knowledge["source_urls"]["L"]]
     filenames = [x["S"] for x in knowledge["filenames"]["L"]]
-
+    chunk_size = [x["S"] for x in embedding_params["chunk_size"]["L"]]
+    chunk_overlap = [x["S"] for x in embedding_params["chunk_overlap"]["L"]]
+    
     sk = new_image["SK"]["S"]
     bot_id = decompose_bot_id(sk)
 
