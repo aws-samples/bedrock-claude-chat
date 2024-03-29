@@ -138,7 +138,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         is_public=False,
         is_pinned=False,
         owned=True,
-        embedding_params=EmbeddingParamsModel(
+        embedding_params=EmbeddingParams(
             chunk_size=bot_input.embedding_params.chunk_size,
             chunk_overlap=bot_input.embedding_params.chunk_overlap,
         ),
