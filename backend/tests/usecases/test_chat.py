@@ -24,7 +24,11 @@ from app.repositories.models.conversation import (
     ConversationModel,
     MessageModel,
 )
-from app.repositories.models.custom_bot import BotModel, EmbeddingParamsModel, KnowledgeModel
+from app.repositories.models.custom_bot import (
+    BotModel,
+    EmbeddingParamsModel,
+    KnowledgeModel,
+)
 from app.routes.schemas.conversation import (
     ChatInput,
     ChatOutput,
