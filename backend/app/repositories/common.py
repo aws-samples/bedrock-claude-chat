@@ -61,7 +61,7 @@ def _get_aws_resource(service_name, user_id=None):
                 endpoint_url=DDB_ENDPOINT_URL,
                 aws_access_key_id="key",
                 aws_secret_access_key="key",
-                region_name="ddblocal",
+                region_name=REGION,
             )
         else:
             return boto3.resource(service_name)
