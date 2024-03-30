@@ -5,7 +5,6 @@ import os
 
 import pg8000
 import requests
-from app.config import EMBEDDING_CONFIG
 from app.repositories.common import _get_table_client
 from app.repositories.custom_bot import compose_bot_id, decompose_bot_id
 from app.routes.schemas.bot import type_sync_status

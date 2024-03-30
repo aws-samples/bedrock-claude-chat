@@ -1,9 +1,10 @@
 import sys
 
-from backend.app.config import EMBEDDING_CONFIG
 
 sys.path.append(".")
 import unittest
+
+from app.config import EMBEDDING_CONFIG
 
 from app.repositories.custom_bot import (
     delete_alias_by_id,
