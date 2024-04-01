@@ -301,7 +301,7 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
         is_pinned=item["IsPinned"],
         public_bot_id=None if "PublicBotId" not in item else item["PublicBotId"],
         owner_user_id=user_id,
-        embedding_params=EmbeddingParamsModel(**item["EmbeddingPrams"]),
+        embedding_params=EmbeddingParamsModel(**item["EmbeddingParams"]),
         knowledge=KnowledgeModel(**item["Knowledge"]),
         sync_status=item["SyncStatus"],
         sync_status_reason=item["SyncStatusReason"],
