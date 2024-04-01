@@ -1,6 +1,7 @@
 import sys
-import unittest
 
+sys.path.append(".")
+import unittest
 
 from app.config import EMBEDDING_CONFIG
 from app.repositories.models.custom_bot import (
@@ -10,7 +11,9 @@ from app.repositories.models.custom_bot import (
     KnowledgeModel,
 )
 
-sys.path.append(".")
+
+
+
 
 
 def create_private_bot(id, is_pinned, owner_user_id):
