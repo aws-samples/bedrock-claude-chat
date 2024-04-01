@@ -46,7 +46,7 @@ const updateIndex = async (dbConfig) => {
     console.log("Connected to the database.");
 
     // Recreate the index
-    await client.query("DROP INDEX IF EXISTS idx_items_embedding ON items;");
+    await client.query("DROP INDEX IF EXISTS idx_items_embedding;");
 
     // `lists` parameter controls the nubmer of clusters created during index building.
     // Also it's important to choose the same index method as the one used in the query.
@@ -56,9 +56,6 @@ const updateIndex = async (dbConfig) => {
     // As we will have dataset with more than one million items, the number of list should be sqrt(~rows) (see blog above)
     await client.query(`CREATE INDEX idx_items_embedding ON items
                          USING ivfflat (embedding vector_l2_ops) WITH (lists = 1100);`);
-
-    // Create pgvector table and index
-    // Ref:
   } catch (err) {
     console.error("Error executing SQL: ", err.stack);
     throw err;

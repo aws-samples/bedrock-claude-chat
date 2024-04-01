@@ -4,6 +4,7 @@ import logging
 import os
 
 import pg8000
+import pg8000.native
 import requests
 from app.config import EMBEDDING_CONFIG
 from app.repositories.common import _get_table_client
@@ -63,7 +64,7 @@ def clear_postgres(
                 delete_query = "DELETE FROM items WHERE botid = %s"
                 cursor.execute(delete_query, (bot_id,))
             elif len(expired_sources) > 0:
-                delete_query = "DELETE FROM items WHERE botid = :1 AND source IN (SELECT UNNEST(CAST(:2 AS TEXT[])))"
+                delete_query = "DELETE FROM items WHERE botid = %s AND source IN (SELECT UNNEST(CAST(%s AS TEXT[])))"
                 expired_source_array = list(set(expired_sources))
                 print(f"Expired sources: {expired_source_array}")
                 cursor.execute(delete_query, (bot_id, expired_source_array))
@@ -100,7 +101,6 @@ def insert_to_postgres(
                 zip(sources, contents, embeddings)
             ):
                 id_ = str(ULID())
-                print(f"Preview of content {i}: {content[:200]}")
                 values_to_insert.append(
                     (id_, bot_id, content, source, json.dumps(embedding))
                 )
@@ -135,7 +135,7 @@ def update_sync_status(
 
 
 def update_index():
-    conn = pg8000.connect(
+    conn = pg8000.native.Connection(
         database=DB_NAME,
         host=DB_HOST,
         port=DB_PORT,
@@ -144,14 +144,27 @@ def update_index():
     )
 
     try:
+        # # Recreate the index
+        # dropIndexquery = "DROP INDEX IF EXISTS idx_items_embedding;"
+
+        # # `lists` parameter controls the nubmer of clusters created during index building.
+        # # Also it's important to choose the same index method as the one used in the query.
+        # # Here we use L2 distance for the index method.
+        # # See: https://txt.cohere.com/introducing-embed-v3/
+
+        # # As we will have dataset with more than one million items, the number of list should be sqrt(~rows) (see blog above)
+        # indexQuery = "CREATE INDEX idx_items_embedding ON items USING ivfflat (embedding vector_l2_ops) WITH (lists = 1100);"
+
+        # print("Dropping the index...")
+        # conn.run(dropIndexquery)
+        # print("Creating the index...")
+        # conn.run(indexQuery)
+
         print("Updating the index...")
-        with conn.cursor() as cursor:
-            reindex_query = "REINDEX INDEX CONCURRENTLY idx_items_embedding;"
-            cursor.execute(reindex_query)
-        conn.commit()
+        reindex_query = "REINDEX INDEX CONCURRENTLY idx_items_embedding;"
+        conn.run(reindex_query)
         print("Successfully updated the index.")
     except Exception as e:
-        conn.rollback()
         raise e
     finally:
         conn.close()
@@ -250,10 +263,9 @@ def main(
             clear_all
         )
 
-        failures = 0
-
         # Calculate embeddings using LangChain
         if len(sitemap_urls) + len(source_urls) + len(filenames) > 0:
+            failures = 0
             if len(source_urls) > 0:
                 embed(UrlLoader(source_urls))
             if len(sitemap_urls) > 0:
@@ -276,10 +288,10 @@ def main(
                         print(f"[ERROR] Failed to embed {filename}: {e}")
                         failures += 1
 
-        if failures > len(filenames) * 0.2:
-            raise Exception("Too many failures.")
+            if failures > len(filenames) * 0.2:
+                raise Exception("Too many failures.")
 
-        update_index()
+            update_index()
 
         status_reason = "Successfully updated vector store."
     except Exception as e:

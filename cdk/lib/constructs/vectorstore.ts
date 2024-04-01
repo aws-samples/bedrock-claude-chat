@@ -35,7 +35,7 @@ export class VectorStore extends Construct {
       securityGroups: [sg],
       defaultDatabaseName: DB_NAME,
       serverlessV2MinCapacity: 2.0,
-      serverlessV2MaxCapacity: 5.0,
+      serverlessV2MaxCapacity: 16.0,
       writer: rds.ClusterInstance.serverlessV2("writer", {
         autoMinorVersionUpgrade: false,
       }),

@@ -140,7 +140,12 @@ def get_rag_query(conversation, user_msg_id, chat_input):
     except Exception as e:
         print(f"Failed to invoke bedrock: {e}")
         # Use the last user message as the query
-        return conversation.message_map[user_msg_id].content[-1].body
+        return (
+            conversation
+            .message_map[user_msg_id]
+            .content[-1]
+            .body.strip('>').strip('<')
+        )
 
 
 def process_chat_input(
