@@ -12,6 +12,7 @@ from app.repositories.models.custom_bot import (
     KnowledgeModel,
 )
 
+
 def create_private_bot(id, is_pinned, owner_user_id):
     return BotModel(
         id=id,
@@ -84,6 +85,7 @@ def create_bot_alias(id, original_bot_id, is_pinned):
         sync_status="RUNNING",
         has_knowledge=True,
     )
+
 
 if __name__ == "__main__":
     unittest.main()
