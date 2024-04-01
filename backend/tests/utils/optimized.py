@@ -1,9 +1,12 @@
 import sys
-
-sys.path.append(".")
 import unittest
 
+
+sys.path.append(".")
+
 from app.config import EMBEDDING_CONFIG
+
+
 from app.repositories.models.custom_bot import (
     BotAliasModel,
     BotModel,
