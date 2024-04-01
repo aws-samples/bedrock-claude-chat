@@ -12,10 +12,6 @@ from app.repositories.models.custom_bot import (
 )
 
 
-
-
-
-
 def create_private_bot(id, is_pinned, owner_user_id):
     return BotModel(
         id=id,
