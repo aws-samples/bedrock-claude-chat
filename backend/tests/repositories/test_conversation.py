@@ -1,9 +1,11 @@
 import sys
 import unittest
 
-from backend.app.config import EMBEDDING_CONFIG
 
 sys.path.append(".")
+
+from app.config import EMBEDDING_CONFIG
+
 from app.repositories.conversation import (
     ContentModel,
     ConversationModel,
