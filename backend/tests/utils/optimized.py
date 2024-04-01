@@ -2,7 +2,6 @@ import sys
 import unittest
 
 
-
 from app.config import EMBEDDING_CONFIG
 from app.repositories.models.custom_bot import (
     BotAliasModel,
@@ -12,7 +11,6 @@ from app.repositories.models.custom_bot import (
 )
 
 sys.path.append(".")
-
 
 
 def create_private_bot(id, is_pinned, owner_user_id):
