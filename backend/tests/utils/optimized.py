@@ -1,7 +1,6 @@
 import sys
 import unittest
 
-
 sys.path.append(".")
 
 from app.config import EMBEDDING_CONFIG
