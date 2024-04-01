@@ -588,6 +588,10 @@ class TestUpdateBotVisibility(unittest.TestCase):
             title="Updated Title",
             description="",
             instruction="",
+            embedding_params=EmbeddingParamsModel(
+                chunk_size=EMBEDDING_CONFIG["chunk_size"],
+                chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+            ),
             knowledge=KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[]),
             sync_status="RUNNING",
             sync_status_reason="",
