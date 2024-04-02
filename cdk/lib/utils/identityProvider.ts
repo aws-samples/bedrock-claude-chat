@@ -4,7 +4,17 @@ import { aws_cognito } from "aws-cdk-lib";
 export type Idp = ReturnType<typeof identityProvider>;
 
 export type TIdentityProvider = {
+  /**
+   * Service name for social providers.
+   */
   service: string;
+  /**
+   * Service name for OIDC. Required when service is "oidc"
+   */
+  serviceName?: string;
+  /**
+   * Secret name of the secret in Secrets Manager.
+   */
   secretName: string;
 };
 
@@ -39,8 +49,11 @@ export const identityProvider = (identityProviders: TIdentityProvider[]) => {
   };
 
   const getSupportedIndetityProviders = () => {
-    return [...getProviders(), { service: "cognito" }].map(({ service }) => {
-      switch (service) {
+    return [
+      ...getProviders(),
+      { service: "cognito", secretName: "" } as TIdentityProvider,
+    ].map((provider) => {
+      switch (provider.service) {
         case "google":
           return aws_cognito.UserPoolClientIdentityProvider.GOOGLE;
         case "facebook":
@@ -51,8 +64,12 @@ export const identityProvider = (identityProviders: TIdentityProvider[]) => {
           return aws_cognito.UserPoolClientIdentityProvider.APPLE;
         case "cognito":
           return aws_cognito.UserPoolClientIdentityProvider.COGNITO;
+        case "oidc":
+          return aws_cognito.UserPoolClientIdentityProvider.custom(
+            provider.serviceName! // already validated
+          );
         default:
-          throw new Error(`Invalid identity provider: ${service}`);
+          throw new Error(`Invalid identity provider: ${provider.service}`);
       }
     });
   };
@@ -77,12 +94,21 @@ const validateSocialProvider = (
   provider: TIdentityProvider
 ):
   | Effect.Effect<never, InvalidSocialProvider, never>
-  | Effect.Effect<TIdentityProvider, never, never> =>
-  !["google", "facebook", "amazon", "apple"].includes(provider.service)
-    ? Effect.fail({
-        type: "InvalidSocialProvider",
-      })
-    : Effect.succeed(provider);
+  | Effect.Effect<TIdentityProvider, never, never> => {
+  if (
+    !["google", "facebook", "amazon", "apple", "oidc"].includes(
+      provider.service
+    )
+  ) {
+    return Effect.fail({ type: "InvalidSocialProvider" });
+  }
+
+  if (provider.service === "oidc" && !provider.serviceName) {
+    return Effect.fail({ type: "InvalidSocialProvider" });
+  }
+
+  return Effect.succeed(provider);
+};
 
 const isIdpAsArray = (
   identityProviders: TIdentityProvider[]

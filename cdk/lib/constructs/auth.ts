@@ -5,11 +5,12 @@ import {
   UserPoolClient,
   UserPoolIdentityProviderGoogle,
   CfnUserPoolGroup,
+  UserPoolIdentityProviderOidc,
 } from "aws-cdk-lib/aws-cognito";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 
 import { Construct } from "constructs";
-import { Idp } from "../utils/identityProvider";
+import { Idp, TIdentityProvider } from "../utils/identityProvider";
 
 export interface AuthProps {
   readonly origin: string;
@@ -59,42 +60,77 @@ export class Auth extends Construct {
 
     const client = userPool.addClient(`Client`, clientProps);
 
+    const configureProvider = (
+      provider: TIdentityProvider,
+      userPool: UserPool,
+      client: UserPoolClient
+    ) => {
+      const secret = secretsmanager.Secret.fromSecretNameV2(
+        this,
+        "Secret",
+        provider.secretName
+      );
+
+      const clientId = secret
+        .secretValueFromJson("clientId")
+        .unsafeUnwrap()
+        .toString();
+      const clientSecret = secret.secretValueFromJson("clientSecret");
+
+      switch (provider.service) {
+        case "google": {
+          const googleProvider = new UserPoolIdentityProviderGoogle(
+            this,
+            "GoogleProvider",
+            {
+              userPool,
+              clientId,
+              clientSecretValue: clientSecret,
+              scopes: ["openid", "email"],
+              attributeMapping: {
+                email: ProviderAttribute.GOOGLE_EMAIL,
+                // Add more attribute mappings as needed
+              },
+            }
+          );
+
+          client.node.addDependency(googleProvider);
+          break;
+        }
+        case "oidc": {
+          const issuerUrl = secret
+            .secretValueFromJson("issuerUrl")
+            .unsafeUnwrap()
+            .toString();
+
+          const oidcProvider = new UserPoolIdentityProviderOidc(
+            this,
+            "OidcProvider",
+            {
+              userPool,
+              clientId,
+              clientSecret: clientSecret.unsafeUnwrap().toString(),
+              issuerUrl,
+              attributeMapping: {
+                email: ProviderAttribute.other("email"),
+                // Add more attribute mappings as needed
+              },
+              scopes: ["openid", "email"],
+              // Configure other optional properties as needed
+            }
+          );
+
+          client.node.addDependency(oidcProvider);
+          break;
+        }
+        default:
+          throw new Error(`Unsupported identity provider: ${provider.service}`);
+      }
+    };
+
     if (props.idp.isExist()) {
       for (const provider of props.idp.getProviders()) {
-        switch (provider.service) {
-          case "google": {
-            const secret = secretsmanager.Secret.fromSecretNameV2(
-              this,
-              "Secret",
-              provider.secretName
-            );
-
-            const clientId = secret
-              .secretValueFromJson("clientId")
-              .unsafeUnwrap()
-              .toString();
-            const clientSecret = secret.secretValueFromJson("clientSecret");
-
-            const googleProvider = new UserPoolIdentityProviderGoogle(
-              this,
-              "GoogleProvider",
-              {
-                userPool,
-                clientId: clientId,
-                clientSecretValue: clientSecret,
-                scopes: ["openid", "email"],
-                attributeMapping: {
-                  email: ProviderAttribute.GOOGLE_EMAIL,
-                },
-              }
-            );
-
-            client.node.addDependency(googleProvider);
-          }
-          // set other providers
-          default:
-            continue;
-        }
+        configureProvider(provider, userPool, client);
       }
 
       userPool.addDomain("UserPool", {
