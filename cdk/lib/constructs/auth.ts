@@ -4,6 +4,9 @@ import {
   UserPool,
   UserPoolClient,
   UserPoolIdentityProviderGoogle,
+  UserPoolIdentityProviderSaml,
+  UserPoolIdentityProviderSamlMetadata,
+  UserPoolClientIdentityProvider,
   CfnUserPoolGroup,
 } from "aws-cdk-lib/aws-cognito";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
@@ -57,11 +60,33 @@ export class Auth extends Construct {
       };
     })();
 
-    const client = userPool.addClient(`Client`, clientProps);
+    const providers: (UserPoolIdentityProviderGoogle | UserPoolIdentityProviderSaml)[] = [];
 
     if (props.idp.isExist()) {
       for (const provider of props.idp.getProviders()) {
         switch (provider.service) {
+          case "okta": {
+            const secret = secretsmanager.Secret.fromSecretNameV2(
+              this,
+              "OktaSecret",
+              provider.secretName
+            );
+
+            const metadataUrl = secret.secretValueFromJson("metadataUrl").toString();
+            if (!metadataUrl) {
+              throw new Error("Metadata URL is required for OKTA SAML provider");
+            }
+
+            const oktaProvider = new UserPoolIdentityProviderSaml(this, "OktaProvider", {
+              userPool: userPool,
+              attributeMapping: {
+                email: ProviderAttribute.other("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"),
+              },
+              metadata: UserPoolIdentityProviderSamlMetadata.url(metadataUrl),
+            });
+
+            providers.push(oktaProvider);
+          }
           case "google": {
             const secret = secretsmanager.Secret.fromSecretNameV2(
               this,
@@ -89,7 +114,7 @@ export class Auth extends Construct {
               }
             );
 
-            client.node.addDependency(googleProvider);
+            providers.push(googleProvider);
           }
           // set other providers
           default:
@@ -97,11 +122,28 @@ export class Auth extends Construct {
         }
       }
 
+      const client = userPool.addClient(`Client`, {
+        ...clientProps,
+        supportedIdentityProviders: [
+          ...props.idp.getSupportedIndetityProviders(),
+          ...providers
+            .filter((provider) => provider instanceof UserPoolIdentityProviderSaml)
+            .map((provider) => UserPoolClientIdentityProvider.custom(provider.providerName)),
+        ],
+      });
+
+      for (const provider of providers) {
+        client.node.addDependency(provider);
+      }
+
       userPool.addDomain("UserPool", {
         cognitoDomain: {
           domainPrefix: props.userPoolDomainPrefixKey,
         },
       });
+      this.client = client;
+    } else {
+      this.client = userPool.addClient(`Client`, clientProps);
     }
 
     const adminGroup = new CfnUserPoolGroup(this, "AdminGroup", {
@@ -118,16 +160,14 @@ export class Auth extends Construct {
       }
     );
 
-    this.client = client;
     this.userPool = userPool;
 
     new CfnOutput(this, "UserPoolId", { value: userPool.userPoolId });
-    new CfnOutput(this, "UserPoolClientId", { value: client.userPoolClientId });
+    new CfnOutput(this, "UserPoolClientId", { value: this.client.userPoolClientId });
     if (props.idp.isExist())
       new CfnOutput(this, "ApprovedRedirectURI", {
-        value: `https://${props.userPoolDomainPrefixKey}.auth.${
-          Stack.of(userPool).region
-        }.amazoncognito.com/oauth2/idpresponse`,
+        value: `https://${props.userPoolDomainPrefixKey}.auth.${Stack.of(userPool).region
+          }.amazoncognito.com/oauth2/idpresponse`,
       });
   }
 }
