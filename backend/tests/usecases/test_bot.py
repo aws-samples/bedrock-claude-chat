@@ -1,12 +1,12 @@
 import sys
 
+sys.path.insert(0,".")
 
-sys.path.append(".")
 import unittest
 
 from pydantic import BaseModel
 
-from app.tests.utils.optimized import (
+from tests.utils.optimized import (
     create_bot_alias,
     create_private_bot,
     create_public_bot,
