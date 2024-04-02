@@ -14,12 +14,14 @@ from app.repositories.models.custom_bot import (
 )
 
 
-def create_private_bot(id, is_pinned, owner_user_id):
+def create_private_bot(
+    id, is_pinned, owner_user_id, instruction="Test Bot Prompt", sync_status="RUNNING"
+):
     return BotModel(
         id=id,
         title="Test Bot",
         description="Test Bot Description",
-        instruction="Test Bot Prompt",
+        instruction=instruction,
         create_time=1627984879.9,
         last_used_time=1627984879.9,
         # Pinned
@@ -35,7 +37,7 @@ def create_private_bot(id, is_pinned, owner_user_id):
             sitemap_urls=["https://aws.amazon.sitemap.xml"],
             filenames=["test.txt"],
         ),
-        sync_status="RUNNING",
+        sync_status=sync_status,
         sync_status_reason="reason",
         sync_last_exec_id="",
         published_api_stack_name=None,
@@ -44,16 +46,22 @@ def create_private_bot(id, is_pinned, owner_user_id):
     )
 
 
-def create_public_bot(id, is_pinned, owner_user_id):
+def create_public_bot(
+    id,
+    is_pinned,
+    owner_user_id,
+    public_bot_id=None,
+    instruction="Test Public Bot Prompt",
+):
     return BotModel(
         id=id,
         title="Test Public Bot",
         description="Test Public Bot Description",
-        instruction="Test Public Bot Prompt",
+        instruction=instruction,
         create_time=1627984879.9,
         last_used_time=1627984879.9,
         is_pinned=is_pinned,
-        public_bot_id=None,
+        public_bot_id=public_bot_id,
         owner_user_id=owner_user_id,
         embedding_params=EmbeddingParamsModel(
             chunk_size=EMBEDDING_CONFIG["chunk_size"],
@@ -86,6 +94,13 @@ def create_bot_alias(id, original_bot_id, is_pinned):
         sync_status="RUNNING",
         has_knowledge=True,
     )
+
+
+create_instruction_template = (
+    lambda condition: "いついかなる時も、"
+    + condition
+    + "返答してください。日本語以外の言語は認めません。"
+)
 
 
 if __name__ == "__main__":
