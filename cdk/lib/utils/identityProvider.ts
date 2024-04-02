@@ -83,12 +83,16 @@ export const identityProvider = (identityProviders: TIdentityProvider[]) => {
   const checkCustomOidcEnabled = () =>
     getProviders().some(({ service }) => service === "oidc");
 
+  const getCustomOidcProviderName = () =>
+    getProviders().find(({ service }) => service === "oidc")?.serviceName;
+
   return {
     isExist,
     getProviders,
     getSupportedIndetityProviders,
-    checkCustomOidcEnabled,
     getSocialProviders,
+    checkCustomOidcEnabled,
+    getCustomOidcProviderName,
   };
 };
 

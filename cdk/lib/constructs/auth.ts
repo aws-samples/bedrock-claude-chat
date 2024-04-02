@@ -79,6 +79,7 @@ export class Auth extends Construct {
       const clientSecret = secret.secretValueFromJson("clientSecret");
 
       switch (provider.service) {
+        // Currently only Google and custom OIDC are supported
         case "google": {
           const googleProvider = new UserPoolIdentityProviderGoogle(
             this,
@@ -90,13 +91,10 @@ export class Auth extends Construct {
               scopes: ["openid", "email"],
               attributeMapping: {
                 email: ProviderAttribute.GOOGLE_EMAIL,
-                // Add more attribute mappings as needed
               },
             }
           );
-
           client.node.addDependency(googleProvider);
-          break;
         }
         case "oidc": {
           const issuerUrl = secret
@@ -108,24 +106,21 @@ export class Auth extends Construct {
             this,
             "OidcProvider",
             {
+              name: provider.serviceName,
               userPool,
               clientId,
               clientSecret: clientSecret.unsafeUnwrap().toString(),
               issuerUrl,
               attributeMapping: {
-                email: ProviderAttribute.other("email"),
-                // Add more attribute mappings as needed
+                // This is an example of mapping the email attribute.
+                // Replace this with the actual idp attribute key.
+                email: ProviderAttribute.other("EMAIL"),
               },
               scopes: ["openid", "email"],
-              // Configure other optional properties as needed
             }
           );
-
           client.node.addDependency(oidcProvider);
-          break;
         }
-        default:
-          throw new Error(`Unsupported identity provider: ${provider.service}`);
       }
     };
 
