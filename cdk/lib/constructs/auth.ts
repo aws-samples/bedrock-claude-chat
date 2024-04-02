@@ -30,7 +30,8 @@ export class Auth extends Construct {
         requireDigits: true,
         minLength: 8,
       },
-      selfSignUpEnabled: true,
+      // Disable if identity providers are configured
+      selfSignUpEnabled: !props.idp.isExist(),
       signInAliases: {
         username: false,
         email: true,

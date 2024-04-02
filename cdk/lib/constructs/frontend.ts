@@ -112,6 +112,7 @@ export class Frontend extends Construct {
         VITE_APP_REDIRECT_SIGNOUT_URL: this.getOrigin(),
         VITE_APP_COGNITO_DOMAIN: cognitoDomain,
         VITE_APP_SOCIAL_PROVIDERS: idp.getSocialProviders(),
+        VITE_APP_CUSTOM_OIDC_ENABLED: idp.checkCustomOidcEnabled(),
       };
       return { ...defaultProps, ...oAuthProps };
     })();

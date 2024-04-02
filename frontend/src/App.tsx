@@ -16,6 +16,9 @@ import { useTranslation } from 'react-i18next';
 import './i18n';
 import { validateSocialProvider } from './utils/SocialProviderUtils';
 
+const customOidcEnabled =
+  import.meta.env.VITE_APP_CUSTOM_OIDC_ENABLED === 'true';
+
 const App: React.FC = () => {
   const { t, i18n } = useTranslation();
 
@@ -71,14 +74,14 @@ const App: React.FC = () => {
         ),
       }}>
       {({ signOut }) => (
-        <div className="relative flex h-dvh w-screen bg-aws-paper">
+        <div className="h-dvh relative flex w-screen bg-aws-paper">
           <ChatListDrawer
             onSignOut={() => {
               signOut ? signOut() : null;
             }}
           />
 
-          <main className="relative min-h-dvh flex-1 overflow-y-hidden transition-width">
+          <main className="min-h-dvh relative flex-1 overflow-y-hidden transition-width">
             <header className="visible flex h-12 w-full items-center bg-aws-squid-ink p-3 text-lg text-aws-font-color-white lg:hidden lg:h-0">
               <button
                 className="mr-2 rounded-full p-2 hover:brightness-50 focus:outline-none focus:ring-1 "
