@@ -15,7 +15,6 @@ import {
   UpdateBotVisibilityResponse,
 } from '../@types/bot';
 import useHttp from './useHttp';
-import { EMBEDDING_CONFIG } from '../constants';
 
 const useBotApi = () => {
   const http = useHttp();
@@ -52,22 +51,10 @@ const useBotApi = () => {
       );
     },
     registerBot: (params: RegisterBotRequest) => {
-      return http.post<RegisterBotResponse>('bot', {
-        ...params,
-        embeddingParams: {
-          chunkSize: EMBEDDING_CONFIG.chunkSize,
-          chunkOverlap: EMBEDDING_CONFIG.chunkOverlap,
-        },
-      });
+      return http.post<RegisterBotResponse>('bot', params);
     },
     updateBot: (botId: string, params: UpdateBotRequest) => {
-      return http.patch<UpdateBotResponse>(`bot/${botId}`, {
-        ...params,
-        embeddingParams: {
-          chunkSize: EMBEDDING_CONFIG.chunkSize,
-          chunkOverlap: EMBEDDING_CONFIG.chunkOverlap,
-        },
-      });
+      return http.patch<UpdateBotResponse>(`bot/${botId}`, params);
     },
     updateBotPinned: (botId: string, params: UpdateBotPinnedRequest) => {
       return http.patch<UpdateBotPinnedResponse>(`bot/${botId}/pinned`, params);

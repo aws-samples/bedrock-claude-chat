@@ -232,8 +232,8 @@ if __name__ == "__main__":
     sitemap_urls = [x["S"] for x in knowledge["sitemap_urls"]["L"]]
     source_urls = [x["S"] for x in knowledge["source_urls"]["L"]]
     filenames = [x["S"] for x in knowledge["filenames"]["L"]]
-    chunk_size = embedding_params["chunk_size"]
-    chunk_overlap = embedding_params["chunk_overlap"]
+    chunk_size = embedding_params["chunk_size"]["N"]
+    chunk_overlap = embedding_params["chunk_overlap"]["N"]
 
     sk = new_image["SK"]["S"]
     bot_id = decompose_bot_id(sk)

@@ -13,6 +13,7 @@ import Alert from '../components/Alert';
 import KnowledgeFileUploader from '../components/KnowledgeFileUploader';
 import { BotFile } from '../@types/bot';
 import { ulid } from 'ulid';
+import { EMBEDDING_CONFIG } from '../constants';
 
 const BotEditPage: React.FC = () => {
   const { t } = useTranslation();
@@ -204,6 +205,10 @@ const BotEditPage: React.FC = () => {
       title,
       description,
       instruction,
+      embeddingParams: {
+        chunkSize: EMBEDDING_CONFIG.chunkSize,
+        chunkOverlap: EMBEDDING_CONFIG.chunkOverlap,
+      },
       knowledge: {
         sourceUrls: urls.filter((s) => s !== ''),
         // Sitemap cannot be used yet.
@@ -235,6 +240,10 @@ const BotEditPage: React.FC = () => {
         title,
         description,
         instruction,
+        embeddingParams: {
+          chunkSize: EMBEDDING_CONFIG.chunkSize,
+          chunkOverlap: EMBEDDING_CONFIG.chunkOverlap,
+        },
         knowledge: {
           sourceUrls: urls.filter((s) => s !== ''),
           // Sitemap cannot be used yet.

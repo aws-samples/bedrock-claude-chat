@@ -38,8 +38,6 @@ from app.routes.schemas.bot import (
     Knowledge,
     type_sync_status,
 )
-
-from app.usecases.utils.get_chunk_params import get_chunk_size, get_chunk_overlap
 from app.utils import (
     compose_upload_document_s3_path,
     compose_upload_temp_s3_path,
@@ -105,8 +103,17 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         )
         filenames = bot_input.knowledge.filenames
 
-    chunk_size = get_chunk_size(bot_input)
-    chunk_overlap = get_chunk_overlap(bot_input)
+    chunk_size = (
+        bot_input.embedding_params.chunk_size
+        if bot_input.embedding_params
+        else EMBEDDING_CONFIG["chunk_size"]
+    )
+
+    chunk_overlap = (
+        bot_input.embedding_params.chunk_overlap
+        if bot_input.embedding_params
+        else EMBEDDING_CONFIG["chunk_overlap"]
+    )
 
     store_bot(
         user_id,
@@ -187,8 +194,17 @@ def modify_owned_bot(
             + modify_input.knowledge.unchanged_filenames
         )
 
-    chunk_size = get_chunk_size(modify_input)
-    chunk_overlap = get_chunk_overlap(modify_input)
+    chunk_size = (
+        modify_input.embedding_params.chunk_size
+        if modify_input.embedding_params
+        else EMBEDDING_CONFIG["chunk_size"]
+    )
+
+    chunk_overlap = (
+        modify_input.embedding_params.chunk_overlap
+        if modify_input.embedding_params
+        else EMBEDDING_CONFIG["chunk_overlap"]
+    )
 
     update_bot(
         user_id,
