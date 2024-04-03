@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 import InputText from '../components/InputText';
 import Button from '../components/Button';
@@ -11,10 +17,26 @@ import ButtonIcon from '../components/ButtonIcon';
 import { produce } from 'immer';
 import Alert from '../components/Alert';
 import KnowledgeFileUploader from '../components/KnowledgeFileUploader';
-import { BotFile } from '../@types/bot';
+import { BotFile, EmdeddingPrams } from '../@types/bot';
 import { ulid } from 'ulid';
 import { EMBEDDING_CONFIG } from '../constants';
+import { Slider } from '../components/Slider';
 
+export type Action =
+  | { type: 'CHANGE_CHUNK_SIZE'; payload: number }
+  | { type: 'CHANGE_CHUNK_OVERLAP'; payload: number };
+
+const embeddingParamsReducer = (state: EmdeddingPrams, action: Action) => {
+  switch (action.type) {
+    case 'CHANGE_CHUNK_SIZE':
+      return { ...state, chunkSize: action.payload };
+    case 'CHANGE_CHUNK_OVERLAP':
+      return { ...state, chunkOverlap: action.payload };
+
+    default:
+      return state;
+  }
+};
 const BotEditPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -28,6 +50,10 @@ const BotEditPage: React.FC = () => {
   const [instruction, setInstruction] = useState('');
   const [urls, setUrls] = useState<string[]>(['']);
   const [files, setFiles] = useState<BotFile[]>([]);
+  const [embeddingParams, dispath] = useReducer(embeddingParamsReducer, {
+    chunkSize: EMBEDDING_CONFIG.chunkSize,
+    chunkOverlap: EMBEDDING_CONFIG.chunkOverlap,
+  });
   const [addedFilenames, setAddedFilenames] = useState<string[]>([]);
   const [unchangedFilenames, setUnchangedFilenames] = useState<string[]>([]);
   const [deletedFilenames, setDeletedFilenames] = useState<string[]>([]);
@@ -61,6 +87,14 @@ const BotEditPage: React.FC = () => {
               status: 'UPLOADED',
             }))
           );
+          dispath({
+            type: 'CHANGE_CHUNK_SIZE',
+            payload: bot.embeddingParams.chunkSize,
+          });
+          dispath({
+            type: 'CHANGE_CHUNK_OVERLAP',
+            payload: bot.embeddingParams.chunkOverlap,
+          });
           setUnchangedFilenames([...bot.knowledge.filenames]);
           if (bot.syncStatus === 'FAILED') {
             setErrorMessage(bot.syncStatusReason);
@@ -206,8 +240,8 @@ const BotEditPage: React.FC = () => {
       description,
       instruction,
       embeddingParams: {
-        chunkSize: EMBEDDING_CONFIG.chunkSize,
-        chunkOverlap: EMBEDDING_CONFIG.chunkOverlap,
+        chunkSize: embeddingParams.chunkSize,
+        chunkOverlap: embeddingParams.chunkOverlap,
       },
       knowledge: {
         sourceUrls: urls.filter((s) => s !== ''),
@@ -241,8 +275,8 @@ const BotEditPage: React.FC = () => {
         description,
         instruction,
         embeddingParams: {
-          chunkSize: EMBEDDING_CONFIG.chunkSize,
-          chunkOverlap: EMBEDDING_CONFIG.chunkOverlap,
+          chunkSize: embeddingParams.chunkSize,
+          chunkOverlap: embeddingParams.chunkOverlap,
         },
         knowledge: {
           sourceUrls: urls.filter((s) => s !== ''),
@@ -407,6 +441,43 @@ const BotEditPage: React.FC = () => {
                   </div>
                 </div>
               </div>
+
+              <div className="font-semibold">{t('embeddingSetting.title')}</div>
+              <div className="text-sm text-aws-font-color/50">
+                {t('bot.help.embeddingParams')}
+              </div>
+              <Slider
+                value={embeddingParams.chunkSize}
+                description=""
+                labels={['']}
+                title={t('embeddingSetting.label.chunkSize')}
+                range={{
+                  min: 0,
+                  max: 5000,
+                  div: 100,
+                }}
+                onChange={(chunkSize) =>
+                  dispath({ type: 'CHANGE_CHUNK_SIZE', payload: chunkSize })
+                }
+              />
+
+              <Slider
+                value={embeddingParams.chunkOverlap}
+                description=""
+                labels={['']}
+                title={t('embeddingSetting.label.chunkOverlap')}
+                range={{
+                  min: 50,
+                  max: 1000,
+                  div: 50,
+                }}
+                onChange={(chunkOverlap) =>
+                  dispath({
+                    type: 'CHANGE_CHUNK_OVERLAP',
+                    payload: chunkOverlap,
+                  })
+                }
+              />
 
               <div className="flex justify-between">
                 <Button outlined icon={<PiCaretLeft />} onClick={onClickBack}>
