@@ -48,6 +48,7 @@ from app.utils import (
     get_current_time,
     move_file_in_s3,
 )
+
 from app.config import EMBEDDING_CONFIG
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
