@@ -54,14 +54,8 @@
       "0000:0000:0000:0000:0000:0000:0000:0000/1",
       "8000:0000:0000:0000:0000:0000:0000:0000/1"
     ],
-    "identityProviders": [
-      {
-        "service": "oidc",
-        "serviceName": "amazon-federate-cdk",
-        "secretName": "amazon-federate"
-      }
-    ],
-    "userPoolDomainPrefix": "tksuzuki-bedrock-claude-chat",
+    "identityProviders": [],
+    "userPoolDomainPrefix": "",
     "publishedApiAllowedIpV4AddressRanges": ["0.0.0.0/1", "128.0.0.0/1"],
     "publishedApiAllowedIpV6AddressRanges": [
       "0000:0000:0000:0000:0000:0000:0000:0000/1",
