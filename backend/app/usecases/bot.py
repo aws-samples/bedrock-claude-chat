@@ -39,7 +39,7 @@ from app.routes.schemas.bot import (
     type_sync_status,
 )
 
-from utils.get_chunk_params import get_chunk_size, get_chunk_overlap
+from app.usecases.utils.get_chunk_params import get_chunk_size, get_chunk_overlap
 from app.utils import (
     compose_upload_document_s3_path,
     compose_upload_temp_s3_path,
