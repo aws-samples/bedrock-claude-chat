@@ -3,6 +3,7 @@ import json
 import logging
 import os
 
+from app.config import EMBEDDING_CONFIG
 import pg8000
 import requests
 from app.repositories.common import _get_table_client
@@ -130,8 +131,8 @@ def main(
     sitemap_urls: list[str],
     source_urls: list[str],
     filenames: list[str],
-    chunk_size: int,
-    chunk_overlap: int,
+    chunk_size: int = EMBEDDING_CONFIG["chunk_size"],
+    chunk_overlap: int = EMBEDDING_CONFIG["chunk_overlap"],
 ):
     exec_id = ""
     try:
