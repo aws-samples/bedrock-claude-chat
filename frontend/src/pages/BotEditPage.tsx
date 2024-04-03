@@ -444,6 +444,7 @@ const BotEditPage: React.FC = () => {
               </div>
 
               <ExpandableDrawerGroup
+                isDefaultShow={false}
                 label={t('embeddingSetting.title')}
                 className="py-2">
                 <div className="font-semibold"></div>
