@@ -4,7 +4,7 @@ sys.path.insert(0, ".")
 import unittest
 from pprint import pprint
 
-from tests.utils.optimized import (
+from tests.test_usecases.utils.optimized import (
     create_private_bot,
     create_public_bot,
     create_instruction_template,
@@ -12,7 +12,7 @@ from tests.utils.optimized import (
 
 from anthropic.types import MessageStopEvent
 from app.bedrock import get_model_id
-from app.config import EMBEDDING_CONFIG, GENERATION_CONFIG
+from app.config import GENERATION_CONFIG
 from app.repositories.conversation import (
     delete_conversation_by_id,
     delete_conversation_by_user_id,

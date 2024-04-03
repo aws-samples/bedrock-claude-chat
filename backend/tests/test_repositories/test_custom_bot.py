@@ -5,7 +5,6 @@ sys.path.append(".")
 
 from app.config import EMBEDDING_CONFIG
 
-from pprint import pprint
 
 from app.repositories.custom_bot import (
     delete_alias_by_id,

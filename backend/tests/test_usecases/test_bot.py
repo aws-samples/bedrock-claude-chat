@@ -5,7 +5,7 @@ import unittest
 
 from pydantic import BaseModel
 
-from tests.utils.optimized import (
+from tests.test_usecases.utils.optimized import (
     create_bot_alias,
     create_private_bot,
     create_public_bot,
