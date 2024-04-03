@@ -97,9 +97,7 @@ def create_bot_alias(id, original_bot_id, is_pinned):
 
 
 create_instruction_template = (
-    lambda condition: "いついかなる時も、"
-    + condition
-    + "返答してください。日本語以外の言語は認めません。"
+    lambda condition: f"いついかなる時も、{condition}返答してください。日本語以外の言語は認めません。"
 )
 
 
