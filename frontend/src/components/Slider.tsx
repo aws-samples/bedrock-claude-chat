@@ -9,7 +9,6 @@ interface Props {
     max: number;
     div: number;
   };
-  labels: string[];
   onChange: Dispatch<number>;
 }
 
@@ -18,7 +17,6 @@ export const Slider: FC<Props> = ({
   value,
   description,
   range,
-  labels,
   onChange,
 }) => {
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,13 +42,6 @@ export const Slider: FC<Props> = ({
         value={value}
         onChange={handleChange}
       />
-      <ul className="w mt-2 flex justify-between px-[24px] pb-4 text-neutral-900 dark:text-neutral-500">
-        {labels.map((text) => (
-          <li key={text}>
-            <span>{text}</span>
-          </li>
-        ))}
-      </ul>
     </div>
   );
 };

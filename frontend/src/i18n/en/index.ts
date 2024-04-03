@@ -340,9 +340,15 @@ How would you categorize this email?`,
     },
     embeddingSetting: {
       title: 'Embedding Setting',
-      label: {
-        chunkSize: 'chunk size',
-        chunkOverlap: 'chunk overlap',
+      chunkSize: {
+        label: 'chunk size',
+        description:
+          'The chunk size refers to the size at which a document is divided into smaller segments',
+      },
+      chunkOverlap: {
+        label: 'chunk overlap',
+        description:
+          'Chunk overlap represents the number of shared characters between adjacent chunks.',
       },
     },
     error: {

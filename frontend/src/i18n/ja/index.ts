@@ -344,9 +344,14 @@ const translation = {
     },
     embeddingSetting: {
       title: 'ベクトル埋め込みパラメーター設定',
-      label: {
-        chunkSize: 'チャンクサイズ',
-        chunkOverlap: 'チャンクオーバーラップ',
+      chunkSize: {
+        label: 'チャンクサイズ',
+        description:
+          '文書を一定のサイズの小さな部分に分割する際のサイズを指します。',
+      },
+      chunkOverlap: {
+        label: 'チャンクオーバーラップ',
+        description: '隣接するチャンク間で共有される文字数を指します。',
       },
     },
     error: {

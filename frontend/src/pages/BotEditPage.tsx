@@ -450,38 +450,38 @@ const BotEditPage: React.FC = () => {
                 <div className="text-sm text-aws-font-color/50">
                   {t('bot.help.embeddingParams')}
                 </div>
-                <Slider
-                  value={embeddingParams.chunkSize}
-                  description=""
-                  labels={['']}
-                  title={t('embeddingSetting.label.chunkSize')}
-                  range={{
-                    min: 0,
-                    max: 5000,
-                    div: 100,
-                  }}
-                  onChange={(chunkSize) =>
-                    dispath({ type: 'CHANGE_CHUNK_SIZE', payload: chunkSize })
-                  }
-                />
+                <div className="mt-2">
+                  <Slider
+                    value={embeddingParams.chunkSize}
+                    description={t('embeddingSetting.chunkSize.description')}
+                    title={t('embeddingSetting.chunkSize.label')}
+                    range={{
+                      min: 0,
+                      max: 2000,
+                      div: 100,
+                    }}
+                    onChange={(chunkSize) =>
+                      dispath({ type: 'CHANGE_CHUNK_SIZE', payload: chunkSize })
+                    }
+                  />
 
-                <Slider
-                  value={embeddingParams.chunkOverlap}
-                  description=""
-                  labels={['']}
-                  title={t('embeddingSetting.label.chunkOverlap')}
-                  range={{
-                    min: 50,
-                    max: 1000,
-                    div: 50,
-                  }}
-                  onChange={(chunkOverlap) =>
-                    dispath({
-                      type: 'CHANGE_CHUNK_OVERLAP',
-                      payload: chunkOverlap,
-                    })
-                  }
-                />
+                  <Slider
+                    value={embeddingParams.chunkOverlap}
+                    description={t('embeddingSetting.chunkOverlap.description')}
+                    title={t('embeddingSetting.chunkOverlap.label')}
+                    range={{
+                      min: 50,
+                      max: 1000,
+                      div: 50,
+                    }}
+                    onChange={(chunkOverlap) =>
+                      dispath({
+                        type: 'CHANGE_CHUNK_OVERLAP',
+                        payload: chunkOverlap,
+                      })
+                    }
+                  />
+                </div>
               </ExpandableDrawerGroup>
 
               <div className="flex justify-between">
