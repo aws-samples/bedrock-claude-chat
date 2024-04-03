@@ -251,7 +251,7 @@ const userPool = new UserPool(this, "UserPool", {
 
 ### External Identity Provider
 
-This sample supports external identity provider. Currently we only support Google. To set up, See [SETUP_IDP.md](./docs/SETUP_IDP.md).
+This sample supports external identity provider. Currently we support [Google](./docs/idp/SET_UP_GOOGLE.md) and [custom OIDC provider](./docs/idp/SET_UP_CUSTOM_OIDC.md).
 
 ### Local Development
 

@@ -1,8 +1,9 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, cloneElement, ReactElement } from 'react';
 import { BaseProps } from '../@types/common';
 import { Authenticator } from '@aws-amplify/ui-react';
 import { SocialProvider } from '@aws-amplify/ui';
 import { useTranslation } from 'react-i18next';
+import { useAuthenticator } from '@aws-amplify/ui-react';
 
 type Props = BaseProps & {
   socialProviders: SocialProvider[];
@@ -11,6 +12,7 @@ type Props = BaseProps & {
 
 const AuthAmplify: React.FC<Props> = ({ socialProviders, children }) => {
   const { t } = useTranslation();
+  const { signOut } = useAuthenticator();
   return (
     <Authenticator
       socialProviders={socialProviders}
@@ -21,7 +23,7 @@ const AuthAmplify: React.FC<Props> = ({ socialProviders, children }) => {
           </div>
         ),
       }}>
-      <>{children}</>
+      <>{cloneElement(children as ReactElement, { signOut })}</>
     </Authenticator>
   );
 };

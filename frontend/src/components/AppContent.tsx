@@ -1,36 +1,37 @@
-import React from 'react';
-import { BaseProps } from '../@types/common';
+import React, { useCallback } from 'react';
 import ChatListDrawer from './ChatListDrawer';
+import { BaseProps } from '../@types/common';
 import LazyOutputText from './LazyOutputText';
 import { PiList, PiPlus } from 'react-icons/pi';
 import ButtonIcon from './ButtonIcon';
 import SnackbarProvider from '../providers/SnackbarProvider';
 import { Outlet } from 'react-router-dom';
-import { useAuthenticator } from '@aws-amplify/ui-react';
+import { useNavigate, useParams } from 'react-router-dom';
+import useDrawer from '../hooks/useDrawer';
+import useConversation from '../hooks/useConversation';
+import useChat from '../hooks/useChat';
 
 type Props = BaseProps & {
-  switchDrawer: () => void;
-  onClickNewChat: () => void;
-  conversationId?: string;
-  getTitle: (conversationId: string) => string;
-  isGeneratedTitle: boolean;
+  signOut?: () => void;
 };
 
 const AppContent: React.FC<Props> = (props) => {
-  const { signOut } = useAuthenticator();
-  const {
-    switchDrawer,
-    onClickNewChat,
-    conversationId,
-    getTitle,
-    isGeneratedTitle,
-  } = props;
+  const { switchOpen: switchDrawer } = useDrawer();
+  const navigate = useNavigate();
+  const { conversationId } = useParams();
+  const { getTitle } = useConversation();
+  const { isGeneratedTitle } = useChat();
+
+  const onClickNewChat = useCallback(() => {
+    navigate('/');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="h-dvh relative flex w-screen bg-aws-paper">
       <ChatListDrawer
         onSignOut={() => {
-          signOut ? signOut() : null;
+          props.signOut ? props.signOut() : null;
         }}
       />
 

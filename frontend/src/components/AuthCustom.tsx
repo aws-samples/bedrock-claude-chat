@@ -1,4 +1,10 @@
-import React, { ReactNode, useState, useEffect } from 'react';
+import React, {
+  ReactNode,
+  useState,
+  useEffect,
+  cloneElement,
+  ReactElement,
+} from 'react';
 import { BaseProps } from '../@types/common';
 import { Auth } from 'aws-amplify';
 import { Button, Text, Loader } from '@aws-amplify/ui-react';
@@ -8,7 +14,7 @@ type Props = BaseProps & {
   children: ReactNode;
 };
 
-const AuthCustomOidc: React.FC<Props> = ({ children }) => {
+const AuthCustom: React.FC<Props> = ({ children }) => {
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const { t } = useTranslation();
@@ -28,8 +34,12 @@ const AuthCustomOidc: React.FC<Props> = ({ children }) => {
 
   const signIn = () => {
     Auth.federatedSignIn({
-      customProvider: import.meta.env.VITE_APP_CUSTOM_OIDC_PROVIDER_NAME,
+      customProvider: import.meta.env.VITE_APP_CUSTOM_PROVIDER_NAME,
     });
+  };
+
+  const signOut = () => {
+    Auth.signOut();
   };
 
   return (
@@ -46,14 +56,15 @@ const AuthCustomOidc: React.FC<Props> = ({ children }) => {
             variation="primary"
             onClick={() => signIn()}
             className="mt-6 w-60">
-            Login
+            {t('signIn.button.login')}
           </Button>
         </div>
       ) : (
-        <>{children}</>
+        // Pass the signOut function to the child component
+        <>{cloneElement(children as ReactElement, { signOut })}</>
       )}
     </>
   );
 };
 
-export default AuthCustomOidc;
+export default AuthCustom;

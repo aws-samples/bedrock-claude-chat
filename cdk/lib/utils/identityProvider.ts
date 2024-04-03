@@ -80,10 +80,12 @@ export const identityProvider = (identityProviders: TIdentityProvider[]) => {
       .map(({ service }) => service)
       .join(",");
 
-  const checkCustomOidcEnabled = () =>
+  const checkCustomProviderEnabled = () =>
+    // Currently only support OIDC provider (SAML not supported)
     getProviders().some(({ service }) => service === "oidc");
 
-  const getCustomOidcProviderName = () =>
+  const getCustomProviderName = () =>
+    // Currently only support OIDC provider (SAML not supported)
     getProviders().find(({ service }) => service === "oidc")?.serviceName;
 
   return {
@@ -91,8 +93,8 @@ export const identityProvider = (identityProviders: TIdentityProvider[]) => {
     getProviders,
     getSupportedIndetityProviders,
     getSocialProviders,
-    checkCustomOidcEnabled,
-    getCustomOidcProviderName,
+    checkCustomProviderEnabled,
+    getCustomProviderName,
   };
 };
 

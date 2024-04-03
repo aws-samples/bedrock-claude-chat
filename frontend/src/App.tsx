@@ -1,21 +1,17 @@
-import React, { useCallback, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect } from 'react';
 import { translations } from '@aws-amplify/ui-react';
 import { Amplify, I18n } from 'aws-amplify';
 import '@aws-amplify/ui-react/styles.css';
-import useDrawer from './hooks/useDrawer';
 import AuthAmplify from './components/AuthAmplify';
-import AuthCustomOidc from './components/AuthCustomOidc';
-import useConversation from './hooks/useConversation';
-import useChat from './hooks/useChat';
+import AuthCustom from './components/AuthCustom';
 import { Authenticator } from '@aws-amplify/ui-react';
 import { useTranslation } from 'react-i18next';
 import './i18n';
 import { validateSocialProvider } from './utils/SocialProviderUtils';
 import AppContent from './components/AppContent';
 
-const customOidcEnabled =
-  import.meta.env.VITE_APP_CUSTOM_OIDC_ENABLED === 'true';
+const customProviderEnabled =
+  import.meta.env.VITE_APP_CUSTOM_PROVIDER_ENABLED === 'true';
 const socialProviderFromEnv = import.meta.env.VITE_APP_SOCIAL_PROVIDERS?.split(
   ','
 ).filter(validateSocialProvider);
@@ -47,96 +43,21 @@ const App: React.FC = () => {
   I18n.putVocabularies(translations);
   I18n.setLanguage(i18n.language);
 
-  const { switchOpen: switchDrawer } = useDrawer();
-  const navigate = useNavigate();
-
-  const { conversationId } = useParams();
-  const { getTitle } = useConversation();
-  const { isGeneratedTitle } = useChat();
-
-  const onClickNewChat = useCallback(() => {
-    navigate('/');
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const appContentProps = {
-    switchDrawer,
-    onClickNewChat,
-    conversationId,
-    getTitle,
-    isGeneratedTitle,
-  };
-
   return (
-    <Authenticator.Provider>
-      {customOidcEnabled ? (
-        <AuthCustomOidc>
-          <AppContent {...appContentProps} />
-        </AuthCustomOidc>
+    <>
+      {customProviderEnabled ? (
+        <AuthCustom>
+          <AppContent />
+        </AuthCustom>
       ) : (
-        <AuthAmplify socialProviders={socialProviderFromEnv}>
-          <AppContent {...appContentProps} />
-        </AuthAmplify>
+        <Authenticator.Provider>
+          <AuthAmplify socialProviders={socialProviderFromEnv}>
+            <AppContent />
+          </AuthAmplify>
+        </Authenticator.Provider>
       )}
-    </Authenticator.Provider>
+    </>
   );
-
-  // TODO: remove
-  // return (
-  //   <Authenticator
-  //     socialProviders={socialProviderFromEnv}
-  //     components={{
-  //       Header: () => (
-  //         <div className="mb-5 mt-10 flex justify-center text-3xl text-aws-font-color">
-  //           {t('app.name')}
-  //         </div>
-  //       ),
-  //     }}>
-  //     {({ signOut }) => (
-  //       <div className="h-dvh relative flex w-screen bg-aws-paper">
-  //         <ChatListDrawer
-  //           onSignOut={() => {
-  //             signOut ? signOut() : null;
-  //           }}
-  //         />
-
-  //         <main className="min-h-dvh relative flex-1 overflow-y-hidden transition-width">
-  //           <header className="visible flex h-12 w-full items-center bg-aws-squid-ink p-3 text-lg text-aws-font-color-white lg:hidden lg:h-0">
-  //             <button
-  //               className="mr-2 rounded-full p-2 hover:brightness-50 focus:outline-none focus:ring-1 "
-  //               onClick={() => {
-  //                 switchDrawer();
-  //               }}>
-  //               <PiList />
-  //             </button>
-
-  //             <div className="flex grow justify-center">
-  //               {isGeneratedTitle ? (
-  //                 <>
-  //                   <LazyOutputText text={getTitle(conversationId ?? '')} />
-  //                 </>
-  //               ) : (
-  //                 <>{getTitle(conversationId ?? '')}</>
-  //               )}
-  //             </div>
-
-  //             <ButtonIcon onClick={onClickNewChat}>
-  //               <PiPlus />
-  //             </ButtonIcon>
-  //           </header>
-
-  //           <div
-  //             className="h-full overflow-hidden overflow-y-auto  text-aws-font-color"
-  //             id="main">
-  //             <SnackbarProvider>
-  //               <Outlet />
-  //             </SnackbarProvider>
-  //           </div>
-  //         </main>
-  //       </div>
-  //     )}
-  //   </Authenticator>
-  // );
 };
 
 export default App;
