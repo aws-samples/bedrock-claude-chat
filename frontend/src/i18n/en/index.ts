@@ -59,7 +59,8 @@ const translation = {
             'By specifying the URL of the sitemap, the information obtained through automatically scraping websites within it will be used as Knowledge.',
           file: 'The uploaded files will be used as Knowledge.',
         },
-        embeddingParams: 'More detailed embedding settings are available',
+        embeddingParams:
+          'More detailed embedding parameter settings are available',
       },
       alert: {
         sync: {

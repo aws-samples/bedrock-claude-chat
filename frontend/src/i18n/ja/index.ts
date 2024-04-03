@@ -62,6 +62,8 @@ const translation = {
             'サイトマップのURLを指定すると、そのサイトマップ内のサイトを自動的にスクレイピングして得られた情報がナレッジとして利用されます。',
           file: 'アップロードしたファイルがナレッジとして利用されます。',
         },
+        embeddingParams:
+          'より詳細なベクトル埋め込みパラメーター設定が可能です。',
       },
       alert: {
         sync: {
@@ -338,6 +340,13 @@ const translation = {
       validationError: {
         required: 'この項目は必須入力です。',
         invalidOriginFormat: 'オリジンのフォーマットが異なります。',
+      },
+    },
+    embeddingSetting: {
+      title: 'ベクトル埋め込みパラメーター設定',
+      label: {
+        chunkSize: 'チャンクサイズ',
+        chunkOverlap: 'チャンクオーバーラップ',
       },
     },
     error: {
