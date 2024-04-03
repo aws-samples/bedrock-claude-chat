@@ -21,6 +21,7 @@ import { BotFile, EmdeddingPrams } from '../@types/bot';
 import { ulid } from 'ulid';
 import { EMBEDDING_CONFIG } from '../constants';
 import { Slider } from '../components/Slider';
+import ExpandableDrawerGroup from '../components/ExpandableDrawerGroup';
 
 export type Action =
   | { type: 'CHANGE_CHUNK_SIZE'; payload: number }
@@ -442,42 +443,46 @@ const BotEditPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="font-semibold">{t('embeddingSetting.title')}</div>
-              <div className="text-sm text-aws-font-color/50">
-                {t('bot.help.embeddingParams')}
-              </div>
-              <Slider
-                value={embeddingParams.chunkSize}
-                description=""
-                labels={['']}
-                title={t('embeddingSetting.label.chunkSize')}
-                range={{
-                  min: 0,
-                  max: 5000,
-                  div: 100,
-                }}
-                onChange={(chunkSize) =>
-                  dispath({ type: 'CHANGE_CHUNK_SIZE', payload: chunkSize })
-                }
-              />
+              <ExpandableDrawerGroup
+                label={t('embeddingSetting.title')}
+                className="py-2">
+                <div className="font-semibold"></div>
+                <div className="text-sm text-aws-font-color/50">
+                  {t('bot.help.embeddingParams')}
+                </div>
+                <Slider
+                  value={embeddingParams.chunkSize}
+                  description=""
+                  labels={['']}
+                  title={t('embeddingSetting.label.chunkSize')}
+                  range={{
+                    min: 0,
+                    max: 5000,
+                    div: 100,
+                  }}
+                  onChange={(chunkSize) =>
+                    dispath({ type: 'CHANGE_CHUNK_SIZE', payload: chunkSize })
+                  }
+                />
 
-              <Slider
-                value={embeddingParams.chunkOverlap}
-                description=""
-                labels={['']}
-                title={t('embeddingSetting.label.chunkOverlap')}
-                range={{
-                  min: 50,
-                  max: 1000,
-                  div: 50,
-                }}
-                onChange={(chunkOverlap) =>
-                  dispath({
-                    type: 'CHANGE_CHUNK_OVERLAP',
-                    payload: chunkOverlap,
-                  })
-                }
-              />
+                <Slider
+                  value={embeddingParams.chunkOverlap}
+                  description=""
+                  labels={['']}
+                  title={t('embeddingSetting.label.chunkOverlap')}
+                  range={{
+                    min: 50,
+                    max: 1000,
+                    div: 50,
+                  }}
+                  onChange={(chunkOverlap) =>
+                    dispath({
+                      type: 'CHANGE_CHUNK_OVERLAP',
+                      payload: chunkOverlap,
+                    })
+                  }
+                />
+              </ExpandableDrawerGroup>
 
               <div className="flex justify-between">
                 <Button outlined icon={<PiCaretLeft />} onClick={onClickBack}>
