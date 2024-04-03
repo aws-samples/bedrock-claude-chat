@@ -48,6 +48,7 @@ from app.utils import (
     get_current_time,
     move_file_in_s3,
 )
+from backend.app.config import EMBEDDING_CONFIG
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
 
@@ -101,6 +102,18 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         )
         filenames = bot_input.knowledge.filenames
 
+    chunk_size = (
+        bot_input.embedding_params.chunk_size
+        if bot_input.embedding_params
+        else EMBEDDING_CONFIG["chunk_size"]
+    )
+
+    chunk_overlap = (
+        bot_input.embedding_params.chunk_overlap
+        if bot_input.embedding_params
+        else EMBEDDING_CONFIG["chunk_overlap"]
+    )
+
     store_bot(
         user_id,
         BotModel(
@@ -114,8 +127,8 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             is_pinned=False,
             owner_user_id=user_id,  # Owner is the creator
             embedding_params=EmbeddingParamsModel(
-                chunk_size=bot_input.embedding_params.chunk_size,
-                chunk_overlap=bot_input.embedding_params.chunk_overlap,
+                chunk_size=chunk_size,
+                chunk_overlap=chunk_overlap,
             ),
             knowledge=KnowledgeModel(
                 source_urls=source_urls, sitemap_urls=sitemap_urls, filenames=filenames
@@ -139,8 +152,8 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         is_pinned=False,
         owned=True,
         embedding_params=EmbeddingParams(
-            chunk_size=bot_input.embedding_params.chunk_size,
-            chunk_overlap=bot_input.embedding_params.chunk_overlap,
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
         ),
         knowledge=Knowledge(
             source_urls=source_urls, sitemap_urls=sitemap_urls, filenames=filenames
@@ -180,6 +193,18 @@ def modify_owned_bot(
             + modify_input.knowledge.unchanged_filenames
         )
 
+    chunk_size = (
+        modify_input.embedding_params.chunk_size
+        if modify_input.embedding_params
+        else EMBEDDING_CONFIG["chunk_size"]
+    )
+
+    chunk_overlap = (
+        modify_input.embedding_params.chunk_overlap
+        if modify_input.embedding_params
+        else EMBEDDING_CONFIG["chunk_overlap"]
+    )
+
     update_bot(
         user_id,
         bot_id,
@@ -187,8 +212,8 @@ def modify_owned_bot(
         instruction=modify_input.instruction,
         description=modify_input.description if modify_input.description else "",
         embedding_params=EmbeddingParamsModel(
-            chunk_size=modify_input.embedding_params.chunk_size,
-            chunk_overlap=modify_input.embedding_params.chunk_overlap,
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
         ),
         knowledge=KnowledgeModel(
             source_urls=source_urls,
@@ -204,8 +229,8 @@ def modify_owned_bot(
         instruction=modify_input.instruction,
         description=modify_input.description if modify_input.description else "",
         embedding_params=EmbeddingParams(
-            chunk_size=modify_input.embedding_params.chunk_size,
-            chunk_overlap=modify_input.embedding_params.chunk_overlap,
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
         ),
         knowledge=Knowledge(
             source_urls=source_urls,

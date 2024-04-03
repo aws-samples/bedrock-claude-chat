@@ -20,8 +20,8 @@ export type BotKnowledge = {
 };
 
 export type EmdeddingPrams = {
-  chunk_size: number;
-  chunk_overlap: number;
+  chunkSize: number;
+  chunkOverlap: number;
 };
 
 export type BotKnowledgeDiff = {
