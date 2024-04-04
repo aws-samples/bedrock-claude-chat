@@ -351,6 +351,12 @@ How would you categorize this email?`,
           'Chunk overlap represents the number of shared characters between adjacent chunks.',
       },
       alert: {
+        sync: {
+          error: {
+            title: 'Sentence Splitte Error',
+            body: 'Try again with less chunk overlap value',
+          },
+        },
         validation: {
           error: {
             title: 'Validation Error',

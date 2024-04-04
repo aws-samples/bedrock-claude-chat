@@ -53,6 +53,12 @@ const BotEditPage: React.FC = () => {
     [embeddingParams]
   );
 
+  const isChunkError = useMemo(() => {
+    const pattern =
+      /Got a larger chunk overlap \(\d+\) than chunk size \(\d+\), should be smaller\./;
+    return pattern.test(errorMessage);
+  }, [errorMessage]);
+
   useEffect(() => {
     if (!isNewBot) {
       setIsLoading(true);
@@ -354,7 +360,7 @@ const BotEditPage: React.FC = () => {
                   {t('bot.help.knowledge.overview')}
                 </div>
 
-                {errorMessage !== '' && (
+                {errorMessage !== '' && !isChunkError && (
                   <Alert
                     className="mt-2"
                     severity="error"
@@ -475,6 +481,19 @@ const BotEditPage: React.FC = () => {
                   <>
                     <div className="rounded border bg-light-gray p-2 text-dark-gray">
                       {t('embeddingSetting.alert.validation.error.message')}
+                    </div>
+                  </>
+                </Alert>
+              )}
+
+              {isChunkError && (
+                <Alert
+                  className="mt-2"
+                  severity="error"
+                  title={t('embeddingSetting.alert.sync.error.title')}>
+                  <>
+                    <div className="rounded border bg-light-gray p-2 text-dark-gray">
+                      {t('embeddingSetting.alert.sync.error.body')}
                     </div>
                   </>
                 </Alert>

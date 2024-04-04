@@ -353,6 +353,21 @@ const translation = {
         label: 'チャンクオーバーラップ',
         description: '隣接するチャンク間で共有される文字数を指します。',
       },
+      alert: {
+        sync: {
+          error: {
+            title: '文分割エラー',
+            body: 'チャンクオーバーラップ値を小さくして再試行してください',
+          },
+        },
+        validation: {
+          error: {
+            title: 'バリデーションエラー',
+            message:
+              'チャンクオーバーラップはチャンクサイズより小さく設定する必要があります',
+          },
+        },
+      },
     },
     error: {
       answerResponse: '回答中にエラーが発生しました。',
