@@ -3,7 +3,7 @@ import unittest
 
 sys.path.append(".")
 
-from app.config import EMBEDDING_CONFIG
+from app.config import DEFAULT_EMBEDDING_CONFIG
 
 
 from app.repositories.models.custom_bot import (
@@ -29,8 +29,8 @@ def create_private_bot(
         public_bot_id=None,
         owner_user_id=owner_user_id,
         embedding_params=EmbeddingParamsModel(
-            chunk_size=EMBEDDING_CONFIG["chunk_size"],
-            chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+            chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
+            chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
         ),
         knowledge=KnowledgeModel(
             source_urls=["https://aws.amazon.com/"],
@@ -64,8 +64,8 @@ def create_public_bot(
         public_bot_id=public_bot_id,
         owner_user_id=owner_user_id,
         embedding_params=EmbeddingParamsModel(
-            chunk_size=EMBEDDING_CONFIG["chunk_size"],
-            chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+            chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
+            chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
         ),
         knowledge=KnowledgeModel(
             source_urls=["https://aws.amazon.com/"],

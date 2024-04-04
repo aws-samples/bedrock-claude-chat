@@ -3,7 +3,7 @@ import unittest
 
 sys.path.append(".")
 
-from app.config import EMBEDDING_CONFIG
+from app.config import DEFAULT_EMBEDDING_CONFIG
 
 
 from app.repositories.custom_bot import (
@@ -44,8 +44,8 @@ class TestCustomBotRepository(unittest.TestCase):
             public_bot_id=None,
             owner_user_id="user1",
             embedding_params=EmbeddingParamsModel(
-                chunk_size=EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
+                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -71,10 +71,10 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(bot.last_used_time, 1627984879.9)
         self.assertEqual(bot.is_pinned, False)
         self.assertEqual(
-            bot.embedding_params.chunk_size, EMBEDDING_CONFIG["chunk_size"]
+            bot.embedding_params.chunk_size, DEFAULT_EMBEDDING_CONFIG["chunk_size"]
         )
         self.assertEqual(
-            bot.embedding_params.chunk_overlap, EMBEDDING_CONFIG["chunk_overlap"]
+            bot.embedding_params.chunk_overlap, DEFAULT_EMBEDDING_CONFIG["chunk_overlap"]
         )
         self.assertEqual(bot.knowledge.source_urls, ["https://aws.amazon.com/"])
         self.assertEqual(bot.knowledge.sitemap_urls, ["https://aws.amazon.sitemap.xml"])
@@ -113,8 +113,8 @@ class TestCustomBotRepository(unittest.TestCase):
             public_bot_id=None,
             owner_user_id="user1",
             embedding_params=EmbeddingParamsModel(
-                chunk_size=EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
+                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -149,8 +149,8 @@ class TestCustomBotRepository(unittest.TestCase):
             public_bot_id=None,
             owner_user_id="user1",
             embedding_params=EmbeddingParamsModel(
-                chunk_size=EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
+                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/jp"],
@@ -194,8 +194,8 @@ class TestCustomBotRepository(unittest.TestCase):
             public_bot_id=None,
             owner_user_id="user1",
             embedding_params=EmbeddingParamsModel(
-                chunk_size=EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
+                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/jp"],
@@ -258,8 +258,8 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             public_bot_id=None,
             owner_user_id="user1",
             embedding_params=EmbeddingParamsModel(
-                chunk_size=EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
+                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -285,8 +285,8 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             public_bot_id=None,
             owner_user_id="user1",
             embedding_params=EmbeddingParamsModel(
-                chunk_size=EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
+                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -312,8 +312,8 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             public_bot_id=None,
             owner_user_id="user1",
             embedding_params=EmbeddingParamsModel(
-                chunk_size=EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
+                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -339,8 +339,8 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             public_bot_id=None,
             owner_user_id="user1",
             embedding_params=EmbeddingParamsModel(
-                chunk_size=EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
+                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -365,8 +365,8 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             public_bot_id=None,
             owner_user_id="user2",
             embedding_params=EmbeddingParamsModel(
-                chunk_size=EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
+                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -391,8 +391,8 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             public_bot_id=None,
             owner_user_id="user2",
             embedding_params=EmbeddingParamsModel(
-                chunk_size=EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
+                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -489,8 +489,8 @@ class TestUpdateBotVisibility(unittest.TestCase):
             public_bot_id=None,
             owner_user_id="user1",
             embedding_params=EmbeddingParamsModel(
-                chunk_size=EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
+                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -515,8 +515,8 @@ class TestUpdateBotVisibility(unittest.TestCase):
             public_bot_id=None,
             owner_user_id="user1",
             embedding_params=EmbeddingParamsModel(
-                chunk_size=EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
+                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -541,8 +541,8 @@ class TestUpdateBotVisibility(unittest.TestCase):
             public_bot_id="public1",
             owner_user_id="user2",
             embedding_params=EmbeddingParamsModel(
-                chunk_size=EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
+                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -588,8 +588,8 @@ class TestUpdateBotVisibility(unittest.TestCase):
             description="",
             instruction="",
             embedding_params=EmbeddingParamsModel(
-                chunk_size=EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=EMBEDDING_CONFIG["chunk_overlap"],
+                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
+                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
             ),
             knowledge=KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[]),
             sync_status="RUNNING",

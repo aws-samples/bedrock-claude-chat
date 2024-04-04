@@ -19,7 +19,7 @@ import Alert from '../components/Alert';
 import KnowledgeFileUploader from '../components/KnowledgeFileUploader';
 import { BotFile, EmdeddingPrams } from '../@types/bot';
 import { ulid } from 'ulid';
-import { EMBEDDING_CONFIG } from '../constants';
+import { DEFAULT_EMBEDDING_CONFIG } from '../constants';
 import { Slider } from '../components/Slider';
 import ExpandableDrawerGroup from '../components/ExpandableDrawerGroup';
 
@@ -52,8 +52,8 @@ const BotEditPage: React.FC = () => {
   const [urls, setUrls] = useState<string[]>(['']);
   const [files, setFiles] = useState<BotFile[]>([]);
   const [embeddingParams, dispath] = useReducer(embeddingParamsReducer, {
-    chunkSize: EMBEDDING_CONFIG.chunkSize,
-    chunkOverlap: EMBEDDING_CONFIG.chunkOverlap,
+    chunkSize: DEFAULT_EMBEDDING_CONFIG.chunkSize,
+    chunkOverlap: DEFAULT_EMBEDDING_CONFIG.chunkOverlap,
   });
   const [addedFilenames, setAddedFilenames] = useState<string[]>([]);
   const [unchangedFilenames, setUnchangedFilenames] = useState<string[]>([]);
