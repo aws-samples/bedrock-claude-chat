@@ -8,6 +8,7 @@ import { MessageContentWithChildren } from '../@types/conversation';
 import ButtonIcon from './ButtonIcon';
 import Textarea from './Textarea';
 import Button from './Button';
+import ModalDialog from './ModalDialog';
 import { useTranslation } from 'react-i18next';
 
 type Props = BaseProps & {
@@ -20,6 +21,8 @@ const ChatMessage: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const [isEdit, setIsEdit] = useState(false);
   const [changedContent, setChangedContent] = useState('');
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+  const [isOpenPreviewImage, setIsOpenPreviewImage] = useState(false);
 
   const chatContent = useMemo<MessageContentWithChildren | undefined>(() => {
     return props.chatContent;
@@ -88,9 +91,43 @@ const ChatMessage: React.FC<Props> = (props) => {
         <div className="ml-5 grow ">
           {chatContent?.role === 'user' && !isEdit && (
             <div>
-              {chatContent.content.body.split('\n').map((c, idx) => (
-                <div key={idx}>{c}</div>
-              ))}
+              {chatContent.content.map((content, idx) => {
+                if (content.contentType === 'image') {
+                  const imageUrl = `data:${content.mediaType};base64,${content.body}`;
+                  return (
+                    <img
+                      key={idx}
+                      src={imageUrl}
+                      className="mb-2 h-48 cursor-pointer"
+                      onClick={() => {
+                        setPreviewImageUrl(imageUrl);
+                        setIsOpenPreviewImage(true);
+                      }}
+                    />
+                  );
+                } else {
+                  return (
+                    <React.Fragment key={idx}>
+                      {content.body.split('\n').map((c, idxBody) => (
+                        <div key={idxBody}>{c}</div>
+                      ))}
+                    </React.Fragment>
+                  );
+                }
+              })}
+              <ModalDialog
+                isOpen={isOpenPreviewImage}
+                onClose={() => setIsOpenPreviewImage(false)}
+                // Set image null after transition end
+                widthFromContent={true}
+                onAfterLeave={() => setPreviewImageUrl(null)}>
+                {previewImageUrl && (
+                  <img
+                    src={previewImageUrl}
+                    className="mx-auto max-h-[80vh] max-w-full rounded-md"
+                  />
+                )}
+              </ModalDialog>
             </div>
           )}
           {isEdit && (
@@ -114,7 +151,7 @@ const ChatMessage: React.FC<Props> = (props) => {
             </div>
           )}
           {chatContent?.role === 'assistant' && (
-            <Markdown>{chatContent.content.body}</Markdown>
+            <Markdown>{chatContent.content[0].body}</Markdown>
           )}
         </div>
       </div>
@@ -125,7 +162,7 @@ const ChatMessage: React.FC<Props> = (props) => {
             <ButtonIcon
               className="mr-0.5 text-gray"
               onClick={() => {
-                setChangedContent(chatContent.content.body);
+                setChangedContent(chatContent.content[0].body);
                 setIsEdit(true);
               }}>
               <PiNotePencil />
@@ -135,7 +172,7 @@ const ChatMessage: React.FC<Props> = (props) => {
             <>
               <ButtonCopy
                 className="mr-0.5 text-gray"
-                text={chatContent.content.body}
+                text={chatContent.content[0].body}
               />
             </>
           )}

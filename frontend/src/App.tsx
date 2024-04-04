@@ -14,6 +14,7 @@ import useChat from './hooks/useChat';
 import SnackbarProvider from './providers/SnackbarProvider';
 import { useTranslation } from 'react-i18next';
 import './i18n';
+import { validateSocialProvider } from './utils/SocialProviderUtils';
 
 const App: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -29,6 +30,13 @@ const App: React.FC = () => {
       userPoolId: import.meta.env.VITE_APP_USER_POOL_ID,
       userPoolWebClientId: import.meta.env.VITE_APP_USER_POOL_CLIENT_ID,
       authenticationFlowType: 'USER_SRP_AUTH',
+      oauth: {
+        domain: import.meta.env.VITE_APP_COGNITO_DOMAIN,
+        scope: ['openid'],
+        redirectSignIn: import.meta.env.VITE_APP_REDIRECT_SIGNIN_URL,
+        redirectSignOut: import.meta.env.VITE_APP_REDIRECT_SIGNOUT_URL,
+        responseType: 'code',
+      },
     },
   });
 
@@ -43,12 +51,18 @@ const App: React.FC = () => {
   const { isGeneratedTitle } = useChat();
 
   const onClickNewChat = useCallback(() => {
-    navigate('');
+    navigate('/');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const socialProviderFromEnv =
+    import.meta.env.VITE_APP_SOCIAL_PROVIDERS?.split(',').filter(
+      validateSocialProvider
+    );
+
   return (
     <Authenticator
+      socialProviders={socialProviderFromEnv}
       components={{
         Header: () => (
           <div className="mb-5 mt-10 flex justify-center text-3xl text-aws-font-color">
@@ -57,14 +71,14 @@ const App: React.FC = () => {
         ),
       }}>
       {({ signOut }) => (
-        <div className="relative flex h-screen w-screen bg-aws-paper">
+        <div className="relative flex h-dvh w-screen bg-aws-paper">
           <ChatListDrawer
             onSignOut={() => {
               signOut ? signOut() : null;
             }}
           />
 
-          <main className="relative min-h-screen flex-1 overflow-y-hidden transition-width">
+          <main className="relative min-h-dvh flex-1 overflow-y-hidden transition-width">
             <header className="visible flex h-12 w-full items-center bg-aws-squid-ink p-3 text-lg text-aws-font-color-white lg:hidden lg:h-0">
               <button
                 className="mr-2 rounded-full p-2 hover:brightness-50 focus:outline-none focus:ring-1 "

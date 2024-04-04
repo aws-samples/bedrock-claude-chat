@@ -155,20 +155,19 @@ const BotEditPage: React.FC = () => {
   const onAddFiles = useCallback(
     (botFiles: BotFile[]) => {
       setFiles(botFiles);
-
-      botFiles.forEach((file) => {
-        if (file.status === 'UPLOADING') {
-          if (!addedFilenames.includes(file.filename)) {
-            setAddedFilenames(
-              produce(addedFilenames, (draft) => {
+      setAddedFilenames(
+        produce(addedFilenames, (draft) => {
+          botFiles.forEach((file) => {
+            if (file.status === 'UPLOADING') {
+              if (!draft.includes(file.filename)) {
                 draft.push(file.filename);
-              })
-            );
-          }
-          removeUnchangedFilenames(file.filename);
-          removeDeletedFilenames(file.filename);
-        }
-      });
+              }
+              removeUnchangedFilenames(file.filename);
+              removeDeletedFilenames(file.filename);
+            }
+          });
+        })
+      );
     },
     [addedFilenames, removeDeletedFilenames, removeUnchangedFilenames]
   );

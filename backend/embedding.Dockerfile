@@ -40,7 +40,7 @@ WORKDIR /src
 COPY ./embedding.requirements.txt ./requirements.txt
 RUN pip3 install -r requirements.txt --no-cache-dir
 
-RUN playwright install
+RUN playwright install chromium
 
 COPY ./embedding ./embedding
 COPY ./app ./app

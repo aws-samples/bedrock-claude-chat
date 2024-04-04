@@ -10,7 +10,7 @@ type Props = BaseProps & {
   hint?: string;
   noBorder?: boolean;
   rows?: number;
-  onChange: (value: string) => void;
+  onChange?: (value: string) => void;
 };
 
 const MAX_HEIGHT = 300;
@@ -50,7 +50,7 @@ const Textarea: React.FC<Props> = (props) => {
         disabled={props.disabled}
         value={props.value}
         onChange={(e) => {
-          props.onChange(e.target.value);
+          props.onChange ? props.onChange(e.target.value) : null;
         }}
       />
       {props.label && (

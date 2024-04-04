@@ -1,10 +1,13 @@
+import sys
 import unittest
+
+sys.path.append(".")
 
 from embedding.loaders import UrlLoader
 from embedding.loaders.base import BaseLoader
 from embedding.main import embed
 from embedding.wrapper import DocumentSplitter, Embedder
-from llama_index.node_parser import SentenceSplitter
+from llama_index.core.node_parser import SentenceSplitter
 
 
 class TestEmbed(unittest.TestCase):

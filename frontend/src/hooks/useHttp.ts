@@ -34,7 +34,6 @@ const fetcfWithParams = ([url, params]: [string, Record<string, any>]) => {
     .then((res) => res.data);
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 // const getErrorMessage = (error: AxiosError<any>): string => {
 //   return error.response?.data?.message ?? error.message;
 // };

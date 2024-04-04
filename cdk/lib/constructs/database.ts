@@ -16,6 +16,7 @@ export interface DatabaseProps {
 export class Database extends Construct {
   readonly table: Table;
   readonly tableAccessRole: Role;
+  readonly websocketSessionTable: Table;
 
   constructor(scope: Construct, id: string, props?: DatabaseProps) {
     super(scope, id);
@@ -55,7 +56,18 @@ export class Database extends Construct {
     });
     table.grantReadWriteData(tableAccessRole);
 
+    // Websocket session table.
+    // This table is used to concatenate user input exceeding 32KB which is the limit of API Gateway.
+    const websocketSessionTable = new Table(this, "WebsocketSessionTable", {
+      partitionKey: { name: "ConnectionId", type: AttributeType.STRING },
+      sortKey: { name: "MessagePartId", type: AttributeType.NUMBER },
+      billingMode: BillingMode.PAY_PER_REQUEST,
+      removalPolicy: RemovalPolicy.DESTROY,
+      timeToLiveAttribute: "expire",
+    });
+
     this.table = table;
     this.tableAccessRole = tableAccessRole;
+    this.websocketSessionTable = websocketSessionTable;
   }
 }
