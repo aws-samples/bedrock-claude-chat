@@ -9,11 +9,17 @@ const translation = {
       starredBots: 'スター付きのボット',
       recentlyUsedBots: '最近使用したボット',
       conversationHistory: '会話履歴',
+      chatWaitingSymbol: '▍',
+      adminConsoles: '管理者用',
     },
     bot: {
       label: {
         myBots: '自分のボット',
         recentlyUsedBots: '最近使用した公開ボット',
+        knowledge: 'ナレッジ',
+        url: 'URL',
+        sitemap: 'サイトマップURL',
+        file: 'ファイル',
         loadingBot: 'Loading...',
         normalChat: 'チャット',
         notAvailableBot: '[このボットは利用できません]',
@@ -22,22 +28,60 @@ const translation = {
         notAvailable: 'このボットは利用できません。',
         noBots: 'ボットが登録されていません。',
         noBotsRecentlyUsed: '最近利用した公開ボットはありません。',
-      },
-      help: {
-        overview:
-          'ボットはあらかじめ定義したインストラクションに従って動作します。チャットではメッセージ内にコンテキストを定義しなければ意図した振る舞いをしませんが、ボットを利用すればコンテキストの定義が不要になります。',
-        instructions:
-          'ボットがどのように振る舞うか定義します。曖昧な指示をすると予測できない動きをすることがあるので、具体的に指示をしてください。',
+        retrievingKnowledge: '[ナレッジを取得中...]',
+        dndFileUpload:
+          'ドラッグ＆ドロップでファイルをアップロードできます。\n対応ファイル: {{fileExtensions}}',
+        uploadError: 'エラーメッセージ',
+        syncStatus: {
+          queue: '同期待ち',
+          running: '同期中',
+          success: '同期完了',
+          fail: '同期エラー',
+        },
+        fileUploadStatus: {
+          uploading: 'アップロード中...',
+          uploaded: 'アップロード完了',
+          error: 'エラー',
+        },
       },
       titleSubmenu: {
         edit: 'ボットを編集',
         copyLink: '共有リンクをコピー',
         copiedLink: 'コピーしました',
       },
+      help: {
+        overview:
+          'ボットはあらかじめ定義したインストラクションに従って動作します。チャットではメッセージ内にコンテキストを定義しなければ意図した振る舞いをしませんが、ボットを利用すればコンテキストの定義が不要になります。',
+        instructions:
+          'ボットがどのように振る舞うか定義します。曖昧な指示をすると予測できない動きをすることがあるので、具体的に指示をしてください。',
+        knowledge: {
+          overview:
+            '外部の情報をボットに提供することで、事前学習していないデータを扱えるようになります。',
+          url: 'URLを指定すると、そのURLの情報がナレッジとして利用されます。YouTube の動画の URL を設定すると、その動画の字幕がナレッジとして利用されます。',
+          sitemap:
+            'サイトマップのURLを指定すると、そのサイトマップ内のサイトを自動的にスクレイピングして得られた情報がナレッジとして利用されます。',
+          file: 'アップロードしたファイルがナレッジとして利用されます。',
+        },
+      },
+      alert: {
+        sync: {
+          error: {
+            title: '同期エラー',
+            body: '同期中にエラーが発生しました。',
+          },
+          incomplete: {
+            title: '同期が未完了です',
+            body: 'このボットはナレッジの同期が完了していないため、更新前のナレッジが利用されます。',
+          },
+        },
+      },
       samples: {
         title: 'インストラクションのサンプル',
-        reference:
-          '引用: https://docs.anthropic.com/claude/docs/how-to-use-system-prompts',
+        anthropicLibrary: {
+          title: 'Anthropicプロンプトライブラリ',
+          sentence: '他のサンプル: ',
+          url: 'https://docs.anthropic.com/claude/prompt-library',
+        },
         pythonCodeAssistant: {
           title: 'Python コーディングアシスタント',
           prompt: `あなたは非常にスキルの高い Python の専門家です。与えられたタスクをこなすための、短くて高品質な Python スクリプトを書いてください。あなたは経験豊富な開発者のためにコードを書いているので、自明でないことについてのみコメントを追加してください。必要なインポートは必ず含めてください。
@@ -71,6 +115,93 @@ const translation = {
         description: '説明文',
         instruction: 'インストラクション',
       },
+      apiSettings: {
+        pageTitle: '共有されたボットのAPI公開設定',
+        label: {
+          endpoint: 'APIエンドポイント',
+          usagePlan: '使用量プラン',
+          allowOrigins: '許可するオリジン',
+          apiKeys: 'APIキー',
+          period: {
+            day: '1日あたり',
+            week: '1週間あたり',
+            month: '1ヶ月あたり',
+          },
+          apiKeyDetail: {
+            creationDate: '作成日',
+            active: 'アクティブ',
+            inactive: '非アクティブ',
+            key: 'APIキー',
+          },
+        },
+        item: {
+          throttling: 'スロットリング',
+          burstLimit: 'バースト',
+          rateLimit: 'レート',
+          quota: 'クォータ',
+          requestLimit: 'リクエスト数',
+          offset: 'オフセット',
+        },
+        help: {
+          overview:
+            'APIを公開することで外部のクライアントがボットを利用することが可能になります。APIを利用することで、外部のアプリケーションとの連携が可能になります。',
+          endpoint:
+            'クライアントは、このAPIエンドポイントを通じてボットを利用できます。',
+          usagePlan:
+            '使用量プランは、APIがクライアントから受け入れられるリクエストの数またはレートを指定します。APIが受け取るリクエストは、この使用量プランに関連付けて追跡されます。',
+          throttling: 'ユーザがAPIを呼び出せるレートを制限します。',
+          rateLimit:
+            'クライアントがAPIを呼び出すことができるレートを1秒あたりのリクエスト数で入力します。',
+          burstLimit:
+            'クライアントがPAIに対して同時に実行できるリクエストの数を入力します。',
+          quota:
+            'ある期間にユーザがAPIに対して実行できるリクエストの数を制限します。',
+          requestLimit:
+            'ドロップダウンリストで選択した期間にユーザが実行できるリクエストの総数を入力します。',
+          allowOrigins:
+            'アクセスを許可するクライアントのオリジンを入力します。許可されていないオリジンからAPIが呼び出された場合は、403 Forbidden エラーのレスポンスが返されて、アクセスが拒否されます。オリジンのフォーマットは、"(http|https)://host-name" または "(http|https)://host-name:port" である必要があります。なお、ワイルドカード(*)も利用可能です。',
+          allowOriginsExample:
+            '入力例) https://your-host-name.com, https://*.your-host-name.com, http://localhost:8000',
+          apiKeys:
+            'APIキーは英数字の文字列で、APIのクライアントを識別します。APIキーが識別できない場合、403 Forbiddenエラーのレスポンスが返され、APIへのアクセスが拒否されます。',
+        },
+        button: {
+          ApiKeyShow: '表示',
+          ApiKeyHide: '隠す',
+        },
+        alert: {
+          botUnshared: {
+            title: 'ボットを共有してください',
+            body: 'ボットが共有されていないため、APIの公開ができません。',
+          },
+          deploying: {
+            title: 'APIをデプロイ中',
+            body: 'デプロイが完了するまで、しばらくお待ちください。',
+          },
+          deployed: {
+            title: 'APIがデプロイされています',
+            body: 'クライアントはAPIエンドポイントとAPIキーを利用して、このAPIにアクセスできます。',
+          },
+          deployError: {
+            title: 'APIのデプロイに失敗しました',
+            body: 'このAPIを削除して、APIを再作成してください。',
+          },
+        },
+        deleteApiDaialog: {
+          title: '削除しますか?',
+          content:
+            'このAPIを本当に削除しますか? このAPIを削除すると、すべてのクライアントはこのAPIに一切アクセスできなくなります。',
+        },
+        addApiKeyDialog: {
+          title: 'APIキーの追加',
+          content: 'APIキーを識別するための名前を入力してください。',
+        },
+        deleteApiKeyDialog: {
+          title: '削除しますか?',
+          content:
+            '本当に <Bold>{{title}}</Bold> を削除しますか?\nこのAPIキーを利用しているクライアントは、APIにアクセスできなくなります。',
+        },
+      },
       button: {
         newBot: 'ボットを新規作成',
         create: '新規作成',
@@ -80,6 +211,8 @@ const translation = {
         copy: 'コピー',
         copied: 'コピーしました',
         instructionsSamples: 'サンプル',
+        chooseFiles: 'ファイルを選択',
+        apiSettings: 'API公開設定',
       },
       deleteDialog: {
         title: '削除しますか？',
@@ -96,6 +229,74 @@ const translation = {
             '共有リンクが有効化されているため、全てのユーザが共有リンクを使って会話できます。',
         },
       },
+      error: {
+        notSupportedFile: 'このファイル形式はサポートされていません。',
+        duplicatedFile:
+          '同一ファイル名のファイルが既にアップロードされています。',
+        failDeleteApi: 'APIの削除に失敗しました。',
+      },
+    },
+    admin: {
+      sharedBotAnalytics: {
+        label: {
+          pageTitle: '公開ボット確認',
+          noPublicBotUsages:
+            '指定の集計期間内に公開ボットは利用されていません。',
+          published: 'API公開中',
+          SearchCondition: {
+            title: '集計期間',
+            from: 'From',
+            to: 'To',
+          },
+          sortByCost: '利用料金でソート',
+        },
+        help: {
+          overview:
+            '共有されているボットと公開済みのAPIにおける利用状況を確認できます。',
+          calculationPeriod:
+            '集計期間が未設定の場合は、本日の利用状況が表示されます。',
+        },
+      },
+      apiManagement: {
+        label: {
+          pageTitle: 'API管理',
+          publishedDate: '公開日',
+          noApi: 'APIがありません。',
+        },
+      },
+      botManagement: {
+        label: {
+          pageTitle: 'ボット管理',
+          sharedUrl: 'ボットのURL',
+          apiSettings: 'API公開設定',
+          noKnowledge: 'このボットにはナレッジが設定されていません。',
+          notPublishApi: 'このボットはAPIを公開していません。',
+          deployStatus: 'デプロイステータス',
+          cfnStatus: 'CloudFormation ステータス',
+          codebuildStatus: 'CodeBuild ステータス',
+          codeBuildId: 'CodeBuild ID',
+          usagePlanOn: 'ON',
+          usagePlanOff: 'OFF',
+          rateLimit:
+            'クライアントは、毎秒 <Bold>{{limit}}</Bold> リクエストAPIを呼び出すことができます。',
+          burstLimit:
+            'クライアントは、同時に <Bold> {{ limit }}</Bold> リクエストAPIを呼び出すことができます。',
+          requestsLimit:
+            '<Bold>{{period}}</Bold> <Bold>{{limit}}</Bold> リクエストAPIを呼び出すことができます。',
+        },
+        alert: {
+          noApiKeys: {
+            title: 'APIキーがありません',
+            body: 'すべてのクライアントは、このAPIにアクセスできません。',
+          },
+        },
+        button: {
+          deleteApi: 'API削除',
+        },
+      },
+      validationError: {
+        period: 'FromとToを両方入力してください。',
+      },
     },
     deleteDialog: {
       title: '削除',
@@ -111,6 +312,9 @@ const translation = {
     button: {
       newChat: '新しいチャット',
       botConsole: 'ボットコンソール',
+      sharedBotAnalytics: '公開ボット確認',
+      apiManagement: 'API管理',
+      userUsages: 'ユーザ利用状況',
       SaveAndSubmit: '変更 & 送信',
       resend: '再送信',
       regenerate: '再生成',
@@ -125,6 +329,16 @@ const translation = {
       clearConversation: 'すべての会話をクリア',
       signOut: 'サインアウト',
       close: '閉じる',
+      add: '追加',
+    },
+    input: {
+      hint: {
+        required: '* 必須',
+      },
+      validationError: {
+        required: 'この項目は必須入力です。',
+        invalidOriginFormat: 'オリジンのフォーマットが異なります。',
+      },
     },
     error: {
       answerResponse: '回答中にエラーが発生しました。',
@@ -135,6 +349,7 @@ const translation = {
         general: '推論中にエラーが発生しました。',
         invalidResponse: '想定外のResponseが返ってきました。',
       },
+      notSupportedImage: '選択しているモデルは、画像を利用できません。',
     },
   },
 };

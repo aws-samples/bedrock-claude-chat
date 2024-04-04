@@ -1,17 +1,46 @@
 # Bedrock Claude Chat
 
+![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/test.yml/badge.svg)
+
+> [!Tip]
+> 🔔**API 公開/管理ダッシュボードの機能がリリースされました。** 詳細は[Release](https://github.com/aws-samples/bedrock-claude-chat/releases/tag/v0.4.5)をご確認ください。
+
 > [!Warning]
-> 現在のバージョン(`v0.3.x`)は DynamoDB テーブルの変更により以前のバージョン(`v0.1.0`, `v0.2.x`)との互換性がありません。**`v0.2.x`以前から`v0.3.x`へのアップデート (`cdk deploy`) は、既存の会話履歴の削除を伴いますのでご留意ください。**
+> 現在のバージョン(v0.4.x)は、DynamoDB テーブルスキーマの変更のため、過去バージョン(~v0.3.0)とは互換性がありません。**以前のバージョンから v0.4.x へアップデートすると、既存の対話記録は全て破棄されますので注意が必要です。**
 
-このリポジトリは、生成系 AI を提供する[Amazon Bedrock](https://aws.amazon.com/jp/bedrock/)の基盤モデルの一つである、Anthropic 社製 LLM [Claude 2](https://www.anthropic.com/index/claude-2)を利用したチャットボットのサンプルです。
+このリポジトリは、生成系 AI を提供する[Amazon Bedrock](https://aws.amazon.com/jp/bedrock/)の基盤モデルの一つである、Anthropic 社製 LLM [Claude](https://www.anthropic.com/)を利用したチャットボットのサンプルです。
 
-![](./imgs/demo2.gif)
-![](./imgs/bot2.png)
+### 基本的な会話
+
+[Claude 3](https://www.anthropic.com/news/claude-3-family)によるテキストと画像の両方を利用したチャットが可能です。現在`Haiku`および`Sonnet`をサポートしています。
+![](./imgs/demo_ja.gif)
+
+### ボットのカスタマイズ
+
+外部のナレッジおよび具体的なインストラクションを組み合わせ、ボットをカスタマイズすることが可能です（外部のナレッジを利用した方法は[RAG](./RAG_ja.md)として知られています）。なお、作成したボットはアプリケーションのユーザー間で共有することができます。カスタマイズされたボットはスタンドアロンの API として公開できます (詳細は[こちら](./docs/PUBLISH_API.md)をご覧ください)。
+
+![](./imgs/bot_creation_ja.png)
+![](./imgs/bot_chat_ja.png)
+![](./imgs/bot_api_publish_screenshot3.png)
+
+### 管理者ダッシュボード
+
+管理者ダッシュボードで各ユーザー/ボットの使用状況を分析できます。[詳細](./docs/ADMINISTRATOR.md)
+
+![](./imgs/admin_bot_analytics.png)
 
 ## 🚀 まずはお試し
 
-- [Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess)を開き、`Edit` > `Claude`をチェックし`Save changes`をクリックします
-- [CloudShell](https://console.aws.amazon.com/cloudshell/home)を開きます
+- us-east-1 リージョンにて、[Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > `Anthropic / Claude 3 Haiku`, `Anthropic / Claude 3 Sonnet`, `Cohere / Embed Multilingual`をチェックし、`Save changes`をクリックします
+
+<details>
+<summary>スクリーンショット</summary>
+
+![](./imgs/model_screenshot.png)
+
+</details>
+
+- [CloudShell](https://console.aws.amazon.com/cloudshell/home)をデプロイしたいリージョン (ap-northeast-1 など) で開きます
 
 - 下記のコマンドでデプロイ実行します
 
@@ -22,7 +51,7 @@ chmod +x bin.sh
 ./bin.sh
 ```
 
-- 20 分ほど経過後、下記の出力が得られるのでブラウザからアクセスします
+- 30 分ほど経過後、下記の出力が得られるのでブラウザからアクセスします
 
 ```
 Frontend URL: https://xxxxxxxxx.cloudfront.net
@@ -41,37 +70,70 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 
 - [Amazon DynamoDB](https://aws.amazon.com/jp/dynamodb/): 会話履歴保存用の NoSQL データベース
 - [Amazon API Gateway](https://aws.amazon.com/jp/api-gateway/) + [AWS Lambda](https://aws.amazon.com/jp/lambda/): バックエンド API エンドポイント ([AWS Lambda Web Adapter](https://github.com/awslabs/aws-lambda-web-adapter), [FastAPI](https://fastapi.tiangolo.com/))
-- [Amazon SNS](https://aws.amazon.com/jp/sns/): API Gateway と Bedrock 間のストリーミング呼び出しを疎結合にするため使用しています。ストリーミングレスポンスにはトータルで 30 秒以上かかることがあり、これは HTTP インテグレーションの制約を超えてしまうためです（[クオータ](https://docs.aws.amazon.com/apigateway/latest/developerguide/limits.html)を参照）。
 - [Amazon CloudFront](https://aws.amazon.com/jp/cloudfront/) + [S3](https://aws.amazon.com/jp/s3/): フロントエンドアプリケーションの配信 ([React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/))
 - [AWS WAF](https://aws.amazon.com/jp/waf/): IP アドレス制限
 - [Amazon Cognito](https://aws.amazon.com/jp/cognito/): ユーザ認証
-- [Amazon Bedrock](https://aws.amazon.com/jp/bedrock/): 基盤モデルを API 経由で利用できるマネージドサービス
+- [Amazon Bedrock](https://aws.amazon.com/jp/bedrock/): 基盤モデルを API 経由で利用できるマネージドサービス。Claude はチャットの応答に利用され、Cohere は RAG 用のベクトル埋め込みに利用されます
+- [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): DynamoDB からのイベントを受け取り、後続の ECS タスクを起動することで、外部のナレッジをカスタマイズ bot に反映します
+- [Amazon Elastic Container Service](https://aws.amazon.com/ecs/): ナレッジをクロール・パースし、埋め込みベクトルと共に Aurora PostgreSQL へ保存します。[Cohere Multilingual](https://txt.cohere.com/multilingual/)がベクトル計算に利用されます
+- [Amazon Aurora PostgreSQL](https://aws.amazon.com/rds/aurora/): [pgvector](https://github.com/pgvector/pgvector) プラグインを利用したスケーラブルなベクトル DB
+- [Amazon Athena](https://aws.amazon.com/athena/): S3 バケット内のデータを分析するクエリサービス
 
 ![](imgs/arch.png)
 
 ## 機能・ロードマップ
 
-- [x] 認証 (サインアップ・サインイン)
-- [x] 会話の新規作成・保存・削除
-- [x] チャットボットの返信内容のコピー
-- [x] 会話の件名自動提案
-- [x] コードのシンタックスハイライト
-- [x] マークダウンのレンダリング
-- [x] ストリーミングレスポンス
-- [x] IP アドレス制限
-- [x] メッセージの編集と再送
-- [x] I18n
-- [x] モデルの切り替え (Claude Instant / Claude)
-- [x] カスタマイズされたボットの作成
-- [x] カスタマイズされたボットのシェア
-- [ ] ファイルのアップロードと取得
-- [ ] Web 情報の取得
+<details>
+<summary>基本的なチャット機能</summary>
 
-### Deploy using CDK
+- [x] 認証 (サインアップ、サインイン)
+- [x] 会話の作成、保存、削除
+- [x] チャットボットの返答のコピー
+- [x] 会話のための自動的なトピックの提案
+- [x] コードの構文強調表示
+- [x] Markdown の表示
+- [x] ストリーミング応答
+- [x] IP アドレスの制限
+- [x] メッセージの編集と再送信
+- [x] 国際化
+- [x] モデルの切り替え
+</details>
+
+<details>
+<summary>カスタマイズされたボットの機能</summary>
+
+- [x] カスタマイズされたボットの作成
+- [x] カスタマイズされたボットの共有
+- [x] 独立した API として公開
+</details>
+
+<details>
+<summary>RAG機能</summary>
+
+- [x] Web (html)
+- [x] テキストデータ (txt、csv、markdown など)
+- [x] PDF
+- [x] Microsoft Office ファイル (pptx、docx、xlsx)
+- [x] YouTube の字幕
+- [ ] S3 バケットからのインポート
+- [ ] 既存の Kendra / OpenSearch / KnowledgeBase からのインポート
+</details>
+
+<details>
+<summary>管理者機能</summary>
+
+- [x] ボットごとの使用料の追跡
+- [x] 公開されたボットの一覧表示
+</details>
+
+## Deploy using CDK
 
 上記 Easy Deployment は[AWS CodeBuild](https://aws.amazon.com/jp/codebuild/)を利用し、内部で CDK によるデプロイを実行しています。ここでは直接 CDK によりデプロイする手順を記載します。
 
-- お手元に UNIX コマンドおよび Node.js 実行環境を用意してください。もし無い場合、[Cloud9](https://github.com/aws-samples/cloud9-setup-for-prototyping)をご利用いただくことも可能です
+- お手元に UNIX コマンドおよび Node.js, Docker 実行環境を用意してください。もし無い場合、[Cloud9](https://github.com/aws-samples/cloud9-setup-for-prototyping)をご利用いただくことも可能です。
+
+> [!Note]
+> デプロイ時にローカル環境のストレージ容量が不足すると CDK のブートストラップがエラーとなってしまう可能性があります。Cloud9 等で実行される場合は、インスタンスのボリュームサイズを拡張のうえデプロイ実施されることをお勧めします。
 
 - このリポジトリをクローンします
 
@@ -126,7 +188,7 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 
 ## その他
 
-### テキスト生成パラメータの設定
+### テキスト生成パラメータ・ベクトル埋め込みパラメータの設定
 
 [config.py](../backend/app/config.py)を編集後、`cdk deploy`を実行してください。
 
@@ -137,6 +199,12 @@ GENERATION_CONFIG = {
     "top_k": 250,
     "top_p": 0.999,
     "stop_sequences": ["Human: ", "Assistant: "],
+}
+
+EMBEDDING_CONFIG = {
+    "model_id": "amazon.titan-embed-text-v1",
+    "chunk_size": 1000,
+    "chunk_overlap": 100,
 }
 ```
 
@@ -171,21 +239,27 @@ const userPool = new UserPool(this, "UserPool", {
 });
 ```
 
+### 外部のアイデンティティプロバイダー
+
+このサンプルは外部のアイデンティティプロバイダーをサポートしています。現在、Google のみをサポートしています。設定するには、[こちら](./SET_UP_IDP_ja.md)をご覧ください。
+
 ### ローカルでの開発について
 
 - [こちら](./LOCAL_DEVELOPMENT_ja.md)を参照ください。
 
 ### Pull Request
 
-バグ修正や機能追加など、Pull Request は大変ありがたく思っています。下記をご参考にしていただけますと幸いです。
+コントリビュートを検討していただきありがとうございます！バグ修正、言語翻訳（i18n）、機能拡張、その他の改善を歓迎しています。
+
+機能拡張やその他の改善については、**プルリクエストを作成する前に、実装方法や詳細について議論するために、Feature Request Issue を作成いただくようお願いいたします。**
+
+バグ修正については、直接プルリクエストを作成してください。
+
+コントリビュートする前に、以下のガイドラインもご確認ください。
 
 - [ローカル環境での開発](./LOCAL_DEVELOPMENT_ja.md)
 - [CONTRIBUTING](../CONTRIBUTING.md)
 
-### Kendra を利用した RAG について
+### RAG (Retrieval Augmented Generation, 検索拡張生成)
 
-本サンプルでは Kendra を利用した RAG は実装しておりません。実導入する場合、アクセスコントロールポリシーやデータコネクタの有無、接続先データソースの認証・認可方法は組織により多様なため、シンプルに一般化することが難しいためです。実用するにはレイテンシーの低下やトークン消費量の増加などのデメリットや、検索精度を検証するための PoC が必須であることを考慮する必要があるため、以下のアセットを活用した PoC をおすすめします。
-
-- [generative-ai-use-cases-jp](https://github.com/aws-samples/generative-ai-use-cases-jp) (In Japanese)
-- [simple-lex-kendra-jp](https://github.com/aws-samples/simple-lex-kendra-jp) (In Japanese)
-- [jp-rag-sample](https://github.com/aws-samples/jp-rag-sample) (In Japanese)
+[こちら](./RAG_ja.md)を参照

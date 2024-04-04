@@ -1,28 +1,40 @@
 import { Construct } from "constructs";
-import * as apigwv2 from "@aws-cdk/aws-apigatewayv2-alpha";
-import { WebSocketLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
+import * as apigwv2 from "aws-cdk-lib/aws-apigatewayv2";
+import { WebSocketLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
 import * as python from "@aws-cdk/aws-lambda-python-alpha";
-import { DockerImageCode, DockerImageFunction } from "aws-cdk-lib/aws-lambda";
+import {
+  DockerImageCode,
+  DockerImageFunction,
+  IFunction,
+} from "aws-cdk-lib/aws-lambda";
 import * as path from "path";
 import { Runtime } from "aws-cdk-lib/aws-lambda";
 import * as iam from "aws-cdk-lib/aws-iam";
-import { CfnOutput, Duration, Stack } from "aws-cdk-lib";
+import { CfnOutput, Duration, RemovalPolicy, Stack } from "aws-cdk-lib";
 import { Platform } from "aws-cdk-lib/aws-ecr-assets";
 import * as sns from "aws-cdk-lib/aws-sns";
 import { SnsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { Auth } from "./auth";
 import { ITable } from "aws-cdk-lib/aws-dynamodb";
 import { CfnRouteResponse } from "aws-cdk-lib/aws-apigatewayv2";
+import * as ec2 from "aws-cdk-lib/aws-ec2";
+import { DbConfig } from "./embedding";
+import * as s3 from "aws-cdk-lib/aws-s3";
 
 export interface WebSocketProps {
+  readonly vpc: ec2.IVpc;
   readonly database: ITable;
+  readonly dbConfig: DbConfig;
   readonly auth: Auth;
   readonly bedrockRegion: string;
   readonly tableAccessRole: iam.IRole;
+  readonly websocketSessionTable: ITable;
+  readonly largeMessageBucket: s3.IBucket;
 }
 
 export class WebSocket extends Construct {
   readonly webSocketApi: apigwv2.IWebSocketApi;
+  readonly handler: IFunction;
   private readonly defaultStageName = "dev";
 
   constructor(scope: Construct, id: string, props: WebSocketProps) {
@@ -30,18 +42,20 @@ export class WebSocket extends Construct {
 
     const { database, tableAccessRole } = props;
 
-    const topic = new sns.Topic(this, "SnsTopic", {
-      displayName: "WebSocketTopic",
-    });
-
-    const publisher = new python.PythonFunction(this, "Publisher", {
-      entry: path.join(__dirname, "../../../backend/publisher"),
-      runtime: Runtime.PYTHON_3_11,
-      environment: {
-        WEBSOCKET_TOPIC_ARN: topic.topicArn,
-      },
-    });
-    topic.grantPublish(publisher);
+    // Bucket for SNS large payload support
+    // See: https://docs.aws.amazon.com/sns/latest/dg/extended-client-library-python.html
+    const largePayloadSupportBucket = new s3.Bucket(
+      this,
+      "LargePayloadSupportBucket",
+      {
+        encryption: s3.BucketEncryption.S3_MANAGED,
+        blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+        enforceSSL: true,
+        removalPolicy: RemovalPolicy.DESTROY,
+        objectOwnership: s3.ObjectOwnership.OBJECT_WRITER,
+        autoDeleteObjects: true,
+      }
+    );
 
     const handlerRole = new iam.Role(this, "HandlerRole", {
       assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
@@ -59,12 +73,15 @@ export class WebSocket extends Construct {
         resources: ["*"],
       })
     );
-
     handlerRole.addManagedPolicy(
       iam.ManagedPolicy.fromAwsManagedPolicyName(
-        "service-role/AWSLambdaBasicExecutionRole"
+        "service-role/AWSLambdaVPCAccessExecutionRole"
       )
     );
+    largePayloadSupportBucket.grantRead(handlerRole);
+    props.websocketSessionTable.grantReadWriteData(handlerRole);
+    props.largeMessageBucket.grantReadWrite(handlerRole);
+
     const handler = new DockerImageFunction(this, "Handler", {
       code: DockerImageCode.fromImageAsset(
         path.join(__dirname, "../../../backend"),
@@ -73,6 +90,8 @@ export class WebSocket extends Construct {
           file: "websocket.Dockerfile",
         }
       ),
+      vpc: props.vpc,
+      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
       memorySize: 512,
       timeout: Duration.minutes(15),
       environment: {
@@ -83,27 +102,30 @@ export class WebSocket extends Construct {
         BEDROCK_REGION: props.bedrockRegion,
         TABLE_NAME: database.tableName,
         TABLE_ACCESS_ROLE_ARN: tableAccessRole.roleArn,
+        LARGE_MESSAGE_BUCKET: props.largeMessageBucket.bucketName,
+        DB_NAME: props.dbConfig.database,
+        DB_HOST: props.dbConfig.host,
+        DB_USER: props.dbConfig.username,
+        DB_PASSWORD: props.dbConfig.password,
+        DB_PORT: props.dbConfig.port.toString(),
+        LARGE_PAYLOAD_SUPPORT_BUCKET: largePayloadSupportBucket.bucketName,
+        WEBSOCKET_SESSION_TABLE_NAME: props.websocketSessionTable.tableName,
       },
       role: handlerRole,
     });
-    handler.addEventSource(
-      new SnsEventSource(topic, {
-        filterPolicy: {},
-      })
-    );
 
     const webSocketApi = new apigwv2.WebSocketApi(this, "WebSocketApi", {
       connectRouteOptions: {
         integration: new WebSocketLambdaIntegration(
           "ConnectIntegration",
-          publisher
+          handler
         ),
       },
     });
     const route = webSocketApi.addRoute("$default", {
       integration: new WebSocketLambdaIntegration(
         "DefaultIntegration",
-        publisher
+        handler
       ),
     });
     new apigwv2.WebSocketStage(this, "WebSocketStage", {
@@ -120,6 +142,7 @@ export class WebSocket extends Construct {
     });
 
     this.webSocketApi = webSocketApi;
+    this.handler = handler;
 
     new CfnOutput(this, "WebSocketEndpoint", {
       value: this.apiEndpoint,
