@@ -4,7 +4,7 @@ sys.path.insert(0, ".")
 import unittest
 from pprint import pprint
 
-from tests.test_usecases.utils.optimized import (
+from tests.test_usecases.utils.bot_factory import (
     create_test_private_bot,
     create_test_public_bot,
     create_test_instruction_template,
