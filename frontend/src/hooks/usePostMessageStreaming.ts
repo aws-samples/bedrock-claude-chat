@@ -1,68 +1,116 @@
 import { Auth } from 'aws-amplify';
 import { PostMessageRequest } from '../@types/conversation';
 import { create } from 'zustand';
+import i18next from 'i18next';
 
 const WS_ENDPOINT: string = import.meta.env.VITE_APP_WS_ENDPOINT;
+const CHUNK_SIZE = 32 * 1024; //32KB
 
 const usePostMessageStreaming = create<{
-  post: (
-    input: PostMessageRequest,
-    dispatch: (completion: string) => void
-  ) => Promise<string>;
+  post: (params: {
+    input: PostMessageRequest;
+    hasKnowledge?: boolean;
+    dispatch: (completion: string) => void;
+  }) => Promise<void>;
 }>(() => {
-  const post = async (
-    input: PostMessageRequest,
-    dispatch: (completion: string) => void
-  ) => {
-    const token = (await Auth.currentSession()).getIdToken().getJwtToken();
+  return {
+    post: async ({ input, dispatch, hasKnowledge }) => {
+      if (hasKnowledge) {
+        dispatch(i18next.t('bot.label.retrievingKnowledge'));
+      } else {
+        dispatch(i18next.t('app.chatWaitingSymbol'));
+      }
+      const token = (await Auth.currentSession()).getIdToken().getJwtToken();
+      const payloadString = JSON.stringify({
+        ...input,
+        token,
+      });
 
-    return new Promise<string>((resolve, reject) => {
-      const ws = new WebSocket(WS_ENDPOINT);
-      let completion = '';
-      let conversationId = '';
+      // chunking
+      const chunkedPayloads: string[] = [];
+      const chunkCount = Math.ceil(payloadString.length / CHUNK_SIZE);
+      for (let i = 0; i < chunkCount; i++) {
+        const start = i * CHUNK_SIZE;
+        const end = Math.min(start + CHUNK_SIZE, payloadString.length);
+        chunkedPayloads.push(payloadString.substring(start, end));
+      }
 
-      ws.onopen = () => {
-        ws.send(JSON.stringify({ ...input, token }));
-      };
+      let receivedCount = 0;
+      return new Promise<void>((resolve, reject) => {
+        const ws = new WebSocket(WS_ENDPOINT);
+        let completion = '';
 
-      ws.onmessage = (message) => {
-        try {
-          const data = JSON.parse(message.data);
+        ws.onopen = () => {
+          ws.send('START');
+        };
 
-          if (data.completion) {
-            if (completion.endsWith('▍')) {
-              completion = completion.slice(0, -1);
+        ws.onmessage = (message) => {
+          try {
+            if (
+              message.data === '' ||
+              message.data === 'Message sent.' ||
+              // Ignore timeout message from api gateway
+              message.data.startsWith(
+                '{"message": "Endpoint request timed out",'
+              )
+            ) {
+              return;
+            } else if (message.data === 'Session started.') {
+              chunkedPayloads.forEach((chunk, index) => {
+                ws.send(
+                  JSON.stringify({
+                    index,
+                    part: chunk,
+                  })
+                );
+              });
+              return;
+            } else if (message.data === 'Message part received.') {
+              receivedCount++;
+              if (receivedCount === chunkedPayloads.length) {
+                ws.send('END');
+              }
+              return;
             }
 
-            completion += data.completion + (data.stop_reason ? '' : '▍');
-            dispatch(completion);
-          } else if (data.conversationId) {
-            conversationId = data.conversationId;
-            ws.close();
-          } else {
-            ws.close();
-            console.error(data);
-            throw new Error('通常とは異なるResponseが返ってきました。');
+            const data = JSON.parse(message.data);
+
+            if (data.completion || data.completion === '') {
+              if (completion.endsWith(i18next.t('app.chatWaitingSymbol'))) {
+                completion = completion.slice(0, -1);
+              }
+
+              completion +=
+                data.completion +
+                (data.stop_reason ? '' : i18next.t('app.chatWaitingSymbol'));
+              dispatch(completion);
+              if (data.stop_reason) {
+                ws.close();
+              }
+            } else if (data.status) {
+              dispatch(i18next.t('app.chatWaitingSymbol'));
+            } else {
+              ws.close();
+              console.error(data);
+              throw new Error(i18next.t('error.predict.invalidResponse'));
+            }
+          } catch (e) {
+            console.error(e);
+            reject(i18next.t('error.predict.general'));
           }
-        } catch (e) {
+        };
+
+        ws.onerror = (e) => {
+          ws.close();
           console.error(e);
-          reject('推論中にエラーが発生しました。');
-        }
-      };
-
-      ws.onerror = (e) => {
-        ws.close();
-        console.error(e);
-        reject('推論中にエラーが発生しました。');
-      };
-      ws.onclose = () => {
-        resolve(conversationId);
-      };
-    });
-  };
-
-  return {
-    post,
+          reject(i18next.t('error.predict.general'));
+        };
+        ws.onclose = () => {
+          resolve();
+        };
+      });
+    },
   };
 });
+
 export default usePostMessageStreaming;

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { PiList, PiPlus } from 'react-icons/pi';
 import { Outlet, useNavigate, useParams } from 'react-router-dom';
 import ChatListDrawer from './components/ChatListDrawer';
@@ -12,18 +12,36 @@ import useConversation from './hooks/useConversation';
 import LazyOutputText from './components/LazyOutputText';
 import useChat from './hooks/useChat';
 import SnackbarProvider from './providers/SnackbarProvider';
+import { useTranslation } from 'react-i18next';
+import './i18n';
+import { validateSocialProvider } from './utils/SocialProviderUtils';
 
 const App: React.FC = () => {
+  const { t, i18n } = useTranslation();
+
+  useEffect(() => {
+    // set header title
+    document.title = t('app.name');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   Amplify.configure({
     Auth: {
       userPoolId: import.meta.env.VITE_APP_USER_POOL_ID,
       userPoolWebClientId: import.meta.env.VITE_APP_USER_POOL_CLIENT_ID,
       authenticationFlowType: 'USER_SRP_AUTH',
+      oauth: {
+        domain: import.meta.env.VITE_APP_COGNITO_DOMAIN,
+        scope: ['openid'],
+        redirectSignIn: import.meta.env.VITE_APP_REDIRECT_SIGNIN_URL,
+        redirectSignOut: import.meta.env.VITE_APP_REDIRECT_SIGNOUT_URL,
+        responseType: 'code',
+      },
     },
   });
 
   I18n.putVocabularies(translations);
-  I18n.setLanguage('ja');
+  I18n.setLanguage(i18n.language);
 
   const { switchOpen: switchDrawer } = useDrawer();
   const navigate = useNavigate();
@@ -33,28 +51,34 @@ const App: React.FC = () => {
   const { isGeneratedTitle } = useChat();
 
   const onClickNewChat = useCallback(() => {
-    navigate('');
+    navigate('/');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const socialProviderFromEnv =
+    import.meta.env.VITE_APP_SOCIAL_PROVIDERS?.split(',').filter(
+      validateSocialProvider
+    );
+
   return (
     <Authenticator
+      socialProviders={socialProviderFromEnv}
       components={{
         Header: () => (
           <div className="mb-5 mt-10 flex justify-center text-3xl text-aws-font-color">
-            Bedrock Claude Chat
+            {t('app.name')}
           </div>
         ),
       }}>
       {({ signOut }) => (
-        <div className="relative flex h-screen w-screen bg-aws-paper">
+        <div className="relative flex h-dvh w-screen bg-aws-paper">
           <ChatListDrawer
             onSignOut={() => {
               signOut ? signOut() : null;
             }}
           />
 
-          <main className="relative min-h-screen flex-1 overflow-y-hidden transition-width">
+          <main className="relative min-h-dvh flex-1 overflow-y-hidden transition-width">
             <header className="visible flex h-12 w-full items-center bg-aws-squid-ink p-3 text-lg text-aws-font-color-white lg:hidden lg:h-0">
               <button
                 className="mr-2 rounded-full p-2 hover:brightness-50 focus:outline-none focus:ring-1 "
@@ -80,7 +104,7 @@ const App: React.FC = () => {
             </header>
 
             <div
-              className="h-full overflow-hidden overflow-y-auto text-gray-700"
+              className="h-full overflow-hidden overflow-y-auto  text-aws-font-color"
               id="main">
               <SnackbarProvider>
                 <Outlet />
