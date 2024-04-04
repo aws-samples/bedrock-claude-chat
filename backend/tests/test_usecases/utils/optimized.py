@@ -96,7 +96,7 @@ def create_test_bot_alias(id, original_bot_id, is_pinned):
     )
 
 
-create_instruction_template = (
+create_test_instruction_template = (
     lambda condition: f"いついかなる時も、{condition}返答してください。日本語以外の言語は認めません。"
 )
 

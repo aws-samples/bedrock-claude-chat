@@ -7,7 +7,7 @@ from pprint import pprint
 from tests.test_usecases.utils.optimized import (
     create_test_private_bot,
     create_test_public_bot,
-    create_instruction_template,
+    create_test_instruction_template,
 )
 
 from anthropic.types import MessageStopEvent
@@ -476,7 +476,7 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             self.first_private_bot_id,
             True,
             self.first_user_id,
-            create_instruction_template("俺様風の口調で"),
+            create_test_instruction_template("俺様風の口調で"),
             "SUCCEEDED",
         )
         public_bot = create_test_public_bot(
@@ -484,7 +484,7 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             True,
             self.second_user_id,
             self.first_public_bot_id,
-            create_instruction_template("大阪弁で"),
+            create_test_instruction_template("大阪弁で"),
         )
         store_bot(self.first_user_id, private_bot)
         store_bot(self.second_user_id, public_bot)
@@ -679,7 +679,7 @@ class TestInsertKnowledge(unittest.TestCase):
                     content=[
                         ContentModel(
                             content_type="text",
-                            body=create_instruction_template("俺様風の口調で"),
+                            body=create_test_instruction_template("俺様風の口調で"),
                             media_type=None,
                         )
                     ],
