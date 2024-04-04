@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useReducer,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import InputText from '../components/InputText';
 import Button from '../components/Button';
@@ -23,21 +17,6 @@ import { DEFAULT_EMBEDDING_CONFIG } from '../constants';
 import { Slider } from '../components/Slider';
 import ExpandableDrawerGroup from '../components/ExpandableDrawerGroup';
 
-export type Action =
-  | { type: 'CHANGE_CHUNK_SIZE'; payload: number }
-  | { type: 'CHANGE_CHUNK_OVERLAP'; payload: number };
-
-const embeddingParamsReducer = (state: EmdeddingPrams, action: Action) => {
-  switch (action.type) {
-    case 'CHANGE_CHUNK_SIZE':
-      return { ...state, chunkSize: action.payload };
-    case 'CHANGE_CHUNK_OVERLAP':
-      return { ...state, chunkOverlap: action.payload };
-
-    default:
-      return state;
-  }
-};
 const BotEditPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -51,7 +30,7 @@ const BotEditPage: React.FC = () => {
   const [instruction, setInstruction] = useState('');
   const [urls, setUrls] = useState<string[]>(['']);
   const [files, setFiles] = useState<BotFile[]>([]);
-  const [embeddingParams, dispath] = useReducer(embeddingParamsReducer, {
+  const [embeddingParams, setEmbeddingParams] = useState<EmdeddingPrams>({
     chunkSize: DEFAULT_EMBEDDING_CONFIG.chunkSize,
     chunkOverlap: DEFAULT_EMBEDDING_CONFIG.chunkOverlap,
   });
@@ -88,14 +67,7 @@ const BotEditPage: React.FC = () => {
               status: 'UPLOADED',
             }))
           );
-          dispath({
-            type: 'CHANGE_CHUNK_SIZE',
-            payload: bot.embeddingParams.chunkSize,
-          });
-          dispath({
-            type: 'CHANGE_CHUNK_OVERLAP',
-            payload: bot.embeddingParams.chunkOverlap,
-          });
+          setEmbeddingParams(() => bot.embeddingParams);
           setUnchangedFilenames([...bot.knowledge.filenames]);
           if (bot.syncStatus === 'FAILED') {
             setErrorMessage(bot.syncStatusReason);
@@ -462,7 +434,10 @@ const BotEditPage: React.FC = () => {
                       div: 100,
                     }}
                     onChange={(chunkSize) =>
-                      dispath({ type: 'CHANGE_CHUNK_SIZE', payload: chunkSize })
+                      setEmbeddingParams((params) => ({
+                        ...params,
+                        chunkSize: chunkSize,
+                      }))
                     }
                   />
 
@@ -476,10 +451,10 @@ const BotEditPage: React.FC = () => {
                       div: 50,
                     }}
                     onChange={(chunkOverlap) =>
-                      dispath({
-                        type: 'CHANGE_CHUNK_OVERLAP',
-                        payload: chunkOverlap,
-                      })
+                      setEmbeddingParams((params) => ({
+                        ...params,
+                        chunkOverlap: chunkOverlap,
+                      }))
                     }
                   />
                 </div>
