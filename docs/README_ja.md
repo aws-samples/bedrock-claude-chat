@@ -40,7 +40,7 @@
 
 </details>
 
-- [CloudShell](https://console.aws.amazon.com/cloudshell/home)をデプロイしたいリージョン (ap-northeast-1など) で開きます
+- [CloudShell](https://console.aws.amazon.com/cloudshell/home)をデプロイしたいリージョン (ap-northeast-1 など) で開きます
 
 - 下記のコマンドでデプロイ実行します
 
@@ -249,7 +249,13 @@ const userPool = new UserPool(this, "UserPool", {
 
 ### Pull Request
 
-バグ修正や機能追加など、Pull Request は大変ありがたく思っています。下記をご参考にしていただけますと幸いです。
+コントリビュートを検討していただきありがとうございます！バグ修正、言語翻訳（i18n）、機能拡張、その他の改善を歓迎しています。
+
+機能拡張やその他の改善については、**プルリクエストを作成する前に、実装方法や詳細について議論するために、Feature Request Issue を作成いただくようお願いいたします。**
+
+バグ修正については、直接プルリクエストを作成してください。
+
+コントリビュートする前に、以下のガイドラインもご確認ください。
 
 - [ローカル環境での開発](./LOCAL_DEVELOPMENT_ja.md)
 - [CONTRIBUTING](../CONTRIBUTING.md)
