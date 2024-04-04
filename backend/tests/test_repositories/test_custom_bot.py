@@ -71,12 +71,11 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(bot.last_used_time, 1627984879.9)
         self.assertEqual(bot.is_pinned, False)
         self.assertEqual(
-            bot.embedding_params.chunk_size,
-            DEFAULT_EMBEDDING_CONFIG["chunk_size"]
+            bot.embedding_params.chunk_size, DEFAULT_EMBEDDING_CONFIG["chunk_size"]
         )
         self.assertEqual(
             bot.embedding_params.chunk_overlap,
-            DEFAULT_EMBEDDING_CONFIG["chunk_overlap"]
+            DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
         )
         self.assertEqual(bot.knowledge.source_urls, ["https://aws.amazon.com/"])
         self.assertEqual(bot.knowledge.sitemap_urls, ["https://aws.amazon.sitemap.xml"])
