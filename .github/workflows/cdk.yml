@@ -1,7 +1,11 @@
 name: CDK tests
+
 on:
   pull_request:
-    branches: ["main"]
+    branches:
+      - main
+  workflow_dispatch: {}
+
 jobs:
   cdk-synth:
     runs-on: ubuntu-latest
