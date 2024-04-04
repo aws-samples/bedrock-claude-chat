@@ -29,7 +29,7 @@ export const Slider: FC<Props> = ({
       <label className="mb-2 text-left text-neutral-700 dark:text-neutral-400">
         {title}
       </label>
-      <span className="text-[12px] text-sm text-black/50">{description}</span>
+      <span className="text-sm text-black/50">{description}</span>
       <span className="mb-1 mt-2 text-center text-neutral-900 dark:text-neutral-500">
         {value}
       </span>

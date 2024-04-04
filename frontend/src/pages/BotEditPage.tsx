@@ -242,6 +242,7 @@ const BotEditPage: React.FC = () => {
     instruction,
     urls,
     files,
+    embeddingParams,
     navigate,
   ]);
 
@@ -283,6 +284,7 @@ const BotEditPage: React.FC = () => {
     addedFilenames,
     deletedFilenames,
     unchangedFilenames,
+    embeddingParams,
     navigate,
   ]);
 
