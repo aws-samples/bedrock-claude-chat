@@ -13,7 +13,7 @@ import Alert from '../components/Alert';
 import KnowledgeFileUploader from '../components/KnowledgeFileUploader';
 import { BotFile, EmdeddingPrams } from '../@types/bot';
 import { ulid } from 'ulid';
-import { DEFAULT_EMBEDDING_CONFIG } from '../constants';
+import { DEFAULT_EMBEDDING_CONFIG, EDGE_EMBEDDING_PARAMS } from '../constants';
 import { Slider } from '../components/Slider';
 import ExpandableDrawerGroup from '../components/ExpandableDrawerGroup';
 
@@ -429,9 +429,9 @@ const BotEditPage: React.FC = () => {
                     description={t('embeddingSetting.chunkSize.description')}
                     title={t('embeddingSetting.chunkSize.label')}
                     range={{
-                      min: 0,
-                      max: 2000,
-                      div: 100,
+                      min: EDGE_EMBEDDING_PARAMS.chunkSize.MIN,
+                      max: EDGE_EMBEDDING_PARAMS.chunkSize.MAX,
+                      div: EDGE_EMBEDDING_PARAMS.chunkSize.DIV,
                     }}
                     onChange={(chunkSize) =>
                       setEmbeddingParams((params) => ({
@@ -446,9 +446,9 @@ const BotEditPage: React.FC = () => {
                     description={t('embeddingSetting.chunkOverlap.description')}
                     title={t('embeddingSetting.chunkOverlap.label')}
                     range={{
-                      min: 50,
-                      max: 1000,
-                      div: 50,
+                      min: EDGE_EMBEDDING_PARAMS.chunkOverlap.MIN,
+                      max: EDGE_EMBEDDING_PARAMS.chunkOverlap.MAX,
+                      div: EDGE_EMBEDDING_PARAMS.chunkOverlap.DIV,
                     }}
                     onChange={(chunkOverlap) =>
                       setEmbeddingParams((params) => ({
