@@ -131,8 +131,8 @@ def main(
     sitemap_urls: list[str],
     source_urls: list[str],
     filenames: list[str],
-    chunk_size: int = DEFAULT_EMBEDDING_CONFIG["chunk_size"],
-    chunk_overlap: int = DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+    chunk_size: int,
+    chunk_overlap: int,
 ):
     exec_id = ""
     try:
