@@ -1,14 +1,77 @@
 # Bedrock Claude Chat
 
-日本語は[こちら](./docs/README_ja.md)
+![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/cdk.yml/badge.svg)
 
-> **Warning**
-> The current version (`v0.2.x`) has no compatibility with ex version (`v0.1.0`) due to the change of the conversation schema. Please note that conversations stored in DynamoDB with ex version cannot be rendered.
+> [!Tip]
+> 🔔**API publication / Admin dashboard feature released.** See [release](https://github.com/aws-samples/bedrock-claude-chat/releases/tag/v0.4.5) for the detail.
 
-This repository is a sample chatbot using the Anthropic company's LLM [Claude 2](https://www.anthropic.com/index/claude-2), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI. This sample is currently developed for use by Japanese speakers, but it is also possible to speak to the chatbot in English.
+> [!Warning]
+> The current version (`v0.4.x`) has no compatibility with the previous version (~`v0.3.0`) due to changes in the DynamoDB table schema. **Please note that the UPDATE (i.e. `cdk deploy`) FROM PREVIOUS VERSION TO `v0.4.x` WILL DESTROY ALL OF THE EXISTING CONVERSATIONS.**
 
-![](./docs/imgs/demo_en.png)
-![](./docs/imgs/demo2.gif)
+This repository is a sample chatbot using the Anthropic company's LLM [Claude](https://www.anthropic.com/), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI.
+
+### Basic Conversation
+
+Not only text but also images are available with [Anthropic's Claude 3](https://www.anthropic.com/news/claude-3-family). Currently we support `Haiku` and `Sonnet`.
+
+![](./docs/imgs/demo.gif)
+
+### Bot Personalization
+
+Add your own instruction and give external knowledge as URL or files (a.k.a [RAG](./docs/RAG.md)). The bot can be shared among application users. The customized bot also can be published as stand-alone API (See the [detail](./docs/PUBLISH_API.md)).
+
+![](./docs/imgs/bot_creation.png)
+![](./docs/imgs/bot_chat.png)
+![](./docs/imgs/bot_api_publish_screenshot3.png)
+
+### Administrator dashboard
+
+Analyze usage for each user / bot on administrator dashboard. [detail](./docs/ADMINISTRATOR.md)
+
+![](./docs/imgs/admin_bot_analytics.png)
+
+## 📚 Supported Languages
+
+- English 💬
+- 日本語 💬 (ドキュメントは[こちら](./docs/README_ja.md))
+- 한국어 💬
+- 中文 💬
+- Français 💬
+- Deutsch 💬
+
+## 🚀 Super-easy Deployment
+
+- In the us-east-1 region, open [Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > Check `Anthropic / Claude 3 Haiku`, `Anthropic / Claude 3 Sonnet` and `Cohere / Embed Multilingual` then `Save changes`.
+
+<details>
+<summary>Screenshot</summary>
+
+![](./docs/imgs/model_screenshot.png)
+
+</details>
+
+- Open [CloudShell](https://console.aws.amazon.com/cloudshell/home) at the region where you want to deploy
+- Run deployment via following commands
+
+```sh
+git clone https://github.com/aws-samples/bedrock-claude-chat.git
+cd bedrock-claude-chat
+chmod +x bin.sh
+./bin.sh
+```
+
+- After about 30 minutes, you will get the following output, which you can access from your browser
+
+```
+Frontend URL: https://xxxxxxxxx.cloudfront.net
+```
+
+![](./docs/imgs/signin.png)
+
+The sign-up screen will appear as shown above, where you can register your email and log in.
+
+> [!Important]
+> This deployment method allows anyone with the URL to sign up. For production use, we strongly recommend adding IP address restrictions or disabling self-signup to mitigate security risks. To set up, [Deploy using CDK](#deploy-using-cdk) for IP address restrictions or [Disable self sign up](#disable-self-sign-up).
 
 ## Architecture
 
@@ -19,60 +82,68 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 - [Amazon CloudFront](https://aws.amazon.com/cloudfront/) + [S3](https://aws.amazon.com/s3/): Frontend application delivery ([React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/))
 - [AWS WAF](https://aws.amazon.com/waf/): IP address restriction
 - [Amazon Cognito](https://aws.amazon.com/cognito/): User authentication
-- [Amazon Bedrock](https://aws.amazon.com/bedrock/): Managed service to utilize foundational models via APIs
+- [Amazon Bedrock](https://aws.amazon.com/bedrock/): Managed service to utilize foundational models via APIs. Claude is used for chat response and Cohere for vector embedding
+- [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): Receiving event from DynamoDB stream and launching ECS task to embed external knowledge
+- [Amazon Elastic Container Service](https://aws.amazon.com/ecs/): Run crawling, parsing and embedding tasks. [Cohere Multilingual](https://txt.cohere.com/multilingual/) is the model used for embedding.
+- [Amazon Aurora PostgreSQL](https://aws.amazon.com/rds/aurora/): Scalable vector store with [pgvector](https://github.com/pgvector/pgvector) plugin
+- [Amazon Athena](https://aws.amazon.com/athena/): Query service to analyze S3 bucket
 
 ![](docs/imgs/arch.png)
 
 ## Features and Roadmap
+
+<details>
+<summary>Basic chat features</summary>
 
 - [x] Authentication (Sign-up, Sign-in)
 - [x] Creation, storage, and deletion of conversations
 - [x] Copying of chatbot replies
 - [x] Automatic subject suggestion for conversations
 - [x] Syntax highlighting for code
-- [x] Rendering of Markdown'
+- [x] Rendering of Markdown
 - [x] Streaming Response
 - [x] IP address restriction
 - [x] Edit message & re-send
-- [ ] Save and re-use prompt template
-- [ ] I18n (English / Japanese)
+- [x] I18n
+- [x] Model switch
+</details>
 
-## Deployment
+<details>
+<summary>Customized bot features</summary>
 
-### 🚀 Easy Deployment
+- [x] Customized bot creation
+- [x] Customized bot sharing
+- [x] Publish as stand-alone API
+</details>
 
-> Note: Bedrock currently does NOT support all regions. Following procedure will deploy Bedrock resource to `us-east-1` (Other resources will be deployed on the region where the CloudShell run). If you need to change the Bedrock region, follow the instructions later in this chapter to deploy using CDK directly.
+<details>
+<summary>RAG features</summary>
 
-- Open [CloudShell](https://console.aws.amazon.com/cloudshell/home)
-- Clone this repository
+- [x] Web (html)
+- [x] Text data (txt, csv, markdown and etc)
+- [x] PDF
+- [x] Microsoft office files (pptx, docx, xlsx)
+- [x] Youtube transcript
+- [ ] Import from S3 bucket
+- [ ] Import external existing Kendra / OpenSearch / KnowledgeBase
+</details>
 
-```sh
-git clone https://github.com/aws-samples/bedrock-claude-chat.git
-```
+<details>
+<summary>Admin features</summary>
 
-- Run deployment via following commands
+- [x] Tracking usage fees per bot
+- [x] List all published bot
+</details>
 
-```sh
-cd bedrock-claude-chat
-chmod +x bin.sh
-./bin.sh
-```
+## Deploy using CDK
 
-- After about 10 minutes, you will get the following output, which you can access from your browser
+Super-easy Deployment uses [AWS CodeBuild](https://aws.amazon.com/codebuild/) to perform deployment by CDK internally. This section describes the procedure for deploying directly with CDK.
 
-```
-Frontend URL: https://xxxxxxxxx.cloudfront.net
-```
+- Please have UNIX, Docker and a Node.js runtime environment. If not, you can also use [Cloud9](https://github.com/aws-samples/cloud9-setup-for-prototyping)
 
-![](./docs/imgs/signin.png)
+> [!Important]
+> If there is insufficient storage space in the local environment during deployment, CDK bootstrapping may result in an error. If you are running in Cloud9 etc., we recommend expanding the volume size of the instance before deploying.
 
-The sign-up screen will appear as shown above, where you can register your email and log in.
-
-### Deploy using CDK
-
-Easy Deployment uses [AWS CodeBuild](https://aws.amazon.com/codebuild/) to perform deployment by CDK internally. This section describes the procedure for deploying directly with CDK.
-
-- Please have UNIX commands and a Node.js runtime environment. If not, you can also use [Cloud9](https://github.com/aws-samples/cloud9-setup-for-prototyping)
 - Clone this repository
 
 ```
@@ -99,9 +170,9 @@ npm i -g aws-cdk
 cdk bootstrap aws://<account id>/us-east-1
 ```
 
-- If necessary, edit the following entries in [cdk.json](. /cdk/cdk.json) if necessary.
+- If necessary, edit the following entries in [cdk.json](./cdk/cdk.json) if necessary.
 
-  - `bedrockRegion`: Region where Bedrock is available.
+  - `bedrockRegion`: Region where Bedrock is available. **NOTE: Bedrock does NOT support all regions for now.**
   - `allowedIpV4AddressRanges`, `allowedIpV6AddressRanges`: Allowed IP Address range.
 
 - Deploy this sample project
@@ -126,65 +197,86 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 
 ## Others
 
-### Configure text generation parameters
+### Configure text generation / embedding parameters
 
-Edit [config.py](./backend/common/config.py) and run `cdk deploy`.
+Edit [config.py](./backend/app/config.py) and run `cdk deploy`.
 
 ```py
+# See: https://docs.anthropic.com/claude/reference/complete_post
 GENERATION_CONFIG = {
-    "max_tokens_to_sample": 500,
-    "temperature": 0.0,
+    "max_tokens": 2000,
     "top_k": 250,
     "top_p": 0.999,
+    "temperature": 0.6,
     "stop_sequences": ["Human: ", "Assistant: "],
 }
-```
 
-### Local Frontend Development
-
-In this sample, you can locally modify and launch the frontend using AWS resources (`API Gateway`, `Cognito`, etc.) that have been deployed with `cdk deploy`.
-
-1. Refer to [Deploy using CDK](#deploy-using-cdk) for deploying on the AWS environment.
-2. Copy the `frontend/.env.template` and save it as `frontend/.env.local`.
-3. Fill in the contents of `.env.local` based on the output results of `cdk deploy` (such as `BedrockChatStack.AuthUserPoolClientIdXXXXX`).
-4. Execute the following command:
-
-```zsh
-cd frontend && npm run dev
-```
-
-### Using Streaming
-
-Currently, the environment variable `VITE_APP_USE_STREAMING` is specified on the frontend side. It's recommended to set it to `false` when running the backend locally and `true` when operating on AWS.  
-When streaming is enabled, text is generated in real-time due to the streaming of content generation results.
-
-
-### Local development using docker compose
-
-[docker-compose.yml](./docker-compose.yml) allows you to run and develop frontend/backend APIs/DynamoDB Local in your local environment.
-
-※ Hot reloading is only supported on the frontend, not on the backend API. Because the source code cannot be mounted due to the directory structure.
-
-```bash
-# Build containers
-docker compose build
-
-# Launch containers
-docker compose up
-
-# Stop containers
-docker compose down
+EMBEDDING_CONFIG = {
+    "model_id": "cohere.embed-multilingual-v3",
+    "chunk_size": 1000,
+    "chunk_overlap": 200,
+}
 ```
 
 ### Remove resources
 
-If using cli and CDK, please `cdk destroy`. If not, access to [CloudFormation](https://console.aws.amazon.com/cloudformation/home) then delete `BedrockChatStack` and `FrontendWafStack` manually. Please note that `FrontendWafStack` is on `us-east-1` region.
+If using cli and CDK, please `cdk destroy`. If not, access [CloudFormation](https://console.aws.amazon.com/cloudformation/home) and then delete `BedrockChatStack` and `FrontendWafStack` manually. Please note that `FrontendWafStack` is in `us-east-1` region.
 
-### RAG using Kendra
+### Language Settings
 
-In this sample, we have not implemented RAG using Kendra. This is because when it comes to real-world deployments, factors such as access control policies, the presence or absence of data connectors, and the methods for authentication and authorization for the connected data sources can be quite diverse depending on the organization, making it difficult to generalize them in a simple manner. To put this into practice, you should consider downsides like decreased latency and increased token consumption. For these reasons, a proof of concept (PoC) to verify search accuracy is essential. Therefore, we recommend using assets like [jp-rag-sample](https://github.com/aws-samples/jp-rag-sample) (In Japanese) for your PoC.
+This asset automatically detects the language using [i18next-browser-languageDetector](https://github.com/i18next/i18next-browser-languageDetector). You can switch languages from the application menu. Alternatively, you can use Query String to set the language as shown below.
+
+> `https://example.com?lng=ja`
+
+### Disable self sign up
+
+This sample has self sign up enabled by default. To disable self sign up, open [auth.ts](./cdk/lib/constructs/auth.ts) and switch `selfSignUpEnabled` as `false`, then re-deploy.
+
+```ts
+const userPool = new UserPool(this, "UserPool", {
+  passwordPolicy: {
+    requireUppercase: true,
+    requireSymbols: true,
+    requireDigits: true,
+    minLength: 8,
+  },
+  // true -> false
+  selfSignUpEnabled: false,
+  signInAliases: {
+    username: false,
+    email: true,
+  },
+});
+```
+
+### External Identity Provider
+
+This sample supports external identity provider. Currently we only support Google. To set up, See [SETUP_IDP.md](./docs/SETUP_IDP.md).
+
+### Local Development
+
+See [LOCAL DEVELOPMENT](./docs/LOCAL_DEVELOPMENT.md).
+
+### Contribution
+
+Thank you for considering contributing to this repository! We welcome bug fixes, language translations (i18n), feature enhancements, and other improvements.
+
+For feature enhancements and other improvements, **before creating a Pull Request, we would greatly appreciate it if you could create a Feature Request Issue to discuss the implementation approach and details. For bug fixes and language translations (i18n), proceed with creating a Pull Request directly.**
+
+Please also take a look at the following guidelines before contributing:
+
+- [Local Development](./docs/LOCAL_DEVELOPMENT.md)
+- [CONTRIBUTING](./CONTRIBUTING.md)
+
+### RAG (Retrieval Augmented Generation)
+
+See [here](./docs/RAG.md).
 
 ## Authors
 
 - [Takehiro Suzuki](https://github.com/statefb)
 - [Yusuke Wada](https://github.com/wadabee)
+
+## License
+
+This library is licensed under the MIT-0 License. See the LICENSE file.

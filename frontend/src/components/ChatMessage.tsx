@@ -8,33 +8,23 @@ import { MessageContentWithChildren } from '../@types/conversation';
 import ButtonIcon from './ButtonIcon';
 import Textarea from './Textarea';
 import Button from './Button';
+import ModalDialog from './ModalDialog';
+import { useTranslation } from 'react-i18next';
 
 type Props = BaseProps & {
   chatContent?: MessageContentWithChildren;
-  loading?: boolean;
   onChangeMessageId?: (messageId: string) => void;
   onSubmit?: (messageId: string, content: string) => void;
 };
 
 const ChatMessage: React.FC<Props> = (props) => {
+  const { t } = useTranslation();
   const [isEdit, setIsEdit] = useState(false);
   const [changedContent, setChangedContent] = useState('');
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+  const [isOpenPreviewImage, setIsOpenPreviewImage] = useState(false);
 
   const chatContent = useMemo<MessageContentWithChildren | undefined>(() => {
-    if (props.loading) {
-      return {
-        model: 'claude',
-        content: {
-          body: '',
-          contentType: 'text',
-        },
-        role: 'assistant',
-        id: '',
-        parent: null,
-        children: [],
-        sibling: [],
-      };
-    }
     return props.chatContent;
   }, [props]);
 
@@ -100,10 +90,44 @@ const ChatMessage: React.FC<Props> = (props) => {
 
         <div className="ml-5 grow ">
           {chatContent?.role === 'user' && !isEdit && (
-            <div className="break-all">
-              {chatContent.content.body.split('\n').map((c, idx) => (
-                <div key={idx}>{c}</div>
-              ))}
+            <div>
+              {chatContent.content.map((content, idx) => {
+                if (content.contentType === 'image') {
+                  const imageUrl = `data:${content.mediaType};base64,${content.body}`;
+                  return (
+                    <img
+                      key={idx}
+                      src={imageUrl}
+                      className="mb-2 h-48 cursor-pointer"
+                      onClick={() => {
+                        setPreviewImageUrl(imageUrl);
+                        setIsOpenPreviewImage(true);
+                      }}
+                    />
+                  );
+                } else {
+                  return (
+                    <React.Fragment key={idx}>
+                      {content.body.split('\n').map((c, idxBody) => (
+                        <div key={idxBody}>{c}</div>
+                      ))}
+                    </React.Fragment>
+                  );
+                }
+              })}
+              <ModalDialog
+                isOpen={isOpenPreviewImage}
+                onClose={() => setIsOpenPreviewImage(false)}
+                // Set image null after transition end
+                widthFromContent={true}
+                onAfterLeave={() => setPreviewImageUrl(null)}>
+                {previewImageUrl && (
+                  <img
+                    src={previewImageUrl}
+                    className="mx-auto max-h-[80vh] max-w-full rounded-md"
+                  />
+                )}
+              </ModalDialog>
             </div>
           )}
           {isEdit && (
@@ -115,44 +139,40 @@ const ChatMessage: React.FC<Props> = (props) => {
                 onChange={(v) => setChangedContent(v)}
               />
               <div className="flex justify-center gap-3">
-                <Button onClick={onSubmit}>変更 & 送信</Button>
+                <Button onClick={onSubmit}>{t('button.SaveAndSubmit')}</Button>
                 <Button
-                  className="border-gray-400 bg-aws-paper"
+                  outlined
                   onClick={() => {
                     setIsEdit(false);
                   }}>
-                  Cancel
+                  {t('button.cancel')}
                 </Button>
               </div>
             </div>
           )}
-
-          {chatContent?.role === 'assistant' && !props.loading && (
-            <Markdown>{chatContent.content.body}</Markdown>
-          )}
-          {props.loading && (
-            <div className="animate-pulse text-gray-400">▍</div>
+          {chatContent?.role === 'assistant' && (
+            <Markdown>{chatContent.content[0].body}</Markdown>
           )}
         </div>
       </div>
 
       <div className="col-start-11">
         <div className="flex">
-          {chatContent?.role === 'user' && !props.loading && !isEdit && (
+          {chatContent?.role === 'user' && !isEdit && (
             <ButtonIcon
-              className="mr-0.5 text-gray-400"
+              className="mr-0.5 text-gray"
               onClick={() => {
-                setChangedContent(chatContent.content.body);
+                setChangedContent(chatContent.content[0].body);
                 setIsEdit(true);
               }}>
               <PiNotePencil />
             </ButtonIcon>
           )}
-          {chatContent?.role === 'assistant' && !props.loading && (
+          {chatContent?.role === 'assistant' && (
             <>
               <ButtonCopy
-                className="mr-0.5 text-gray-400"
-                text={chatContent.content.body}
+                className="mr-0.5 text-gray"
+                text={chatContent.content[0].body}
               />
             </>
           )}

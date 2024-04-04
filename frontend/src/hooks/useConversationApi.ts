@@ -1,11 +1,11 @@
-import { MutatorCallback, useSWRConfig } from "swr";
+import { MutatorCallback, useSWRConfig } from 'swr';
 import {
   Conversation,
   ConversationMeta,
   PostMessageRequest,
   PostMessageResponse,
-} from "../@types/conversation";
-import useHttp from "./useHttp";
+} from '../@types/conversation';
+import useHttp from './useHttp';
 
 const useConversationApi = () => {
   const http = useHttp();
@@ -19,7 +19,7 @@ const useConversationApi = () => {
 
   return {
     getConversations: () => {
-      return http.get<ConversationMeta[]>("conversations", {
+      return http.get<ConversationMeta[]>('conversations', {
         keepPreviousData: true,
       });
     },
@@ -32,12 +32,15 @@ const useConversationApi = () => {
       );
     },
     postMessage: (input: PostMessageRequest) => {
-      return http.post<PostMessageResponse>("conversation", {
+      return http.post<PostMessageResponse>('conversation', {
         ...input,
       });
     },
     deleteConversation: (conversationId: string) => {
       return http.delete(`conversation/${conversationId}`);
+    },
+    clearConversations: () => {
+      return http.delete('conversations');
     },
     updateTitle,
     updateTitleWithGeneratedTitle: async (conversationId: string) => {
@@ -53,7 +56,7 @@ const useConversationApi = () => {
         | MutatorCallback<ConversationMeta[]>,
       options?: Parameters<typeof mutate>[2]
     ) => {
-      return mutate("conversations", conversations, options);
+      return mutate('conversations', conversations, options);
     },
   };
 };

@@ -1,13 +1,18 @@
 export type Role = 'system' | 'assistant' | 'user';
-export type Model = 'titan' | 'claude';
+export type Model =
+  | 'claude-instant-v1'
+  | 'claude-v2'
+  | 'claude-v3-sonnet'
+  | 'claude-v3-haiku';
 export type Content = {
-  contentType: 'text';
+  contentType: 'text' | 'image';
+  mediaType?: string;
   body: string;
 };
 
 export type MessageContent = {
   role: Role;
-  content: Content;
+  content: Content[];
   model: Model;
 };
 
@@ -24,6 +29,7 @@ export type PostMessageRequest = {
   message: MessageContent & {
     parentMessageId: null | string;
   };
+  botId?: string;
 };
 
 export type PostMessageResponse = {
@@ -37,6 +43,8 @@ export type ConversationMeta = {
   title: string;
   createTime: number;
   lastMessageId: string;
+  model: Model;
+  botId?: string;
 };
 
 export type MessageMap = {

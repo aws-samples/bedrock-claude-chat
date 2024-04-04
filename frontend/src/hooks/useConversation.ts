@@ -1,5 +1,5 @@
-import { produce } from "immer";
-import useConversationApi from "./useConversationApi";
+import { produce } from 'immer';
+import useConversationApi from './useConversationApi';
 
 const useConversation = () => {
   const conversationApi = useConversationApi();
@@ -14,8 +14,11 @@ const useConversation = () => {
     },
     getTitle: (conversationId: string) => {
       return (
-        conversations?.find((c) => c.id === conversationId)?.title ?? "New Chat"
+        conversations?.find((c) => c.id === conversationId)?.title ?? 'New Chat'
       );
+    },
+    getBotId: (conversationId: string) => {
+      return conversations?.find((c) => c.id === conversationId)?.botId ?? null;
     },
     deleteConversation: (conversationId: string) => {
       return mutate(async (current) => {
@@ -27,6 +30,12 @@ const useConversation = () => {
             draft?.splice(index, 1);
           }
         });
+      });
+    },
+    clearConversations: () => {
+      return mutate(async () => {
+        await conversationApi.clearConversations();
+        return [];
       });
     },
     updateTitle: (conversationId: string, title: string) => {

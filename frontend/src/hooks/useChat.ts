@@ -5,6 +5,7 @@ import {
   MessageContent,
   MessageContentWithChildren,
   MessageMap,
+  Model,
   PostMessageRequest,
 } from '../@types/conversation';
 import useConversation from './useConversation';
@@ -14,9 +15,16 @@ import useSnackbar from './useSnackbar';
 import { useNavigate } from 'react-router-dom';
 import { ulid } from 'ulid';
 import { convertMessageMapToArray } from '../utils/MessageUtils';
+import { useTranslation } from 'react-i18next';
+import useModel from './useModel';
 
 type ChatStateType = {
   [id: string]: MessageMap;
+};
+
+type BotInputType = {
+  botId: string;
+  hasKnowledge: boolean;
 };
 
 const NEW_MESSAGE_ID = {
@@ -50,6 +58,7 @@ const useChatState = create<{
   setCurrentMessageId: (s: string) => void;
   isGeneratedTitle: boolean;
   setIsGeneratedTitle: (b: boolean) => void;
+  getPostedModel: () => Model;
 }>((set, get) => {
   return {
     conversationId: '',
@@ -118,7 +127,7 @@ const useChatState = create<{
     editMessage: (id: string, messageId: string, content: string) => {
       set((state) => ({
         chats: produce(state.chats, (draft) => {
-          draft[id][messageId].content.body = content;
+          draft[id][messageId].content[0].body = content;
         }),
       }));
     },
@@ -162,10 +171,18 @@ const useChatState = create<{
         isGeneratedTitle: b,
       }));
     },
+    getPostedModel: () => {
+      return (
+        get().chats[get().conversationId]?.system?.model ??
+        // 画面に即時反映するためNEW_MESSAGEを評価
+        get().chats['']?.[NEW_MESSAGE_ID.ASSISTANT]?.model
+      );
+    },
   };
 });
 
 const useChat = () => {
+  const { t } = useTranslation();
   const {
     chats,
     conversationId,
@@ -182,11 +199,13 @@ const useChat = () => {
     setCurrentMessageId,
     isGeneratedTitle,
     setIsGeneratedTitle,
+    getPostedModel,
   } = useChatState();
   const { open: openSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
   const { post: postStreaming } = usePostMessageStreaming();
+  const { modelId, setModelId } = useModel();
 
   const conversationApi = useConversationApi();
   const {
@@ -210,22 +229,28 @@ const useChat = () => {
   // エラー処理
   useEffect(() => {
     if (error?.response?.status === 404) {
-      openSnackbar(
-        '指定のチャットは存在しないため、新規チャット画面を表示しました。'
-      );
+      openSnackbar(t('error.notFoundConversation'));
       navigate('');
       newChat();
     } else if (error) {
       openSnackbar(error?.message ?? '');
     }
-  }, [error, navigate, newChat, openSnackbar]);
+  }, [error, navigate, newChat, openSnackbar, t]);
 
   useEffect(() => {
     if (conversationId && data?.id === conversationId) {
       setMessages(conversationId, data.messageMap);
       setCurrentMessageId(data.lastMessageId);
+      setModelId(getPostedModel());
     }
-  }, [conversationId, data, setCurrentMessageId, setMessages]);
+  }, [
+    conversationId,
+    data,
+    getPostedModel,
+    setCurrentMessageId,
+    setMessages,
+    setModelId,
+  ]);
 
   useEffect(() => {
     setIsGeneratedTitle(false);
@@ -249,16 +274,23 @@ const useChat = () => {
       NEW_MESSAGE_ID.ASSISTANT,
       {
         role: 'assistant',
-        content: {
-          contentType: 'text',
-          body: '',
-        },
-        model: 'claude',
+        content: [
+          {
+            contentType: 'text',
+            body: '',
+          },
+        ],
+        model: messageContent.model,
       }
     );
   };
 
-  const postChat = (content: string) => {
+  const postChat = (params: {
+    content: string;
+    base64EncodedImages?: string[];
+    bot?: BotInputType;
+  }) => {
+    const { content, bot, base64EncodedImages } = params;
     const isNewChat = conversationId ? false : true;
     const newConversationId = ulid();
 
@@ -271,12 +303,32 @@ const useChat = () => {
     const parentMessageId = isNewChat
       ? 'system'
       : tmpMessages[tmpMessages.length - 1].id;
+
+    const modelToPost = isNewChat ? modelId : getPostedModel();
+
+    const imageContents: MessageContent['content'] = (
+      base64EncodedImages ?? []
+    ).map((encodedImage) => {
+      const result =
+        /data:(?<mediaType>image\/.+);base64,(?<encodedImage>.+)/.exec(
+          encodedImage
+        );
+
+      return {
+        body: result!.groups!.encodedImage,
+        contentType: 'image',
+        mediaType: result!.groups!.mediaType,
+      };
+    });
     const messageContent: MessageContent = {
-      content: {
-        body: content,
-        contentType: 'text',
-      },
-      model: 'claude',
+      content: [
+        ...imageContents,
+        {
+          body: content,
+          contentType: 'text',
+        },
+      ],
+      model: modelToPost,
       role: 'user',
     };
     const input: PostMessageRequest = {
@@ -286,14 +338,17 @@ const useChat = () => {
         parentMessageId: parentMessageId,
       },
       stream: true,
+      botId: bot?.botId,
     };
     const createNewConversation = () => {
-      setConversationId(newConversationId);
       // 画面のチラつき防止のために、Stateをコピーする
       copyMessages('', newConversationId);
 
       conversationApi
         .updateTitleWithGeneratedTitle(newConversationId)
+        .then(() => {
+          setConversationId(newConversationId);
+        })
         .finally(() => {
           syncConversations().then(() => {
             setIsGeneratedTitle(true);
@@ -306,22 +361,35 @@ const useChat = () => {
     // 画面に即時反映するために、Stateを更新する
     pushNewMessage(parentMessageId, messageContent);
 
-    const postPromise: Promise<void> = new Promise((resolve) => {
+    const postPromise: Promise<void> = new Promise((resolve, reject) => {
       if (USE_STREAMING) {
-        postStreaming(input, (c: string) => {
-          editMessage(conversationId ?? '', NEW_MESSAGE_ID.ASSISTANT, c);
-        }).then(() => {
-          resolve();
-        });
+        postStreaming({
+          input,
+          hasKnowledge: bot?.hasKnowledge,
+          dispatch: (c: string) => {
+            editMessage(conversationId ?? '', NEW_MESSAGE_ID.ASSISTANT, c);
+          },
+        })
+          .then(() => {
+            resolve();
+          })
+          .catch((e) => {
+            reject(e);
+          });
       } else {
-        conversationApi.postMessage(input).then((res) => {
-          editMessage(
-            conversationId ?? '',
-            NEW_MESSAGE_ID.ASSISTANT,
-            res.data.message.content.body
-          );
-          resolve();
-        });
+        conversationApi
+          .postMessage(input)
+          .then((res) => {
+            editMessage(
+              conversationId ?? '',
+              NEW_MESSAGE_ID.ASSISTANT,
+              res.data.message.content[0].body
+            );
+            resolve();
+          })
+          .catch((e) => {
+            reject(e);
+          });
       }
     });
 
@@ -336,10 +404,7 @@ const useChat = () => {
       })
       .catch((e) => {
         console.error(e);
-        removeMessage(
-          isNewChat ? newConversationId : conversationId,
-          NEW_MESSAGE_ID.ASSISTANT
-        );
+        removeMessage(conversationId ?? '', NEW_MESSAGE_ID.ASSISTANT);
       })
       .finally(() => {
         setPostingMessage(false);
@@ -348,9 +413,13 @@ const useChat = () => {
 
   /**
    * 再生成
-   * @param props content: 内容を上書きしたい場合に設定  messageId: 再生成対象のmessageId
+   * @param props content: 内容を上書きしたい場合に設定  messageId: 再生成対象のmessageId  botId: ボットの場合は設定する
    */
-  const regenerate = (props?: { content?: string; messageId?: string }) => {
+  const regenerate = (props?: {
+    content?: string;
+    messageId?: string;
+    bot?: BotInputType;
+  }) => {
     let index: number = -1;
     // messageIdが指定されている場合は、指定されたメッセージをベースにする
     if (props?.messageId) {
@@ -366,7 +435,7 @@ const useChat = () => {
 
     const parentMessage = produce(messages[index], (draft) => {
       if (props?.content) {
-        draft.content.body = props.content;
+        draft.content[0].body = props.content;
       }
     });
 
@@ -382,7 +451,12 @@ const useChat = () => {
         parentMessageId: parentMessage.parent,
       },
       stream: true,
+      botId: props?.bot?.botId,
     };
+
+    if (input.message.parentMessageId === null) {
+      input.message.parentMessageId = 'system';
+    }
 
     setPostingMessage(true);
 
@@ -394,11 +468,13 @@ const useChat = () => {
         NEW_MESSAGE_ID.ASSISTANT,
         {
           role: 'assistant',
-          content: {
-            contentType: 'text',
-            body: '',
-          },
-          model: 'claude',
+          content: [
+            {
+              contentType: 'text',
+              body: '',
+            },
+          ],
+          model: messages[index].model,
         }
       );
     } else {
@@ -407,8 +483,11 @@ const useChat = () => {
 
     setCurrentMessageId(NEW_MESSAGE_ID.ASSISTANT);
 
-    postStreaming(input, (c: string) => {
-      editMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT, c);
+    postStreaming({
+      input,
+      dispatch: (c: string) => {
+        editMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT, c);
+      },
     })
       .then(() => {
         mutate();
@@ -441,9 +520,9 @@ const useChat = () => {
     setCurrentMessageId,
     postChat,
     regenerate,
-
+    getPostedModel,
     // エラーのリトライ
-    retryPostChat: (content?: string) => {
+    retryPostChat: (params: { content?: string; bot?: BotInputType }) => {
       const length_ = messages.length;
       if (length_ === 0) {
         return;
@@ -453,11 +532,20 @@ const useChat = () => {
         // 通常のメッセージ送信時
         // エラー発生時の最新のメッセージはユーザ入力;
         removeMessage(conversationId, latestMessage.id);
-        postChat(content ?? latestMessage.content.body);
+        postChat({
+          content: params.content ?? latestMessage.content[0].body,
+          bot: params.bot
+            ? {
+                botId: params.bot.botId,
+                hasKnowledge: params.bot.hasKnowledge,
+              }
+            : undefined,
+        });
       } else {
         // 再生成時
         regenerate({
-          content: content ?? latestMessage.content.body,
+          content: params.content ?? latestMessage.content[0].body,
+          bot: params.bot,
         });
       }
     },

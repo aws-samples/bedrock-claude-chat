@@ -1,11 +1,68 @@
 # Bedrock Claude Chat
 
-> **Warning**
-> 現在のバージョン(`v0.2.x`)は会話スキーマの変更により以前のバージョン(`v0.1.0`)との互換性がありません。以前のバージョンで DynamoDB に保存された会話はレンダリングできませんのでご注意ください。
+![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/test.yml/badge.svg)
 
-このリポジトリは、生成系 AI を提供する[Amazon Bedrock](https://aws.amazon.com/jp/bedrock/)の基盤モデルの一つである、Anthropic 社製 LLM [Claude 2](https://www.anthropic.com/index/claude-2)を利用したチャットボットのサンプルです。
+> [!Tip]
+> 🔔**API 公開/管理ダッシュボードの機能がリリースされました。** 詳細は[Release](https://github.com/aws-samples/bedrock-claude-chat/releases/tag/v0.4.5)をご確認ください。
 
-![](./imgs/demo2.gif)
+> [!Warning]
+> 現在のバージョン(v0.4.x)は、DynamoDB テーブルスキーマの変更のため、過去バージョン(~v0.3.0)とは互換性がありません。**以前のバージョンから v0.4.x へアップデートすると、既存の対話記録は全て破棄されますので注意が必要です。**
+
+このリポジトリは、生成系 AI を提供する[Amazon Bedrock](https://aws.amazon.com/jp/bedrock/)の基盤モデルの一つである、Anthropic 社製 LLM [Claude](https://www.anthropic.com/)を利用したチャットボットのサンプルです。
+
+### 基本的な会話
+
+[Claude 3](https://www.anthropic.com/news/claude-3-family)によるテキストと画像の両方を利用したチャットが可能です。現在`Haiku`および`Sonnet`をサポートしています。
+![](./imgs/demo_ja.gif)
+
+### ボットのカスタマイズ
+
+外部のナレッジおよび具体的なインストラクションを組み合わせ、ボットをカスタマイズすることが可能です（外部のナレッジを利用した方法は[RAG](./RAG_ja.md)として知られています）。なお、作成したボットはアプリケーションのユーザー間で共有することができます。カスタマイズされたボットはスタンドアロンの API として公開できます (詳細は[こちら](./docs/PUBLISH_API.md)をご覧ください)。
+
+![](./imgs/bot_creation_ja.png)
+![](./imgs/bot_chat_ja.png)
+![](./imgs/bot_api_publish_screenshot3.png)
+
+### 管理者ダッシュボード
+
+管理者ダッシュボードで各ユーザー/ボットの使用状況を分析できます。[詳細](./docs/ADMINISTRATOR.md)
+
+![](./imgs/admin_bot_analytics.png)
+
+## 🚀 まずはお試し
+
+- us-east-1 リージョンにて、[Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > `Anthropic / Claude 3 Haiku`, `Anthropic / Claude 3 Sonnet`, `Cohere / Embed Multilingual`をチェックし、`Save changes`をクリックします
+
+<details>
+<summary>スクリーンショット</summary>
+
+![](./imgs/model_screenshot.png)
+
+</details>
+
+- [CloudShell](https://console.aws.amazon.com/cloudshell/home)をデプロイしたいリージョン (ap-northeast-1 など) で開きます
+
+- 下記のコマンドでデプロイ実行します
+
+```sh
+git clone https://github.com/aws-samples/bedrock-claude-chat.git
+cd bedrock-claude-chat
+chmod +x bin.sh
+./bin.sh
+```
+
+- 30 分ほど経過後、下記の出力が得られるのでブラウザからアクセスします
+
+```
+Frontend URL: https://xxxxxxxxx.cloudfront.net
+```
+
+![](./imgs/signin.png)
+
+上記のようなサインアップ画面が現れますので、E メールを登録・ログインしご利用ください。
+
+> [!Important]
+> このデプロイ方法では、URL を知っている誰でもサインアップできてしまいます。本番運用で使用する場合は、セキュリティリスクを軽減するために IP アドレス制限やセルフサインアップの無効化を強くお勧めします。設定方法は、IP アドレス制限の場合は[Deploy using CDK](#deploy-using-cdk)、セルフサインアップの無効化の場合は[セルフサインアップを無効化する](#セルフサインアップを無効化する)をご覧ください。
 
 ## アーキテクチャ
 
@@ -16,60 +73,67 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 - [Amazon CloudFront](https://aws.amazon.com/jp/cloudfront/) + [S3](https://aws.amazon.com/jp/s3/): フロントエンドアプリケーションの配信 ([React](https://react.dev/), [Tailwind CSS](https://tailwindcss.com/))
 - [AWS WAF](https://aws.amazon.com/jp/waf/): IP アドレス制限
 - [Amazon Cognito](https://aws.amazon.com/jp/cognito/): ユーザ認証
-- [Amazon Bedrock](https://aws.amazon.com/jp/bedrock/): 基盤モデルを API 経由で利用できるマネージドサービス
+- [Amazon Bedrock](https://aws.amazon.com/jp/bedrock/): 基盤モデルを API 経由で利用できるマネージドサービス。Claude はチャットの応答に利用され、Cohere は RAG 用のベクトル埋め込みに利用されます
+- [Amazon EventBridge Pipes](https://aws.amazon.com/eventbridge/pipes/): DynamoDB からのイベントを受け取り、後続の ECS タスクを起動することで、外部のナレッジをカスタマイズ bot に反映します
+- [Amazon Elastic Container Service](https://aws.amazon.com/ecs/): ナレッジをクロール・パースし、埋め込みベクトルと共に Aurora PostgreSQL へ保存します。[Cohere Multilingual](https://txt.cohere.com/multilingual/)がベクトル計算に利用されます
+- [Amazon Aurora PostgreSQL](https://aws.amazon.com/rds/aurora/): [pgvector](https://github.com/pgvector/pgvector) プラグインを利用したスケーラブルなベクトル DB
+- [Amazon Athena](https://aws.amazon.com/athena/): S3 バケット内のデータを分析するクエリサービス
 
 ![](imgs/arch.png)
 
 ## 機能・ロードマップ
 
-- [x] 認証 (サインアップ・サインイン)
-- [x] 会話の新規作成・保存・削除
-- [x] チャットボットの返信内容のコピー
-- [x] 会話の件名自動提案
-- [x] コードのシンタックスハイライト
-- [x] マークダウンのレンダリング
-- [x] ストリーミングレスポンス
-- [x] IP アドレス制限
-- [x] メッセージの編集と再送
-- [ ] プロンプトテンプレートの保存と再利用
-- [ ] I18n 対応 (日/英)
+<details>
+<summary>基本的なチャット機能</summary>
 
-## プロジェクトのデプロイ
+- [x] 認証 (サインアップ、サインイン)
+- [x] 会話の作成、保存、削除
+- [x] チャットボットの返答のコピー
+- [x] 会話のための自動的なトピックの提案
+- [x] コードの構文強調表示
+- [x] Markdown の表示
+- [x] ストリーミング応答
+- [x] IP アドレスの制限
+- [x] メッセージの編集と再送信
+- [x] 国際化
+- [x] モデルの切り替え
+</details>
 
-### 🚀 Easy Deployment
+<details>
+<summary>カスタマイズされたボットの機能</summary>
 
-> Note: 2023/10 現在、Bedrock はすべてのリージョンをサポートしていません。以下の手順では Bedrock リソースを`us-east-1`にデプロイします（他のリソースは CloudShell が実行されたリージョンにデプロイされます）。Bedrock のリージョンを変更する必要がある場合は、この章の後の指示に従って CDK を直接使用してデプロイしてください。
+- [x] カスタマイズされたボットの作成
+- [x] カスタマイズされたボットの共有
+- [x] 独立した API として公開
+</details>
 
-- [CloudShell](https://console.aws.amazon.com/cloudshell/home)を開きます
-- 下記のコマンドでリポジトリをクローンします
+<details>
+<summary>RAG機能</summary>
 
-```sh
-git clone https://github.com/aws-samples/bedrock-claude-chat.git
-```
+- [x] Web (html)
+- [x] テキストデータ (txt、csv、markdown など)
+- [x] PDF
+- [x] Microsoft Office ファイル (pptx、docx、xlsx)
+- [x] YouTube の字幕
+- [ ] S3 バケットからのインポート
+- [ ] 既存の Kendra / OpenSearch / KnowledgeBase からのインポート
+</details>
 
-- 下記のコマンドでデプロイ実行します
+<details>
+<summary>管理者機能</summary>
 
-```sh
-cd bedrock-claude-chat
-chmod +x bin.sh
-./bin.sh
-```
+- [x] ボットごとの使用料の追跡
+- [x] 公開されたボットの一覧表示
+</details>
 
-- 10 分ほど経過後、下記の出力が得られるのでブラウザからアクセスします
-
-```
-Frontend URL: https://xxxxxxxxx.cloudfront.net
-```
-
-![](./imgs/signin.png)
-
-上記のようなサインアップ画面が現れますので、E メールを登録・ログインしご利用ください。
-
-### Deploy using CDK
+## Deploy using CDK
 
 上記 Easy Deployment は[AWS CodeBuild](https://aws.amazon.com/jp/codebuild/)を利用し、内部で CDK によるデプロイを実行しています。ここでは直接 CDK によりデプロイする手順を記載します。
 
-- お手元に UNIX コマンドおよび Node.js 実行環境を用意してください。もし無い場合、[Cloud9](https://github.com/aws-samples/cloud9-setup-for-prototyping)をご利用いただくことも可能です
+- お手元に UNIX コマンドおよび Node.js, Docker 実行環境を用意してください。もし無い場合、[Cloud9](https://github.com/aws-samples/cloud9-setup-for-prototyping)をご利用いただくことも可能です。
+
+> [!Note]
+> デプロイ時にローカル環境のストレージ容量が不足すると CDK のブートストラップがエラーとなってしまう可能性があります。Cloud9 等で実行される場合は、インスタンスのボリュームサイズを拡張のうえデプロイ実施されることをお勧めします。
 
 - このリポジトリをクローンします
 
@@ -124,17 +188,23 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 
 ## その他
 
-### テキスト生成パラメータの設定
+### テキスト生成パラメータ・ベクトル埋め込みパラメータの設定
 
-[config.py](../backend/common/config.py)を編集後、`cdk deploy`を実行してください。
+[config.py](../backend/app/config.py)を編集後、`cdk deploy`を実行してください。
 
 ```py
 GENERATION_CONFIG = {
     "max_tokens_to_sample": 500,
-    "temperature": 0.0,
+    "temperature": 0.6,
     "top_k": 250,
     "top_p": 0.999,
     "stop_sequences": ["Human: ", "Assistant: "],
+}
+
+EMBEDDING_CONFIG = {
+    "model_id": "amazon.titan-embed-text-v1",
+    "chunk_size": 1000,
+    "chunk_overlap": 100,
 }
 ```
 
@@ -142,41 +212,54 @@ GENERATION_CONFIG = {
 
 cli および CDK を利用されている場合、`cdk destroy`を実行してください。そうでない場合は[CloudFormation](https://console.aws.amazon.com/cloudformation/home)へアクセスし、手動で`BedrockChatStack`および`FrontendWafStack`を削除してください。なお`FrontendWafStack`は `us-east-1` リージョンにあります。
 
-### フロントエンドのローカルでの開発について
+### 言語設定について
 
-現在このサンプルでは、`cdk deploy` された AWS リソース（API Gateway、Cognito など）を使用してローカルでフロントを立ち上げながら改変作業を加えることができます。
+このアセットは、[i18next-browser-languageDetector](https://github.com/i18next/i18next-browser-languageDetector) を用いて自動で言語を検出します。もし任意の言語へ変更されたい場合はアプリケーション左下のメニューから切り替えてください。なお以下のように Query String で設定することも可能です。
 
-1. [Deploy using CDK](#deploy-using-cdk) を参考に AWS 環境上にデプロイを行う
-2. `frontend/.env.template` 複製し `frontend/.env.local` という名前で保存する。
-3. `.env.local` の中身を `cdk deploy` の出力結果（`BedrockChatStack.AuthUserPoolClientIdXXXXX` など）を見ながら穴埋めしていく
-4. 下記コマンドを実行する
+> `https://example.com?lng=ja`
 
-```zsh
-cd frontend && npm run dev
+### セルフサインアップを無効化する
+
+このサンプルはデフォルトでセルフサインアップが有効化してあります。セルフサインアップを無効にするには、[auth.ts](./cdk/lib/constructs/auth.ts)を開き、`selfSignUpEnabled` を `false` に切り替えてから再デプロイしてください。
+
+```ts
+const userPool = new UserPool(this, "UserPool", {
+  passwordPolicy: {
+    requireUppercase: true,
+    requireSymbols: true,
+    requireDigits: true,
+    minLength: 8,
+  },
+  // true -> false
+  selfSignUpEnabled: false,
+  signInAliases: {
+    username: false,
+    email: true,
+  },
+});
 ```
 
-### ストリーミングの利用
+### 外部のアイデンティティプロバイダー
 
-現在、環境変数として `VITE_APP_USE_STREAMING` というのをフロントエンド側で指定しています。バックエンドをローカルで動かす場合は `false` に指定してただき、AWS で動かす場合は `true` にすることを推奨します。  
-Streaming を有効化すると文章生成結果がストリーミングされるためリアルタイムで文字列が生成されていきます。
+このサンプルは外部のアイデンティティプロバイダーをサポートしています。現在、Google のみをサポートしています。設定するには、[こちら](./SET_UP_IDP_ja.md)をご覧ください。
 
-### コンテナを利用したローカルでの開発について
+### ローカルでの開発について
 
-[docker-compose.yml](../docker-compose.yml) を利用することで、フロントエンド/バックエンドAPI/DynamoDB Local をローカル環境で動かし開発を行うことができます。
+- [こちら](./LOCAL_DEVELOPMENT_ja.md)を参照ください。
 
-※ フロントエンドはホットリロードに対応していますが、バックエンドAPI はディレクトリ構造上ソースコードのマウントができないためホットリロードに対応しておりません。
+### Pull Request
 
-```bash
-# コンテナのビルド
-docker compose build
+コントリビュートを検討していただきありがとうございます！バグ修正、言語翻訳（i18n）、機能拡張、その他の改善を歓迎しています。
 
-# コンテナの起動
-docker compose up
+機能拡張やその他の改善については、**プルリクエストを作成する前に、実装方法や詳細について議論するために、Feature Request Issue を作成いただくようお願いいたします。**
 
-# コンテナの停止
-docker compose down
-```
+バグ修正については、直接プルリクエストを作成してください。
 
-### Kendra を利用した RAG について
+コントリビュートする前に、以下のガイドラインもご確認ください。
 
-本サンプルでは Kendra を利用した RAG は実装しておりません。実導入する場合、アクセスコントロールポリシーやデータコネクタの有無、接続先データソースの認証・認可方法は組織により多様なため、シンプルに一般化することが難しいためです。実用するにはレイテンシーの低下やトークン消費量の増加などのデメリットや、検索精度を検証するための PoC が必須であることを考慮する必要があるため、[jp-rag-sample](https://github.com/aws-samples/jp-rag-sample)等のアセットを活用した PoC をおすすめします。
+- [ローカル環境での開発](./LOCAL_DEVELOPMENT_ja.md)
+- [CONTRIBUTING](../CONTRIBUTING.md)
+
+### RAG (Retrieval Augmented Generation, 検索拡張生成)
+
+[こちら](./RAG_ja.md)を参照

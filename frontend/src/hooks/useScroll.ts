@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 const useScroll = () => {
   const [disabled, setDisabled] = useState(false);
 
   useEffect(() => {
-    const elem = document.getElementById("main");
+    const elem = document.getElementById('main');
     if (!elem) {
       return;
     }
@@ -16,26 +16,25 @@ const useScroll = () => {
         setDisabled(true);
       }
     };
-    elem.addEventListener("scroll", listener);
+    elem.addEventListener('scroll', listener);
 
     return () => {
-      elem.removeEventListener("scroll", listener);
+      elem.removeEventListener('scroll', listener);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {
     scrollToTop: () => {
-      document.getElementById("main")?.scrollTo({
+      document.getElementById('main')?.scrollTo({
         top: 0,
-        behavior: "smooth",
+        behavior: 'smooth',
       });
     },
     scrollToBottom: () => {
       if (!disabled) {
-        document.getElementById("main")?.scrollTo({
-          top: document.getElementById("main")?.scrollHeight,
-          behavior: "smooth",
+        document.getElementById('main')?.scrollTo({
+          top: document.getElementById('main')?.scrollHeight,
+          behavior: 'smooth',
         });
       }
     },

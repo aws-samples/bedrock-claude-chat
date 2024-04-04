@@ -1,17 +1,17 @@
-import React, { useEffect, useState } from "react";
-import { BaseProps } from "../@types/common";
-import { PiRectangleFill } from "react-icons/pi";
+import React, { useEffect, useState } from 'react';
+import { BaseProps } from '../@types/common';
+import { PiRectangleFill } from 'react-icons/pi';
 
 type Props = BaseProps & {
   text: string;
 };
 
 const LazyOutputText: React.FC<Props> = (props) => {
-  const [displayText, setDisplayText] = useState("");
+  const [displayText, setDisplayText] = useState('');
 
   useEffect(() => {
     const functions: NodeJS.Timeout[] = [];
-    props.text.split("").forEach((_, idx) => {
+    props.text.split('').forEach((_, idx) => {
       functions.push(
         setTimeout(() => {
           setDisplayText(() => {
@@ -27,15 +27,13 @@ const LazyOutputText: React.FC<Props> = (props) => {
         clearTimeout(f);
       });
     };
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.text]);
 
   return (
-    <div className={`${props.className ?? ""} flex items-center`}>
+    <div className={`${props.className ?? ''} flex items-center`}>
       {displayText}
       {props.text !== displayText && (
-        <PiRectangleFill className="rotate-90 -scale-y-75 text-xl animate-fastPulse" />
+        <PiRectangleFill className="rotate-90 -scale-y-75 animate-fastPulse text-xl" />
       )}
     </div>
   );
