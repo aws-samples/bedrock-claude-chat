@@ -6,7 +6,7 @@ import unittest
 from pydantic import BaseModel
 
 from tests.test_usecases.utils.optimized import (
-    create_bot_alias,
+    create_test_bot_alias,
     create_test_private_bot,
     create_test_public_bot,
 )
@@ -62,10 +62,10 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             self.second_public_bot_id, True, self.second_user_id
         )
 
-        alias1 = create_bot_alias(
+        alias1 = create_test_bot_alias(
             self.first_bot_alias_id, self.first_public_bot_id, True
         )
-        alias2 = create_bot_alias(
+        alias2 = create_test_bot_alias(
             self.second_bot_alias_id, self.second_public_bot_id, False
         )
 

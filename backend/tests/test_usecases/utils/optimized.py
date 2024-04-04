@@ -81,7 +81,7 @@ def create_test_public_bot(
     )
 
 
-def create_bot_alias(id, original_bot_id, is_pinned):
+def create_test_bot_alias(id, original_bot_id, is_pinned):
     return BotAliasModel(
         id=id,
         # Different from original. Should be updated after `fetch_all_bots_by_user_id`
