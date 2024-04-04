@@ -1,18 +1,18 @@
 const translation = {
   translation: {
     app: {
-      name: 'Bedrock Claude Chat',
+      name: 'Softchoice Chatbot',
       inputMessage: 'Send a message',
-      starredBots: 'Starred Bots',
-      recentlyUsedBots: 'Recently Used Bots',
-      conversationHistory: 'History',
+      starredBots: 'Starred Workspaces',
+      recentlyUsedBots: 'Recently Used Workspaces',
+      conversationHistory: 'Chat History',
       chatWaitingSymbol: '▍',
-      adminConsoles: 'Admin Only',
+      adminConsoles: 'Admin',
     },
     bot: {
       label: {
-        myBots: 'My Bots',
-        recentlyUsedBots: 'Recently Used Shared Bots',
+        myBots: 'My Workspaces',
+        recentlyUsedBots: 'Recently Used Shared Workspaces',
         knowledge: 'Knowledge',
         url: 'URL',
         sitemap: 'Sitemap URL',
@@ -23,8 +23,8 @@ const translation = {
         notAvailableBotInputMessage: 'This bot is NOT available.',
         noDescription: 'No Description',
         notAvailable: 'This bot is NOT available.',
-        noBots: 'No Bots.',
-        noBotsRecentlyUsed: 'No Recently Used Shared Bots.',
+        noBots: 'No Workspaces.',
+        noBotsRecentlyUsed: 'No Recently Used Shared Workspaces.',
         retrievingKnowledge: '[Retrieving Knowledge...]',
         dndFileUpload:
           'You can upload files by drag and drop.\nSupported files: {{fileExtensions}}',
@@ -48,7 +48,7 @@ const translation = {
       },
       help: {
         overview:
-          'Bots operate according to predefined instructions. Chat does not work as intended unless the context is defined in the message, but with bots, there is no need to define the context.',
+          'Workspaces operate according to predefined instructions. Chat does not work as intended unless the context is defined in the message, but with workspaces, there is no need to define the context.',
         instructions:
           'Define how the bot should behave. Giving ambiguous instructions may lead to unpredictable movements, so provide clear and specific instructions.',
         knowledge: {
@@ -102,10 +102,10 @@ How would you categorize this email?`,
         },
       },
       create: {
-        pageTitle: 'Create My Bot',
+        pageTitle: 'Create My Workspace',
       },
       edit: {
-        pageTitle: 'Edit My Bot',
+        pageTitle: 'Edit My Workspace',
       },
 
       item: {
@@ -114,7 +114,7 @@ How would you categorize this email?`,
         instruction: 'Instructions',
       },
       apiSettings: {
-        pageTitle: 'Shared Bot Publish API Settings',
+        pageTitle: 'Shared Workspace Publish API Settings',
         label: {
           endpoint: 'API Endpoint',
           usagePlan: 'Usage Plan',
@@ -142,8 +142,8 @@ How would you categorize this email?`,
         },
         help: {
           overview:
-            "Creating an API enables the Bot's functions to be accessed by external clients; APIs enable integration with external applications.",
-          endpoint: 'The client can use the Bot from this endpoint.',
+            "Creating an API enables the Workspace's functions to be accessed by external clients; APIs enable integration with external applications.",
+          endpoint: 'The client can use the Workspace from this endpoint.',
           usagePlan:
             'Usage plans specify the number or rate of requests that your API accepts from a client. Associate an API with a usage plan to track the requests your API receives.',
           throttling: 'Limit the rate that users can call your API.',
@@ -168,7 +168,7 @@ How would you categorize this email?`,
         },
         alert: {
           botUnshared: {
-            title: 'Please Share The Bot',
+            title: 'Please Share The Workspace',
             body: 'You cannot publish an API for the bot that is not shared.',
           },
           deploying: {
@@ -200,7 +200,7 @@ How would you categorize this email?`,
         },
       },
       button: {
-        newBot: 'Create New Bot',
+        newBot: 'Create New Workspace',
         create: 'Create',
         edit: 'Edit',
         delete: 'Delete',
@@ -235,9 +235,9 @@ How would you categorize this email?`,
     admin: {
       sharedBotAnalytics: {
         label: {
-          pageTitle: 'Shared Bot Analytics',
+          pageTitle: 'Shared Workspace Analytics',
           noPublicBotUsages:
-            'During the Calculation Period, no public bots were utilized.',
+            'During the Calculation Period, no public workspaces were utilized.',
           published: 'API is published.',
           SearchCondition: {
             title: 'Calculation Period',
@@ -248,7 +248,7 @@ How would you categorize this email?`,
         },
         help: {
           overview:
-            'Monitor the usage status of Shared Bots and Published Bot APIs.',
+            'Monitor the usage status of Shared Workspaces and Published Workspace APIs.',
           calculationPeriod:
             'If the Calculation Period is not set, the cost for today will be displayed.',
         },
@@ -262,8 +262,8 @@ How would you categorize this email?`,
       },
       botManagement: {
         label: {
-          pageTitle: 'Bot Management',
-          sharedUrl: 'Shared Bot URL',
+          pageTitle: 'Workspace Management',
+          sharedUrl: 'Shared Workspace URL',
           apiSettings: 'API Publish Settings',
           noKnowledge: 'This bot has no Knowledge.',
           notPublishApi: "This bot's API is not published.",
@@ -307,8 +307,8 @@ How would you categorize this email?`,
     },
     button: {
       newChat: 'New Chat',
-      botConsole: 'Bot Console',
-      sharedBotAnalytics: 'Shared Bot Analytics',
+      botConsole: 'Workspace Console',
+      sharedBotAnalytics: 'Shared Workspace Analytics',
       apiManagement: 'API Management',
       userUsages: 'User Usages',
       SaveAndSubmit: 'Save & Submit',

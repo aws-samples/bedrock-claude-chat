@@ -3,7 +3,8 @@ export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     fontFamily: {
-      body: ['M PLUS Rounded 1c'],
+      body: ['DM Sans'],
+      display: ['DM Sans']
     },
     extend: {
       transitionProperty: {
@@ -14,9 +15,9 @@ export default {
         fastPulse: 'pulse 0.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       colors: {
-        'aws-squid-ink': '#232F3E',
-        'aws-sea-blue': '#005276',
-        'aws-sea-blue-hover': '#003550',
+        'aws-squid-ink': '#40444c',   // Side bar
+        'aws-sea-blue': '#7c03ff',    // Model hover, chat button icons
+        'aws-sea-blue-hover': '#7c03ff',  // Side bar hover, menu
         'aws-aqua': '#007faa',
         'aws-lab': '#38ef7d',
         'aws-mist': '#9ffcea',

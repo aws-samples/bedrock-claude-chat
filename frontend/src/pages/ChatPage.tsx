@@ -27,6 +27,7 @@ import StatusSyncBot from '../components/StatusSyncBot';
 import Alert from '../components/Alert';
 import useBotSummary from '../hooks/useBotSummary';
 import useModel from '../hooks/useModel';
+import logo from '../assets/softchoice-logo.svg';
 
 const ChatPage: React.FC = () => {
   const { t } = useTranslation();
@@ -289,6 +290,9 @@ const ChatPage: React.FC = () => {
         )}
       </div>
       <hr className="w-full border-t border-gray" />
+      <div className="relative flex w-full justify-center">
+          <img src={logo} alt="Logo" className="object-scale-down h-20 w-80"/>
+      </div>
       <div className="pb-52 lg:pb-40">
         {messages.length === 0 ? (
           <div className="relative flex w-full justify-center">
