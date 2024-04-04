@@ -21,7 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials
 from pydantic import ValidationError
-from starlette.types import ASGIApp, Message
+from starlette.types import ASGIApp, HTTPExceptionHandler, Message
 
 CORS_ALLOW_ORIGINS = os.environ.get("CORS_ALLOW_ORIGINS", "*")
 PUBLISHED_API_ID = os.environ.get("PUBLISHED_API_ID", None)
@@ -68,7 +68,7 @@ app.add_middleware(
 )
 
 
-def error_handler_factory(status_code: int) -> Callable[[Exception], JSONResponse]:
+def error_handler_factory(status_code: int) -> HTTPExceptionHandler:
     def error_handler(_: Request, exc: Exception) -> JSONResponse:
         logger.error(exc)
         logger.error("".join(traceback.format_tb(exc.__traceback__)))
