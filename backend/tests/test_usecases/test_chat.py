@@ -5,7 +5,7 @@ import unittest
 from pprint import pprint
 
 from tests.test_usecases.utils.optimized import (
-    create_private_bot,
+    create_test_private_bot,
     create_public_bot,
     create_instruction_template,
 )
@@ -472,7 +472,7 @@ class TestChatWithCustomizedBot(unittest.TestCase):
 
     def setUp(self) -> None:
 
-        private_bot = create_private_bot(
+        private_bot = create_test_private_bot(
             self.first_private_bot_id,
             True,
             self.first_user_id,

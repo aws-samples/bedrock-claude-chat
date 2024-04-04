@@ -14,7 +14,7 @@ from app.repositories.models.custom_bot import (
 )
 
 
-def create_private_bot(
+def create_test_private_bot(
     id, is_pinned, owner_user_id, instruction="Test Bot Prompt", sync_status="RUNNING"
 ):
     return BotModel(
