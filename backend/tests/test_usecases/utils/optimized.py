@@ -46,7 +46,7 @@ def create_test_private_bot(
     )
 
 
-def create_public_bot(
+def create_test_public_bot(
     id,
     is_pinned,
     owner_user_id,

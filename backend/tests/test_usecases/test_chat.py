@@ -6,7 +6,7 @@ from pprint import pprint
 
 from tests.test_usecases.utils.optimized import (
     create_test_private_bot,
-    create_public_bot,
+    create_test_public_bot,
     create_instruction_template,
 )
 
@@ -479,7 +479,7 @@ class TestChatWithCustomizedBot(unittest.TestCase):
             create_instruction_template("俺様風の口調で"),
             "SUCCEEDED",
         )
-        public_bot = create_public_bot(
+        public_bot = create_test_public_bot(
             self.first_public_bot_id,
             True,
             self.second_user_id,

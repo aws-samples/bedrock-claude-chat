@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from tests.test_usecases.utils.optimized import (
     create_bot_alias,
     create_test_private_bot,
-    create_public_bot,
+    create_test_public_bot,
 )
 
 from app.repositories.custom_bot import (
@@ -55,10 +55,10 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
         bot3 = create_test_private_bot(self.third_bot_id, False, self.first_user_id)
         bot4 = create_test_private_bot(self.fourth_bot_id, False, self.first_user_id)
 
-        public_bot1 = create_public_bot(
+        public_bot1 = create_test_public_bot(
             self.first_public_bot_id, True, self.second_user_id
         )
-        public_bot2 = create_public_bot(
+        public_bot2 = create_test_public_bot(
             self.second_public_bot_id, True, self.second_user_id
         )
 
