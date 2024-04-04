@@ -48,6 +48,11 @@ const BotEditPage: React.FC = () => {
     return isNewBot ? ulid() : paramsBotId ?? '';
   }, [isNewBot, paramsBotId]);
 
+  const isEnabledEmbeddingParams = useMemo(
+    () => !(embeddingParams.chunkSize < embeddingParams.chunkOverlap),
+    [embeddingParams]
+  );
+
   useEffect(() => {
     if (!isNewBot) {
       setIsLoading(true);
@@ -460,6 +465,19 @@ const BotEditPage: React.FC = () => {
                 </div>
               </ExpandableDrawerGroup>
 
+              {!isEnabledEmbeddingParams && (
+                <Alert
+                  className="mt-2"
+                  severity="error"
+                  title={t('embeddingSetting.alert.validation.error.title')}>
+                  <>
+                    <div className="rounded border bg-light-gray p-2 text-dark-gray">
+                      {t('embeddingSetting.alert.validation.error.message')}
+                    </div>
+                  </>
+                </Alert>
+              )}
+
               <div className="flex justify-between">
                 <Button outlined icon={<PiCaretLeft />} onClick={onClickBack}>
                   {t('button.back')}
@@ -469,14 +487,14 @@ const BotEditPage: React.FC = () => {
                   <Button
                     onClick={onClickCreate}
                     loading={isLoading}
-                    disabled={disabledRegister}>
+                    disabled={disabledRegister || !isEnabledEmbeddingParams}>
                     {t('bot.button.create')}
                   </Button>
                 ) : (
                   <Button
                     onClick={onClickEdit}
                     loading={isLoading}
-                    disabled={disabledRegister}>
+                    disabled={disabledRegister || !isEnabledEmbeddingParams}>
                     {t('bot.button.edit')}
                   </Button>
                 )}

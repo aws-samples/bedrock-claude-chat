@@ -350,6 +350,14 @@ How would you categorize this email?`,
         description:
           'Chunk overlap represents the number of shared characters between adjacent chunks.',
       },
+      alert: {
+        validation: {
+          error: {
+            title: 'Validation Error',
+            message: 'Chunk overlap must be set to less than Chunk size',
+          },
+        },
+      },
     },
     error: {
       answerResponse: 'An error occurred while responding.',
