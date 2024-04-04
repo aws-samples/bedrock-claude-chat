@@ -3,134 +3,116 @@ import logging
 import os
 from datetime import datetime
 from decimal import Decimal as decimal
+from functools import wraps
 
 import boto3
-from app.repositories.model import (
+from app.repositories.common import (
+    TRANSACTION_BATCH_SIZE,
+    RecordNotFoundError,
+    _get_table_client,
+    compose_conv_id,
+    decompose_conv_id,
+)
+from app.repositories.models.conversation import (
     ContentModel,
-    ConversationMetaModel,
+    ConversationMeta,
     ConversationModel,
     MessageModel,
 )
+from app.utils import get_current_time
 from boto3.dynamodb.conditions import Key
-
-DDB_ENDPOINT_URL = os.environ.get("DDB_ENDPOINT_URL")
-TABLE_NAME = os.environ.get("TABLE_NAME", "")
-ACCOUNT = os.environ.get("ACCOUNT", "")
-REGION = os.environ.get("REGION", "ap-northeast-1")
-TABLE_ACCESS_ROLE_ARN = os.environ.get("TABLE_ACCESS_ROLE_ARN", "")
+from botocore.exceptions import ClientError
 
 logger = logging.getLogger(__name__)
-sts_client = boto3.client("sts")
+logger.setLevel(logging.DEBUG)
+s3_client = boto3.client("s3")
+
+THRESHOLD_LARGE_MESSAGE = 300 * 1024  # 300KB
+LARGE_MESSAGE_BUCKET = os.environ.get("LARGE_MESSAGE_BUCKET")
 
 
-class RecordNotFoundError(Exception):
-    pass
-
-
-def _compose_conv_id(user_id: str, conversation_id: str):
-    # Add user_id prefix for row level security to match with `LeadingKeys` condition
-    return f"{user_id}_{conversation_id}"
-
-
-def _decompose_conv_id(conv_id: str):
-    return conv_id.split("_")[1]
-
-
-def _get_table_client(user_id: str):
-    """Get a DynamoDB table client with row level access
-    Ref: https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_dynamodb_items.html
-    """
-    if "AWS_EXECUTION_ENV" not in os.environ:
-        if DDB_ENDPOINT_URL:
-            # NOTE: This is for local development using DynamDB Local
-            dynamodb = boto3.resource(
-                "dynamodb",
-                endpoint_url=DDB_ENDPOINT_URL,
-                aws_access_key_id="key",
-                aws_secret_access_key="key",
-                region_name="us-east-1",
-            )
-        else:
-            dynamodb = boto3.resource("dynamodb")
-        return dynamodb.Table(TABLE_NAME)
-
-    policy_document = {
-        "Statement": [
-            {
-                "Effect": "Allow",
-                "Action": [
-                    "dynamodb:BatchGetItem",
-                    "dynamodb:BatchWriteItem",
-                    "dynamodb:ConditionCheckItem",
-                    "dynamodb:DeleteItem",
-                    "dynamodb:DescribeTable",
-                    "dynamodb:GetItem",
-                    "dynamodb:GetRecords",
-                    "dynamodb:PutItem",
-                    "dynamodb:Query",
-                    "dynamodb:Scan",
-                    "dynamodb:UpdateItem",
-                ],
-                "Resource": [
-                    f"arn:aws:dynamodb:{REGION}:{ACCOUNT}:table/{TABLE_NAME}",
-                    f"arn:aws:dynamodb:{REGION}:{ACCOUNT}:table/{TABLE_NAME}/index/*",
-                ],
-                "Condition": {
-                    # Allow access to items with the same partition key as the user id
-                    "ForAllValues:StringLike": {"dynamodb:LeadingKeys": [f"{user_id}*"]}
-                },
-            }
-        ]
-    }
-    assumed_role_object = sts_client.assume_role(
-        RoleArn=TABLE_ACCESS_ROLE_ARN,
-        RoleSessionName="DynamoDBSession",
-        Policy=json.dumps(policy_document),
-    )
-    credentials = assumed_role_object["Credentials"]
-    dynamodb = boto3.resource(
-        "dynamodb",
-        region_name=REGION,
-        aws_access_key_id=credentials["AccessKeyId"],
-        aws_secret_access_key=credentials["SecretAccessKey"],
-        aws_session_token=credentials["SessionToken"],
-    )
-    table = dynamodb.Table(TABLE_NAME)
-    return table
-
-
-def store_conversation(user_id: str, conversation: ConversationModel):
-    logger.debug(f"Storing conversation: {conversation.model_dump_json()}")
+def store_conversation(
+    user_id: str, conversation: ConversationModel, threshold=THRESHOLD_LARGE_MESSAGE
+):
+    logger.info(f"Storing conversation: {conversation.model_dump_json()}")
     table = _get_table_client(user_id)
-    response = table.put_item(
-        Item={
-            "UserId": user_id,
-            "ConversationId": _compose_conv_id(user_id, conversation.id),
-            "Title": conversation.title,
-            "CreateTime": decimal(conversation.create_time),
-            "MessageMap": json.dumps(
-                {k: v.model_dump() for k, v in conversation.message_map.items()}
-            ),
-            "LastMessageId": conversation.last_message_id,
+
+    item_params = {
+        "PK": user_id,
+        "SK": compose_conv_id(user_id, conversation.id),
+        "Title": conversation.title,
+        "CreateTime": decimal(conversation.create_time),
+        # Convert to decimal via str to avoid error
+        # Ref: https://stackoverflow.com/questions/63026648/errormessage-class-decimal-inexact-class-decimal-rounded-while
+        "TotalPrice": decimal(str(conversation.total_price)),
+        "LastMessageId": conversation.last_message_id,
+    }
+
+    if conversation.bot_id:
+        item_params["BotId"] = conversation.bot_id
+
+    message_map = {
+        k: {
+            **v.model_dump(),
+            "content": [c.model_dump() for c in v.content],
         }
+        for k, v in conversation.message_map.items()
+    }
+    message_map_size = len(json.dumps(message_map).encode("utf-8"))
+    logger.info(f"Message map size: {message_map_size}")
+    if message_map_size > threshold:
+        logger.info(
+            f"Message map size {message_map_size} exceeds threshold {threshold}"
+        )
+        item_params["IsLargeMessage"] = True
+        large_message_path = f"{user_id}/{conversation.id}/message_map.json"
+        item_params["LargeMessagePath"] = large_message_path
+        # Store all message in S3
+        s3_client.put_object(
+            Bucket=LARGE_MESSAGE_BUCKET,
+            Key=large_message_path,
+            Body=json.dumps(message_map),
+        )
+        # Store only `system` attribute in DynamoDB
+        item_params["MessageMap"] = json.dumps(
+            {
+                k: v.model_dump()
+                for k, v in conversation.message_map.items()
+                if k == "system"
+            }
+        )
+    else:
+        item_params["IsLargeMessage"] = False
+        item_params["MessageMap"] = json.dumps(
+            {k: v.model_dump() for k, v in conversation.message_map.items()}
+        )
+
+    response = table.put_item(
+        Item=item_params,
     )
     return response
 
 
-def find_conversation_by_user_id(user_id: str) -> list[ConversationMetaModel]:
-    logger.debug(f"Finding conversations for user: {user_id}")
+def find_conversation_by_user_id(user_id: str) -> list[ConversationMeta]:
+    logger.info(f"Finding conversations for user: {user_id}")
     table = _get_table_client(user_id)
-    response = table.query(
-        KeyConditionExpression=Key("UserId").eq(user_id),
-        ProjectionExpression="ConversationId, CreateTime, Title",
-        ScanIndexForward=False,
-    )
 
+    query_params = {
+        "KeyConditionExpression": Key("PK").eq(user_id)
+        # NOTE: Need SK to fetch only conversations
+        & Key("SK").begins_with(f"{user_id}#CONV#"),
+        "ScanIndexForward": False,
+    }
+
+    response = table.query(**query_params)
     conversations = [
-        ConversationMetaModel(
-            id=_decompose_conv_id(item["ConversationId"]),
+        ConversationMeta(
+            id=decompose_conv_id(item["SK"]),
             create_time=float(item["CreateTime"]),
             title=item["Title"],
+            # NOTE: all message has the same model
+            model=json.loads(item["MessageMap"]).get("system", {}).get("model", ""),
+            bot_id=item["BotId"] if "BotId" in item else None,
         )
         for item in response["Items"]
     ]
@@ -138,20 +120,25 @@ def find_conversation_by_user_id(user_id: str) -> list[ConversationMetaModel]:
     query_count = 1
     MAX_QUERY_COUNT = 5
     while "LastEvaluatedKey" in response:
+        model = (
+            json.loads(response["Items"][0]["MessageMap"])
+            .get("system", {})
+            .get("model", "")
+        )
+        query_params["ExclusiveStartKey"] = response["LastEvaluatedKey"]
         # NOTE: max page size is 1MB
         # See: https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Query.Pagination.html
         response = table.query(
-            KeyConditionExpression=Key("UserId").eq(user_id),
-            ProjectionExpression="ConversationId, CreateTime, Title",
-            ScanIndexForward=False,
-            ExclusiveStartKey=response["LastEvaluatedKey"],
+            **query_params,
         )
         conversations.extend(
             [
-                ConversationMetaModel(
-                    id=_decompose_conv_id(item["ConversationId"]),
+                ConversationMeta(
+                    id=decompose_conv_id(item["SK"]),
                     create_time=float(item["CreateTime"]),
                     title=item["Title"],
+                    model=model,
+                    bot_id=item["BotId"] if "BotId" in item else None,
                 )
                 for item in response["Items"]
             ]
@@ -161,124 +148,180 @@ def find_conversation_by_user_id(user_id: str) -> list[ConversationMetaModel]:
             logger.warning(f"Query count exceeded {MAX_QUERY_COUNT}")
             break
 
-    logger.debug(f"Found conversations: {conversations}")
+    logger.info(f"Found conversations: {conversations}")
     return conversations
 
 
 def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationModel:
-    logger.debug(f"Finding conversation: {conversation_id}")
+    logger.info(f"Finding conversation: {conversation_id}")
     table = _get_table_client(user_id)
     response = table.query(
-        IndexName="ConversationIdIndex",
-        KeyConditionExpression=Key("ConversationId").eq(
-            _compose_conv_id(user_id, conversation_id)
-        ),
+        IndexName="SKIndex",
+        KeyConditionExpression=Key("SK").eq(compose_conv_id(user_id, conversation_id)),
     )
     if len(response["Items"]) == 0:
         raise RecordNotFoundError(f"No conversation found with id: {conversation_id}")
 
     # NOTE: conversation is unique
     item = response["Items"][0]
+    if item.get("IsLargeMessage", False):
+        large_message_path = item["LargeMessagePath"]
+        response = s3_client.get_object(
+            Bucket=LARGE_MESSAGE_BUCKET, Key=large_message_path
+        )
+        message_map = json.loads(response["Body"].read().decode("utf-8"))
+    else:
+        message_map = json.loads(item["MessageMap"])
+
     conv = ConversationModel(
-        id=_decompose_conv_id(item["ConversationId"]),
+        id=decompose_conv_id(item["SK"]),
         create_time=float(item["CreateTime"]),
         title=item["Title"],
+        total_price=item.get("TotalPrice", 0),
         message_map={
             k: MessageModel(
                 role=v["role"],
-                content=ContentModel(
-                    content_type=v["content"]["content_type"],
-                    body=v["content"]["body"],
+                content=(
+                    [
+                        ContentModel(
+                            content_type=c["content_type"],
+                            body=c["body"],
+                            media_type=c["media_type"],
+                        )
+                        for c in v["content"]
+                    ]
+                    if type(v["content"]) == list
+                    else [
+                        # For backward compatibility
+                        ContentModel(
+                            content_type=v["content"]["content_type"],
+                            body=v["content"]["body"],
+                            media_type=None,
+                        )
+                    ]
                 ),
                 model=v["model"],
                 children=v["children"],
                 parent=v["parent"],
                 create_time=float(v["create_time"]),
             )
-            for k, v in json.loads(item["MessageMap"]).items()
+            for k, v in message_map.items()
         },
         last_message_id=item["LastMessageId"],
+        bot_id=item["BotId"] if "BotId" in item else None,
     )
-    logger.debug(f"Found conversation: {conv}")
+    logger.info(f"Found conversation: {conv}")
     return conv
 
 
 def delete_conversation_by_id(user_id: str, conversation_id: str):
-    logger.debug(f"Deleting conversation: {conversation_id}")
+    logger.info(f"Deleting conversation: {conversation_id}")
     table = _get_table_client(user_id)
 
-    # Query the index
-    response = table.query(
-        IndexName="ConversationIdIndex",
-        KeyConditionExpression=Key("ConversationId").eq(
-            _compose_conv_id(user_id, conversation_id)
-        ),
-    )
+    try:
+        # Check if the conversation has a large message map
+        response = table.get_item(
+            Key={"PK": user_id, "SK": compose_conv_id(user_id, conversation_id)},
+            ProjectionExpression="IsLargeMessage, LargeMessagePath",
+        )
 
-    # Check if conversation exists
-    if response["Items"]:
-        user_id = response["Items"][0]["UserId"]
-        key = {
-            "UserId": user_id,
-            "ConversationId": _compose_conv_id(user_id, conversation_id),
-        }
-        delete_response = table.delete_item(Key=key)
-        return delete_response
-    else:
-        raise RecordNotFoundError(f"No conversation found with id: {conversation_id}")
+        item = response.get("Item")
+        if item and item.get("IsLargeMessage", False):
+            # Delete the large message map from S3
+            s3_client.delete_object(
+                Bucket=LARGE_MESSAGE_BUCKET, Key=item["LargeMessagePath"]
+            )
+
+        # Delete the conversation from DynamoDB
+        response = table.delete_item(
+            Key={"PK": user_id, "SK": compose_conv_id(user_id, conversation_id)},
+            ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
+        )
+
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
+            raise RecordNotFoundError(
+                f"Conversation with id {conversation_id} not found"
+            )
+        else:
+            raise e
+
+    return response
 
 
 def delete_conversation_by_user_id(user_id: str):
-    logger.debug(f"Deleting conversations for user: {user_id}")
-    # First, find all conversations for the user
-    conversations = find_conversation_by_user_id(user_id)
-    if conversations:
-        table = _get_table_client(user_id)
-        responses = []
-        for conversation in conversations:
-            # Construct key to delete
-            key = {
-                "UserId": user_id,
-                "ConversationId": _compose_conv_id(user_id, conversation.id),
-            }
-            response = table.delete_item(Key=key)
-            responses.append(response)
-        return responses
-    else:
-        raise RecordNotFoundError(f"No conversations found for user id: {user_id}")
+    logger.info(f"Deleting ALL conversations for user: {user_id}")
+    table = _get_table_client(user_id)
+
+    query_params = {
+        "KeyConditionExpression": Key("PK").eq(user_id)
+        # NOTE: Need SK to fetch only conversations
+        & Key("SK").begins_with(f"{user_id}#CONV#"),
+        "ProjectionExpression": "SK, IsLargeMessage, LargeMessagePath",
+    }
+
+    def delete_batch(batch):
+        with table.batch_writer() as writer:
+            for item in batch:
+                writer.delete_item(Key={"PK": user_id, "SK": item["SK"]})
+
+    def delete_large_messages(items):
+        for item in items:
+            if item.get("IsLargeMessage", False):
+                s3_client.delete_object(
+                    Bucket=LARGE_MESSAGE_BUCKET, Key=item["LargeMessagePath"]
+                )
+
+    try:
+        response = table.query(
+            **query_params,
+        )
+
+        while True:
+            items = response.get("Items", [])
+            delete_large_messages(items)
+
+            for i in range(0, len(items), TRANSACTION_BATCH_SIZE):
+                batch = items[i : i + TRANSACTION_BATCH_SIZE]
+                delete_batch(batch)
+
+            # Check if next page exists
+            if "LastEvaluatedKey" not in response:
+                break
+
+            # Load next page
+            query_params["ExclusiveStartKey"] = response["LastEvaluatedKey"]
+            response = table.query(
+                **query_params,
+            )
+
+    except ClientError as e:
+        logger.error(f"An error occurred: {e.response['Error']['Message']}")
 
 
 def change_conversation_title(user_id: str, conversation_id: str, new_title: str):
-    logger.debug(f"Changing conversation title: {conversation_id}")
-    logger.debug(f"New title: {new_title}")
+    logger.info(f"Updating conversation title: {conversation_id} to {new_title}")
     table = _get_table_client(user_id)
 
-    # First, we need to find the item using the GSI
-    response = table.query(
-        IndexName="ConversationIdIndex",
-        KeyConditionExpression=Key("ConversationId").eq(
-            _compose_conv_id(user_id, conversation_id)
-        ),
-    )
+    try:
+        response = table.update_item(
+            Key={
+                "PK": user_id,
+                "SK": compose_conv_id(user_id, conversation_id),
+            },
+            UpdateExpression="set Title=:t",
+            ExpressionAttributeValues={":t": new_title},
+            ReturnValues="UPDATED_NEW",
+            ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
+        )
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
+            raise RecordNotFoundError(
+                f"Conversation with id {conversation_id} not found"
+            )
+        else:
+            raise e
 
-    items = response["Items"]
-    if not items:
-        raise RecordNotFoundError(f"No conversation found with id {conversation_id}")
-
-    # We'll just update the first item in case there are multiple matches
-    item = items[0]
-    user_id = item["UserId"]
-
-    # Then, we update the item using its primary key
-    response = table.update_item(
-        Key={
-            "UserId": user_id,
-            "ConversationId": _compose_conv_id(user_id, conversation_id),
-        },
-        UpdateExpression="set Title=:t",
-        ExpressionAttributeValues={":t": new_title},
-        ReturnValues="UPDATED_NEW",
-    )
-    logger.debug(f"Updated conversation title response: {response}")
+    logger.info(f"Updated conversation title response: {response}")
 
     return response

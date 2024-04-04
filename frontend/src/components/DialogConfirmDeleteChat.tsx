@@ -8,7 +8,7 @@ import { Trans, useTranslation } from 'react-i18next';
 type Props = BaseProps & {
   isOpen: boolean;
   target?: ConversationMeta;
-  onDelete: (conversationId: string) => void;
+  onDelete: (botId: string) => void;
   onClose: () => void;
 };
 
@@ -29,16 +29,14 @@ const DialogConfirmDeleteChat: React.FC<Props> = (props) => {
       </div>
 
       <div className="mt-4 flex justify-end gap-2">
-        <Button
-          onClick={props.onClose}
-          className="bg-transparent p-2 text-aws-font-color">
+        <Button onClick={props.onClose} className="p-2" outlined>
           {t('button.cancel')}
         </Button>
         <Button
           onClick={() => {
             props.onDelete(props.target?.id ?? '');
           }}
-          className="bg-red-500 p-2 text-aws-font-color-white">
+          className="bg-red p-2 text-aws-font-color-white">
           {t('button.delete')}
         </Button>
       </div>

@@ -28,9 +28,7 @@ const DialogSelectLanguage: React.FC<Props> = (props) => {
       </div>
 
       <div className="mt-4 flex justify-end gap-2">
-        <Button
-          onClick={props.onClose}
-          className="bg-transparent p-2 text-aws-font-color">
+        <Button onClick={props.onClose} className="p-2" outlined>
           {t('button.cancel')}
         </Button>
         <Button
@@ -38,7 +36,7 @@ const DialogSelectLanguage: React.FC<Props> = (props) => {
             i18n.changeLanguage(language);
             props.onClose();
           }}
-          className="bg-green-700 p-2 text-aws-font-color-white">
+          className="p-2 text-aws-font-color-white">
           {t('button.ok')}
         </Button>
       </div>

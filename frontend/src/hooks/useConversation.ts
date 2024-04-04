@@ -17,6 +17,9 @@ const useConversation = () => {
         conversations?.find((c) => c.id === conversationId)?.title ?? 'New Chat'
       );
     },
+    getBotId: (conversationId: string) => {
+      return conversations?.find((c) => c.id === conversationId)?.botId ?? null;
+    },
     deleteConversation: (conversationId: string) => {
       return mutate(async (current) => {
         await conversationApi.deleteConversation(conversationId);

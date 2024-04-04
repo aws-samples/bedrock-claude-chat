@@ -1,0 +1,54 @@
+name: Backend tests
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch: {}
+
+jobs:
+  black-formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: psf/black@stable
+        with:
+          options: "--check --diff"
+          src: "./backend"
+          version: "~=22.0"
+
+  mypy-type-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          pip install -r backend/requirements.txt
+          pip install mypy==1.9.0
+      - name: Run mypy
+        run: |
+          cd backend
+          mypy --config-file mypy.ini .
+
+  uvicorn-launch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r backend/requirements.txt
+      - name: Run Uvicorn
+        env:
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          cd backend
+          timeout 10s uvicorn app.main:app --host 0.0.0.0 --port 8000 &
+          sleep 5
+          curl http://localhost:8000/health

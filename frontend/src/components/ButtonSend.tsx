@@ -1,6 +1,7 @@
-import React from "react";
-import { PiPaperPlaneRightFill, PiSpinnerGap } from "react-icons/pi";
-import { BaseProps } from "../@types/common";
+import React from 'react';
+import { PiPaperPlaneRightFill, PiSpinnerGap } from 'react-icons/pi';
+import { BaseProps } from '../@types/common';
+import { twMerge } from 'tailwind-merge';
 
 type Props = BaseProps & {
   disabled?: boolean;
@@ -11,14 +12,13 @@ type Props = BaseProps & {
 const ButtonSend: React.FC<Props> = (props) => {
   return (
     <button
-      className={`${
-        props.className ?? ""
-      } flex items-center justify-center rounded-xl border p-2 text-xl border-aws-sea-blue text-aws-sea-blue  ${
-        props.disabled ? "opacity-30" : ""
-      }`}
+      className={twMerge(
+        'flex items-center justify-center rounded-xl border border-aws-sea-blue bg-white p-2 text-xl text-aws-sea-blue',
+        props.disabled ? 'opacity-30' : '',
+        props.className
+      )}
       onClick={props.onClick}
-      disabled={props.disabled || props.loading}
-    >
+      disabled={props.disabled || props.loading}>
       {props.loading ? (
         <PiSpinnerGap className="animate-spin" />
       ) : (

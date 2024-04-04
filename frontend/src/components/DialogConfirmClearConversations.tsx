@@ -24,16 +24,14 @@ const DialogConfirmClearConversations: React.FC<Props> = (props) => {
       </div>
 
       <div className="mt-4 flex justify-end gap-2">
-        <Button
-          onClick={props.onClose}
-          className="bg-transparent p-2 text-aws-font-color">
+        <Button onClick={props.onClose} className="p-2" outlined>
           {t('button.cancel')}
         </Button>
         <Button
           onClick={() => {
             props.onDelete();
           }}
-          className="bg-red-500 p-2 text-aws-font-color-white">
+          className="bg-red p-2 text-aws-font-color-white">
           {t('button.deleteAll')}
         </Button>
       </div>
