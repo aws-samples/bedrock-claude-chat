@@ -2,8 +2,10 @@ import { Fragment, useCallback, useMemo } from 'react';
 import { Listbox, Transition } from '@headlessui/react';
 import { PiCaretUpDown, PiCheck, PiX } from 'react-icons/pi';
 import ButtonIcon from './ButtonIcon';
+import { BaseProps } from '../@types/common';
+import { twMerge } from 'tailwind-merge';
 
-type Props = {
+type Props = BaseProps & {
   label?: string;
   value: string;
   options: {
@@ -11,6 +13,7 @@ type Props = {
     label: string;
   }[];
   clearable?: boolean;
+  disabled?: boolean;
   onChange: (value: string) => void;
 };
 
@@ -24,25 +27,32 @@ const Select: React.FC<Props> = (props) => {
   }, [props]);
 
   return (
-    <>
+    <div className={props.className}>
       {props.label && (
         <div>
           <span className="text-sm">{props.label}</span>
         </div>
       )}
-      <Listbox value={props.value} onChange={props.onChange}>
-        <div className="relative">
-          <Listbox.Button className="relative h-11 w-full cursor-default rounded border border-black/30 bg-white py-2 pl-3 pr-10 text-left focus:outline-none">
+      <Listbox
+        value={props.value}
+        disabled={props.disabled}
+        onChange={props.onChange}>
+        <div className={twMerge('relative')}>
+          <Listbox.Button
+            className={twMerge(
+              'relative h-9 w-full cursor-default rounded border border-aws-font-color/50 py-1 pl-3 pr-10 text-left focus:outline-none',
+              !props.disabled && 'bg-white'
+            )}>
             <span className="block truncate">{selectedLabel}</span>
 
             <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-              <PiCaretUpDown className="h-5 w-5 text-gray-400" />
+              <PiCaretUpDown className="h-5 w-5 text-gray" />
             </span>
           </Listbox.Button>
           {props.clearable && props.value !== '' && (
             <span className="absolute inset-y-0 right-6 flex items-center pr-2">
               <ButtonIcon onClick={onClear}>
-                <PiX className="h-5 w-5 text-gray-400" />
+                <PiX className="h-5 w-5 text-gray" />
               </ButtonIcon>
             </span>
           )}
@@ -59,7 +69,7 @@ const Select: React.FC<Props> = (props) => {
                     `relative cursor-default select-none py-2 pl-10 pr-4 ${
                       active
                         ? 'bg-aws-smile/10 text-aws-smile'
-                        : 'text-gray-900'
+                        : 'text-aws-font-color'
                     }`
                   }
                   value={option.value}>
@@ -84,7 +94,7 @@ const Select: React.FC<Props> = (props) => {
           </Transition>
         </div>
       </Listbox>
-    </>
+    </div>
   );
 };
 

@@ -32,7 +32,7 @@ const SnackbarProvider: React.FC<Props> = ({ children }) => {
           leaveFrom="opacity-100 scale-100 "
           leaveTo="opacity-0 scale-95 ">
           <div className="">
-            <div className="mx-4 mt-4 flex justify-between rounded bg-red-500 p-3  text-sm text-aws-font-color-white shadow-lg">
+            <div className="mx-4 mt-4 flex justify-between rounded bg-red p-3  text-sm text-aws-font-color-white shadow-lg">
               <div className="mr-3 text-3xl">
                 <PiWarningFill />
               </div>

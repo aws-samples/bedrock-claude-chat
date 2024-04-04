@@ -1,5 +1,6 @@
 import React from 'react';
 import { BaseProps } from '../@types/common';
+import { twMerge } from 'tailwind-merge';
 
 type Props = BaseProps & {
   disabled?: boolean;
@@ -10,11 +11,11 @@ type Props = BaseProps & {
 const ButtonIcon: React.FC<Props> = (props) => {
   return (
     <button
-      className={`${
-        props.className ?? ''
-      } flex items-center justify-center rounded-full p-1 text-xl hover:shadow ${
-        props.disabled ? 'opacity-30' : 'hover:brightness-75'
-      }`}
+      className={twMerge(
+        'flex items-center justify-center rounded-full p-2 text-xl hover:shadow',
+        props.disabled ? 'opacity-30' : 'hover:brightness-75',
+        props.className
+      )}
       onClick={(e) => {
         e.stopPropagation();
         e.preventDefault();

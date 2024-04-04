@@ -34,7 +34,6 @@ const fetcfWithParams = ([url, params]: [string, Record<string, any>]) => {
     .then((res) => res.data);
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 // const getErrorMessage = (error: AxiosError<any>): string => {
 //   return error.response?.data?.message ?? error.message;
 // };
@@ -73,12 +72,15 @@ const useHttp = () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getOnce: <RES = any, DATA = any>(
       url: string,
+      params?: DATA,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       errorProcess?: (err: any) => void
     ) => {
       return new Promise<AxiosResponse<RES>>((resolve, reject) => {
         api
-          .get<RES, AxiosResponse<RES>, DATA>(url)
+          .get<RES, AxiosResponse<RES>, DATA>(url, {
+            params,
+          })
           .then((data) => {
             resolve(data);
           })
@@ -160,12 +162,15 @@ const useHttp = () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     delete: <RES = any, DATA = any>(
       url: string,
+      params?: DATA,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       errorProcess?: (err: any) => void
     ) => {
       return new Promise<AxiosResponse<RES>>((resolve, reject) => {
         api
-          .delete<RES, AxiosResponse<RES>, DATA>(url)
+          .delete<RES, AxiosResponse<RES>, DATA>(url, {
+            params,
+          })
           .then((data) => {
             resolve(data);
           })

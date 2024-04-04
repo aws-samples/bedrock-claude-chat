@@ -15,24 +15,23 @@ import {
 import Button from '../components/Button';
 import { useTranslation } from 'react-i18next';
 import SwitchBedrockModel from '../components/SwitchBedrockModel';
-import { Model } from '../@types/conversation';
 import useBot from '../hooks/useBot';
 import useConversation from '../hooks/useConversation';
-import { AxiosError } from 'axios';
 import ButtonPopover from '../components/PopoverMenu';
 import PopoverItem from '../components/PopoverItem';
 
 import { copyBotUrl } from '../utils/BotUtils';
 import { produce } from 'immer';
 import ButtonIcon from '../components/ButtonIcon';
-import { BotMeta } from '../@types/bot';
+import StatusSyncBot from '../components/StatusSyncBot';
+import Alert from '../components/Alert';
+import useBotSummary from '../hooks/useBotSummary';
+import useModel from '../hooks/useModel';
 
 const ChatPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const [content, setContent] = useState('');
-  const [model, setModel] = useState<Model>('claude-instant-v1');
   const {
     postingMessage,
     postChat,
@@ -44,10 +43,10 @@ const ChatPage: React.FC = () => {
     setCurrentMessageId,
     regenerate,
     getPostedModel,
+    loadingConversation,
   } = useChat();
 
   const { getBotId } = useConversation();
-  const { getBotSummary } = useBot();
 
   const { scrollToBottom, scrollToTop } = useScroll();
 
@@ -58,37 +57,40 @@ const ChatPage: React.FC = () => {
     return paramBotId ?? getBotId(conversationId);
   }, [conversationId, getBotId, paramBotId]);
 
+  const {
+    data: bot,
+    error: botError,
+    isLoading: isLoadingBot,
+    mutate: mutateBot,
+  } = useBotSummary(botId ?? undefined);
+
   const [pageTitle, setPageTitle] = useState('');
-  const [bot, setBot] = useState<BotMeta>();
   const [isAvailabilityBot, setIsAvailabilityBot] = useState(false);
-  const [isLoadingBot, setIsLoadingBot] = useState(false);
+
   useEffect(() => {
     setIsAvailabilityBot(false);
-    if (botId) {
-      setPageTitle(t('bot.label.loadingBot'));
-      setBot(undefined);
-      setIsLoadingBot(true);
-      getBotSummary(botId)
-        .then((bot) => {
-          setIsAvailabilityBot(true);
-          setPageTitle(bot.title);
-          setBot(bot);
-        })
-        .catch((err: AxiosError) => {
-          if (err.response?.status === 404) {
-            setPageTitle(t('bot.label.notAvailableBot'));
-            setBot(undefined);
-          }
-        })
-        .finally(() => {
-          setIsLoadingBot(false);
-        });
+    if (bot) {
+      setIsAvailabilityBot(true);
+      setPageTitle(bot.title);
     } else {
       setPageTitle(t('bot.label.normalChat'));
-      setBot(undefined);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [botId]);
+    if (botError) {
+      if (botError.response?.status === 404) {
+        setPageTitle(t('bot.label.notAvailableBot'));
+      }
+    }
+  }, [bot, botError, t]);
+
+  const description = useMemo<string>(() => {
+    if (!bot) {
+      return '';
+    } else if (bot.description === '') {
+      return t('bot.label.noDescription');
+    } else {
+      return bot.description;
+    }
+  }, [bot, t]);
 
   const disabledInput = useMemo(() => {
     return botId !== null && !isAvailabilityBot && !isLoadingBot;
@@ -99,10 +101,25 @@ const ChatPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paramConversationId]);
 
-  const onSend = useCallback(() => {
-    postChat(content, model, botId ?? undefined);
-    setContent('');
-  }, [botId, content, model, postChat]);
+  const inputBotParams = useMemo(() => {
+    return botId
+      ? {
+          botId: botId,
+          hasKnowledge: bot?.hasKnowledge ?? false,
+        }
+      : undefined;
+  }, [bot?.hasKnowledge, botId]);
+
+  const onSend = useCallback(
+    (content: string, base64EncodedImages?: string[]) => {
+      postChat({
+        content,
+        base64EncodedImages,
+        bot: inputBotParams,
+      });
+    },
+    [inputBotParams, postChat]
+  );
 
   const onChangeCurrentMessageId = useCallback(
     (messageId: string) => {
@@ -114,19 +131,26 @@ const ChatPage: React.FC = () => {
   const onSubmitEditedContent = useCallback(
     (messageId: string, content: string) => {
       if (hasError) {
-        retryPostChat({ content, botId: botId ?? undefined });
+        retryPostChat({
+          content,
+          bot: inputBotParams,
+        });
       } else {
-        regenerate({ messageId, content, botId: botId ?? undefined });
+        regenerate({
+          messageId,
+          content,
+          bot: inputBotParams,
+        });
       }
     },
-    [botId, hasError, regenerate, retryPostChat]
+    [hasError, inputBotParams, regenerate, retryPostChat]
   );
 
   const onRegenerate = useCallback(() => {
     regenerate({
-      botId: botId ?? undefined,
+      bot: inputBotParams,
     });
-  }, [botId, regenerate]);
+  }, [inputBotParams, regenerate]);
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -149,10 +173,13 @@ const ChatPage: React.FC = () => {
       return;
     }
     const isStarred = !bot.isPinned;
-    setBot(
+    mutateBot(
       produce(bot, (draft) => {
         draft.isPinned = isStarred;
-      })
+      }),
+      {
+        revalidate: false,
+      }
     );
 
     try {
@@ -161,16 +188,10 @@ const ChatPage: React.FC = () => {
       } else {
         updateSharedBotStarred(bot.id, isStarred);
       }
-    } catch {
-      setBot(
-        produce(bot, (draft) => {
-          if (draft) {
-            draft.isPinned = !isStarred;
-          }
-        })
-      );
+    } finally {
+      mutateBot();
     }
-  }, [bot, updateMyBotStarred, updateSharedBotStarred]);
+  }, [bot, mutateBot, updateMyBotStarred, updateSharedBotStarred]);
 
   const [copyLabel, setCopyLabel] = useState(t('bot.titleSubmenu.copyLink'));
   const onClickCopyUrl = useCallback(
@@ -184,94 +205,119 @@ const ChatPage: React.FC = () => {
     [t]
   );
 
+  const onClickSyncError = useCallback(() => {
+    navigate(`/bot/edit/${bot?.id}`);
+  }, [bot?.id, navigate]);
+
+  const { disabledImageUpload } = useModel();
+  const [dndMode, setDndMode] = useState(false);
+  const onDragOver: React.DragEventHandler<HTMLDivElement> = useCallback(
+    (e) => {
+      if (!disabledImageUpload) {
+        setDndMode(true);
+      }
+      e.preventDefault();
+    },
+    [disabledImageUpload]
+  );
+
+  const endDnd: React.DragEventHandler<HTMLDivElement> = useCallback((e) => {
+    setDndMode(false);
+    e.preventDefault();
+  }, []);
+
   return (
-    <>
-      <div className="relative flex h-14 justify-center">
-        <div className="absolute left-3 top-3 flex font-bold">
-          <div>
-            <div>{pageTitle}</div>
-            <div className="text-xs font-thin">{bot?.description}</div>
+    <div onDragOver={onDragOver} onDrop={endDnd} onDragEnd={endDnd}>
+      <div className="relative h-14 w-full">
+        <div className="flex w-full justify-between">
+          <div className="p-2">
+            <div className="mr-10 font-bold">{pageTitle}</div>
+            <div className="text-xs font-thin text-dark-gray">
+              {description}
+            </div>
           </div>
 
           {isAvailabilityBot && (
-            <div className="ml-6 flex items-start">
-              <ButtonIcon onClick={onClickStar}>
-                {bot?.isPinned ? (
-                  <PiStarFill className="text-aws-aqua" />
-                ) : (
-                  <PiStar />
-                )}
-              </ButtonIcon>
-              <ButtonPopover className="ml-1">
+            <div className="absolute -top-1 right-0 flex h-full items-center">
+              <div className="h-full w-5 bg-gradient-to-r from-transparent to-aws-paper"></div>
+              <div className="flex items-center bg-aws-paper">
                 {bot?.owned && (
-                  <PopoverItem
-                    onClick={() => {
-                      if (bot) {
-                        onClickBotEdit(bot.id);
-                      }
-                    }}>
-                    <PiPencilLine />
-                    {t('bot.titleSubmenu.edit')}
-                  </PopoverItem>
+                  <StatusSyncBot
+                    syncStatus={bot.syncStatus}
+                    onClickError={onClickSyncError}
+                  />
                 )}
-                {bot?.isPublic && (
-                  <PopoverItem
-                    onClick={() => {
-                      if (bot) {
-                        onClickCopyUrl(bot.id);
-                      }
-                    }}>
-                    <PiLink />
-                    {copyLabel}
-                  </PopoverItem>
-                )}
-              </ButtonPopover>
+                <ButtonIcon onClick={onClickStar}>
+                  {bot?.isPinned ? (
+                    <PiStarFill className="text-aws-aqua" />
+                  ) : (
+                    <PiStar />
+                  )}
+                </ButtonIcon>
+                <ButtonPopover className="mx-1" target="bottom-right">
+                  {bot?.owned && (
+                    <PopoverItem
+                      onClick={() => {
+                        if (bot) {
+                          onClickBotEdit(bot.id);
+                        }
+                      }}>
+                      <PiPencilLine />
+                      {t('bot.titleSubmenu.edit')}
+                    </PopoverItem>
+                  )}
+                  {bot?.isPublic && (
+                    <PopoverItem
+                      onClick={() => {
+                        if (bot) {
+                          onClickCopyUrl(bot.id);
+                        }
+                      }}>
+                      <PiLink />
+                      {copyLabel}
+                    </PopoverItem>
+                  )}
+                </ButtonPopover>
+              </div>
             </div>
           )}
         </div>
-        {getPostedModel() ? (
-          <div className="absolute right-3 top-8 text-sm text-gray-500">
+        {getPostedModel() && (
+          <div className="absolute right-2 top-10 text-xs text-dark-gray">
             model: {getPostedModel()}
           </div>
-        ) : (
-          <SwitchBedrockModel
-            className="my-auto"
-            model={model}
-            setModel={setModel}
-          />
         )}
       </div>
-      <hr className="w-full border-t border-gray-300" />
+      <hr className="w-full border-t border-gray" />
       <div className="pb-52 lg:pb-40">
         {messages.length === 0 ? (
-          <>
-            <div className="mx-3 my-32 flex items-center justify-center text-4xl font-bold text-gray-500/20">
+          <div className="relative flex w-full justify-center">
+            {!loadingConversation && (
+              <SwitchBedrockModel className="mt-3 w-min" />
+            )}
+            <div className="absolute mx-3 my-20 flex items-center justify-center text-4xl font-bold text-gray">
               {t('app.name')}
             </div>
-          </>
+          </div>
         ) : (
-          messages.map((message, idx) =>
-            message.content.body !== '' ? (
-              <div
-                key={idx}
-                className={`${
-                  message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
-                }`}>
-                <ChatMessage
-                  chatContent={message}
-                  onChangeMessageId={onChangeCurrentMessageId}
-                  onSubmit={onSubmitEditedContent}
-                />
-                <div className="w-full border-b border-aws-squid-ink/10"></div>
-              </div>
-            ) : (
-              <ChatMessage key={idx} loading />
-            )
-          )
+          messages.map((message, idx) => (
+            <div
+              key={idx}
+              className={`${
+                message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
+              }`}>
+              <ChatMessage
+                chatContent={message}
+                onChangeMessageId={onChangeCurrentMessageId}
+                onSubmit={onSubmitEditedContent}
+              />
+              <div className="w-full border-b border-aws-squid-ink/10"></div>
+            </div>
+          ))
         )}
         {hasError && (
           <div className="mb-12 mt-2 flex flex-col items-center">
-            <div className="flex items-center font-bold text-red-500">
+            <div className="flex items-center font-bold text-red">
               <PiWarningCircleFill className="mr-1 text-2xl" />
               {t('error.answerResponse')}
             </div>
@@ -282,7 +328,7 @@ const ChatPage: React.FC = () => {
               outlined
               onClick={() => {
                 retryPostChat({
-                  botId: botId ?? undefined,
+                  bot: inputBotParams,
                 });
               }}>
               {t('button.resend')}
@@ -291,9 +337,18 @@ const ChatPage: React.FC = () => {
         )}
       </div>
 
-      <div className="absolute bottom-0 z-0 flex w-full justify-center">
+      <div className="absolute bottom-0 z-0 flex w-full flex-col items-center justify-center">
+        {bot && bot.syncStatus !== 'SUCCEEDED' && (
+          <div className="mb-8 w-1/2">
+            <Alert
+              severity="warning"
+              title={t('bot.alert.sync.incomplete.title')}>
+              {t('bot.alert.sync.incomplete.body')}
+            </Alert>
+          </div>
+        )}
         <InputChatContent
-          content={content}
+          dndMode={dndMode}
           disabledSend={postingMessage}
           disabled={disabledInput}
           placeholder={
@@ -301,12 +356,11 @@ const ChatPage: React.FC = () => {
               ? t('bot.label.notAvailableBotInputMessage')
               : undefined
           }
-          onChangeContent={setContent}
           onSend={onSend}
           onRegenerate={onRegenerate}
         />
       </div>
-    </>
+    </div>
   );
 };
 

@@ -21,7 +21,6 @@ const ExpandableDrawerGroup: React.FC<Props> = (props) => {
 
         <div className="italic">{props.label}</div>
       </div>
-      {/* <div className="">{isShow && props.children}</div> */}
       <div className="">
         <div
           className={`origin-top transition-all ${
