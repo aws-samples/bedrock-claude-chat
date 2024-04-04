@@ -8,12 +8,12 @@ assignees: ""
 
 ## Describe the bug
 
-**This field is mandatory. If left blank, we will lower the priority of your request. Thank you for your understanding.**  
+**Filling out this field will help us investigate the issue efficiently. Providing detailed information allows us to set the appropriate priority. We appreciate your cooperation.**  
 A clear and concise description of what the bug is.
 
 ## To Reproduce
 
-**This field is mandatory. If left blank, we will lower the priority of your request. Thank you for your understanding.**  
+**Filling out this field will help us investigate the issue efficiently. Providing detailed information allows us to set the appropriate priority. We appreciate your cooperation.**  
 Steps to reproduce the behavior:
 
 1. Go to '...'
