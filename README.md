@@ -259,7 +259,11 @@ See [LOCAL DEVELOPMENT](./docs/LOCAL_DEVELOPMENT.md).
 
 ### Contribution
 
-Thank you for considering contributing to this repository! We welcome bug fixes, language translation, feature enhancements, and other improvements. Please see following:
+Thank you for considering contributing to this repository! We welcome bug fixes, language translations (i18n), feature enhancements, and other improvements.
+
+For feature enhancements and other improvements, **before creating a Pull Request, we would greatly appreciate it if you could create a Feature Request Issue to discuss the implementation approach and details. For bug fixes and language translations (i18n), proceed with creating a Pull Request directly.**
+
+Please also take a look at the following guidelines before contributing:
 
 - [Local Development](./docs/LOCAL_DEVELOPMENT.md)
 - [CONTRIBUTING](./CONTRIBUTING.md)
