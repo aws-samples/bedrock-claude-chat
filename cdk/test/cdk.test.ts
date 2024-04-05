@@ -22,6 +22,7 @@ describe("Fine-grained Assertions Test", () => {
           },
         ],
         userPoolDomainPrefix: domainPrefix,
+        dbEncryption: false,
         publishedApiAllowedIpV4AddressRanges: [""],
         publishedApiAllowedIpV6AddressRanges: [""],
       }
@@ -61,6 +62,7 @@ describe("Fine-grained Assertions Test", () => {
       enableUsageAnalysis: true,
       identityProviders: [],
       userPoolDomainPrefix: "",
+      dbEncryption: false,
       publishedApiAllowedIpV4AddressRanges: [""],
       publishedApiAllowedIpV6AddressRanges: [""],
     });
