@@ -253,6 +253,13 @@ const userPool = new UserPool(this, "UserPool", {
 
 This sample supports external identity provider. Currently we only support Google. To set up, See [SETUP_IDP.md](./docs/SETUP_IDP.md).
 
+### Encrypt Aurora Serverless storage
+
+Open `cdk.json` and set `dbEncryption` to `true`. Default value is `false`.
+
+> [!Warning]
+> If already deployed with `false`, setting to `true` and re-deployment will replace existing cluster, which deletes all of vector items.
+
 ### Local Development
 
 See [LOCAL DEVELOPMENT](./docs/LOCAL_DEVELOPMENT.md).
