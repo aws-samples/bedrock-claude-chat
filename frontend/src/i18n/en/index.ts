@@ -1,5 +1,10 @@
 const translation = {
   translation: {
+    signIn: {
+      button: {
+        login: 'Login',
+      },
+    },
     app: {
       name: 'Bedrock Claude Chat',
       inputMessage: 'Send a message',

@@ -3,6 +3,11 @@
 // const translation: typeof en = {
 const translation = {
   translation: {
+    signIn: {
+      button: {
+        login: 'ログイン',
+      },
+    },
     app: {
       name: 'Bedrock Claude Chat',
       inputMessage: '入力してください',

@@ -1,6 +1,4 @@
-# Set up external identity provider
-
-Currently we support Google for external Idp.
+# Set up external identity provider for Google
 
 ## Step 1: Create a Google OAuth 2.0 Client
 

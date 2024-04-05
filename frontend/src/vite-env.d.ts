@@ -10,6 +10,8 @@ interface ImportMetaEnv {
   readonly VITE_APP_REDIRECT_SIGNIN_URL: string;
   readonly VITE_APP_REDIRECT_SIGNOUT_URL: string;
   readonly VITE_APP_SOCIAL_PROVIDERS: string;
+  readonly VITE_APP_CUSTOM_PROVIDER_ENABLED: string;
+  readonly VITE_APP_CUSTOM_PROVIDER_NAME: string;
 }
 
 interface ImportMeta {

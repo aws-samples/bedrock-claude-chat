@@ -52,6 +52,52 @@ describe("Fine-grained Assertions Test", () => {
     );
   });
 
+  test("Custom OIDC Provider Generation", () => {
+    const app = new cdk.App();
+    const domainPrefix = "test-domain";
+    const hasOidcProviderStack = new BedrockChatStack(
+      app,
+      "OidcProviderGenerateStack",
+      {
+        bedrockRegion: "us-east-1",
+        crossRegionReferences: true,
+        webAclId: "",
+        enableUsageAnalysis: true,
+        identityProviders: [
+          {
+            secretName: "MyOidcTestSecret",
+            service: "oidc",
+            serviceName: "MyOidcProvider",
+          },
+        ],
+        userPoolDomainPrefix: domainPrefix,
+        publishedApiAllowedIpV4AddressRanges: [""],
+        publishedApiAllowedIpV6AddressRanges: [""],
+      }
+    );
+    const hasOidcProviderTemplate = Template.fromStack(hasOidcProviderStack);
+
+    hasOidcProviderTemplate.hasResourceProperties(
+      "AWS::Cognito::UserPoolDomain",
+      {
+        Domain: domainPrefix,
+      }
+    );
+
+    hasOidcProviderTemplate.hasResourceProperties(
+      "AWS::Cognito::UserPoolClient",
+      {
+        SupportedIdentityProviders: ["MyOidcProvider", "COGNITO"],
+      }
+    );
+    hasOidcProviderTemplate.hasResourceProperties(
+      "AWS::Cognito::UserPoolIdentityProvider",
+      {
+        ProviderType: "OIDC",
+      }
+    );
+  });
+
   test("default stack", () => {
     const app = new cdk.App();
 

@@ -5,11 +5,12 @@ import {
   UserPoolClient,
   UserPoolIdentityProviderGoogle,
   CfnUserPoolGroup,
+  UserPoolIdentityProviderOidc,
 } from "aws-cdk-lib/aws-cognito";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 
 import { Construct } from "constructs";
-import { Idp } from "../utils/identityProvider";
+import { Idp, TIdentityProvider } from "../utils/identityProvider";
 
 export interface AuthProps {
   readonly origin: string;
@@ -29,7 +30,8 @@ export class Auth extends Construct {
         requireDigits: true,
         minLength: 8,
       },
-      selfSignUpEnabled: true,
+      // Disable if identity providers are configured
+      selfSignUpEnabled: !props.idp.isExist(),
       signInAliases: {
         username: false,
         email: true,
@@ -59,42 +61,72 @@ export class Auth extends Construct {
 
     const client = userPool.addClient(`Client`, clientProps);
 
+    const configureProvider = (
+      provider: TIdentityProvider,
+      userPool: UserPool,
+      client: UserPoolClient
+    ) => {
+      const secret = secretsmanager.Secret.fromSecretNameV2(
+        this,
+        "Secret",
+        provider.secretName
+      );
+
+      const clientId = secret
+        .secretValueFromJson("clientId")
+        .unsafeUnwrap()
+        .toString();
+      const clientSecret = secret.secretValueFromJson("clientSecret");
+
+      switch (provider.service) {
+        // Currently only Google and custom OIDC are supported
+        case "google": {
+          const googleProvider = new UserPoolIdentityProviderGoogle(
+            this,
+            "GoogleProvider",
+            {
+              userPool,
+              clientId,
+              clientSecretValue: clientSecret,
+              scopes: ["openid", "email"],
+              attributeMapping: {
+                email: ProviderAttribute.GOOGLE_EMAIL,
+              },
+            }
+          );
+          client.node.addDependency(googleProvider);
+        }
+        case "oidc": {
+          const issuerUrl = secret
+            .secretValueFromJson("issuerUrl")
+            .unsafeUnwrap()
+            .toString();
+
+          const oidcProvider = new UserPoolIdentityProviderOidc(
+            this,
+            "OidcProvider",
+            {
+              name: provider.serviceName,
+              userPool,
+              clientId,
+              clientSecret: clientSecret.unsafeUnwrap().toString(),
+              issuerUrl,
+              attributeMapping: {
+                // This is an example of mapping the email attribute.
+                // Replace this with the actual idp attribute key.
+                email: ProviderAttribute.other("EMAIL"),
+              },
+              scopes: ["openid", "email"],
+            }
+          );
+          client.node.addDependency(oidcProvider);
+        }
+      }
+    };
+
     if (props.idp.isExist()) {
       for (const provider of props.idp.getProviders()) {
-        switch (provider.service) {
-          case "google": {
-            const secret = secretsmanager.Secret.fromSecretNameV2(
-              this,
-              "Secret",
-              provider.secretName
-            );
-
-            const clientId = secret
-              .secretValueFromJson("clientId")
-              .unsafeUnwrap()
-              .toString();
-            const clientSecret = secret.secretValueFromJson("clientSecret");
-
-            const googleProvider = new UserPoolIdentityProviderGoogle(
-              this,
-              "GoogleProvider",
-              {
-                userPool,
-                clientId: clientId,
-                clientSecretValue: clientSecret,
-                scopes: ["openid", "email"],
-                attributeMapping: {
-                  email: ProviderAttribute.GOOGLE_EMAIL,
-                },
-              }
-            );
-
-            client.node.addDependency(googleProvider);
-          }
-          // set other providers
-          default:
-            continue;
-        }
+        configureProvider(provider, userPool, client);
       }
 
       userPool.addDomain("UserPool", {
