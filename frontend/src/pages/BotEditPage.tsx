@@ -39,7 +39,7 @@ const BotEditPage: React.FC = () => {
   const [unchangedFilenames, setUnchangedFilenames] = useState<string[]>([]);
   const [deletedFilenames, setDeletedFilenames] = useState<string[]>([]);
 
-  const [errorMessage, setErrorMessage] = useState('');
+  const [syncErrorMessage, setSyncErrorMessage] = useState('');
 
   const {
     errorMessages,
@@ -63,8 +63,8 @@ const BotEditPage: React.FC = () => {
   const isChunkError = useMemo(() => {
     const pattern =
       /Got a larger chunk overlap \(\d+\) than chunk size \(\d+\), should be smaller\./;
-    return pattern.test(errorMessage);
-  }, [errorMessage]);
+    return pattern.test(syncErrorMessage);
+  }, [syncErrorMessage]);
 
   useEffect(() => {
     if (!isNewBot) {
@@ -88,7 +88,7 @@ const BotEditPage: React.FC = () => {
           setEmbeddingParams(() => bot.embeddingParams);
           setUnchangedFilenames([...bot.knowledge.filenames]);
           if (bot.syncStatus === 'FAILED') {
-            setErrorMessage(bot.syncStatusReason);
+            setSyncErrorMessage(bot.syncStatusReason);
           }
         })
         .finally(() => {
@@ -395,7 +395,7 @@ const BotEditPage: React.FC = () => {
                   {t('bot.help.knowledge.overview')}
                 </div>
 
-                {errorMessage !== '' && !isChunkError && (
+                {syncErrorMessage !== '' && !isChunkError && (
                   <Alert
                     className="mt-2"
                     severity="error"
@@ -405,7 +405,7 @@ const BotEditPage: React.FC = () => {
                         {t('bot.alert.sync.error.body')}
                       </div>
                       <div className="rounded border bg-light-gray p-2 text-dark-gray">
-                        {errorMessage}
+                        {syncErrorMessage}
                       </div>
                     </>
                   </Alert>
