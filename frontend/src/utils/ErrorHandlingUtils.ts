@@ -25,9 +25,34 @@ export const syncErrorFunctor = (message: string): SyncError => ({
   message,
 });
 
+export const isChunkValidationError = (syncErrorMessage: string) => {
+  const pattern =
+    /Got a larger chunk overlap \(\d+\) than chunk size \(\d+\), should be smaller\./;
+  return pattern.test(syncErrorMessage);
+};
+
+export const isSyncError = (errorRecord: SystemError) => {
+  return errorRecord.type === 'sync';
+};
+
+export const userTypeguardOfSyncError = (
+  args: SystemError
+): args is SyncError => {
+  return isSyncError(args);
+};
+
 export type SystemError = ValidationError | SyncError;
 
-export const fuctorOfError = (
+export const functorOfSyncError = (syncStatusReason: string): TErrorPattern => {
+  switch (true) {
+    case isChunkValidationError(syncStatusReason):
+      return 'validation';
+    default:
+      return 'sync';
+  }
+};
+
+export const functorOfError = (
   type: TErrorPattern,
   message: string
 ): SystemError => {
