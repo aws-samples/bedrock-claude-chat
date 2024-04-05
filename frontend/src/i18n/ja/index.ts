@@ -360,13 +360,6 @@ const translation = {
             body: 'チャンクオーバーラップ値を小さくして再試行してください',
           },
         },
-        validation: {
-          error: {
-            title: 'バリデーションエラー',
-            message:
-              'チャンクオーバーラップはチャンクサイズより小さく設定する必要があります',
-          },
-        },
       },
     },
     error: {
@@ -379,6 +372,16 @@ const translation = {
         invalidResponse: '想定外のResponseが返ってきました。',
       },
       notSupportedImage: '選択しているモデルは、画像を利用できません。',
+    },
+    validation: {
+      title: 'バリデーションエラー',
+      maxRange: {
+        message: '設定できる最大値は{{size}}です',
+      },
+      chunkOverlapLessThanChunkSize: {
+        message:
+          'チャンクオーバーラップはチャンクサイズより小さく設定する必要があります',
+      },
     },
   },
 };

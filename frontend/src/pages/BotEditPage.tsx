@@ -16,6 +16,7 @@ import { ulid } from 'ulid';
 import { DEFAULT_EMBEDDING_CONFIG, EDGE_EMBEDDING_PARAMS } from '../constants';
 import { Slider } from '../components/Slider';
 import ExpandableDrawerGroup from '../components/ExpandableDrawerGroup';
+import useErrorMessage from '../hooks/useErrorMessage';
 
 const BotEditPage: React.FC = () => {
   const { t } = useTranslation();
@@ -39,6 +40,9 @@ const BotEditPage: React.FC = () => {
   const [deletedFilenames, setDeletedFilenames] = useState<string[]>([]);
 
   const [errorMessage, setErrorMessage] = useState('');
+
+  const { errorMessages, setErrorMessage: setErrorMessages } =
+    useErrorMessage();
 
   const isNewBot = useMemo(() => {
     return paramsBotId ? false : true;
@@ -216,7 +220,32 @@ const BotEditPage: React.FC = () => {
     history.back();
   }, []);
 
+  const validationCheck = (): boolean => {
+    if (embeddingParams.chunkSize > EDGE_EMBEDDING_PARAMS.chunkSize.MAX) {
+      setErrorMessages(
+        'chunkSize',
+        t('validation.maxRange.message', {
+          size: EDGE_EMBEDDING_PARAMS.chunkSize.MAX,
+        })
+      );
+      return true;
+    }
+
+    if (embeddingParams.chunkOverlap > EDGE_EMBEDDING_PARAMS.chunkOverlap.MAX) {
+      setErrorMessages(
+        'chunkOverlap',
+        t('validation.maxRange.message', {
+          size: EDGE_EMBEDDING_PARAMS.chunkOverlap.MAX,
+        })
+      );
+      return true;
+    }
+
+    return false;
+  };
+
   const onClickCreate = useCallback(() => {
+    if (validationCheck()) return;
     setIsLoading(true);
     registerBot({
       id: botId,
@@ -253,6 +282,8 @@ const BotEditPage: React.FC = () => {
   ]);
 
   const onClickEdit = useCallback(() => {
+    if (validationCheck()) return;
+
     if (!isNewBot) {
       setIsLoading(true);
       updateBot(botId, {
@@ -452,6 +483,7 @@ const BotEditPage: React.FC = () => {
                         chunkSize: chunkSize,
                       }))
                     }
+                    errorMessage={errorMessages['chunkSize']}
                   />
 
                   <Slider
@@ -469,6 +501,7 @@ const BotEditPage: React.FC = () => {
                         chunkOverlap: chunkOverlap,
                       }))
                     }
+                    errorMessage={errorMessages['chunkOverlap']}
                   />
                 </div>
               </ExpandableDrawerGroup>
@@ -477,10 +510,10 @@ const BotEditPage: React.FC = () => {
                 <Alert
                   className="mt-2"
                   severity="error"
-                  title={t('embeddingSetting.alert.validation.error.title')}>
+                  title={t('validation.title')}>
                   <>
                     <div className="rounded border bg-light-gray p-2 text-dark-gray">
-                      {t('embeddingSetting.alert.validation.error.message')}
+                      {t('validation.chunkOverlapLessThanChunkSize.message')}
                     </div>
                   </>
                 </Alert>

@@ -357,12 +357,6 @@ How would you categorize this email?`,
             body: 'Try again with less chunk overlap value',
           },
         },
-        validation: {
-          error: {
-            title: 'Validation Error',
-            message: 'Chunk overlap must be set to less than Chunk size',
-          },
-        },
       },
     },
     error: {
@@ -376,6 +370,15 @@ How would you categorize this email?`,
           'Unexpected response received. The response format does not match the expected format.',
       },
       notSupportedImage: 'The selected model does not support images.',
+    },
+    validation: {
+      title: 'Validation Error',
+      maxRange: {
+        message: 'The maximum value that can be set is {{size}}',
+      },
+      chunkOverlapLessThanChunkSize: {
+        message: 'Chunk overlap must be set to less than Chunk size',
+      },
     },
   },
 };
