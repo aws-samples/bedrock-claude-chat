@@ -41,8 +41,11 @@ const BotEditPage: React.FC = () => {
 
   const [errorMessage, setErrorMessage] = useState('');
 
-  const { errorMessages, setErrorMessage: setErrorMessages } =
-    useErrorMessage();
+  const {
+    errorMessages,
+    setErrorMessage: setErrorMessages,
+    clearAll: clearErrorMessages,
+  } = useErrorMessage();
 
   const isNewBot = useMemo(() => {
     return paramsBotId ? false : true;
@@ -221,6 +224,7 @@ const BotEditPage: React.FC = () => {
   }, []);
 
   const validationCheck = (): boolean => {
+    clearErrorMessages();
     if (embeddingParams.chunkSize > EDGE_EMBEDDING_PARAMS.chunkSize.MAX) {
       setErrorMessages(
         'chunkSize',
