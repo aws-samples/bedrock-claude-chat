@@ -241,7 +241,7 @@ const userPool = new UserPool(this, "UserPool", {
 
 ### 外部のアイデンティティプロバイダー
 
-このサンプルは外部のアイデンティティプロバイダーをサポートしています。現在、Google のみをサポートしています。設定するには、[こちら](./SET_UP_IDP_ja.md)をご覧ください。
+このサンプルは外部のアイデンティティプロバイダーをサポートしています。現在、[Google](./idp/SET_UP_GOOGLE_ja.md)および[カスタム OIDC プロバイダー](./idp/SET_UP_CUSTOM_OIDC.md)をサポートしています。
 
 ### ローカルでの開発について
 
