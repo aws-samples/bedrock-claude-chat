@@ -71,6 +71,7 @@ describe("Fine-grained Assertions Test", () => {
           },
         ],
         userPoolDomainPrefix: domainPrefix,
+        dbEncryption: false,
         publishedApiAllowedIpV4AddressRanges: [""],
         publishedApiAllowedIpV6AddressRanges: [""],
       }
