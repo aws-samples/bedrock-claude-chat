@@ -346,12 +346,11 @@ const translation = {
       title: 'ベクトル埋め込みパラメーター設定',
       chunkSize: {
         label: 'チャンクサイズ',
-        description:
-          '文書を一定のサイズの小さな部分に分割する際のサイズを指します。',
+        hint: '文書を一定のサイズの小さな部分に分割する際のサイズを指します。',
       },
       chunkOverlap: {
         label: 'チャンクオーバーラップ',
-        description: '隣接するチャンク間で共有される文字数を指します。',
+        hint: '隣接するチャンク間で共有される文字数を指します。',
       },
       alert: {
         sync: {

@@ -2,9 +2,9 @@ import { FC, Dispatch } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 interface Props {
-  title: string;
+  label?: string;
   value: number;
-  description: string;
+  hint?: string;
   range: {
     min: number;
     max: number;
@@ -16,7 +16,6 @@ interface Props {
 
 export const Slider: FC<Props> = (props) => {
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(event.target.value);
     const newValue = parseInt(
       event.target.value != '' ? event.target.value : '0'
     );
@@ -30,7 +29,7 @@ export const Slider: FC<Props> = (props) => {
           'mb-2 text-left text-neutral-700 dark:text-neutral-400',
           props.errorMessage && 'border-red text-red'
         )}>
-        {props.title}
+        {props.label}
       </label>
       <div className="flex gap-2">
         <input
@@ -54,14 +53,9 @@ export const Slider: FC<Props> = (props) => {
           />
         </span>
       </div>
-
-      <span
-        className={twMerge(
-          'text-sm text-black/50',
-          props.errorMessage && 'border-red text-red'
-        )}>
-        {props.description}
-      </span>
+      {props.hint && !props.errorMessage && (
+        <span className={'mt-0.5 text-xs text-gray'}>{props.hint}</span>
+      )}
       {props.errorMessage && (
         <div className="mt-0.5 text-xs text-red">{props.errorMessage}</div>
       )}

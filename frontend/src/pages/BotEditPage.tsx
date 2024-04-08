@@ -477,8 +477,8 @@ const BotEditPage: React.FC = () => {
                 <div className="mt-2">
                   <Slider
                     value={embeddingParams.chunkSize}
-                    description={t('embeddingSetting.chunkSize.description')}
-                    title={t('embeddingSetting.chunkSize.label')}
+                    hint={t('embeddingSetting.chunkSize.hint')}
+                    label={t('embeddingSetting.chunkSize.label')}
                     range={{
                       min: EDGE_EMBEDDING_PARAMS.chunkSize.MIN,
                       max: EDGE_EMBEDDING_PARAMS.chunkSize.MAX,
@@ -495,8 +495,8 @@ const BotEditPage: React.FC = () => {
 
                   <Slider
                     value={embeddingParams.chunkOverlap}
-                    description={t('embeddingSetting.chunkOverlap.description')}
-                    title={t('embeddingSetting.chunkOverlap.label')}
+                    hint={t('embeddingSetting.chunkOverlap.hint')}
+                    label={t('embeddingSetting.chunkOverlap.label')}
                     range={{
                       min: EDGE_EMBEDDING_PARAMS.chunkOverlap.MIN,
                       max: EDGE_EMBEDDING_PARAMS.chunkOverlap.MAX,

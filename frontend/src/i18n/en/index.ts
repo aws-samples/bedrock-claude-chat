@@ -342,13 +342,11 @@ How would you categorize this email?`,
       title: 'Embedding Setting',
       chunkSize: {
         label: 'chunk size',
-        description:
-          'The chunk size refers to the size at which a document is divided into smaller segments',
+        hint: 'The chunk size refers to the size at which a document is divided into smaller segments',
       },
       chunkOverlap: {
         label: 'chunk overlap',
-        description:
-          'Chunk overlap represents the number of shared characters between adjacent chunks.',
+        hint: 'Chunk overlap represents the number of shared characters between adjacent chunks.',
       },
       alert: {
         sync: {
