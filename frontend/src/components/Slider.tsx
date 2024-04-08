@@ -32,6 +32,29 @@ export const Slider: FC<Props> = (props) => {
         )}>
         {props.title}
       </label>
+      <div className="flex gap-2">
+        <input
+          className="w-full cursor-pointer"
+          type="range"
+          min={props.range.min}
+          max={props.range.max}
+          step={props.range.div}
+          value={props.value}
+          onChange={handleChange}
+        />
+        <span className="text-neutral-900">
+          <input
+            className={twMerge(
+              'w-[72px] text-center',
+              props.errorMessage && 'text-red'
+            )}
+            value={props.value}
+            max={props.range.max}
+            onChange={handleChange}
+          />
+        </span>
+      </div>
+
       <span
         className={twMerge(
           'text-sm text-black/50',
@@ -39,26 +62,6 @@ export const Slider: FC<Props> = (props) => {
         )}>
         {props.description}
       </span>
-      <span className="mb-1 mt-2 text-center text-neutral-900 dark:text-neutral-500">
-        <input
-          className={twMerge(
-            'w-[72px] text-center',
-            props.errorMessage && 'text-red'
-          )}
-          value={props.value}
-          max={props.range.max}
-          onChange={handleChange}
-        />
-      </span>
-      <input
-        className="cursor-pointer"
-        type="range"
-        min={props.range.min}
-        max={props.range.max}
-        step={props.range.div}
-        value={props.value}
-        onChange={handleChange}
-      />
       {props.errorMessage && (
         <div className="mt-0.5 text-xs text-red">{props.errorMessage}</div>
       )}
