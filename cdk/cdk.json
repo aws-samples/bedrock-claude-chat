@@ -64,9 +64,8 @@
     "dbEncryption": false,
     "enableUsageAnalysis": true,
     "rdbShutdown": {
-      "enable": false,
-      "timeToStop": "",
-      "timerestorationTime": ""
+      "timeToStop": {},
+      "timerestorationTime": {}
     }
   }
 }
