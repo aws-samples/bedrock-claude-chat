@@ -18,6 +18,12 @@ import { Slider } from '../components/Slider';
 import ExpandableDrawerGroup from '../components/ExpandableDrawerGroup';
 import useErrorMessage from '../hooks/useErrorMessage';
 
+const isSyncChunkError = (syncErrorMessage: string) => {
+  const pattern =
+    /Got a larger chunk overlap \(\d+\) than chunk size \(\d+\), should be smaller\./;
+  return pattern.test(syncErrorMessage);
+};
+
 const BotEditPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -39,8 +45,6 @@ const BotEditPage: React.FC = () => {
   const [unchangedFilenames, setUnchangedFilenames] = useState<string[]>([]);
   const [deletedFilenames, setDeletedFilenames] = useState<string[]>([]);
 
-  const [syncErrorMessage, setSyncErrorMessage] = useState('');
-
   const {
     errorMessages,
     setErrorMessage: setErrorMessages,
@@ -59,12 +63,6 @@ const BotEditPage: React.FC = () => {
     () => !(embeddingParams.chunkSize < embeddingParams.chunkOverlap),
     [embeddingParams]
   );
-
-  const isChunkError = useMemo(() => {
-    const pattern =
-      /Got a larger chunk overlap \(\d+\) than chunk size \(\d+\), should be smaller\./;
-    return pattern.test(syncErrorMessage);
-  }, [syncErrorMessage]);
 
   useEffect(() => {
     if (!isNewBot) {
@@ -88,7 +86,12 @@ const BotEditPage: React.FC = () => {
           setEmbeddingParams(() => bot.embeddingParams);
           setUnchangedFilenames([...bot.knowledge.filenames]);
           if (bot.syncStatus === 'FAILED') {
-            setSyncErrorMessage(bot.syncStatusReason);
+            setErrorMessages(
+              isSyncChunkError(bot.syncStatusReason)
+                ? 'syncChunkError'
+                : 'syncError',
+              bot.syncStatusReason
+            );
           }
         })
         .finally(() => {
@@ -395,7 +398,9 @@ const BotEditPage: React.FC = () => {
                   {t('bot.help.knowledge.overview')}
                 </div>
 
-                {syncErrorMessage !== '' && !isChunkError && (
+                {Object.entries(errorMessages).filter(([key, _value]) =>
+                  key.includes('syncError')
+                ).length > 0 && (
                   <Alert
                     className="mt-2"
                     severity="error"
@@ -405,7 +410,9 @@ const BotEditPage: React.FC = () => {
                         {t('bot.alert.sync.error.body')}
                       </div>
                       <div className="rounded border bg-light-gray p-2 text-dark-gray">
-                        {syncErrorMessage}
+                        {Object.entries(errorMessages)
+                          .filter(([key, _value]) => key.includes('syncError'))
+                          .map(([_key, value]) => value)}
                       </div>
                     </>
                   </Alert>
@@ -523,7 +530,9 @@ const BotEditPage: React.FC = () => {
                 </Alert>
               )}
 
-              {isChunkError && (
+              {Object.entries(errorMessages).filter(([key, _value]) =>
+                key.includes('syncChunkError')
+              ).length > 0 && (
                 <Alert
                   className="mt-2"
                   severity="error"
