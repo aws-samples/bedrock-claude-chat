@@ -330,6 +330,7 @@ const translation = {
       cancel: 'キャンセル',
       back: '戻る',
       menu: 'Menu',
+      llmParamsSetting: 'LLMパラメータの設定',
       language: '言語の切替',
       clearConversation: 'すべての会話をクリア',
       signOut: 'サインアウト',

@@ -82,6 +82,15 @@ const Menu: React.FC<Props> = (props) => {
               setIsOpenLangage(true);
             }}>
             <PiTranslate className="mr-2" />
+            {t('button.llmParamsSetting')}
+          </div>
+          <div
+            className="flex w-full cursor-pointer items-center p-2 hover:bg-aws-sea-blue-hover"
+            onClick={() => {
+              setIsOpen(false);
+              setIsOpenLangage(true);
+            }}>
+            <PiTranslate className="mr-2" />
             {t('button.language')}
           </div>
           <div
