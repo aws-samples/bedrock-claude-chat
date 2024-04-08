@@ -62,6 +62,10 @@
       "8000:0000:0000:0000:0000:0000:0000:0000/1"
     ],
     "dbEncryption": false,
-    "enableUsageAnalysis": true
+    "enableUsageAnalysis": true,
+    "rdbShutdown": {
+      "timeToStop": "",
+      "timerestorationTime": ""
+    }
   }
 }
