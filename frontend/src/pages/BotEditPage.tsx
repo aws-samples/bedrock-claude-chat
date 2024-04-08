@@ -18,22 +18,6 @@ import { Slider } from '../components/Slider';
 import ExpandableDrawerGroup from '../components/ExpandableDrawerGroup';
 import useErrorMessage from '../hooks/useErrorMessage';
 
-type SyncErrorPattern = (typeof syncErrorPattern)[number];
-
-const syncErrorPattern = ['syncError', 'syncChunkError'] as const;
-
-const isSyncChunkError = (syncErrorMessage: string) => {
-  const pattern =
-    /Got a larger chunk overlap \(\d+\) than chunk size \(\d+\), should be smaller\./;
-  return pattern.test(syncErrorMessage);
-};
-
-const getErrorPattern =
-  (errorMessages: Record<string, string>) => (errorType: SyncErrorPattern) =>
-    Object.entries(errorMessages).filter(([key, _value]) =>
-      key.includes(errorType)
-    );
-
 const BotEditPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -74,11 +58,6 @@ const BotEditPage: React.FC = () => {
     [embeddingParams]
   );
 
-  const getErrorOfPattern = useMemo(
-    () => getErrorPattern(errorMessages),
-    [errorMessages]
-  );
-
   useEffect(() => {
     if (!isNewBot) {
       setIsLoading(true);
@@ -115,6 +94,12 @@ const BotEditPage: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isNewBot, botId]);
+
+  const isSyncChunkError = useCallback((syncErrorMessage: string) => {
+    const pattern =
+      /Got a larger chunk overlap \(\d+\) than chunk size \(\d+\), should be smaller\./;
+    return pattern.test(syncErrorMessage);
+  }, []);
 
   const onChangeUrl = useCallback(
     (url: string, idx: number) => {
@@ -413,7 +398,7 @@ const BotEditPage: React.FC = () => {
                   {t('bot.help.knowledge.overview')}
                 </div>
 
-                {getErrorOfPattern('syncError').length > 0 && (
+                {errorMessages['syncError'] && (
                   <Alert
                     className="mt-2"
                     severity="error"
@@ -423,9 +408,7 @@ const BotEditPage: React.FC = () => {
                         {t('bot.alert.sync.error.body')}
                       </div>
                       <div className="rounded border bg-light-gray p-2 text-dark-gray">
-                        {getErrorOfPattern('syncError').map(
-                          ([_key, value]) => value
-                        )}
+                        {errorMessages['syncError']}
                       </div>
                     </>
                   </Alert>
@@ -543,7 +526,7 @@ const BotEditPage: React.FC = () => {
                 </Alert>
               )}
 
-              {getErrorOfPattern('syncChunkError').length > 0 && (
+              {errorMessages['syncChunkError'] && (
                 <Alert
                   className="mt-2"
                   severity="error"
