@@ -28,8 +28,12 @@ export class VectorStore extends Construct {
     super(scope, id);
 
     // イベントルールを作成
-    const rule = new events.Rule(this, "StopRdsRule", {
+    const stopRule = new events.Rule(this, "StopRdsRule", {
       schedule: events.Schedule.cron({ minute: "0", hour: "22" }), // 毎日 22:00 に実行
+    });
+
+    const startRule = new events.Rule(this, "StartRdsRule", {
+      schedule: events.Schedule.cron({ minute: "0", hour: "7" }), // 毎日 7:00 に実行
     });
 
     const sg = new ec2.SecurityGroup(this, "ClusterSecurityGroup", {
@@ -69,9 +73,24 @@ export class VectorStore extends Construct {
       },
     });
 
-    rule.addTarget(new targets.LambdaFunction(stopRdsFunction));
+    const startRdsFunction = new NodejsFunction(this, "StopRdsFunction", {
+      vpc: props.vpc,
+      runtime: lambda.Runtime.NODEJS_20_X,
+      entry: path.join(
+        __dirname,
+        "../../custom-resources/start-pgvector/index.js"
+      ),
+      handler: "handler",
+      environment: {
+        RDS_INSTANCE_ID: cluster.clusterIdentifier,
+      },
+    });
+
+    stopRule.addTarget(new targets.LambdaFunction(stopRdsFunction));
+    startRule.addTarget(new targets.LambdaFunction(startRdsFunction));
 
     cluster.grantDataApiAccess(stopRdsFunction);
+    cluster.grantDataApiAccess(startRdsFunction);
 
     const setupHandler = new NodejsFunction(this, "CustomResourceHandler", {
       vpc: props.vpc,
