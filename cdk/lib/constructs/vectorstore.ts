@@ -4,6 +4,8 @@ import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { CustomResource, Duration } from "aws-cdk-lib";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as path from "path";
+import * as events from "aws-cdk-lib/aws-events";
+import * as targets from "aws-cdk-lib/aws-events-targets";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 
@@ -24,6 +26,11 @@ export class VectorStore extends Construct {
   readonly secret: secretsmanager.ISecret;
   constructor(scope: Construct, id: string, props: VectorStoreProps) {
     super(scope, id);
+
+    // イベントルールを作成
+    const rule = new events.Rule(this, "StopRdsRule", {
+      schedule: events.Schedule.cron({ minute: "0", hour: "22" }), // 毎日 22:00 に実行
+    });
 
     const sg = new ec2.SecurityGroup(this, "ClusterSecurityGroup", {
       vpc: props.vpc,
@@ -48,6 +55,23 @@ export class VectorStore extends Construct {
       //   }),
       // ],
     });
+
+    const stopRdsFunction = new NodejsFunction(this, "StopRdsFunction", {
+      vpc: props.vpc,
+      runtime: lambda.Runtime.NODEJS_20_X,
+      entry: path.join(
+        __dirname,
+        "../../custom-resources/stop-pgvector/index.js"
+      ),
+      handler: "handler",
+      environment: {
+        RDS_INSTANCE_ID: cluster.clusterIdentifier,
+      },
+    });
+
+    rule.addTarget(new targets.LambdaFunction(stopRdsFunction));
+
+    cluster.grantDataApiAccess(stopRdsFunction);
 
     const setupHandler = new NodejsFunction(this, "CustomResourceHandler", {
       vpc: props.vpc,
