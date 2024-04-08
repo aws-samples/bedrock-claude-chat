@@ -41,3 +41,12 @@ type CronSchedule = {
   dayOfWeek: DayOfWeek;
   year: Year;
 };
+
+type RdsScheduler = {
+  timeToStop: CronSchedule;
+  restorationTime: CronSchedule;
+};
+
+const isCormn = (rdbShutdown: unknown): rdbShutdown is RdsScheduler => {
+  return true;
+};

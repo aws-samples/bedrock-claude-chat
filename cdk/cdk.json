@@ -65,7 +65,7 @@
     "enableUsageAnalysis": true,
     "rdbShutdown": {
       "timeToStop": {},
-      "timerestorationTime": {}
+      "restorationTime": {}
     }
   }
 }
