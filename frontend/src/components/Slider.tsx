@@ -44,8 +44,10 @@ export const Slider: FC<Props> = (props) => {
         <span className="text-neutral-900">
           <input
             className={twMerge(
-              'w-[72px] text-center',
-              props.errorMessage && 'text-red'
+              'peer h-9 w-16 rounded border p-1 text-center',
+              props.errorMessage
+                ? 'border-2 border-red'
+                : 'border-aws-font-color/50 '
             )}
             value={props.value}
             max={props.range.max}
