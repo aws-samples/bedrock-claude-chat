@@ -53,11 +53,6 @@ const BotEditPage: React.FC = () => {
     return isNewBot ? ulid() : paramsBotId ?? '';
   }, [isNewBot, paramsBotId]);
 
-  const isEnabledEmbeddingParams = useMemo(
-    () => !(embeddingParams.chunkSize < embeddingParams.chunkOverlap),
-    [embeddingParams]
-  );
-
   useEffect(() => {
     if (!isNewBot) {
       setIsLoading(true);
@@ -246,6 +241,13 @@ const BotEditPage: React.FC = () => {
         })
       );
       return true;
+    }
+
+    if (embeddingParams.chunkSize < embeddingParams.chunkOverlap) {
+      setErrorMessages(
+        'chunkOverlap',
+        t('validation.chunkOverlapLessThanChunkSize.message')
+      );
     }
 
     return false;
@@ -513,19 +515,6 @@ const BotEditPage: React.FC = () => {
                 </div>
               </ExpandableDrawerGroup>
 
-              {!isEnabledEmbeddingParams && (
-                <Alert
-                  className="mt-2"
-                  severity="error"
-                  title={t('validation.title')}>
-                  <>
-                    <div className="rounded border bg-light-gray p-2 text-dark-gray">
-                      {t('validation.chunkOverlapLessThanChunkSize.message')}
-                    </div>
-                  </>
-                </Alert>
-              )}
-
               {errorMessages['syncChunkError'] && (
                 <Alert
                   className="mt-2"
@@ -548,14 +537,14 @@ const BotEditPage: React.FC = () => {
                   <Button
                     onClick={onClickCreate}
                     loading={isLoading}
-                    disabled={disabledRegister || !isEnabledEmbeddingParams}>
+                    disabled={disabledRegister}>
                     {t('bot.button.create')}
                   </Button>
                 ) : (
                   <Button
                     onClick={onClickEdit}
                     loading={isLoading}
-                    disabled={disabledRegister || !isEnabledEmbeddingParams}>
+                    disabled={disabledRegister}>
                     {t('bot.button.edit')}
                   </Button>
                 )}
