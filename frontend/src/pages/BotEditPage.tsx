@@ -221,7 +221,7 @@ const BotEditPage: React.FC = () => {
     history.back();
   }, []);
 
-  const validationCheck = (): boolean => {
+  const validationCheck = useCallback((): boolean => {
     clearErrorMessages();
     if (embeddingParams.chunkSize > EDGE_EMBEDDING_PARAMS.chunkSize.MAX) {
       setErrorMessages(
@@ -252,7 +252,7 @@ const BotEditPage: React.FC = () => {
     }
 
     return false;
-  };
+  }, [embeddingParams]);
 
   const onClickCreate = useCallback(() => {
     if (validationCheck()) return;
