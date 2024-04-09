@@ -47,7 +47,6 @@ export type RdsSchedules = {
   restored: CronSchedule;
 };
 
-// CronFieldBase 型ガード
 const isCronFieldBase = (value: unknown): value is CronFieldBase =>
   typeof value === "string" ||
   typeof value === "number" ||
@@ -55,15 +54,12 @@ const isCronFieldBase = (value: unknown): value is CronFieldBase =>
   value === "-" ||
   value === ",";
 
-// Minute 型ガード
 const isMinute = (value: unknown): value is Minute =>
   isCronFieldBase(value) || value === "/";
 
-// Hour 型ガード
 const isHour = (value: unknown): value is Hour =>
   isCronFieldBase(value) || value === "/";
 
-// DayOfMonth 型ガード
 const isDayOfMonth = (value: unknown): value is DayOfMonth =>
   isCronFieldBase(value) ||
   value === "?" ||
@@ -71,7 +67,6 @@ const isDayOfMonth = (value: unknown): value is DayOfMonth =>
   value === "W" ||
   value === "/";
 
-// Month 型ガード
 const isMonth = (value: unknown): value is Month => {
   const months = [
     "JAN",
@@ -94,7 +89,6 @@ const isMonth = (value: unknown): value is Month => {
   );
 };
 
-// DayOfWeek 型ガード
 const isDayOfWeek = (value: unknown): value is DayOfWeek => {
   const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
   return (
@@ -107,7 +101,6 @@ const isDayOfWeek = (value: unknown): value is DayOfWeek => {
   );
 };
 
-// Year 型ガード
 const isYear = (value: unknown): value is Year => {
   if (typeof value !== "string") return false;
   if (value === "*" || value === "-" || value === "/") return true;
@@ -148,6 +141,8 @@ export const createRdsScheduler = (rdsSchedules: RdsSchedules) => {
 
   return {
     hasCorn,
+    stopCorn: rdsSchedules.stop,
+    restoredCorn: rdsSchedules.restored,
   };
 };
 

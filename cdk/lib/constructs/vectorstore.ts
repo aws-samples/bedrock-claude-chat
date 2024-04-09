@@ -55,11 +55,11 @@ export class VectorStore extends Construct {
 
     if (props.rdsScheduler.hasCorn()) {
       const stopRule = new events.Rule(this, "StopRdsRule", {
-        schedule: events.Schedule.cron({ minute: "0", hour: "22" }), // 毎日 22:00 に実行
+        schedule: events.Schedule.cron(props.rdsScheduler.stopCorn),
       });
 
       const startRule = new events.Rule(this, "StartRdsRule", {
-        schedule: events.Schedule.cron({ minute: "0", hour: "7" }), // 毎日 7:00 に実行
+        schedule: events.Schedule.cron(props.rdsScheduler.restoredCorn),
       });
 
       const stopRdsFunction = new NodejsFunction(this, "StopRdsFunction", {
