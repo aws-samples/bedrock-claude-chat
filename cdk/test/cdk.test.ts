@@ -25,7 +25,10 @@ describe("Fine-grained Assertions Test", () => {
         dbEncryption: false,
         publishedApiAllowedIpV4AddressRanges: [""],
         publishedApiAllowedIpV6AddressRanges: [""],
-        rdsSchedules: {},
+        rdsSchedules: {
+          stop: {},
+          restored: {},
+        },
       }
     );
     const hasGoogleProviderTemplate = Template.fromStack(
@@ -75,7 +78,10 @@ describe("Fine-grained Assertions Test", () => {
         dbEncryption: false,
         publishedApiAllowedIpV4AddressRanges: [""],
         publishedApiAllowedIpV6AddressRanges: [""],
-        rdsSchedules: {},
+        rdsSchedules: {
+          stop: {},
+          restored: {},
+        },
       }
     );
     const hasOidcProviderTemplate = Template.fromStack(hasOidcProviderStack);
@@ -114,7 +120,10 @@ describe("Fine-grained Assertions Test", () => {
       dbEncryption: false,
       publishedApiAllowedIpV4AddressRanges: [""],
       publishedApiAllowedIpV6AddressRanges: [""],
-      rdsSchedules: {},
+      rdsSchedules: {
+        stop: {},
+        restored: {},
+      },
     });
     const template = Template.fromStack(stack);
 
@@ -137,20 +146,20 @@ describe("Scheduler Test", () => {
       publishedApiAllowedIpV6AddressRanges: [""],
       rdsSchedules: {
         stop: {
-          minute: "",
-          hour: "",
-          dayOfMonth: "",
-          month: "",
-          dayOfWeek: "",
+          minute: "00",
+          hour: "22",
+          day: "*",
+          month: "*",
           year: "*",
+          weekDay: "*",
         },
         restored: {
-          minute: "",
-          hour: "",
-          dayOfMonth: "",
-          month: "",
-          dayOfWeek: "",
+          minute: "00",
+          hour: "7",
+          day: "*",
+          month: "*",
           year: "*",
+          weekDay: "*",
         },
       },
     });
@@ -167,7 +176,10 @@ describe("Scheduler Test", () => {
       dbEncryption: false,
       publishedApiAllowedIpV4AddressRanges: [""],
       publishedApiAllowedIpV6AddressRanges: [""],
-      rdsSchedules: {},
+      rdsSchedules: {
+        stop: {},
+        restored: {},
+      },
     });
   });
 });
