@@ -69,7 +69,10 @@ export class VectorStore extends Construct {
       ),
       handler: "handler",
       environment: {
-        RDS_INSTANCE_ID: cluster.clusterIdentifier,
+        RDS_INSTANCE_ID: cluster
+          .secret!.secretValueFromJson("dbClusterIdentifier")
+          .unsafeUnwrap()
+          .toString(),
       },
     });
 
@@ -82,7 +85,10 @@ export class VectorStore extends Construct {
       ),
       handler: "handler",
       environment: {
-        RDS_INSTANCE_ID: cluster.clusterIdentifier,
+        RDS_INSTANCE_ID: cluster
+          .secret!.secretValueFromJson("dbClusterIdentifier")
+          .unsafeUnwrap()
+          .toString(),
       },
     });
 
