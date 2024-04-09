@@ -5,10 +5,17 @@ import { CustomResource, Duration } from "aws-cdk-lib";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as path from "path";
 import * as events from "aws-cdk-lib/aws-events";
-import * as targets from "aws-cdk-lib/aws-events-targets";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { RdsScheduler } from "../utils/cron";
+import { CfnSchedule } from "aws-cdk-lib/aws-scheduler";
+import {
+  Effect,
+  Policy,
+  PolicyStatement,
+  Role,
+  ServicePrincipal,
+} from "aws-cdk-lib/aws-iam";
 
 const DB_NAME = "postgres";
 
@@ -54,53 +61,52 @@ export class VectorStore extends Construct {
     });
 
     if (props.rdsScheduler.hasCron()) {
-      const stopRule = new events.Rule(this, "StopRdsRule", {
-        schedule: events.Schedule.cron(props.rdsScheduler.stopCron),
+      const rdsIdentifier = cluster
+        .secret!.secretValueFromJson("dbClusterIdentifier")
+        .unsafeUnwrap()
+        .toString();
+
+      const RdsSchedulerRole = new Role(this, "role-rds-scheduler", {
+        assumedBy: new ServicePrincipal("scheduler.amazonaws.com"),
+        description: "start and stop RDS",
       });
 
-      const startRule = new events.Rule(this, "StartRdsRule", {
-        schedule: events.Schedule.cron(props.rdsScheduler.restoredCron),
+      new Policy(this, "policy-SchedulerPolicyForRDS", {
+        policyName: "policy-rds-start-and-stop",
+        roles: [RdsSchedulerRole],
+        statements: [
+          new PolicyStatement({
+            effect: Effect.ALLOW,
+            actions: ["rds:StartDBCluster", "rds:StopDBCluster"],
+            resources: [rdsIdentifier],
+          }),
+        ],
       });
 
-      const stopRdsFunction = new NodejsFunction(this, "StopRdsFunction", {
-        vpc: props.vpc,
-        runtime: lambda.Runtime.NODEJS_18_X,
-        entry: path.join(
-          __dirname,
-          "../../custom-resources/stop-pgvector/index.js"
-        ),
-        handler: "handler",
-        timeout: Duration.minutes(5),
-        environment: {
-          RDS_INSTANCE_ID: cluster
-            .secret!.secretValueFromJson("dbClusterIdentifier")
-            .unsafeUnwrap()
-            .toString(),
+      new CfnSchedule(this, "RestoredRdsScheduler", {
+        description: "Restored RDS Instance",
+        scheduleExpression: events.Schedule.cron(
+          props.rdsScheduler.restoredCron
+        ).expressionString,
+        flexibleTimeWindow: { mode: "OFF" },
+        target: {
+          arn: cluster.clusterArn,
+          roleArn: RdsSchedulerRole.roleArn,
+          input: JSON.stringify({ DbInstanceIdentifier: rdsIdentifier }),
         },
       });
 
-      const startRdsFunction = new NodejsFunction(this, "StartRdsFunction", {
-        vpc: props.vpc,
-        runtime: lambda.Runtime.NODEJS_18_X,
-        entry: path.join(
-          __dirname,
-          "../../custom-resources/start-pgvector/index.js"
-        ),
-        handler: "handler",
-        timeout: Duration.minutes(5),
-        environment: {
-          RDS_INSTANCE_ID: cluster
-            .secret!.secretValueFromJson("dbClusterIdentifier")
-            .unsafeUnwrap()
-            .toString(),
+      new CfnSchedule(this, "StopRdsScheduler", {
+        description: "Stop RDS Instance",
+        scheduleExpression: events.Schedule.cron(props.rdsScheduler.stopCron)
+          .expressionString,
+        flexibleTimeWindow: { mode: "OFF" },
+        target: {
+          arn: cluster.clusterArn,
+          roleArn: RdsSchedulerRole.roleArn,
+          input: JSON.stringify({ DbInstanceIdentifier: rdsIdentifier }),
         },
       });
-
-      stopRule.addTarget(new targets.LambdaFunction(stopRdsFunction));
-      startRule.addTarget(new targets.LambdaFunction(startRdsFunction));
-
-      cluster.grantDataApiAccess(stopRdsFunction);
-      cluster.grantDataApiAccess(startRdsFunction);
     }
 
     const setupHandler = new NodejsFunction(this, "CustomResourceHandler", {

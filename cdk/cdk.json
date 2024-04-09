@@ -65,8 +65,8 @@
     "enableUsageAnalysis": true,
     "rdbSchedules": {
       "stop": {
-        "minute": "00",
-        "hour": "22",
+        "minute": "30",
+        "hour": "9",
         "day": "*",
         "month": "*",
         "year": "*"
