@@ -4,14 +4,14 @@ import ButtonCopy from './ButtonCopy';
 import { PiCaretLeftBold, PiNotePencil, PiUserFill } from 'react-icons/pi';
 import { BaseProps } from '../@types/common';
 import MLIcon from '../assets/ML-icon.svg';
-import { MessageContentWithChildren } from '../@types/conversation';
+import { DisplayMessageContent } from '../@types/conversation';
 import ButtonIcon from './ButtonIcon';
 import Textarea from './Textarea';
 import Button from './Button';
 import { useTranslation } from 'react-i18next';
 
 type Props = BaseProps & {
-  chatContent?: MessageContentWithChildren;
+  chatContent?: DisplayMessageContent;
   onChangeMessageId?: (messageId: string) => void;
   onSubmit?: (messageId: string, content: string) => void;
 };
@@ -21,7 +21,7 @@ const ChatMessage: React.FC<Props> = (props) => {
   const [isEdit, setIsEdit] = useState(false);
   const [changedContent, setChangedContent] = useState('');
 
-  const chatContent = useMemo<MessageContentWithChildren | undefined>(() => {
+  const chatContent = useMemo<DisplayMessageContent | undefined>(() => {
     return props.chatContent;
   }, [props]);
 

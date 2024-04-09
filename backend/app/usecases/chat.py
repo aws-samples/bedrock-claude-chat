@@ -192,7 +192,7 @@ def insert_knowledge(
 
     context_prompt = ""
     for result in search_results:
-        context_prompt += f"<context>\n{result.content}</context>\n"
+        context_prompt += f"<context>\n<id>{result.rank}</id><content>{result.content}</content></context>\n"
 
     instruction_prompt = conversation.message_map["instruction"].content[0].body
     inserted_prompt = """You must respond based on given contexts.
@@ -200,7 +200,9 @@ The contexts are as follows:
 <contexts>
 {}
 </contexts>
-Remember, *RESPOND BASED ON THE GIVEN CONTEXTS. YOU MUST NEVER GUESS*. If you cannot find source from the contexts, just say "I don't know".
+Remember, *RESPOND BASED ON THE GIVEN CONTEXTS. YOU MUST NEVER GUESS*. 
+At the end of each sentence in your response, please add the <id></id> of the contenxt you referenced in the format [^<id>].
+If you cannot find source from the contexts, just say "I don't know".
 In addition, *YOU MUST OBEY THE FOLLOWING RULE*:
 <rule>
 {}

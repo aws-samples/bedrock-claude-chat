@@ -11,6 +11,10 @@ type Props = BaseProps & {
   children: string;
 };
 
+// const Link: React.FC<Props> = () => {
+//   return 'TEST';
+// };
+
 const Markdown: React.FC<Props> = ({ className, children }) => {
   return (
     <ReactMarkdown
@@ -30,6 +34,7 @@ const Markdown: React.FC<Props> = ({ className, children }) => {
                 children={codeText}
                 style={vscDarkPlus}
                 language={match[1]}
+                x
                 PreTag="div"
                 wrapLongLines={true}
               />
@@ -38,6 +43,14 @@ const Markdown: React.FC<Props> = ({ className, children }) => {
             <code {...props} className={className}>
               {children}
             </code>
+          );
+        },
+        a({ className, children, ...props }) {
+          console.log(props);
+          return (
+            <a {...props} className={className}>
+              {children}
+            </a>
           );
         },
       }}

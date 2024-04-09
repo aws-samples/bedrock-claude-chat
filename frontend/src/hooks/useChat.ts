@@ -3,10 +3,11 @@ import useConversationApi from './useConversationApi';
 import { produce } from 'immer';
 import {
   MessageContent,
-  MessageContentWithChildren,
+  DisplayMessageContent,
   MessageMap,
   Model,
   PostMessageRequest,
+  RelatedDocument,
 } from '../@types/conversation';
 import useConversation from './useConversation';
 import { create } from 'zustand';
@@ -53,7 +54,7 @@ const useChatState = create<{
   getMessages: (
     id: string,
     currentMessageId: string
-  ) => MessageContentWithChildren[];
+  ) => DisplayMessageContent[];
   currentMessageId: string;
   setCurrentMessageId: (s: string) => void;
   isGeneratedTitle: boolean;
@@ -337,11 +338,10 @@ const useChat = () => {
         ...messageContent,
         parentMessageId: parentMessageId,
       },
-      stream: true,
       botId: bot?.botId,
     };
     const createNewConversation = () => {
-      // 画面のチラつき防止のために、Stateをコピーする
+      // Copy State to prevent screen flicker
       copyMessages('', newConversationId);
 
       conversationApi
@@ -358,20 +358,21 @@ const useChat = () => {
 
     setPostingMessage(true);
 
-    // 画面に即時反映するために、Stateを更新する
+    // Update State for immediate reflection on screen
     pushNewMessage(parentMessageId, messageContent);
 
-    const postPromise: Promise<void> = new Promise((resolve, reject) => {
+    // post message
+    const postPromise: Promise<string> = new Promise((resolve, reject) => {
       if (USE_STREAMING) {
         postStreaming({
           input,
           hasKnowledge: bot?.hasKnowledge,
           dispatch: (c: string) => {
-            editMessage(conversationId ?? '', NEW_MESSAGE_ID.ASSISTANT, c);
+            editMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT, c);
           },
         })
-          .then(() => {
-            resolve();
+          .then((message) => {
+            resolve(message);
           })
           .catch((e) => {
             reject(e);
@@ -381,11 +382,11 @@ const useChat = () => {
           .postMessage(input)
           .then((res) => {
             editMessage(
-              conversationId ?? '',
+              conversationId,
               NEW_MESSAGE_ID.ASSISTANT,
               res.data.message.content[0].body
             );
-            resolve();
+            resolve(res.data.message.content[0].body);
           })
           .catch((e) => {
             reject(e);
@@ -393,9 +394,45 @@ const useChat = () => {
       }
     });
 
-    postPromise
-      .then(() => {
-        // 新規チャットの場合の処理
+    // get related document (for RAG)
+    const documents: RelatedDocument[] = [];
+    const getDocumentsPromise: Promise<void> = new Promise(
+      (resolve, reject) => {
+        if (input.botId) {
+          conversationApi
+            .getRelatedDocuments({
+              botId: input.botId,
+              conversationId: input.conversationId!,
+              message: input.message,
+            })
+            .then((res) => {
+              documents.push(...res.data);
+              resolve();
+            })
+            .catch((e) => {
+              reject(e);
+            });
+        } else {
+          resolve();
+        }
+      }
+    );
+
+    Promise.all([postPromise, getDocumentsPromise])
+      .then(([message]) => {
+        // append footnote
+        if (documents.length > 0) {
+          const tmp = documents
+            .flatMap((doc) => {
+              return message.includes(`[^${doc.rank}]`)
+                ? `[^${doc.rank}]: テスト`
+                : null;
+            })
+            .join('\n');
+
+          editMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT, message + tmp);
+        }
+
         if (isNewChat) {
           createNewConversation();
         } else {
@@ -404,7 +441,7 @@ const useChat = () => {
       })
       .catch((e) => {
         console.error(e);
-        removeMessage(conversationId ?? '', NEW_MESSAGE_ID.ASSISTANT);
+        removeMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT);
       })
       .finally(() => {
         setPostingMessage(false);
@@ -450,7 +487,6 @@ const useChat = () => {
         ...parentMessage,
         parentMessageId: parentMessage.parent,
       },
-      stream: true,
       botId: props?.bot?.botId,
     };
 

@@ -1,14 +1,14 @@
-import { MessageContentWithChildren, MessageMap } from '../@types/conversation';
+import { DisplayMessageContent, MessageMap } from '../@types/conversation';
 
 export const convertMessageMapToArray = (
   messageMap: MessageMap,
   currentMessageId: string
-): MessageContentWithChildren[] => {
+): DisplayMessageContent[] => {
   if (Object.keys(messageMap).length === 0) {
     return [];
   }
 
-  const messageArray: MessageContentWithChildren[] = [];
+  const messageArray: DisplayMessageContent[] = [];
   let key: string | null = currentMessageId;
   let messageContent: MessageMap[string] = messageMap[key];
 
