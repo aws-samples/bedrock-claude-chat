@@ -162,7 +162,13 @@ describe("Scheduler Test", () => {
       },
     });
     const template = Template.fromStack(hasScheduleStack);
-    template.resourceCountIs("AWS::Events::EventBus", 3);
+    template.hasResourceProperties("AWS::Events::Rule", {
+      ScheduleExpression: "cron(0 22 * * *)",
+    });
+
+    template.hasResourceProperties("AWS::Events::Rule", {
+      ScheduleExpression: "cron(0 7 * * *)",
+    });
   });
   test("has'nt schedules", () => {
     const app = new cdk.App();
@@ -182,6 +188,6 @@ describe("Scheduler Test", () => {
       },
     });
     const template = Template.fromStack(defaultStack);
-    template.resourceCountIs("AWS::Events::EventBus", 1);
+    template.resourceCountIs("AWS::Events::Rule", 0);
   });
 });
