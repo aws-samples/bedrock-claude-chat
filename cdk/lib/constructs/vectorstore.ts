@@ -62,27 +62,20 @@ export class VectorStore extends Construct {
     });
 
     if (props.rdsScheduler.hasCron()) {
-      const rdsIdentifier = cluster
-        .secret!.secretValueFromJson("dbClusterIdentifier")
-        .unsafeUnwrap()
-        .toString();
-
-      const RdsSchedulerRole = new Role(this, "role-rds-scheduler", {
+      const rdsSchedulerRole = new Role(this, "role-rds-scheduler", {
         assumedBy: new ServicePrincipal("scheduler.amazonaws.com"),
         description: "start and stop RDS",
       });
 
-      new Policy(this, "policy-SchedulerPolicyForRDS", {
-        policyName: "policy-rds-start-and-stop",
-        roles: [RdsSchedulerRole],
-        statements: [
-          new PolicyStatement({
-            effect: Effect.ALLOW,
-            actions: ["rds:StartDBCluster", "rds:StopDBCluster"],
-            resources: [new AccountPrincipal(Stack.of(this).account).arn],
-          }),
-        ],
-      });
+      rdsSchedulerRole.addToPolicy(
+        new PolicyStatement({
+          resources: ["*"],
+          effect: Effect.ALLOW,
+          actions: ["rds:startDBCluster", "rds:stopDBCluster"],
+        })
+      );
+
+      console.log(cluster.clusterResourceIdentifier);
 
       new CfnSchedule(this, "RestoredRdsScheduler", {
         description: "Restored RDS Instance",
@@ -92,8 +85,10 @@ export class VectorStore extends Construct {
         flexibleTimeWindow: { mode: "OFF" },
         target: {
           arn: "arn:aws:scheduler:::aws-sdk:rds:startDBCluster",
-          roleArn: RdsSchedulerRole.roleArn,
-          input: JSON.stringify({ DbInstanceIdentifier: rdsIdentifier }),
+          roleArn: rdsSchedulerRole.roleArn,
+          input: JSON.stringify({
+            DbClusterIdentifier: cluster.clusterIdentifier,
+          }),
         },
       });
 
@@ -104,8 +99,10 @@ export class VectorStore extends Construct {
         flexibleTimeWindow: { mode: "OFF" },
         target: {
           arn: "arn:aws:scheduler:::aws-sdk:rds:stopDBCluster",
-          roleArn: RdsSchedulerRole.roleArn,
-          input: JSON.stringify({ DbInstanceIdentifier: rdsIdentifier }),
+          roleArn: rdsSchedulerRole.roleArn,
+          input: JSON.stringify({
+            DbClusterIdentifier: cluster.clusterResourceIdentifier,
+          }),
         },
       });
     }
