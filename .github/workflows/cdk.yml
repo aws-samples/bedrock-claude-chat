@@ -20,6 +20,12 @@ jobs:
           cd custom-resources/setup-pgvector
           npm ci
           cd ../..
+          cd custom-resources/start-pgvector
+          npm ci
+          cd ../..
+          cd custom-resources/stop-pgvector
+          npm ci
+          cd ../..
           npm ci
           npx cdk synth
   cdk-test:
@@ -33,6 +39,12 @@ jobs:
       - run: |
           cd cdk
           cd custom-resources/setup-pgvector
+          npm ci
+          cd ../..
+          cd custom-resources/start-pgvector
+          npm ci
+          cd ../..
+          cd custom-resources/stop-pgvector
           npm ci
           cd ../..
           npm ci
