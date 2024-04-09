@@ -121,3 +121,53 @@ describe("Fine-grained Assertions Test", () => {
     template.resourceCountIs("AWS::Cognito::UserPoolIdentityProvider", 0);
   });
 });
+
+describe("Scheduler Test", () => {
+  test("has schedules", () => {
+    const app = new cdk.App();
+    const hasScheduleStack = new BedrockChatStack(app, "HasSchedulesStack", {
+      bedrockRegion: "us-east-1",
+      crossRegionReferences: true,
+      webAclId: "",
+      enableUsageAnalysis: true,
+      identityProviders: [],
+      userPoolDomainPrefix: "",
+      dbEncryption: false,
+      publishedApiAllowedIpV4AddressRanges: [""],
+      publishedApiAllowedIpV6AddressRanges: [""],
+      rdsSchedules: {
+        stop: {
+          minute: "",
+          hour: "",
+          dayOfMonth: "",
+          month: "",
+          dayOfWeek: "",
+          year: "*",
+        },
+        restored: {
+          minute: "",
+          hour: "",
+          dayOfMonth: "",
+          month: "",
+          dayOfWeek: "",
+          year: "*",
+        },
+      },
+    });
+  });
+  test("has'nt schedules", () => {
+    const app = new cdk.App();
+    const defaultStack = new BedrockChatStack(app, "DefaultStack", {
+      bedrockRegion: "us-east-1",
+      crossRegionReferences: true,
+      webAclId: "",
+      enableUsageAnalysis: true,
+      identityProviders: [],
+      userPoolDomainPrefix: "",
+      dbEncryption: false,
+      publishedApiAllowedIpV4AddressRanges: [""],
+      publishedApiAllowedIpV6AddressRanges: [""],
+      rdsSchedules: {},
+    });
+  });
+});
