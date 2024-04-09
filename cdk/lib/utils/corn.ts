@@ -47,6 +47,25 @@ export type RdsSchedules = {
   restorationTime: CronSchedule;
 };
 
-const isCormn = (rdbShutdown: unknown): rdbShutdown is RdsSchedules => {
+const hasCornTypeGuard = (
+  rdsSchedules: unknown
+): rdsSchedules is RdsSchedules => {
+  const args = rdsSchedules as RdsSchedules;
+  return (
+    isCornSchedule(args.restorationTime) && isCornSchedule(args.timeToStop)
+  );
+};
+
+const isCornSchedule = (cornObject: unknown): cornObject is CronSchedule => {
+  const args = cornObject as CronSchedule;
+
   return true;
+};
+
+const rdsScheler = (rdsSchedules: RdsSchedules) => {
+  const hasCorn = () => hasCornTypeGuard(rdsSchedules);
+
+  return {
+    hasCorn,
+  };
 };
