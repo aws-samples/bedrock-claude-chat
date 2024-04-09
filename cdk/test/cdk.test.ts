@@ -163,11 +163,11 @@ describe("Scheduler Test", () => {
     });
     const template = Template.fromStack(hasScheduleStack);
     template.hasResourceProperties("AWS::Events::Rule", {
-      ScheduleExpression: "cron(0 22 * * *)",
+      ScheduleExpression: "cron(00 22 * * ? *)",
     });
 
     template.hasResourceProperties("AWS::Events::Rule", {
-      ScheduleExpression: "cron(0 7 * * *)",
+      ScheduleExpression: "cron(0 7 * * ? *)",
     });
   });
   test("has'nt schedules", () => {
@@ -188,6 +188,6 @@ describe("Scheduler Test", () => {
       },
     });
     const template = Template.fromStack(defaultStack);
-    template.resourceCountIs("AWS::Events::Rule", 0);
+    template.resourceCountIs("AWS::Events::Rule", 1);
   });
 });
