@@ -62,12 +62,13 @@ export class VectorStore extends Construct {
 
     const stopRdsFunction = new NodejsFunction(this, "StopRdsFunction", {
       vpc: props.vpc,
-      runtime: lambda.Runtime.NODEJS_20_X,
+      runtime: lambda.Runtime.NODEJS_18_X,
       entry: path.join(
         __dirname,
         "../../custom-resources/stop-pgvector/index.js"
       ),
       handler: "handler",
+      timeout: Duration.minutes(5),
       environment: {
         RDS_INSTANCE_ID: cluster
           .secret!.secretValueFromJson("dbClusterIdentifier")
@@ -76,14 +77,15 @@ export class VectorStore extends Construct {
       },
     });
 
-    const startRdsFunction = new NodejsFunction(this, "StopRdsFunction", {
+    const startRdsFunction = new NodejsFunction(this, "StartRdsFunction", {
       vpc: props.vpc,
-      runtime: lambda.Runtime.NODEJS_20_X,
+      runtime: lambda.Runtime.NODEJS_18_X,
       entry: path.join(
         __dirname,
         "../../custom-resources/start-pgvector/index.js"
       ),
       handler: "handler",
+      timeout: Duration.minutes(5),
       environment: {
         RDS_INSTANCE_ID: cluster
           .secret!.secretValueFromJson("dbClusterIdentifier")

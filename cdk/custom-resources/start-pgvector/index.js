@@ -1,7 +1,7 @@
 const AWS = require("aws-sdk");
 const rds = new AWS.RDS();
 
-exports.handler = async (event) => {
+exports.handler = async () => {
   const instanceId = process.env.RDS_INSTANCE_ID;
 
   try {
