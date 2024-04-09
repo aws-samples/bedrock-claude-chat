@@ -151,7 +151,6 @@ describe("Scheduler Test", () => {
           day: "*",
           month: "*",
           year: "*",
-          weekDay: "*",
         },
         restored: {
           minute: "00",
@@ -159,10 +158,11 @@ describe("Scheduler Test", () => {
           day: "*",
           month: "*",
           year: "*",
-          weekDay: "*",
         },
       },
     });
+    const template = Template.fromStack(hasScheduleStack);
+    template.resourceCountIs("AWS::EventBridge", 3);
   });
   test("has'nt schedules", () => {
     const app = new cdk.App();
@@ -181,5 +181,7 @@ describe("Scheduler Test", () => {
         restored: {},
       },
     });
+    const template = Template.fromStack(defaultStack);
+    template.resourceCountIs("AWS::EventBridge", 1);
   });
 });

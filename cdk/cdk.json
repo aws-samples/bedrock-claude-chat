@@ -64,8 +64,20 @@
     "dbEncryption": false,
     "enableUsageAnalysis": true,
     "rdbSchedules": {
-      "stop": {},
-      "restored": {}
+      "stop": {
+        "minute": "00",
+        "hour": "22",
+        "day": "*",
+        "month": "*",
+        "year": "*"
+      },
+      "restored": {
+        "minute": "00",
+        "hour": "7",
+        "day": "*",
+        "month": "*",
+        "year": "*"
+      }
     }
   }
 }

@@ -54,6 +54,8 @@ export class VectorStore extends Construct {
     });
 
     if (props.rdsScheduler.hasCorn()) {
+      console.log("run");
+      console.log(props.rdsScheduler.stopCorn);
       const stopRule = new events.Rule(this, "StopRdsRule", {
         schedule: events.Schedule.cron(props.rdsScheduler.stopCorn),
       });
