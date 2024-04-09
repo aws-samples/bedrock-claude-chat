@@ -1,0 +1,6 @@
+{
+  "name": "custom-resources",
+  "dependencies": {
+    "aws-sdk": "^2.1595.0"
+  }
+}
