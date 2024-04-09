@@ -248,6 +248,7 @@ const BotEditPage: React.FC = () => {
         'chunkOverlap',
         t('validation.chunkOverlapLessThanChunkSize.message')
       );
+      return true;
     }
 
     return false;
