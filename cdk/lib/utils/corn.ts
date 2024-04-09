@@ -43,8 +43,8 @@ type CronSchedule = {
 };
 
 export type RdsSchedules = {
-  stop: CronSchedule;
-  restored: CronSchedule;
+  stop?: CronSchedule;
+  restored?: CronSchedule;
 };
 
 const isCronFieldBase = (value: unknown): value is CronFieldBase =>
