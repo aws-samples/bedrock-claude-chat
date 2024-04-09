@@ -162,7 +162,7 @@ describe("Scheduler Test", () => {
       },
     });
     const template = Template.fromStack(hasScheduleStack);
-    template.resourceCountIs("AWS::EventBridge", 3);
+    template.resourceCountIs("AWS::Events::EventBus", 3);
   });
   test("has'nt schedules", () => {
     const app = new cdk.App();
@@ -182,6 +182,6 @@ describe("Scheduler Test", () => {
       },
     });
     const template = Template.fromStack(defaultStack);
-    template.resourceCountIs("AWS::EventBridge", 1);
+    template.resourceCountIs("AWS::Events::EventBus", 1);
   });
 });
