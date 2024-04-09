@@ -252,7 +252,7 @@ const BotEditPage: React.FC = () => {
     }
 
     return false;
-  }, [embeddingParams]);
+  }, [embeddingParams, clearErrorMessages, setErrorMessages, t]);
 
   const onClickCreate = useCallback(() => {
     if (validationCheck()) return;
