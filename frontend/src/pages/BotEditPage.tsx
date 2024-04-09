@@ -281,6 +281,7 @@ const BotEditPage: React.FC = () => {
       });
   }, [
     registerBot,
+    validationCheck,
     botId,
     title,
     description,
@@ -322,6 +323,7 @@ const BotEditPage: React.FC = () => {
     }
   }, [
     isNewBot,
+    validationCheck,
     updateBot,
     botId,
     title,
