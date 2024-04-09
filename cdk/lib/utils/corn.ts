@@ -143,10 +143,12 @@ const isCornSchedule = (cornObject: unknown): cornObject is CronSchedule => {
   );
 };
 
-export const createRdsScheler = (rdsSchedules: RdsSchedules) => {
+export const createRdsScheduler = (rdsSchedules: RdsSchedules) => {
   const hasCorn = () => hasCornTypeGuard(rdsSchedules);
 
   return {
     hasCorn,
   };
 };
+
+export type RdsScheduler = ReturnType<typeof createRdsScheduler>;

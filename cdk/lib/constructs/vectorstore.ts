@@ -8,12 +8,14 @@ import * as events from "aws-cdk-lib/aws-events";
 import * as targets from "aws-cdk-lib/aws-events-targets";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
+import { RdsScheduler, RdsSchedules } from "../utils/corn";
 
 const DB_NAME = "postgres";
 
 export interface VectorStoreProps {
   readonly vpc: ec2.IVpc;
   readonly dbEncryption: boolean;
+  readonly rdsScheduler: RdsScheduler;
 }
 
 export class VectorStore extends Construct {
@@ -26,15 +28,6 @@ export class VectorStore extends Construct {
   readonly secret: secretsmanager.ISecret;
   constructor(scope: Construct, id: string, props: VectorStoreProps) {
     super(scope, id);
-
-    // イベントルールを作成
-    const stopRule = new events.Rule(this, "StopRdsRule", {
-      schedule: events.Schedule.cron({ minute: "0", hour: "22" }), // 毎日 22:00 に実行
-    });
-
-    const startRule = new events.Rule(this, "StartRdsRule", {
-      schedule: events.Schedule.cron({ minute: "0", hour: "7" }), // 毎日 7:00 に実行
-    });
 
     const sg = new ec2.SecurityGroup(this, "ClusterSecurityGroup", {
       vpc: props.vpc,
@@ -60,45 +53,55 @@ export class VectorStore extends Construct {
       // ],
     });
 
-    const stopRdsFunction = new NodejsFunction(this, "StopRdsFunction", {
-      vpc: props.vpc,
-      runtime: lambda.Runtime.NODEJS_18_X,
-      entry: path.join(
-        __dirname,
-        "../../custom-resources/stop-pgvector/index.js"
-      ),
-      handler: "handler",
-      timeout: Duration.minutes(5),
-      environment: {
-        RDS_INSTANCE_ID: cluster
-          .secret!.secretValueFromJson("dbClusterIdentifier")
-          .unsafeUnwrap()
-          .toString(),
-      },
-    });
+    if (props.rdsScheduler.hasCorn()) {
+      const stopRule = new events.Rule(this, "StopRdsRule", {
+        schedule: events.Schedule.cron({ minute: "0", hour: "22" }), // 毎日 22:00 に実行
+      });
 
-    const startRdsFunction = new NodejsFunction(this, "StartRdsFunction", {
-      vpc: props.vpc,
-      runtime: lambda.Runtime.NODEJS_18_X,
-      entry: path.join(
-        __dirname,
-        "../../custom-resources/start-pgvector/index.js"
-      ),
-      handler: "handler",
-      timeout: Duration.minutes(5),
-      environment: {
-        RDS_INSTANCE_ID: cluster
-          .secret!.secretValueFromJson("dbClusterIdentifier")
-          .unsafeUnwrap()
-          .toString(),
-      },
-    });
+      const startRule = new events.Rule(this, "StartRdsRule", {
+        schedule: events.Schedule.cron({ minute: "0", hour: "7" }), // 毎日 7:00 に実行
+      });
 
-    stopRule.addTarget(new targets.LambdaFunction(stopRdsFunction));
-    startRule.addTarget(new targets.LambdaFunction(startRdsFunction));
+      const stopRdsFunction = new NodejsFunction(this, "StopRdsFunction", {
+        vpc: props.vpc,
+        runtime: lambda.Runtime.NODEJS_18_X,
+        entry: path.join(
+          __dirname,
+          "../../custom-resources/stop-pgvector/index.js"
+        ),
+        handler: "handler",
+        timeout: Duration.minutes(5),
+        environment: {
+          RDS_INSTANCE_ID: cluster
+            .secret!.secretValueFromJson("dbClusterIdentifier")
+            .unsafeUnwrap()
+            .toString(),
+        },
+      });
 
-    cluster.grantDataApiAccess(stopRdsFunction);
-    cluster.grantDataApiAccess(startRdsFunction);
+      const startRdsFunction = new NodejsFunction(this, "StartRdsFunction", {
+        vpc: props.vpc,
+        runtime: lambda.Runtime.NODEJS_18_X,
+        entry: path.join(
+          __dirname,
+          "../../custom-resources/start-pgvector/index.js"
+        ),
+        handler: "handler",
+        timeout: Duration.minutes(5),
+        environment: {
+          RDS_INSTANCE_ID: cluster
+            .secret!.secretValueFromJson("dbClusterIdentifier")
+            .unsafeUnwrap()
+            .toString(),
+        },
+      });
+
+      stopRule.addTarget(new targets.LambdaFunction(stopRdsFunction));
+      startRule.addTarget(new targets.LambdaFunction(startRdsFunction));
+
+      cluster.grantDataApiAccess(stopRdsFunction);
+      cluster.grantDataApiAccess(startRdsFunction);
+    }
 
     const setupHandler = new NodejsFunction(this, "CustomResourceHandler", {
       vpc: props.vpc,
