@@ -63,9 +63,9 @@
     ],
     "dbEncryption": false,
     "enableUsageAnalysis": true,
-    "rdbShutdown": {
-      "timeToStop": {},
-      "restorationTime": {}
+    "rdbSchedules": {
+      "stop": {},
+      "restored": {}
     }
   }
 }

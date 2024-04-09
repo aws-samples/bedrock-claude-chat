@@ -42,11 +42,11 @@ type CronSchedule = {
   year: Year;
 };
 
-type RdsScheduler = {
+export type RdsSchedules = {
   timeToStop: CronSchedule;
   restorationTime: CronSchedule;
 };
 
-const isCormn = (rdbShutdown: unknown): rdbShutdown is RdsScheduler => {
+const isCormn = (rdbShutdown: unknown): rdbShutdown is RdsSchedules => {
   return true;
 };
