@@ -167,7 +167,7 @@ describe("Scheduler Test", () => {
     });
 
     template.hasResourceProperties("AWS::Events::Rule", {
-      ScheduleExpression: "cron(0 7 * * ? *)",
+      ScheduleExpression: "cron(00 7 * * ? *)",
     });
   });
   test("has'nt schedules", () => {
