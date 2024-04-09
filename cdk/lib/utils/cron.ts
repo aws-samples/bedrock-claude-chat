@@ -5,17 +5,17 @@ export type RdsSchedules = {
   restored: CronOptions;
 };
 
-const hasCronObject = (cornObject: CronOptions) =>
-  Object.keys(cornObject).length > 0;
+const hasCronObject = (cronObject: CronOptions) =>
+  Object.keys(cronObject).length > 0;
 
 export const createRdsScheduler = (rdsSchedules: RdsSchedules) => {
-  const hasCorn = () =>
+  const hasCron = () =>
     hasCronObject(rdsSchedules.stop) && hasCronObject(rdsSchedules.restored);
 
   return {
-    hasCorn,
-    stopCorn: rdsSchedules.stop,
-    restoredCorn: rdsSchedules.restored,
+    hasCron,
+    stopCron: rdsSchedules.stop,
+    restoredCron: rdsSchedules.restored,
   };
 };
 

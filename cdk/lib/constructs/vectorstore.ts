@@ -8,7 +8,7 @@ import * as events from "aws-cdk-lib/aws-events";
 import * as targets from "aws-cdk-lib/aws-events-targets";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
-import { RdsScheduler, RdsSchedules } from "../utils/corn";
+import { RdsScheduler } from "../utils/cron";
 
 const DB_NAME = "postgres";
 
@@ -53,13 +53,13 @@ export class VectorStore extends Construct {
       // ],
     });
 
-    if (props.rdsScheduler.hasCorn()) {
+    if (props.rdsScheduler.hasCron()) {
       const stopRule = new events.Rule(this, "StopRdsRule", {
-        schedule: events.Schedule.cron(props.rdsScheduler.stopCorn),
+        schedule: events.Schedule.cron(props.rdsScheduler.stopCron),
       });
 
       const startRule = new events.Rule(this, "StartRdsRule", {
-        schedule: events.Schedule.cron(props.rdsScheduler.restoredCorn),
+        schedule: events.Schedule.cron(props.rdsScheduler.restoredCron),
       });
 
       const stopRdsFunction = new NodejsFunction(this, "StopRdsFunction", {

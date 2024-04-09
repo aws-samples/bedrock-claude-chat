@@ -21,7 +21,7 @@ import { TIdentityProvider, identityProvider } from "./utils/identityProvider";
 import { ApiPublishCodebuild } from "./constructs/api-publish-codebuild";
 import { WebAclForPublishedApi } from "./constructs/webacl-for-published-api";
 import { VpcConfig } from "./api-publishment-stack";
-import { RdsSchedules, createRdsScheduler } from "./utils/corn";
+import { RdsSchedules, createRdsScheduler } from "./utils/cron";
 
 export interface BedrockChatStackProps extends StackProps {
   readonly bedrockRegion: string;
