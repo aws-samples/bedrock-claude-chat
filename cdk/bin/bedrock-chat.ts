@@ -33,7 +33,6 @@ const USER_POOL_DOMAIN_PREFIX: string = app.node.tryGetContext(
   "userPoolDomainPrefix"
 );
 const RDS_SCHEDULES = app.node.tryGetContext("rdbSchedules");
-
 // WAF for frontend
 // 2023/9: Currently, the WAF for CloudFront needs to be created in the North America region (us-east-1), so the stacks are separated
 // https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-wafv2-webacl.html
