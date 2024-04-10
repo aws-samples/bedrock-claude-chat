@@ -1,7 +1,9 @@
 import { Construct } from "constructs";
 import * as rds from "aws-cdk-lib/aws-rds";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
-import { CustomResource, Duration, Stack } from "aws-cdk-lib";
+import { CustomResource, Duration } from "aws-cdk-lib";
+import { Queue } from "aws-cdk-lib/aws-sqs";
+
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as path from "path";
 import * as events from "aws-cdk-lib/aws-events";
@@ -10,9 +12,7 @@ import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import { RdsScheduler } from "../utils/cron";
 import { CfnSchedule } from "aws-cdk-lib/aws-scheduler";
 import {
-  AccountPrincipal,
   Effect,
-  Policy,
   PolicyStatement,
   Role,
   ServicePrincipal,
@@ -75,7 +75,9 @@ export class VectorStore extends Construct {
         })
       );
 
-      console.log(cluster.clusterResourceIdentifier);
+      const dlq = new Queue(this, "queue", {
+        queueName: "RdsManagerDlq",
+      });
 
       new CfnSchedule(this, "RestoredRdsScheduler", {
         description: "Restored RDS Instance",
@@ -84,6 +86,7 @@ export class VectorStore extends Construct {
         ).expressionString,
         flexibleTimeWindow: { mode: "OFF" },
         target: {
+          deadLetterConfig: { arn: dlq.queueArn },
           arn: "arn:aws:scheduler:::aws-sdk:rds:startDBCluster",
           roleArn: rdsSchedulerRole.roleArn,
           input: JSON.stringify({
@@ -98,6 +101,7 @@ export class VectorStore extends Construct {
           .expressionString,
         flexibleTimeWindow: { mode: "OFF" },
         target: {
+          deadLetterConfig: { arn: dlq.queueArn },
           arn: "arn:aws:scheduler:::aws-sdk:rds:stopDBCluster",
           roleArn: rdsSchedulerRole.roleArn,
           input: JSON.stringify({
