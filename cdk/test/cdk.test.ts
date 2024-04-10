@@ -27,7 +27,7 @@ describe("Fine-grained Assertions Test", () => {
         publishedApiAllowedIpV6AddressRanges: [""],
         rdsSchedules: {
           stop: {},
-          restored: {},
+          start: {},
         },
       }
     );
@@ -80,7 +80,7 @@ describe("Fine-grained Assertions Test", () => {
         publishedApiAllowedIpV6AddressRanges: [""],
         rdsSchedules: {
           stop: {},
-          restored: {},
+          start: {},
         },
       }
     );
@@ -122,7 +122,7 @@ describe("Fine-grained Assertions Test", () => {
       publishedApiAllowedIpV6AddressRanges: [""],
       rdsSchedules: {
         stop: {},
-        restored: {},
+        start: {},
       },
     });
     const template = Template.fromStack(stack);
@@ -152,7 +152,7 @@ describe("Scheduler Test", () => {
           month: "*",
           year: "*",
         },
-        restored: {
+        start: {
           minute: "00",
           hour: "7",
           day: "*",
@@ -184,7 +184,7 @@ describe("Scheduler Test", () => {
       publishedApiAllowedIpV6AddressRanges: [""],
       rdsSchedules: {
         stop: {},
-        restored: {},
+        start: {},
       },
     });
     const template = Template.fromStack(defaultStack);

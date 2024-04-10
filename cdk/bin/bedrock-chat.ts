@@ -4,7 +4,7 @@ import * as cdk from "aws-cdk-lib";
 import { BedrockChatStack } from "../lib/bedrock-chat-stack";
 import { FrontendWafStack } from "../lib/frontend-waf-stack";
 import { TIdentityProvider } from "../lib/utils/identityProvider";
-import { RdsSchedules } from "../lib/utils/cron";
+import { RdsSchedules } from "../lib/utils/cron-schedule";
 
 const app = new cdk.App();
 

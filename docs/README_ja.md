@@ -214,8 +214,9 @@ cli および CDK を利用されている場合、`cdk destroy`を実行して�
 
 ### RAG 用ベクトル DB の停止
 
-cdk.json を以下のように CRON 形式で設定することで、vectorestore stack で作成される RDS リソースを停止・再起動できます
-※UTC で実行されます
+[cdk.json](../cdk/cdk.json) を以下のように CRON 形式で設定することで、VectorStore コンストラクトで作成される RDS リソースを停止・再起動できます
+この設定を適用することで運用コストの削減が見込めます。なお、デフォルト設定ではシステムは常時起動状態になっています。
+\*UTC で実行されます
 
 ```
 ...
@@ -227,7 +228,7 @@ cdk.json を以下のように CRON 形式で設定することで、vectorestor
         "month": "*",
         "year": "*"
       },
-      "restored": {
+      "start": {
         "minute": "40",
         "hour": "2",
         "day": "*",

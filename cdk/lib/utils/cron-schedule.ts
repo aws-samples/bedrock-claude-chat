@@ -2,21 +2,21 @@ import { CronOptions } from "aws-cdk-lib/aws-events";
 
 export type RdsSchedules = {
   stop: CronOptions;
-  restored: CronOptions;
+  start: CronOptions;
 };
 
 const hasCronObject = (cronObject: CronOptions) =>
   Object.keys(cronObject).length > 0;
 
-export const createRdsScheduler = (rdsSchedules: RdsSchedules) => {
+export const createCronSchedule = (rdsSchedules: RdsSchedules) => {
   const hasCron = () =>
-    hasCronObject(rdsSchedules.stop) && hasCronObject(rdsSchedules.restored);
+    hasCronObject(rdsSchedules.stop) && hasCronObject(rdsSchedules.start);
 
   return {
     hasCron,
     stopCron: rdsSchedules.stop,
-    restoredCron: rdsSchedules.restored,
+    startCron: rdsSchedules.start,
   };
 };
 
-export type RdsScheduler = ReturnType<typeof createRdsScheduler>;
+export type CronSchedule = ReturnType<typeof createCronSchedule>;

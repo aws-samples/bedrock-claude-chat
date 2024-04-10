@@ -65,7 +65,7 @@
     "enableUsageAnalysis": true,
     "rdbSchedules": {
       "stop": {},
-      "restored": {}
+      "start": {}
     }
   }
 }

@@ -222,6 +222,32 @@ EMBEDDING_CONFIG = {
 
 If using cli and CDK, please `cdk destroy`. If not, access [CloudFormation](https://console.aws.amazon.com/cloudformation/home) and then delete `BedrockChatStack` and `FrontendWafStack` manually. Please note that `FrontendWafStack` is in `us-east-1` region.
 
+### Stopping the Vector DB for RAG
+
+By setting [cdk.json](../cdk/cdk.json) in the following CRON format, you can stop and restart the RDS resources created by the VectorStore construct.
+Applying this setting can reduce operating costs. By default, the system is always running.
+\*It will be executed in UTC time
+
+```
+...
+    "rdbSchedules": {
+      "stop": {
+        "minute": "50",
+        "hour": "10",
+        "day": "*",
+        "month": "*",
+        "year": "*"
+      },
+      "start": {
+        "minute": "40",
+        "hour": "2",
+        "day": "*",
+        "month": "*",
+        "year": "*"
+      }
+    }
+```
+
 ### Language Settings
 
 This asset automatically detects the language using [i18next-browser-languageDetector](https://github.com/i18next/i18next-browser-languageDetector). You can switch languages from the application menu. Alternatively, you can use Query String to set the language as shown below.

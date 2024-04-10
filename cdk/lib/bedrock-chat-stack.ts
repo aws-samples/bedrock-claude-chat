@@ -21,7 +21,7 @@ import { TIdentityProvider, identityProvider } from "./utils/identityProvider";
 import { ApiPublishCodebuild } from "./constructs/api-publish-codebuild";
 import { WebAclForPublishedApi } from "./constructs/webacl-for-published-api";
 import { VpcConfig } from "./api-publishment-stack";
-import { RdsSchedules, createRdsScheduler } from "./utils/cron";
+import { RdsSchedules, createCronSchedule } from "./utils/cron-schedule";
 
 export interface BedrockChatStackProps extends StackProps {
   readonly bedrockRegion: string;
@@ -41,13 +41,13 @@ export class BedrockChatStack extends cdk.Stack {
       description: "Bedrock Chat Stack (uksb-1tupboc46)",
       ...props,
     });
-    const rdsScheler = createRdsScheduler(props.rdsSchedules);
+    const cronSchedule = createCronSchedule(props.rdsSchedules);
 
     const vpc = new ec2.Vpc(this, "VPC", {});
     const vectorStore = new VectorStore(this, "VectorStore", {
       vpc: vpc,
       dbEncryption: props.dbEncryption,
-      rdsScheduler: rdsScheler,
+      rdsSchedule: cronSchedule,
     });
     const idp = identityProvider(props.identityProviders);
     // CodeBuild is used for api publication

@@ -8,7 +8,7 @@ import * as path from "path";
 import * as events from "aws-cdk-lib/aws-events";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
-import { RdsScheduler } from "../utils/cron";
+import { CronSchedule } from "../utils/cron-schedule";
 import { CfnSchedule } from "aws-cdk-lib/aws-scheduler";
 import {
   Effect,
@@ -22,7 +22,7 @@ const DB_NAME = "postgres";
 export interface VectorStoreProps {
   readonly vpc: ec2.IVpc;
   readonly dbEncryption: boolean;
-  readonly rdsScheduler: RdsScheduler;
+  readonly rdsSchedule: CronSchedule;
 }
 
 export class VectorStore extends Construct {
@@ -65,7 +65,7 @@ export class VectorStore extends Construct {
       .unsafeUnwrap()
       .toString();
 
-    if (props.rdsScheduler.hasCron()) {
+    if (props.rdsSchedule.hasCron()) {
       const rdsSchedulerRole = new Role(this, "role-rds-scheduler", {
         assumedBy: new ServicePrincipal("scheduler.amazonaws.com"),
         description: "start and stop RDS",
@@ -79,11 +79,10 @@ export class VectorStore extends Construct {
         })
       );
 
-      new CfnSchedule(this, "RestoredRdsScheduler", {
-        description: "Restored RDS Instance",
-        scheduleExpression: events.Schedule.cron(
-          props.rdsScheduler.restoredCron
-        ).expressionString,
+      new CfnSchedule(this, "StartRdsScheduler", {
+        description: "Start RDS Instance",
+        scheduleExpression: events.Schedule.cron(props.rdsSchedule.startCron)
+          .expressionString,
         flexibleTimeWindow: { mode: "OFF" },
         target: {
           arn: "arn:aws:scheduler:::aws-sdk:rds:startDBCluster",
@@ -96,7 +95,7 @@ export class VectorStore extends Construct {
 
       new CfnSchedule(this, "StopRdsScheduler", {
         description: "Stop RDS Instance",
-        scheduleExpression: events.Schedule.cron(props.rdsScheduler.stopCron)
+        scheduleExpression: events.Schedule.cron(props.rdsSchedule.stopCron)
           .expressionString,
         flexibleTimeWindow: { mode: "OFF" },
         target: {
