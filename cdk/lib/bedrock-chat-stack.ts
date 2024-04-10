@@ -21,7 +21,7 @@ import { TIdentityProvider, identityProvider } from "./utils/identityProvider";
 import { ApiPublishCodebuild } from "./constructs/api-publish-codebuild";
 import { WebAclForPublishedApi } from "./constructs/webacl-for-published-api";
 import { VpcConfig } from "./api-publishment-stack";
-import { RdsSchedules, createCronSchedule } from "./utils/cron-schedule";
+import { Schedules, createCronSchedule } from "./utils/cron-schedule";
 
 export interface BedrockChatStackProps extends StackProps {
   readonly bedrockRegion: string;
@@ -32,7 +32,7 @@ export interface BedrockChatStackProps extends StackProps {
   readonly dbEncryption: boolean;
   readonly publishedApiAllowedIpV4AddressRanges: string[];
   readonly publishedApiAllowedIpV6AddressRanges: string[];
-  readonly rdsSchedules: RdsSchedules;
+  readonly rdsSchedules: Schedules;
 }
 
 export class BedrockChatStack extends cdk.Stack {
