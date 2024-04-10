@@ -1,14 +1,15 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Markdown from './Markdown';
 import ButtonCopy from './ButtonCopy';
 import { PiCaretLeftBold, PiNotePencil, PiUserFill } from 'react-icons/pi';
 import { BaseProps } from '../@types/common';
 import MLIcon from '../assets/ML-icon.svg';
-import { DisplayMessageContent } from '../@types/conversation';
+import { DisplayMessageContent, RelatedDocument } from '../@types/conversation';
 import ButtonIcon from './ButtonIcon';
 import Textarea from './Textarea';
 import Button from './Button';
 import { useTranslation } from 'react-i18next';
+import useChat from '../hooks/useChat';
 
 type Props = BaseProps & {
   chatContent?: DisplayMessageContent;
@@ -20,6 +21,17 @@ const ChatMessage: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const [isEdit, setIsEdit] = useState(false);
   const [changedContent, setChangedContent] = useState('');
+  const { getRelatedDocuments } = useChat();
+  const [relatedDocuments, setRelatedDocuments] = useState<RelatedDocument[]>(
+    []
+  );
+
+  useEffect(() => {
+    if (props.chatContent) {
+      setRelatedDocuments(getRelatedDocuments(props.chatContent.id));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.chatContent]);
 
   const chatContent = useMemo<DisplayMessageContent | undefined>(() => {
     return props.chatContent;
@@ -130,7 +142,9 @@ const ChatMessage: React.FC<Props> = (props) => {
             </div>
           )}
           {chatContent?.role === 'assistant' && (
-            <Markdown>{chatContent.content[0].body}</Markdown>
+            <Markdown relatedDocuments={relatedDocuments}>
+              {chatContent.content[0].body}
+            </Markdown>
           )}
         </div>
       </div>

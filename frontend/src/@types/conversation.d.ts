@@ -28,7 +28,6 @@ export type DisplayMessageContent = MessageContent & {
   parent: null | string;
   children: string[];
   sibling: string[];
-  relatedDocuments?: RelatedDocument[];
 };
 
 export type PostMessageRequest = {

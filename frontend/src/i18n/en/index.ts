@@ -29,6 +29,7 @@ const translation = {
         dndFileUpload:
           'You can upload files by drag and drop.\nSupported files: {{fileExtensions}}',
         uploadError: 'Error Message',
+        referenceLink: 'Reference Link',
         syncStatus: {
           queue: 'Waiting Sync',
           running: 'Syncing',

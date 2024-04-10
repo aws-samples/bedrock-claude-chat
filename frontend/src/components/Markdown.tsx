@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactNode, useMemo } from 'react';
 import { BaseProps } from '../@types/common';
 import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -6,20 +6,113 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
 import ButtonCopy from './ButtonCopy';
+import { RelatedDocument } from '../@types/conversation';
+import { twMerge } from 'tailwind-merge';
+import { useTranslation } from 'react-i18next';
+import { create } from 'zustand';
 
 type Props = BaseProps & {
   children: string;
+  relatedDocuments?: RelatedDocument[];
 };
 
-// const Link: React.FC<Props> = () => {
-//   return 'TEST';
-// };
+const useMarkdownState = create<{
+  isOpenReference: boolean;
+  setIsOpenReference: (b: boolean) => void;
+}>((set) => ({
+  isOpenReference: false,
+  setIsOpenReference: (b) => {
+    set({
+      isOpenReference: b,
+    });
+  },
+}));
 
-const Markdown: React.FC<Props> = ({ className, children }) => {
+const RelatedDocumentLink: React.FC<{
+  relatedDocument?: RelatedDocument;
+  children: ReactNode;
+}> = (props) => {
+  const { t } = useTranslation();
+  const { isOpenReference, setIsOpenReference } = useMarkdownState();
+
+  const linkUrl = useMemo(() => {
+    const url = props.relatedDocument?.sourceLink;
+    if (url) {
+      if (props.relatedDocument?.contentType === 's3') {
+        return decodeURIComponent(url.split('?')[0].split('/').pop() ?? '');
+      } else {
+        return url;
+      }
+    }
+    return '';
+  }, [props.relatedDocument?.contentType, props.relatedDocument?.sourceLink]);
+
+  return (
+    <>
+      <a
+        className={twMerge(
+          'mx-0.5 ',
+          props.relatedDocument
+            ? 'cursor-pointer text-aws-sea-blue hover:text-aws-sea-blue-hover'
+            : 'cursor-not-allowed text-gray'
+        )}
+        onClick={() => {
+          setIsOpenReference(!isOpenReference);
+        }}>
+        {props.children}
+      </a>
+      {props.relatedDocument && (
+        <div
+          className={twMerge(
+            isOpenReference ? 'visible' : 'invisible',
+            'fixed left-0 top-0 z-50 flex h-dvh w-dvw items-center justify-center bg-aws-squid-ink/20 transition duration-1000'
+          )}
+          onClick={() => {
+            setIsOpenReference(false);
+          }}>
+          <div
+            className="max-h-[80vh] w-[70vw] max-w-[800px] overflow-y-auto rounded border bg-aws-squid-ink p-1 text-sm text-aws-font-color-white"
+            onClick={(e) => {
+              e.stopPropagation();
+            }}>
+            {props.relatedDocument.chunkBody.split('\n').map((s, idx) => (
+              <div key={idx}>{s}</div>
+            ))}
+
+            <div className="my-1 border-t pt-1 italic">
+              {t('bot.label.referenceLink')}:
+              <span
+                className="ml-1 cursor-pointer underline"
+                onClick={() => {
+                  window.open(props.relatedDocument?.sourceLink, '_blank');
+                }}>
+                {linkUrl}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
+
+const Markdown: React.FC<Props> = ({
+  className,
+  children,
+  relatedDocuments,
+}) => {
+  const text = useMemo(() => {
+    const results = children.match(/\[\^(?<number>[\d])+?\]/g);
+    // Default Footnote link is not shown, so set dummy
+    return results
+      ? `${children}\n${results.map((result) => `${result}: dummy`).join('\n')}`
+      : children;
+  }, [children]);
+
   return (
     <ReactMarkdown
       className={`${className ?? ''} prose max-w-full`}
-      children={children}
+      children={text}
       remarkPlugins={[remarkGfm, remarkBreaks]}
       components={{
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -45,13 +138,52 @@ const Markdown: React.FC<Props> = ({ className, children }) => {
             </code>
           );
         },
-        a({ className, children, ...props }) {
-          console.log(props);
+        //
+        sup({ className, children }) {
+          // Footnote's Link is replaced with a component that displays the Reference document
           return (
-            <a {...props} className={className}>
-              {children}
-            </a>
+            <sup className={className}>
+              {children.map((child, idx) => {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                if (child?.props['data-footnote-ref']) {
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
+                  const href: string = child.props.href ?? '';
+                  if (/#user-content-fn-[\d]+/.test(href ?? '')) {
+                    const docNo = Number.parseInt(
+                      href.replace('#user-content-fn-', '')
+                    );
+                    const doc = relatedDocuments?.filter(
+                      (doc) => doc.rank === docNo
+                    )[0];
+
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    const refNo = child.props.children[0];
+                    return (
+                      <RelatedDocumentLink
+                        key={`${idx}-${docNo}`}
+                        relatedDocument={doc}>
+                        [{refNo}]
+                      </RelatedDocumentLink>
+                    );
+                  }
+                }
+                return child;
+              })}
+            </sup>
           );
+        },
+        section({ className, children, ...props }) {
+          // Normal Footnote not shown for RAG reference documents
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          if (props['data-footnotes']) {
+            return null;
+          } else {
+            return <section className={className}>{children}</section>;
+          }
         },
       }}
     />
