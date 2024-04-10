@@ -216,7 +216,7 @@ In addition, *YOU MUST OBEY THE FOLLOWING RULE*:
 
     return conversation_with_context
 
-
+# TODO : web browsing
 def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     user_msg_id, conversation, bot = prepare_conversation(user_id, chat_input)
 
