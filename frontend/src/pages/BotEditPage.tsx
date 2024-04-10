@@ -17,6 +17,7 @@ import { DEFAULT_EMBEDDING_CONFIG, EDGE_EMBEDDING_PARAMS } from '../constants';
 import { Slider } from '../components/Slider';
 import ExpandableDrawerGroup from '../components/ExpandableDrawerGroup';
 import useErrorMessage from '../hooks/useErrorMessage';
+import Help from '../components/Help';
 
 const BotEditPage: React.FC = () => {
   const { t } = useTranslation();
@@ -221,7 +222,7 @@ const BotEditPage: React.FC = () => {
     history.back();
   }, []);
 
-  const validationCheck = useCallback((): boolean => {
+  const isValid = useCallback((): boolean => {
     clearErrorMessages();
     if (embeddingParams.chunkSize > EDGE_EMBEDDING_PARAMS.chunkSize.MAX) {
       setErrorMessages(
@@ -255,7 +256,7 @@ const BotEditPage: React.FC = () => {
   }, [embeddingParams, clearErrorMessages, setErrorMessages, t]);
 
   const onClickCreate = useCallback(() => {
-    if (validationCheck()) return;
+    if (isValid()) return;
     setIsLoading(true);
     registerBot({
       id: botId,
@@ -281,7 +282,7 @@ const BotEditPage: React.FC = () => {
       });
   }, [
     registerBot,
-    validationCheck,
+    isValid,
     botId,
     title,
     description,
@@ -293,7 +294,7 @@ const BotEditPage: React.FC = () => {
   ]);
 
   const onClickEdit = useCallback(() => {
-    if (validationCheck()) return;
+    if (isValid()) return;
 
     if (!isNewBot) {
       setIsLoading(true);
@@ -323,7 +324,7 @@ const BotEditPage: React.FC = () => {
     }
   }, [
     isNewBot,
-    validationCheck,
+    isValid,
     updateBot,
     botId,
     title,
@@ -409,11 +410,9 @@ const BotEditPage: React.FC = () => {
                     severity="error"
                     title={t('bot.alert.sync.error.title')}>
                     <>
-                      <div className="mb-1 text-sm text-dark-gray">
-                        {t('bot.alert.sync.error.body')}
-                      </div>
-                      <div className="rounded border bg-light-gray p-2 text-dark-gray">
-                        {errorMessages['syncError']}
+                      <div className="mb-1 text-sm">
+                        <div>{t('bot.alert.sync.error.body')}</div>
+                        <div> {errorMessages['syncError']}</div>
                       </div>
                     </>
                   </Alert>
@@ -473,21 +472,26 @@ const BotEditPage: React.FC = () => {
 
               <ExpandableDrawerGroup
                 isDefaultShow={false}
-                label={t('embeddingSetting.title')}
+                label={t('embeddingSettings.title')}
                 className="py-2">
-                <div className="font-semibold"></div>
-                <div className="text-sm text-aws-font-color/50">
-                  {t('bot.help.embeddingParams')}
+                <div className="flex items-center gap-1">
+                  <div className="text-sm text-aws-font-color/50">
+                    {t('embeddingSettings.description')}
+                  </div>
+                  <Help
+                    direction="right"
+                    message={t('embeddingSettings.help.overview')}
+                  />
                 </div>
                 <div className="mt-2">
                   <Slider
                     value={embeddingParams?.chunkSize}
-                    hint={t('embeddingSetting.chunkSize.hint')}
-                    label={t('embeddingSetting.chunkSize.label')}
+                    hint={t('embeddingSettings.chunkSize.hint')}
+                    label={t('embeddingSettings.chunkSize.label')}
                     range={{
                       min: EDGE_EMBEDDING_PARAMS.chunkSize.MIN,
                       max: EDGE_EMBEDDING_PARAMS.chunkSize.MAX,
-                      div: EDGE_EMBEDDING_PARAMS.chunkSize.DIV,
+                      step: EDGE_EMBEDDING_PARAMS.chunkSize.STEP,
                     }}
                     onChange={(chunkSize) =>
                       setEmbeddingParams((params) => ({
@@ -500,12 +504,12 @@ const BotEditPage: React.FC = () => {
 
                   <Slider
                     value={embeddingParams?.chunkOverlap}
-                    hint={t('embeddingSetting.chunkOverlap.hint')}
-                    label={t('embeddingSetting.chunkOverlap.label')}
+                    hint={t('embeddingSettings.chunkOverlap.hint')}
+                    label={t('embeddingSettings.chunkOverlap.label')}
                     range={{
                       min: EDGE_EMBEDDING_PARAMS.chunkOverlap.MIN,
                       max: EDGE_EMBEDDING_PARAMS.chunkOverlap.MAX,
-                      div: EDGE_EMBEDDING_PARAMS.chunkOverlap.DIV,
+                      step: EDGE_EMBEDDING_PARAMS.chunkOverlap.STEP,
                     }}
                     onChange={(chunkOverlap) =>
                       setEmbeddingParams((params) => ({
@@ -522,10 +526,10 @@ const BotEditPage: React.FC = () => {
                 <Alert
                   className="mt-2"
                   severity="error"
-                  title={t('embeddingSetting.alert.sync.error.title')}>
+                  title={t('embeddingSettings.alert.sync.error.title')}>
                   <>
-                    <div className="rounded border bg-light-gray p-2 text-dark-gray">
-                      {t('embeddingSetting.alert.sync.error.body')}
+                    <div className="mb-1 text-sm">
+                      {t('embeddingSettings.alert.sync.error.body')}
                     </div>
                   </>
                 </Alert>

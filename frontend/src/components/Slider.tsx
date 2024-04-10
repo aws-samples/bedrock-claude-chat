@@ -8,7 +8,7 @@ interface Props {
   range: {
     min: number;
     max: number;
-    div: number;
+    step: number;
   };
   onChange: Dispatch<number>;
   errorMessage?: string;
@@ -17,16 +17,16 @@ interface Props {
 export const Slider: FC<Props> = (props) => {
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseInt(
-      event.target.value != '' ? event.target.value : '0'
+      event.target.value !== '' ? event.target.value : '0'
     );
     props.onChange(newValue);
   };
 
   return (
-    <div className="flex flex-col py-2">
+    <div className="flex flex-col">
       <label
         className={twMerge(
-          'mb-2 text-left text-neutral-700 dark:text-neutral-400',
+          'text-sm text-dark-gray',
           props.errorMessage && 'border-red text-red'
         )}>
         {props.label}
@@ -37,23 +37,21 @@ export const Slider: FC<Props> = (props) => {
           type="range"
           min={props.range.min}
           max={props.range.max}
-          step={props.range.div}
+          step={props.range.step}
           value={props.value}
           onChange={handleChange}
         />
-        <span className="text-neutral-900">
-          <input
-            className={twMerge(
-              'peer h-9 w-16 rounded border p-1 text-center',
-              props.errorMessage
-                ? 'border-2 border-red'
-                : 'border-aws-font-color/50 '
-            )}
-            value={props.value}
-            max={props.range.max}
-            onChange={handleChange}
-          />
-        </span>
+        <input
+          className={twMerge(
+            'peer h-9 w-16 rounded border p-1 text-center',
+            props.errorMessage
+              ? 'border-2 border-red'
+              : 'border-aws-font-color/50 '
+          )}
+          value={props.value}
+          max={props.range.max}
+          onChange={handleChange}
+        />
       </div>
       {props.hint && !props.errorMessage && (
         <span className={'mt-0.5 text-xs text-gray'}>{props.hint}</span>

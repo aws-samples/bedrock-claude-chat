@@ -9,11 +9,11 @@ export const EDGE_EMBEDDING_PARAMS = {
   chunkSize: {
     MAX: 2048,
     MIN: 512,
-    DIV: 2,
+    STEP: 2,
   },
   chunkOverlap: {
     MAX: 1024,
     MIN: 128,
-    DIV: 2,
+    STEP: 2,
   },
 };

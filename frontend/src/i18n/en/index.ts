@@ -59,8 +59,6 @@ const translation = {
             'By specifying the URL of the sitemap, the information obtained through automatically scraping websites within it will be used as Knowledge.',
           file: 'The uploaded files will be used as Knowledge.',
         },
-        embeddingParams:
-          'More detailed embedding parameter settings are available',
       },
       alert: {
         sync: {
@@ -338,15 +336,21 @@ How would you categorize this email?`,
         invalidOriginFormat: 'Invalid Origin format.',
       },
     },
-    embeddingSetting: {
+    embeddingSettings: {
       title: 'Embedding Setting',
+      description:
+        'You can configure the parameters for vector embeddings. By adjusting the parameters, you can change the accuracy of document retrieval.',
       chunkSize: {
         label: 'chunk size',
         hint: 'The chunk size refers to the size at which a document is divided into smaller segments',
       },
       chunkOverlap: {
         label: 'chunk overlap',
-        hint: 'Chunk overlap represents the number of shared characters between adjacent chunks.',
+        hint: 'You can specify the number of overlapping characters between adjacent chunks.',
+      },
+      help: {
+        overview:
+          "When the chunk size is too small, contextual information can be lost, and when it's too large, different contextual information may exist within the same chunk, potentially reducing search accuracy.",
       },
       alert: {
         sync: {

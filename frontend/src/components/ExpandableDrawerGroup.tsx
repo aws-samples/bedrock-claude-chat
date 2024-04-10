@@ -5,10 +5,13 @@ type Props = {
   className?: string;
   label: string;
   children: ReactNode;
-  isDefaultShow?: boolean
+  isDefaultShow?: boolean;
 };
 
-const ExpandableDrawerGroup: React.FC<Props> = ({isDefaultShow = true,...props},) => {
+const ExpandableDrawerGroup: React.FC<Props> = ({
+  isDefaultShow = true,
+  ...props
+}) => {
   const [isShow, setIsShow] = useState(isDefaultShow);
 
   return (
