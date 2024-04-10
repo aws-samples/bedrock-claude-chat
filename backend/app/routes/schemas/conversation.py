@@ -41,6 +41,7 @@ class ChatInput(BaseSchema):
     conversation_id: str
     message: MessageInput
     bot_id: str | None = Field(None)
+    is_agent: bool
 
 
 class ChatInputWithToken(ChatInput):
