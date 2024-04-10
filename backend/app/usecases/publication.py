@@ -30,6 +30,7 @@ from app.user import User
 from app.utils import start_codebuild_project
 
 logger = logging.getLogger(__name__)
+REGION = os.environ.get("REGION", "us-east-1")
 
 
 def _fetch_bot_with_permission_check(user: User, bot_id: str) -> BotModel:
@@ -173,7 +174,7 @@ def fetch_bot_publication(user: User, bot_id: str) -> BotPublishOutput:
         cfn_status=stack.stack_status,
         codebuild_id=bot.published_api_codebuild_id,
         codebuild_status=codebuild_status,
-        endpoint=f"https://{stack.api_id}.execute-api.ap-northeast-1.amazonaws.com/{stack.api_stage}",
+        endpoint=f"https://{stack.api_id}.execute-api.{REGION}.amazonaws.com/{stack.api_stage}",
         api_key_ids=usage_plan.key_ids,
     )
 
