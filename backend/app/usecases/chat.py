@@ -245,6 +245,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
 
     # Create payload to invoke Bedrock
     args = compose_args_for_anthropic_client(
+        is_agent=chat_input.is_agent,
         messages=messages,
         model=chat_input.message.model,
         instruction=(

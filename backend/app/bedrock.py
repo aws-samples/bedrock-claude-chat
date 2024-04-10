@@ -17,6 +17,7 @@ anthropic_client = AnthropicBedrock()
 
 # anthropic client
 def compose_args_for_anthropic_client(
+    is_agent: bool,
     messages: list[MessageModel],
     model: str,
     instruction: str | None = None,
