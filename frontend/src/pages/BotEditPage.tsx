@@ -302,8 +302,8 @@ const BotEditPage: React.FC = () => {
         description,
         instruction,
         embeddingParams: {
-          chunkSize: embeddingParams.chunkSize,
-          chunkOverlap: embeddingParams.chunkOverlap,
+          chunkSize: embeddingParams?.chunkSize,
+          chunkOverlap: embeddingParams?.chunkOverlap,
         },
         knowledge: {
           sourceUrls: urls.filter((s) => s !== ''),
@@ -481,7 +481,7 @@ const BotEditPage: React.FC = () => {
                 </div>
                 <div className="mt-2">
                   <Slider
-                    value={embeddingParams.chunkSize}
+                    value={embeddingParams?.chunkSize}
                     hint={t('embeddingSetting.chunkSize.hint')}
                     label={t('embeddingSetting.chunkSize.label')}
                     range={{
@@ -499,7 +499,7 @@ const BotEditPage: React.FC = () => {
                   />
 
                   <Slider
-                    value={embeddingParams.chunkOverlap}
+                    value={embeddingParams?.chunkOverlap}
                     hint={t('embeddingSetting.chunkOverlap.hint')}
                     label={t('embeddingSetting.chunkOverlap.label')}
                     range={{
