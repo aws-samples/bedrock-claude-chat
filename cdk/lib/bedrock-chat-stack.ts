@@ -21,6 +21,7 @@ import { TIdentityProvider, identityProvider } from "./utils/identityProvider";
 import { ApiPublishCodebuild } from "./constructs/api-publish-codebuild";
 import { WebAclForPublishedApi } from "./constructs/webacl-for-published-api";
 import { VpcConfig } from "./api-publishment-stack";
+import { BedrockAgent } from "bedrock-agents-cdk";
 
 export interface BedrockChatStackProps extends StackProps {
   readonly bedrockRegion: string;
@@ -52,6 +53,12 @@ export class BedrockChatStack extends cdk.Stack {
       "ApiPublishCodebuild",
       { dbSecret: vectorStore.secret }
     );
+
+    const agent = new BedrockAgent(this, "BedrockAgent", {
+      agentName: "BedrockAgent",
+      instruction:
+        "This is a test instruction. You were built by AWS CDK construct to answer all questions.",
+    });
 
     const dbConfig = {
       host: vectorStore.cluster.clusterEndpoint.hostname,
