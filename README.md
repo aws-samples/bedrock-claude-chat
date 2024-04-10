@@ -224,7 +224,7 @@ If using cli and CDK, please `cdk destroy`. If not, access [CloudFormation](http
 
 ### Stopping the Vector DB for RAG
 
-By setting [cdk.json](../cdk/cdk.json) in the following CRON format, you can stop and restart the RDS resources created by the VectorStore construct.
+By setting [cdk.json](../cdk/cdk.json) in the following CRON format, you can stop and restart the Aurora Serverless resources created by the [VectorStore construct](../cdk/lib/constructs/vectorstore.ts).
 Applying this setting can reduce operating costs. By default, the system is always running.
 \*It will be executed in UTC time
 
