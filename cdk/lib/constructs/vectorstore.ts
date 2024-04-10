@@ -61,6 +61,11 @@ export class VectorStore extends Construct {
       // ],
     });
 
+    const dbClusterIdentifier = cluster
+      .secret!.secretValueFromJson("dbClusterIdentifier")
+      .unsafeUnwrap()
+      .toString();
+
     if (props.rdsScheduler.hasCron()) {
       const rdsSchedulerRole = new Role(this, "role-rds-scheduler", {
         assumedBy: new ServicePrincipal("scheduler.amazonaws.com"),
@@ -90,7 +95,7 @@ export class VectorStore extends Construct {
           arn: "arn:aws:scheduler:::aws-sdk:rds:startDBCluster",
           roleArn: rdsSchedulerRole.roleArn,
           input: JSON.stringify({
-            DbClusterIdentifier: cluster.clusterIdentifier,
+            DbClusterIdentifier: dbClusterIdentifier,
           }),
         },
       });
@@ -105,7 +110,7 @@ export class VectorStore extends Construct {
           arn: "arn:aws:scheduler:::aws-sdk:rds:stopDBCluster",
           roleArn: rdsSchedulerRole.roleArn,
           input: JSON.stringify({
-            DbClusterIdentifier: cluster.clusterResourceIdentifier,
+            DbClusterIdentifier: dbClusterIdentifier,
           }),
         },
       });
@@ -135,10 +140,7 @@ export class VectorStore extends Construct {
           .unsafeUnwrap()
           .toString(),
         DB_PORT: cluster.clusterEndpoint.port.toString(),
-        DB_CLUSTER_IDENTIFIER: cluster
-          .secret!.secretValueFromJson("dbClusterIdentifier")
-          .unsafeUnwrap()
-          .toString(),
+        DB_CLUSTER_IDENTIFIER: dbClusterIdentifier,
       },
     });
 
