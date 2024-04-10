@@ -15,7 +15,7 @@ BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
 client = get_bedrock_client()
 anthropic_client = AnthropicBedrock()
 
-
+# anthropic client
 def compose_args_for_anthropic_client(
     messages: list[MessageModel],
     model: str,
