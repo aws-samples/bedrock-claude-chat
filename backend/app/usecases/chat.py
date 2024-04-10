@@ -218,6 +218,9 @@ In addition, *YOU MUST OBEY THE FOLLOWING RULE*:
 
 # TODO : web browsing
 def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
+    # enable agent mode
+    # if(chat_input.is_agent)
+
     user_msg_id, conversation, bot = prepare_conversation(user_id, chat_input)
 
     message_map = conversation.message_map
