@@ -212,7 +212,7 @@ EMBEDDING_CONFIG = {
 
 cli および CDK を利用されている場合、`cdk destroy`を実行してください。そうでない場合は[CloudFormation](https://console.aws.amazon.com/cloudformation/home)へアクセスし、手動で`BedrockChatStack`および`FrontendWafStack`を削除してください。なお`FrontendWafStack`は `us-east-1` リージョンにあります。
 
-### vectorestore RDS の停止
+### RAG 用ベクトル DB の停止
 
 cdk.json を以下のように CRON 形式で設定することで、vectorestore stack で作成される RDS リソースを停止・再起動できます
 ※UTC で実行されます
