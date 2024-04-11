@@ -8,6 +8,7 @@ import {
   Model,
   PostMessageRequest,
   RelatedDocument,
+  Conversation,
 } from '../@types/conversation';
 import useConversation from './useConversation';
 import { create } from 'zustand';
@@ -62,11 +63,13 @@ const useChatState = create<{
     messageId: string,
     documents: RelatedDocument[]
   ) => void;
+  moveRelatedDocuments: (fromMessageId: string, toMessageId: string) => void;
   currentMessageId: string;
   setCurrentMessageId: (s: string) => void;
   isGeneratedTitle: boolean;
   setIsGeneratedTitle: (b: boolean) => void;
   getPostedModel: () => Model;
+  shouldUpdateMessages: (currentConversation: Conversation) => boolean;
 }>((set, get) => {
   return {
     conversationId: '',
@@ -175,6 +178,14 @@ const useChatState = create<{
         }),
       }));
     },
+    moveRelatedDocuments: (fromId, toId) => {
+      set(() => ({
+        relatedDocuments: produce(get().relatedDocuments, (draft) => {
+          draft[toId] = get().relatedDocuments[fromId];
+          draft[fromId] = [];
+        }),
+      }));
+    },
     currentMessageId: '',
     setCurrentMessageId: (s: string) => {
       set(() => ({
@@ -192,6 +203,14 @@ const useChatState = create<{
         get().chats[get().conversationId]?.system?.model ??
         // 画面に即時反映するためNEW_MESSAGEを評価
         get().chats['']?.[NEW_MESSAGE_ID.ASSISTANT]?.model
+      );
+    },
+    shouldUpdateMessages: (currentConversation) => {
+      return (
+        !!get().conversationId &&
+        currentConversation.id === get().conversationId &&
+        !get().postingMessage &&
+        get().currentMessageId !== currentConversation.lastMessageId
       );
     },
   };
@@ -218,6 +237,8 @@ const useChat = () => {
     getPostedModel,
     relatedDocuments,
     setRelatedDocuments,
+    moveRelatedDocuments,
+    shouldUpdateMessages,
   } = useChatState();
   const { open: openSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -257,14 +278,13 @@ const useChat = () => {
 
   // when updated messages
   useEffect(() => {
-    if (conversationId && data?.id === conversationId && !postingMessage) {
+    if (data && shouldUpdateMessages(data)) {
       setMessages(conversationId, data.messageMap);
       setCurrentMessageId(data.lastMessageId);
       setModelId(getPostedModel());
-      setRelatedDocuments(
-        data.lastMessageId,
-        relatedDocuments[NEW_MESSAGE_ID.ASSISTANT] ?? []
-      );
+      if ((relatedDocuments[NEW_MESSAGE_ID.ASSISTANT]?.length ?? 0) > 0) {
+        moveRelatedDocuments(NEW_MESSAGE_ID.ASSISTANT, data.lastMessageId);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId, data]);
@@ -530,6 +550,21 @@ const useChat = () => {
       .finally(() => {
         setPostingMessage(false);
       });
+
+    // get related document (for RAG)
+    const documents: RelatedDocument[] = [];
+    if (input.botId) {
+      conversationApi
+        .getRelatedDocuments({
+          botId: input.botId,
+          conversationId: input.conversationId!,
+          message: input.message,
+        })
+        .then((res) => {
+          documents.push(...res.data);
+          setRelatedDocuments(NEW_MESSAGE_ID.ASSISTANT, documents);
+        });
+    }
   };
 
   const hasError = useMemo(() => {
