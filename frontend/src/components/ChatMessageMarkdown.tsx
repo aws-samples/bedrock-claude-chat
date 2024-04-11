@@ -10,26 +10,33 @@ import { RelatedDocument } from '../@types/conversation';
 import { twMerge } from 'tailwind-merge';
 import { useTranslation } from 'react-i18next';
 import { create } from 'zustand';
+import { produce } from 'immer';
 
 type Props = BaseProps & {
   children: string;
   relatedDocuments?: RelatedDocument[];
+  messageId: string;
 };
 
 const useMarkdownState = create<{
-  isOpenReference: boolean;
-  setIsOpenReference: (b: boolean) => void;
-}>((set) => ({
-  isOpenReference: false,
-  setIsOpenReference: (b) => {
+  isOpenReference: {
+    [key: string]: boolean;
+  };
+  setIsOpenReference: (key: string, b: boolean) => void;
+}>((set, get) => ({
+  isOpenReference: {},
+  setIsOpenReference: (key, b) => {
     set({
-      isOpenReference: b,
+      isOpenReference: produce(get().isOpenReference, (draft) => {
+        draft[key] = b;
+      }),
     });
   },
 }));
 
 const RelatedDocumentLink: React.FC<{
   relatedDocument?: RelatedDocument;
+  linkId: string;
   children: ReactNode;
 }> = (props) => {
   const { t } = useTranslation();
@@ -57,18 +64,19 @@ const RelatedDocumentLink: React.FC<{
             : 'cursor-not-allowed text-gray'
         )}
         onClick={() => {
-          setIsOpenReference(!isOpenReference);
+          setIsOpenReference(props.linkId, !isOpenReference[props.linkId]);
         }}>
         {props.children}
       </a>
+
       {props.relatedDocument && (
         <div
           className={twMerge(
-            isOpenReference ? 'visible' : 'invisible',
+            isOpenReference[props.linkId] ? 'visible' : 'invisible',
             'fixed left-0 top-0 z-50 flex h-dvh w-dvw items-center justify-center bg-aws-squid-ink/20 transition duration-1000'
           )}
           onClick={() => {
-            setIsOpenReference(false);
+            setIsOpenReference(props.linkId, false);
           }}>
           <div
             className="max-h-[80vh] w-[70vw] max-w-[800px] overflow-y-auto rounded border bg-aws-squid-ink p-1 text-sm text-aws-font-color-white"
@@ -96,10 +104,11 @@ const RelatedDocumentLink: React.FC<{
   );
 };
 
-const Markdown: React.FC<Props> = ({
+const ChatMessageMarkdown: React.FC<Props> = ({
   className,
   children,
   relatedDocuments,
+  messageId,
 }) => {
   const text = useMemo(() => {
     const results = children.match(/\[\^(?<number>[\d])+?\]/g);
@@ -164,6 +173,7 @@ const Markdown: React.FC<Props> = ({
                     return (
                       <RelatedDocumentLink
                         key={`${idx}-${docNo}`}
+                        linkId={`${messageId}-${idx}-${docNo}`}
                         relatedDocument={doc}>
                         [{refNo}]
                       </RelatedDocumentLink>
@@ -205,4 +215,4 @@ const CopyToClipboard = ({
   );
 };
 
-export default Markdown;
+export default ChatMessageMarkdown;

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import Markdown from './Markdown';
+import ChatMessageMarkdown from './ChatMessageMarkdown';
 import ButtonCopy from './ButtonCopy';
 import { PiCaretLeftBold, PiNotePencil, PiUserFill } from 'react-icons/pi';
 import { BaseProps } from '../@types/common';
@@ -142,9 +142,11 @@ const ChatMessage: React.FC<Props> = (props) => {
             </div>
           )}
           {chatContent?.role === 'assistant' && (
-            <Markdown relatedDocuments={relatedDocuments}>
+            <ChatMessageMarkdown
+              relatedDocuments={relatedDocuments}
+              messageId={chatContent.id}>
               {chatContent.content[0].body}
-            </Markdown>
+            </ChatMessageMarkdown>
           )}
         </div>
       </div>

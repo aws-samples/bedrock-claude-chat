@@ -136,8 +136,6 @@ const useChatState = create<{
     editMessage: (id: string, messageId: string, content: string) => {
       set(() => ({
         chats: produce(get().chats, (draft) => {
-          //fixme:ここでエラーになる
-          console.log(get().chats, id, messageId);
           draft[id][messageId].content[0].body = content;
         }),
       }));
@@ -259,7 +257,7 @@ const useChat = () => {
 
   // when updated messages
   useEffect(() => {
-    if (conversationId && data?.id === conversationId) {
+    if (conversationId && data?.id === conversationId && !postingMessage) {
       setMessages(conversationId, data.messageMap);
       setCurrentMessageId(data.lastMessageId);
       setModelId(getPostedModel());
@@ -268,7 +266,8 @@ const useChat = () => {
         relatedDocuments[NEW_MESSAGE_ID.ASSISTANT] ?? []
       );
     }
-  }, [conversationId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversationId, data]);
 
   useEffect(() => {
     setIsGeneratedTitle(false);
@@ -427,20 +426,20 @@ const useChat = () => {
         setPostingMessage(false);
       });
 
-    // // get related document (for RAG)
-    // const documents: RelatedDocument[] = [];
-    // if (input.botId) {
-    //   conversationApi
-    //     .getRelatedDocuments({
-    //       botId: input.botId,
-    //       conversationId: input.conversationId!,
-    //       message: input.message,
-    //     })
-    //     .then((res) => {
-    //       documents.push(...res.data);
-    //       setRelatedDocuments(NEW_MESSAGE_ID.ASSISTANT, documents);
-    //     });
-    // }
+    // get related document (for RAG)
+    const documents: RelatedDocument[] = [];
+    if (input.botId) {
+      conversationApi
+        .getRelatedDocuments({
+          botId: input.botId,
+          conversationId: input.conversationId!,
+          message: input.message,
+        })
+        .then((res) => {
+          documents.push(...res.data);
+          setRelatedDocuments(NEW_MESSAGE_ID.ASSISTANT, documents);
+        });
+    }
   };
 
   /**
