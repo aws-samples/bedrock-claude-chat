@@ -218,28 +218,26 @@ If using cli and CDK, please `cdk destroy`. If not, access [CloudFormation](http
 
 ### Stopping Vector DB for RAG
 
-By setting [cdk.json](./cdk/cdk.json) in the following CRON format, you can stop and restart Aurora Serverless resources created by the [VectorStore construct](./cdk/lib/constructs/vectorstore.ts).
-Applying this setting can reduce operating costs. By default, Aurora Serverless is always running.
-\*It will be executed in UTC time
+By setting [cdk.json](./cdk/cdk.json) in the following CRON format, you can stop and restart Aurora Serverless resources created by the [VectorStore construct](./cdk/lib/constructs/vectorstore.ts). Applying this setting can reduce operating costs. By default, Aurora Serverless is always running. Note that it will be executed in UTC time.
 
-```
+```json
 ...
-    "rdbSchedules": {
-      "stop": {
-        "minute": "50",
-        "hour": "10",
-        "day": "*",
-        "month": "*",
-        "year": "*"
-      },
-      "start": {
-        "minute": "40",
-        "hour": "2",
-        "day": "*",
-        "month": "*",
-        "year": "*"
-      }
-    }
+"rdbSchedules": {
+  "stop": {
+    "minute": "50",
+    "hour": "10",
+    "day": "*",
+    "month": "*",
+    "year": "*"
+  },
+  "start": {
+    "minute": "40",
+    "hour": "2",
+    "day": "*",
+    "month": "*",
+    "year": "*"
+  }
+}
 ```
 
 ### Language Settings
@@ -260,7 +258,7 @@ const userPool = new UserPool(this, "UserPool", {
     requireDigits: true,
     minLength: 8,
   },
-  // true -> false
+  // Set to false
   selfSignUpEnabled: false,
   signInAliases: {
     username: false,
