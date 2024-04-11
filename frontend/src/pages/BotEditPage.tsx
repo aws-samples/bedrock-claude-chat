@@ -485,7 +485,7 @@ const BotEditPage: React.FC = () => {
                         {t('embeddingSettings.chunkSize.label')}
                         <Help
                           direction="right"
-                          message={t('embeddingSettings.help.overview')}
+                          message={t('embeddingSettings.help.chunkSize')}
                         />
                       </div>
                     }
@@ -512,7 +512,7 @@ const BotEditPage: React.FC = () => {
                         {t('embeddingSettings.chunkOverlap.label')}
                         <Help
                           direction="right"
-                          message={t('embeddingSettings.help.overview')}
+                          message={t('embeddingSettings.help.chunkOverlap')}
                         />
                       </div>
                     }
