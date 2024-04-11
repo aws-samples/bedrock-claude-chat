@@ -30,6 +30,7 @@ export interface BedrockChatStackProps extends StackProps {
   readonly userPoolDomainPrefix: string;
   readonly publishedApiAllowedIpV4AddressRanges: string[];
   readonly publishedApiAllowedIpV6AddressRanges: string[];
+  readonly allowedSignUpEmailDomains: string[] | null | undefined;
 }
 
 export class BedrockChatStack extends cdk.Stack {
@@ -95,6 +96,7 @@ export class BedrockChatStack extends cdk.Stack {
       origin: frontend.getOrigin(),
       userPoolDomainPrefixKey: props.userPoolDomainPrefix,
       idp,
+      allowedSignUpEmailDomains: props.allowedSignUpEmailDomains,
     });
     const largeMessageBucket = new Bucket(this, "LargeMessageBucket", {
       encryption: BucketEncryption.S3_MANAGED,

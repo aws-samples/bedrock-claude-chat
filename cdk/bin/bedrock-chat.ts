@@ -22,6 +22,8 @@ const PUBLISHED_API_ALLOWED_IP_V4_ADDRESS_RANGES: string[] =
   app.node.tryGetContext("publishedApiAllowedIpV4AddressRanges");
 const PUBLISHED_API_ALLOWED_IP_V6_ADDRESS_RANGES: string[] =
   app.node.tryGetContext("publishedApiAllowedIpV6AddressRanges");
+const ALLOWED_SIGN_UP_EMAIL_DOMAINS: string[] | null | undefined =
+  app.node.tryGetContext('allowedSignUpEmailDomains');
 
 const ENABLE_USAGE_ANALYSIS: boolean = app.node.tryGetContext(
   "enableUsageAnalysis"
@@ -59,5 +61,7 @@ const chat = new BedrockChatStack(app, `BedrockChatStack`, {
     PUBLISHED_API_ALLOWED_IP_V4_ADDRESS_RANGES,
   publishedApiAllowedIpV6AddressRanges:
     PUBLISHED_API_ALLOWED_IP_V6_ADDRESS_RANGES,
+  allowedSignUpEmailDomains: 
+    ALLOWED_SIGN_UP_EMAIL_DOMAINS,
 });
 chat.addDependency(waf);

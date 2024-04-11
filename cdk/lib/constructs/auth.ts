@@ -3,18 +3,22 @@ import {
   ProviderAttribute,
   UserPool,
   UserPoolClient,
+  UserPoolOperation,
   UserPoolIdentityProviderGoogle,
   CfnUserPoolGroup,
 } from "aws-cdk-lib/aws-cognito";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
-
+import { Runtime } from "aws-cdk-lib/aws-lambda";
+import { PythonFunction } from "@aws-cdk/aws-lambda-python-alpha";
 import { Construct } from "constructs";
+import * as path from "path";
 import { Idp } from "../utils/identityProvider";
 
 export interface AuthProps {
   readonly origin: string;
   readonly userPoolDomainPrefixKey: string;
   readonly idp: Idp;
+  readonly allowedSignUpEmailDomains: string[] | null | undefined;
 }
 
 export class Auth extends Construct {
@@ -102,6 +106,25 @@ export class Auth extends Construct {
           domainPrefix: props.userPoolDomainPrefixKey,
         },
       });
+    }
+
+    if (props.allowedSignUpEmailDomains) {
+      const checkEmailDomainFunction = new PythonFunction(this, 'CheckEmailDomain',{
+          runtime: Runtime.PYTHON_3_12,
+          entry: path.join(__dirname, "../../../backend/auth/checkEmailDomain"),
+          timeout: Duration.minutes(15),
+          environment: {
+            ALLOWED_SIGN_UP_EMAIL_DOMAINS_STR: JSON.stringify(
+              props.allowedSignUpEmailDomains
+            ),
+          },
+        }
+      );
+
+      userPool.addTrigger(
+        UserPoolOperation.PRE_SIGN_UP,
+        checkEmailDomainFunction
+      );
     }
 
     const adminGroup = new CfnUserPoolGroup(this, "AdminGroup", {
