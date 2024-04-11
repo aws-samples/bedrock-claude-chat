@@ -211,17 +211,17 @@ def get_bot(user_id: str, sk: str):
     print(f"Finding bot with id: {sk}")
     response = table.get_item(
         Key={
-            'SK': sk,
-            'PK': user_id,
+            "SK": sk,
+            "PK": user_id,
         },
-
     )
 
-    if 'Item' in response:
-        item = response['Item']
+    if "Item" in response:
+        item = response["Item"]
         return item
     else:
         raise RecordNotFoundError(f"Bot with id {sk} not found")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
