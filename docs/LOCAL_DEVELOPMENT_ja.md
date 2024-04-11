@@ -21,18 +21,3 @@ cd frontend && npm ci && npm run dev
 
 現在、環境変数として `VITE_APP_USE_STREAMING` というのをフロントエンド側で指定しています。バックエンドをローカルで動かす場合は `false` に指定してただき、AWS で動かす場合は `true` にすることを推奨します。  
 Streaming を有効化すると文章生成結果がストリーミングされるためリアルタイムで文字列が生成されていきます。
-
-### コンテナを利用したローカルでの開発について
-
-[docker-compose.yml](../docker-compose.yml) を利用することで、フロントエンド / バックエンド API / DynamoDB Local をローカル環境で動かし開発を行うことができます。
-
-```bash
-# コンテナのビルド
-docker compose build
-
-# コンテナの起動
-docker compose up
-
-# コンテナの停止
-docker compose down
-```

@@ -19,6 +19,11 @@ export type BotKnowledge = {
   filenames: string[];
 };
 
+export type EmdeddingPrams = {
+  chunkSize: number;
+  chunkOverlap: number;
+};
+
 export type BotKnowledgeDiff = {
   sourceUrls: string[];
   // Sitemap cannot be used yet.
@@ -36,6 +41,7 @@ export type BotListItem = BotMeta & {
 
 export type BotDetails = BotMeta & {
   instruction: string;
+  embeddingParams: EmdeddingPrams;
   knowledge: BotKnowledge;
   syncStatusReason: string;
 };
@@ -56,6 +62,7 @@ export type RegisterBotRequest = {
   title: string;
   instruction: string;
   description?: string;
+  embeddingParams?: EmdeddingPrams;
   knowledge?: BotKnowledge;
 };
 
@@ -65,6 +72,7 @@ export type UpdateBotRequest = {
   title: string;
   instruction: string;
   description?: string;
+  embeddingParams?: EmdeddingPrams;
   knowledge?: BotKnowledgeDiff;
 };
 
@@ -73,6 +81,7 @@ export type UpdateBotResponse = {
   title: string;
   instruction: string;
   description: string;
+  embeddingParams?: EmdeddingPrams;
   knowledge?: BotKnowledge;
 };
 
