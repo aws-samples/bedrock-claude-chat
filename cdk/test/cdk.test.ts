@@ -25,6 +25,10 @@ describe("Fine-grained Assertions Test", () => {
         dbEncryption: false,
         publishedApiAllowedIpV4AddressRanges: [""],
         publishedApiAllowedIpV6AddressRanges: [""],
+        rdsSchedules: {
+          stop: {},
+          start: {},
+        },
       }
     );
     const hasGoogleProviderTemplate = Template.fromStack(
@@ -74,6 +78,10 @@ describe("Fine-grained Assertions Test", () => {
         dbEncryption: false,
         publishedApiAllowedIpV4AddressRanges: [""],
         publishedApiAllowedIpV6AddressRanges: [""],
+        rdsSchedules: {
+          stop: {},
+          start: {},
+        },
       }
     );
     const hasOidcProviderTemplate = Template.fromStack(hasOidcProviderStack);
@@ -112,9 +120,74 @@ describe("Fine-grained Assertions Test", () => {
       dbEncryption: false,
       publishedApiAllowedIpV4AddressRanges: [""],
       publishedApiAllowedIpV6AddressRanges: [""],
+      rdsSchedules: {
+        stop: {},
+        start: {},
+      },
     });
     const template = Template.fromStack(stack);
 
     template.resourceCountIs("AWS::Cognito::UserPoolIdentityProvider", 0);
+  });
+});
+
+describe("Scheduler Test", () => {
+  test("has schedules", () => {
+    const app = new cdk.App();
+    const hasScheduleStack = new BedrockChatStack(app, "HasSchedulesStack", {
+      bedrockRegion: "us-east-1",
+      crossRegionReferences: true,
+      webAclId: "",
+      enableUsageAnalysis: true,
+      identityProviders: [],
+      userPoolDomainPrefix: "",
+      dbEncryption: false,
+      publishedApiAllowedIpV4AddressRanges: [""],
+      publishedApiAllowedIpV6AddressRanges: [""],
+      rdsSchedules: {
+        stop: {
+          minute: "00",
+          hour: "22",
+          day: "*",
+          month: "*",
+          year: "*",
+        },
+        start: {
+          minute: "00",
+          hour: "7",
+          day: "*",
+          month: "*",
+          year: "*",
+        },
+      },
+    });
+    const template = Template.fromStack(hasScheduleStack);
+    template.hasResourceProperties("AWS::Scheduler::Schedule", {
+      ScheduleExpression: "cron(00 22 * * ? *)",
+    });
+
+    template.hasResourceProperties("AWS::Scheduler::Schedule", {
+      ScheduleExpression: "cron(00 7 * * ? *)",
+    });
+  });
+  test("has'nt schedules", () => {
+    const app = new cdk.App();
+    const defaultStack = new BedrockChatStack(app, "DefaultStack", {
+      bedrockRegion: "us-east-1",
+      crossRegionReferences: true,
+      webAclId: "",
+      enableUsageAnalysis: true,
+      identityProviders: [],
+      userPoolDomainPrefix: "",
+      dbEncryption: false,
+      publishedApiAllowedIpV4AddressRanges: [""],
+      publishedApiAllowedIpV6AddressRanges: [""],
+      rdsSchedules: {
+        stop: {},
+        start: {},
+      },
+    });
+    const template = Template.fromStack(defaultStack);
+    template.resourceCountIs("AWS::Events::Rule", 1);
   });
 });
