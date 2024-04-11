@@ -1,7 +1,11 @@
 import sys
 import unittest
 
+
 sys.path.append(".")
+
+from app.config import DEFAULT_EMBEDDING_CONFIG
+
 from app.repositories.conversation import (
     ContentModel,
     ConversationModel,
@@ -22,7 +26,11 @@ from app.repositories.custom_bot import (
     find_private_bots_by_user_id,
     store_bot,
 )
-from app.repositories.models.custom_bot import BotModel, KnowledgeModel
+from app.repositories.models.custom_bot import (
+    BotModel,
+    EmbeddingParamsModel,
+    KnowledgeModel,
+)
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
 
@@ -331,6 +339,10 @@ class TestConversationBotRepository(unittest.TestCase):
             public_bot_id="1",
             is_pinned=False,
             owner_user_id="user",
+            embedding_params=EmbeddingParamsModel(
+                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
+                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+            ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -353,6 +365,10 @@ class TestConversationBotRepository(unittest.TestCase):
             public_bot_id="2",
             is_pinned=False,
             owner_user_id="user",
+            embedding_params=EmbeddingParamsModel(
+                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
+                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+            ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],

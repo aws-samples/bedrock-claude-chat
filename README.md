@@ -197,7 +197,7 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 
 ## Others
 
-### Configure text generation / embedding parameters
+### Configure text generation
 
 Edit [config.py](./backend/app/config.py) and run `cdk deploy`.
 
@@ -209,12 +209,6 @@ GENERATION_CONFIG = {
     "top_p": 0.999,
     "temperature": 0.6,
     "stop_sequences": ["Human: ", "Assistant: "],
-}
-
-EMBEDDING_CONFIG = {
-    "model_id": "cohere.embed-multilingual-v3",
-    "chunk_size": 1000,
-    "chunk_overlap": 200,
 }
 ```
 

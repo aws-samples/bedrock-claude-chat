@@ -1,8 +1,14 @@
 import sys
 
-sys.path.append(".")
+sys.path.insert(0, ".")
 import unittest
 from pprint import pprint
+
+from tests.test_usecases.utils.bot_factory import (
+    create_test_private_bot,
+    create_test_public_bot,
+    create_test_instruction_template,
+)
 
 from anthropic.types import MessageStopEvent
 from app.bedrock import get_model_id
@@ -24,7 +30,7 @@ from app.repositories.models.conversation import (
     ConversationModel,
     MessageModel,
 )
-from app.repositories.models.custom_bot import BotModel, KnowledgeModel
+
 from app.routes.schemas.conversation import (
     ChatInput,
     ChatOutput,
@@ -458,52 +464,36 @@ class TestProposeTitle(unittest.TestCase):
 
 
 class TestChatWithCustomizedBot(unittest.TestCase):
+    first_user_id = "user1"
+    second_user_id = "user2"
+
+    first_private_bot_id = "private1"
+    first_public_bot_id = "public1"
+
     def setUp(self) -> None:
-        private_bot = BotModel(
-            id="private1",
-            title="Test Bot",
-            description="Test Bot Description",
-            instruction="いついかなる時も、俺様風の口調で返答してください。日本語以外の言語は認めません。",
-            create_time=1627984879.9,
-            last_used_time=1627984879.9,
-            is_pinned=True,
-            public_bot_id=None,
-            owner_user_id="user1",
-            knowledge=KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[]),
-            sync_status="SUCCEEDED",
-            sync_status_reason="",
-            sync_last_exec_id="",
-            published_api_codebuild_id="",
-            published_api_datetime=0,
-            published_api_stack_name="",
+
+        private_bot = create_test_private_bot(
+            self.first_private_bot_id,
+            True,
+            self.first_user_id,
+            create_test_instruction_template("俺様風の口調で"),
+            "SUCCEEDED",
         )
-        public_bot = BotModel(
-            id="public1",
-            title="Test Bot",
-            description="Test Bot Description",
-            instruction="いついかなる時も、大阪弁で返答してください。日本語以外の言語は認めません。",
-            create_time=1627984879.9,
-            last_used_time=1627984879.9,
-            # Pinned
-            is_pinned=True,
-            public_bot_id="public1",
-            owner_user_id="user2",
-            knowledge=KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[]),
-            sync_status="SUCCEEDED",
-            sync_status_reason="",
-            sync_last_exec_id="",
-            published_api_codebuild_id="",
-            published_api_datetime=0,
-            published_api_stack_name="",
+        public_bot = create_test_public_bot(
+            self.first_public_bot_id,
+            True,
+            self.second_user_id,
+            self.first_public_bot_id,
+            create_test_instruction_template("大阪弁で"),
         )
-        store_bot("user1", private_bot)
-        store_bot("user2", public_bot)
-        update_bot_visibility("user2", "public1", True)
+        store_bot(self.first_user_id, private_bot)
+        store_bot(self.second_user_id, public_bot)
+        update_bot_visibility(self.second_user_id, self.first_public_bot_id, True)
 
     def tearDown(self) -> None:
-        delete_bot_by_id("user1", "private1")
-        delete_bot_by_id("user2", "public1")
-        delete_conversation_by_user_id("user1")
+        delete_bot_by_id(self.first_user_id, self.first_private_bot_id)
+        delete_bot_by_id(self.second_user_id, self.first_public_bot_id)
+        delete_conversation_by_user_id(self.first_user_id)
 
     def test_chat_with_private_bot(self):
         # First message
@@ -689,7 +679,7 @@ class TestInsertKnowledge(unittest.TestCase):
                     content=[
                         ContentModel(
                             content_type="text",
-                            body="いついかなる時も、俺様風の口調で返答してください。日本語以外の言語は認めません。",
+                            body=create_test_instruction_template("俺様風の口調で"),
                             media_type=None,
                         )
                     ],

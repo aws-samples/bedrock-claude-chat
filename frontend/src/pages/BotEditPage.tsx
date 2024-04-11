@@ -11,8 +11,13 @@ import ButtonIcon from '../components/ButtonIcon';
 import { produce } from 'immer';
 import Alert from '../components/Alert';
 import KnowledgeFileUploader from '../components/KnowledgeFileUploader';
-import { BotFile } from '../@types/bot';
+import { BotFile, EmdeddingPrams } from '../@types/bot';
 import { ulid } from 'ulid';
+import { DEFAULT_EMBEDDING_CONFIG, EDGE_EMBEDDING_PARAMS } from '../constants';
+import { Slider } from '../components/Slider';
+import ExpandableDrawerGroup from '../components/ExpandableDrawerGroup';
+import useErrorMessage from '../hooks/useErrorMessage';
+import Help from '../components/Help';
 
 const BotEditPage: React.FC = () => {
   const { t } = useTranslation();
@@ -27,11 +32,19 @@ const BotEditPage: React.FC = () => {
   const [instruction, setInstruction] = useState('');
   const [urls, setUrls] = useState<string[]>(['']);
   const [files, setFiles] = useState<BotFile[]>([]);
+  const [embeddingParams, setEmbeddingParams] = useState<EmdeddingPrams>({
+    chunkSize: DEFAULT_EMBEDDING_CONFIG.chunkSize,
+    chunkOverlap: DEFAULT_EMBEDDING_CONFIG.chunkOverlap,
+  });
   const [addedFilenames, setAddedFilenames] = useState<string[]>([]);
   const [unchangedFilenames, setUnchangedFilenames] = useState<string[]>([]);
   const [deletedFilenames, setDeletedFilenames] = useState<string[]>([]);
 
-  const [errorMessage, setErrorMessage] = useState('');
+  const {
+    errorMessages,
+    setErrorMessage: setErrorMessages,
+    clearAll: clearErrorMessages,
+  } = useErrorMessage();
 
   const isNewBot = useMemo(() => {
     return paramsBotId ? false : true;
@@ -60,9 +73,15 @@ const BotEditPage: React.FC = () => {
               status: 'UPLOADED',
             }))
           );
+          setEmbeddingParams(() => bot.embeddingParams);
           setUnchangedFilenames([...bot.knowledge.filenames]);
           if (bot.syncStatus === 'FAILED') {
-            setErrorMessage(bot.syncStatusReason);
+            setErrorMessages(
+              isSyncChunkError(bot.syncStatusReason)
+                ? 'syncChunkError'
+                : 'syncError',
+              bot.syncStatusReason
+            );
           }
         })
         .finally(() => {
@@ -71,6 +90,12 @@ const BotEditPage: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isNewBot, botId]);
+
+  const isSyncChunkError = useCallback((syncErrorMessage: string) => {
+    const pattern =
+      /Got a larger chunk overlap \(\d+\) than chunk size \(\d+\), should be smaller\./;
+    return pattern.test(syncErrorMessage);
+  }, []);
 
   const onChangeUrl = useCallback(
     (url: string, idx: number) => {
@@ -197,13 +222,51 @@ const BotEditPage: React.FC = () => {
     history.back();
   }, []);
 
+  const isValid = useCallback((): boolean => {
+    clearErrorMessages();
+    if (embeddingParams.chunkSize > EDGE_EMBEDDING_PARAMS.chunkSize.MAX) {
+      setErrorMessages(
+        'chunkSize',
+        t('validation.maxRange.message', {
+          size: EDGE_EMBEDDING_PARAMS.chunkSize.MAX,
+        })
+      );
+      return false;
+    }
+
+    if (embeddingParams.chunkOverlap > EDGE_EMBEDDING_PARAMS.chunkOverlap.MAX) {
+      setErrorMessages(
+        'chunkOverlap',
+        t('validation.maxRange.message', {
+          size: EDGE_EMBEDDING_PARAMS.chunkOverlap.MAX,
+        })
+      );
+      return false;
+    }
+
+    if (embeddingParams.chunkSize < embeddingParams.chunkOverlap) {
+      setErrorMessages(
+        'chunkOverlap',
+        t('validation.chunkOverlapLessThanChunkSize.message')
+      );
+      return false;
+    }
+
+    return true;
+  }, [embeddingParams, clearErrorMessages, setErrorMessages, t]);
+
   const onClickCreate = useCallback(() => {
+    if (!isValid()) return;
     setIsLoading(true);
     registerBot({
       id: botId,
       title,
       description,
       instruction,
+      embeddingParams: {
+        chunkSize: embeddingParams.chunkSize,
+        chunkOverlap: embeddingParams.chunkOverlap,
+      },
       knowledge: {
         sourceUrls: urls.filter((s) => s !== ''),
         // Sitemap cannot be used yet.
@@ -219,22 +282,30 @@ const BotEditPage: React.FC = () => {
       });
   }, [
     registerBot,
+    isValid,
     botId,
     title,
     description,
     instruction,
     urls,
     files,
+    embeddingParams,
     navigate,
   ]);
 
   const onClickEdit = useCallback(() => {
+    if (!isValid()) return;
+
     if (!isNewBot) {
       setIsLoading(true);
       updateBot(botId, {
         title,
         description,
         instruction,
+        embeddingParams: {
+          chunkSize: embeddingParams?.chunkSize,
+          chunkOverlap: embeddingParams?.chunkOverlap,
+        },
         knowledge: {
           sourceUrls: urls.filter((s) => s !== ''),
           // Sitemap cannot be used yet.
@@ -253,6 +324,7 @@ const BotEditPage: React.FC = () => {
     }
   }, [
     isNewBot,
+    isValid,
     updateBot,
     botId,
     title,
@@ -262,6 +334,7 @@ const BotEditPage: React.FC = () => {
     addedFilenames,
     deletedFilenames,
     unchangedFilenames,
+    embeddingParams,
     navigate,
   ]);
 
@@ -331,17 +404,15 @@ const BotEditPage: React.FC = () => {
                   {t('bot.help.knowledge.overview')}
                 </div>
 
-                {errorMessage !== '' && (
+                {errorMessages['syncError'] && (
                   <Alert
                     className="mt-2"
                     severity="error"
                     title={t('bot.alert.sync.error.title')}>
                     <>
-                      <div className="mb-1 text-sm text-dark-gray">
-                        {t('bot.alert.sync.error.body')}
-                      </div>
-                      <div className="rounded border bg-light-gray p-2 text-dark-gray">
-                        {errorMessage}
+                      <div className="mb-1 text-sm">
+                        <div>{t('bot.alert.sync.error.body')}</div>
+                        <div> {errorMessages['syncError']}</div>
                       </div>
                     </>
                   </Alert>
@@ -398,6 +469,81 @@ const BotEditPage: React.FC = () => {
                   </div>
                 </div>
               </div>
+              <ExpandableDrawerGroup
+                isDefaultShow={false}
+                label={t('embeddingSettings.title')}
+                className="py-2">
+                <div className="text-sm text-aws-font-color/50">
+                  {t('embeddingSettings.description')}
+                </div>
+                <div className="mt-2">
+                  <Slider
+                    value={embeddingParams?.chunkSize}
+                    hint={t('embeddingSettings.chunkSize.hint')}
+                    label={
+                      <div className="flex items-center gap-1">
+                        {t('embeddingSettings.chunkSize.label')}
+                        <Help
+                          direction="right"
+                          message={t('embeddingSettings.help.chunkSize')}
+                        />
+                      </div>
+                    }
+                    range={{
+                      min: EDGE_EMBEDDING_PARAMS.chunkSize.MIN,
+                      max: EDGE_EMBEDDING_PARAMS.chunkSize.MAX,
+                      step: EDGE_EMBEDDING_PARAMS.chunkSize.STEP,
+                    }}
+                    onChange={(chunkSize) =>
+                      setEmbeddingParams((params) => ({
+                        ...params,
+                        chunkSize: chunkSize,
+                      }))
+                    }
+                    errorMessage={errorMessages['chunkSize']}
+                  />
+                </div>
+                <div className="mt-2">
+                  <Slider
+                    value={embeddingParams?.chunkOverlap}
+                    hint={t('embeddingSettings.chunkOverlap.hint')}
+                    label={
+                      <div className="flex items-center gap-1">
+                        {t('embeddingSettings.chunkOverlap.label')}
+                        <Help
+                          direction="right"
+                          message={t('embeddingSettings.help.chunkOverlap')}
+                        />
+                      </div>
+                    }
+                    range={{
+                      min: EDGE_EMBEDDING_PARAMS.chunkOverlap.MIN,
+                      max: EDGE_EMBEDDING_PARAMS.chunkOverlap.MAX,
+                      step: EDGE_EMBEDDING_PARAMS.chunkOverlap.STEP,
+                    }}
+                    onChange={(chunkOverlap) =>
+                      setEmbeddingParams((params) => ({
+                        ...params,
+                        chunkOverlap: chunkOverlap,
+                      }))
+                    }
+                    errorMessage={errorMessages['chunkOverlap']}
+                  />
+                </div>
+              </ExpandableDrawerGroup>
+
+              {errorMessages['syncChunkError'] && (
+                <Alert
+                  className="mt-2"
+                  severity="error"
+                  title={t('embeddingSettings.alert.sync.error.title')}>
+                  <>
+                    <div className="mb-1 text-sm">
+                      {t('embeddingSettings.alert.sync.error.body')}
+                    </div>
+                  </>
+                </Alert>
+              )}
 
               <div className="flex justify-between">
                 <Button outlined icon={<PiCaretLeft />} onClick={onClickBack}>

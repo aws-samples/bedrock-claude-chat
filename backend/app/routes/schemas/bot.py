@@ -10,6 +10,11 @@ type_sync_status = Literal[
 ]
 
 
+class EmbeddingParams(BaseSchema):
+    chunk_size: int
+    chunk_overlap: int
+
+
 class Knowledge(BaseSchema):
     source_urls: list[str]
     sitemap_urls: list[str]
@@ -30,6 +35,7 @@ class BotInput(BaseSchema):
     title: str
     instruction: str
     description: str | None
+    embedding_params: EmbeddingParams | None
     knowledge: Knowledge | None
 
 
@@ -37,6 +43,7 @@ class BotModifyInput(BaseSchema):
     title: str
     instruction: str
     description: str | None
+    embedding_params: EmbeddingParams | None
     knowledge: KnowledgeDiffInput | None
 
 
@@ -45,6 +52,7 @@ class BotModifyOutput(BaseSchema):
     title: str
     instruction: str
     description: str
+    embedding_params: EmbeddingParams
     knowledge: Knowledge
 
 
@@ -59,6 +67,7 @@ class BotOutput(BaseSchema):
     is_pinned: bool
     # Whether the bot is owned by the user
     owned: bool
+    embedding_params: EmbeddingParams
     knowledge: Knowledge
     sync_status: type_sync_status
     sync_status_reason: str
