@@ -231,7 +231,7 @@ const BotEditPage: React.FC = () => {
           size: EDGE_EMBEDDING_PARAMS.chunkSize.MAX,
         })
       );
-      return true;
+      return false;
     }
 
     if (embeddingParams.chunkOverlap > EDGE_EMBEDDING_PARAMS.chunkOverlap.MAX) {
@@ -241,7 +241,7 @@ const BotEditPage: React.FC = () => {
           size: EDGE_EMBEDDING_PARAMS.chunkOverlap.MAX,
         })
       );
-      return true;
+      return false;
     }
 
     if (embeddingParams.chunkSize < embeddingParams.chunkOverlap) {
@@ -249,14 +249,14 @@ const BotEditPage: React.FC = () => {
         'chunkOverlap',
         t('validation.chunkOverlapLessThanChunkSize.message')
       );
-      return true;
+      return false;
     }
 
-    return false;
+    return true;
   }, [embeddingParams, clearErrorMessages, setErrorMessages, t]);
 
   const onClickCreate = useCallback(() => {
-    if (isValid()) return;
+    if (!isValid()) return;
     setIsLoading(true);
     registerBot({
       id: botId,
@@ -294,7 +294,7 @@ const BotEditPage: React.FC = () => {
   ]);
 
   const onClickEdit = useCallback(() => {
-    if (isValid()) return;
+    if (!isValid()) return;
 
     if (!isNewBot) {
       setIsLoading(true);
