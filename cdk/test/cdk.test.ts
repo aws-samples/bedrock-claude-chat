@@ -25,6 +25,7 @@ describe("Fine-grained Assertions Test", () => {
         dbEncryption: false,
         publishedApiAllowedIpV4AddressRanges: [""],
         publishedApiAllowedIpV6AddressRanges: [""],
+        allowedSignUpEmailDomains: null
       }
     );
     const hasGoogleProviderTemplate = Template.fromStack(
@@ -74,6 +75,7 @@ describe("Fine-grained Assertions Test", () => {
         dbEncryption: false,
         publishedApiAllowedIpV4AddressRanges: [""],
         publishedApiAllowedIpV6AddressRanges: [""],
+        allowedSignUpEmailDomains: null
       }
     );
     const hasOidcProviderTemplate = Template.fromStack(hasOidcProviderStack);
@@ -112,6 +114,7 @@ describe("Fine-grained Assertions Test", () => {
       dbEncryption: false,
       publishedApiAllowedIpV4AddressRanges: [""],
       publishedApiAllowedIpV6AddressRanges: [""],
+      allowedSignUpEmailDomains: null
     });
     const template = Template.fromStack(stack);
 

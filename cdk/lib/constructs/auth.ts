@@ -143,6 +143,7 @@ export class Auth extends Construct {
     if (props.allowedSignUpEmailDomains) {
       const checkEmailDomainFunction = new PythonFunction(this, 'CheckEmailDomain',{
           runtime: Runtime.PYTHON_3_12,
+          index: 'checkEmailDomain.py',
           entry: path.join(__dirname, "../../../backend/auth/checkEmailDomain"),
           timeout: Duration.minutes(15),
           environment: {
