@@ -206,9 +206,9 @@ def main(
     )
 
 
-def get_bot(user_id: str, sk: str):
+def get_bot(user_id: str, sk: str, bot_id: str):
     table = _get_table_client(user_id)
-    print(f"Finding bot with id: {sk}")
+    print(f"Finding bot with id: {bot_id}")
     response = table.get_item(
         Key={
             "SK": sk,
@@ -220,7 +220,7 @@ def get_bot(user_id: str, sk: str):
         item = response["Item"]
         return item
     else:
-        raise RecordNotFoundError(f"Bot with id {sk} not found")
+        raise RecordNotFoundError(f"Bot with id {bot_id} not found")
 
 
 if __name__ == "__main__":
@@ -235,7 +235,7 @@ if __name__ == "__main__":
     pk = keys["PK"]["S"]
     user_id = pk
 
-    new_image = get_bot(user_id, sk)
+    new_image = get_bot(user_id, sk, bot_id)
 
     knowledge = new_image["Knowledge"]
     sitemap_urls = knowledge["sitemap_urls"]
