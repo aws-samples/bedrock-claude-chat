@@ -188,6 +188,7 @@ describe("Scheduler Test", () => {
       },
     });
     const template = Template.fromStack(defaultStack);
+    // The stack should have only 1 rule for exporting the data from ddb to s3
     template.resourceCountIs("AWS::Events::Rule", 1);
   });
 });
