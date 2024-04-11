@@ -301,7 +301,20 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
         is_pinned=item["IsPinned"],
         public_bot_id=None if "PublicBotId" not in item else item["PublicBotId"],
         owner_user_id=user_id,
-        embedding_params=EmbeddingParamsModel(**item["EmbeddingParams"]),
+        embedding_params=EmbeddingParamsModel(
+            # For backward compatibility
+            chunk_size=(
+                item["EmbeddingParams"]["chunk_size"]
+                if "EmbeddingParams" in item and "chunk_size" in item["EmbeddingParams"]
+                else 1000
+            ),
+            chunk_overlap=(
+                item["EmbeddingParams"]["chunk_overlap"]
+                if "EmbeddingParams" in item
+                and "chunk_overlap" in item["EmbeddingParams"]
+                else 200
+            ),
+        ),
         knowledge=KnowledgeModel(**item["Knowledge"]),
         sync_status=item["SyncStatus"],
         sync_status_reason=item["SyncStatusReason"],
@@ -347,7 +360,20 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
         is_pinned=item["IsPinned"],
         public_bot_id=item["PublicBotId"],
         owner_user_id=item["PK"],
-        embedding_params=EmbeddingParamsModel(**item["EmbeddingParams"]),
+        embedding_params=EmbeddingParamsModel(
+            # For backward compatibility
+            chunk_size=(
+                item["EmbeddingParams"]["chunk_size"]
+                if "EmbeddingParams" in item and "chunk_size" in item["EmbeddingParams"]
+                else 1000
+            ),
+            chunk_overlap=(
+                item["EmbeddingParams"]["chunk_overlap"]
+                if "EmbeddingParams" in item
+                and "chunk_overlap" in item["EmbeddingParams"]
+                else 200
+            ),
+        ),
         knowledge=KnowledgeModel(**item["Knowledge"]),
         sync_status=item["SyncStatus"],
         sync_status_reason=item["SyncStatusReason"],
