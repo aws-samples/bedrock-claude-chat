@@ -3,9 +3,9 @@ import json
 import logging
 import os
 
-from app.config import DEFAULT_EMBEDDING_CONFIG
 import pg8000
 import requests
+from app.config import DEFAULT_EMBEDDING_CONFIG
 from app.repositories.common import _get_table_client
 from app.repositories.custom_bot import compose_bot_id, decompose_bot_id
 from app.routes.schemas.bot import type_sync_status
@@ -102,13 +102,13 @@ def embed(
     contents: list[str],
     sources: list[str],
     embeddings: list[list[float]],
-    cunk_size: int,
+    chunk_size: int,
     chunk_overlap: int,
 ):
     splitter = DocumentSplitter(
         splitter=SentenceSplitter(
             paragraph_separator=r"\n\n\n",
-            chunk_size=cunk_size,
+            chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
             # Use length of text as token count for cohere-multilingual-v3
             tokenizer=lambda text: [0] * len(text),
@@ -232,8 +232,8 @@ if __name__ == "__main__":
     sitemap_urls = [x["S"] for x in knowledge["sitemap_urls"]["L"]]
     source_urls = [x["S"] for x in knowledge["source_urls"]["L"]]
     filenames = [x["S"] for x in knowledge["filenames"]["L"]]
-    chunk_size = embedding_params["chunk_size"]["N"]
-    chunk_overlap = embedding_params["chunk_overlap"]["N"]
+    chunk_size = int(embedding_params["chunk_size"]["N"])
+    chunk_overlap = int(embedding_params["chunk_overlap"]["N"])
 
     sk = new_image["SK"]["S"]
     bot_id = decompose_bot_id(sk)
