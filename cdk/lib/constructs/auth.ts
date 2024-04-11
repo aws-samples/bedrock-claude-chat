@@ -140,7 +140,7 @@ export class Auth extends Construct {
       });
     }
 
-    if (props.allowedSignUpEmailDomains?.length >= 1) {
+    if (props.allowedSignUpEmailDomains.length >= 1) {
       const checkEmailDomainFunction = new PythonFunction(this, 'CheckEmailDomain',{
           runtime: Runtime.PYTHON_3_12,
           index: 'check_email_domain.py',
