@@ -14,7 +14,6 @@ describe("Fine-grained Assertions Test", () => {
         bedrockRegion: "us-east-1",
         crossRegionReferences: true,
         webAclId: "",
-        enableUsageAnalysis: true,
         identityProviders: [
           {
             secretName: "MyTestSecret",
@@ -22,7 +21,6 @@ describe("Fine-grained Assertions Test", () => {
           },
         ],
         userPoolDomainPrefix: domainPrefix,
-        dbEncryption: false,
         publishedApiAllowedIpV4AddressRanges: [""],
         publishedApiAllowedIpV6AddressRanges: [""],
         rdsSchedules: {
@@ -66,7 +64,6 @@ describe("Fine-grained Assertions Test", () => {
         bedrockRegion: "us-east-1",
         crossRegionReferences: true,
         webAclId: "",
-        enableUsageAnalysis: true,
         identityProviders: [
           {
             secretName: "MyOidcTestSecret",
@@ -75,7 +72,6 @@ describe("Fine-grained Assertions Test", () => {
           },
         ],
         userPoolDomainPrefix: domainPrefix,
-        dbEncryption: false,
         publishedApiAllowedIpV4AddressRanges: [""],
         publishedApiAllowedIpV6AddressRanges: [""],
         rdsSchedules: {
@@ -114,10 +110,8 @@ describe("Fine-grained Assertions Test", () => {
       bedrockRegion: "us-east-1",
       crossRegionReferences: true,
       webAclId: "",
-      enableUsageAnalysis: true,
       identityProviders: [],
       userPoolDomainPrefix: "",
-      dbEncryption: false,
       publishedApiAllowedIpV4AddressRanges: [""],
       publishedApiAllowedIpV6AddressRanges: [""],
       rdsSchedules: {
@@ -138,10 +132,8 @@ describe("Scheduler Test", () => {
       bedrockRegion: "us-east-1",
       crossRegionReferences: true,
       webAclId: "",
-      enableUsageAnalysis: true,
       identityProviders: [],
       userPoolDomainPrefix: "",
-      dbEncryption: false,
       publishedApiAllowedIpV4AddressRanges: [""],
       publishedApiAllowedIpV6AddressRanges: [""],
       rdsSchedules: {
@@ -176,10 +168,8 @@ describe("Scheduler Test", () => {
       bedrockRegion: "us-east-1",
       crossRegionReferences: true,
       webAclId: "",
-      enableUsageAnalysis: true,
       identityProviders: [],
       userPoolDomainPrefix: "",
-      dbEncryption: false,
       publishedApiAllowedIpV4AddressRanges: [""],
       publishedApiAllowedIpV6AddressRanges: [""],
       rdsSchedules: {

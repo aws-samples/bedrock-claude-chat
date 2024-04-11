@@ -26,10 +26,8 @@ import { CronScheduleProps, createCronSchedule } from "./utils/cron-schedule";
 export interface BedrockChatStackProps extends StackProps {
   readonly bedrockRegion: string;
   readonly webAclId: string;
-  readonly enableUsageAnalysis: boolean;
   readonly identityProviders: TIdentityProvider[];
   readonly userPoolDomainPrefix: string;
-  readonly dbEncryption: boolean;
   readonly publishedApiAllowedIpV4AddressRanges: string[];
   readonly publishedApiAllowedIpV6AddressRanges: string[];
   readonly rdsSchedules: CronScheduleProps;
@@ -46,7 +44,6 @@ export class BedrockChatStack extends cdk.Stack {
     const vpc = new ec2.Vpc(this, "VPC", {});
     const vectorStore = new VectorStore(this, "VectorStore", {
       vpc: vpc,
-      dbEncryption: props.dbEncryption,
       rdsSchedule: cronSchedule,
     });
     const idp = identityProvider(props.identityProviders);
@@ -112,16 +109,13 @@ export class BedrockChatStack extends cdk.Stack {
     });
 
     const database = new Database(this, "Database", {
-      // Enable PITR to export data to s3 if usage analysis is enabled
-      pointInTimeRecovery: props.enableUsageAnalysis,
+      // Enable PITR to export data to s3
+      pointInTimeRecovery: true,
     });
 
-    let usageAnalysis;
-    if (props.enableUsageAnalysis) {
-      usageAnalysis = new UsageAnalysis(this, "UsageAnalysis", {
-        sourceDatabase: database,
-      });
-    }
+    const usageAnalysis = new UsageAnalysis(this, "UsageAnalysis", {
+      sourceDatabase: database,
+    });
 
     const backendApi = new Api(this, "BackendApi", {
       vpc,

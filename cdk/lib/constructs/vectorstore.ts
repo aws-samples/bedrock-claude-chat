@@ -21,7 +21,6 @@ const DB_NAME = "postgres";
 
 export interface VectorStoreProps {
   readonly vpc: ec2.IVpc;
-  readonly dbEncryption: boolean;
   readonly rdsSchedule: CronSchedule;
 }
 
@@ -47,7 +46,6 @@ export class VectorStore extends Construct {
       securityGroups: [sg],
       defaultDatabaseName: DB_NAME,
       enableDataApi: true,
-      // storageEncrypted: props.dbEncryption,
       serverlessV2MinCapacity: 0.5,
       serverlessV2MaxCapacity: 5.0,
       writer: rds.ClusterInstance.serverlessV2("writer", {
