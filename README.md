@@ -222,10 +222,10 @@ EMBEDDING_CONFIG = {
 
 If using cli and CDK, please `cdk destroy`. If not, access [CloudFormation](https://console.aws.amazon.com/cloudformation/home) and then delete `BedrockChatStack` and `FrontendWafStack` manually. Please note that `FrontendWafStack` is in `us-east-1` region.
 
-### Stopping the Vector DB for RAG
+### Stopping Vector DB for RAG
 
-By setting [cdk.json](../cdk/cdk.json) in the following CRON format, you can stop and restart the Aurora Serverless resources created by the [VectorStore construct](../cdk/lib/constructs/vectorstore.ts).
-Applying this setting can reduce operating costs. By default, the Aurora Serverless is always running.
+By setting [cdk.json](./cdk/cdk.json) in the following CRON format, you can stop and restart Aurora Serverless resources created by the [VectorStore construct](./cdk/lib/constructs/vectorstore.ts).
+Applying this setting can reduce operating costs. By default, Aurora Serverless is always running.
 \*It will be executed in UTC time
 
 ```
