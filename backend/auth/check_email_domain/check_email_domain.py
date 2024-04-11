@@ -8,8 +8,9 @@ ALLOWED_SIGN_UP_EMAIL_DOMAINS = (
     if ALLOWED_SIGN_UP_EMAIL_DOMAINS_STR
     else []
 )
-# Determine whether to allow the email domain
+
 def check_email_domain(email: str) -> bool:
+    # Determine whether to allow the email domain
     # Always disallow if the number of '@' in the email is not exactly one
     if email.count("@") != 1:
         return False
@@ -20,14 +21,14 @@ def check_email_domain(email: str) -> bool:
     domain = email.split("@")[1]
     return domain in ALLOWED_SIGN_UP_EMAIL_DOMAINS
 
-"""
-Cognito Pre Sign-up Lambda Trigger.
-
-:param event: The event from Cognito.
-:param context: The Lambda execution context.
-:return: The response to Cognito.
-"""
 def handler(event: Dict, context: Dict) -> Dict:
+    """
+    Cognito Pre Sign-up Lambda Trigger.
+
+    :param event: The event from Cognito.
+    :param context: The Lambda execution context.
+    :return: The response to Cognito.
+    """
     try:
         print("Received event:", json.dumps(event, indent=2))
         email = event["request"]["userAttributes"]["email"]

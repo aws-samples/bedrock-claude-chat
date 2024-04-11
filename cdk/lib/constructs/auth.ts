@@ -19,7 +19,7 @@ export interface AuthProps {
   readonly origin: string;
   readonly userPoolDomainPrefixKey: string;
   readonly idp: Idp;
-  readonly allowedSignUpEmailDomains: string[] | null | undefined;
+  readonly allowedSignUpEmailDomains: string[];
 }
 
 export class Auth extends Construct {
@@ -140,12 +140,12 @@ export class Auth extends Construct {
       });
     }
 
-    if (props.allowedSignUpEmailDomains) {
+    if (props.allowedSignUpEmailDomains?.length >= 1) {
       const checkEmailDomainFunction = new PythonFunction(this, 'CheckEmailDomain',{
           runtime: Runtime.PYTHON_3_12,
-          index: 'checkEmailDomain.py',
-          entry: path.join(__dirname, "../../../backend/auth/checkEmailDomain"),
-          timeout: Duration.minutes(15),
+          index: 'check_email_domain.py',
+          entry: path.join(__dirname, "../../../backend/auth/check_email_domain"),
+          timeout: Duration.minutes(1),
           environment: {
             ALLOWED_SIGN_UP_EMAIL_DOMAINS_STR: JSON.stringify(
               props.allowedSignUpEmailDomains

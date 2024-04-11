@@ -31,7 +31,7 @@ export interface BedrockChatStackProps extends StackProps {
   readonly dbEncryption: boolean;
   readonly publishedApiAllowedIpV4AddressRanges: string[];
   readonly publishedApiAllowedIpV6AddressRanges: string[];
-  readonly allowedSignUpEmailDomains: string[] | null | undefined;
+  readonly allowedSignUpEmailDomains: string[];
 }
 
 export class BedrockChatStack extends cdk.Stack {
