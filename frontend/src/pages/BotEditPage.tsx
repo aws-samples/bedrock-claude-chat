@@ -469,25 +469,26 @@ const BotEditPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-
               <ExpandableDrawerGroup
                 isDefaultShow={false}
                 label={t('embeddingSettings.title')}
                 className="py-2">
-                <div className="flex items-center gap-1">
-                  <div className="text-sm text-aws-font-color/50">
-                    {t('embeddingSettings.description')}
-                  </div>
-                  <Help
-                    direction="right"
-                    message={t('embeddingSettings.help.overview')}
-                  />
+                <div className="text-sm text-aws-font-color/50">
+                  {t('embeddingSettings.description')}
                 </div>
                 <div className="mt-2">
                   <Slider
                     value={embeddingParams?.chunkSize}
                     hint={t('embeddingSettings.chunkSize.hint')}
-                    label={t('embeddingSettings.chunkSize.label')}
+                    label={
+                      <div className="flex items-center gap-1">
+                        {t('embeddingSettings.chunkSize.label')}
+                        <Help
+                          direction="right"
+                          message={t('embeddingSettings.help.overview')}
+                        />
+                      </div>
+                    }
                     range={{
                       min: EDGE_EMBEDDING_PARAMS.chunkSize.MIN,
                       max: EDGE_EMBEDDING_PARAMS.chunkSize.MAX,
@@ -501,11 +502,20 @@ const BotEditPage: React.FC = () => {
                     }
                     errorMessage={errorMessages['chunkSize']}
                   />
-
+                </div>
+                <div className="mt-2">
                   <Slider
                     value={embeddingParams?.chunkOverlap}
                     hint={t('embeddingSettings.chunkOverlap.hint')}
-                    label={t('embeddingSettings.chunkOverlap.label')}
+                    label={
+                      <div className="flex items-center gap-1">
+                        {t('embeddingSettings.chunkOverlap.label')}
+                        <Help
+                          direction="right"
+                          message={t('embeddingSettings.help.overview')}
+                        />
+                      </div>
+                    }
                     range={{
                       min: EDGE_EMBEDDING_PARAMS.chunkOverlap.MIN,
                       max: EDGE_EMBEDDING_PARAMS.chunkOverlap.MAX,

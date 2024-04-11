@@ -1,8 +1,8 @@
-import { FC, Dispatch } from 'react';
+import { FC, Dispatch, ReactNode } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 interface Props {
-  label?: string;
+  label?: ReactNode;
   value: number;
   hint?: string;
   range: {
