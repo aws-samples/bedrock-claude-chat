@@ -10,7 +10,7 @@ import {
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 
 import { Construct } from "constructs";
-import { Idp, TIdentityProvider } from "../utils/identityProvider";
+import { Idp, TIdentityProvider } from "../utils/identity-provider";
 
 export interface AuthProps {
   readonly origin: string;

@@ -17,7 +17,7 @@ import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { DbConfig, Embedding } from "./constructs/embedding";
 import { VectorStore } from "./constructs/vectorstore";
 import { UsageAnalysis } from "./constructs/usage-analysis";
-import { TIdentityProvider, identityProvider } from "./utils/identityProvider";
+import { TIdentityProvider, identityProvider } from "./utils/identity-provider";
 import { ApiPublishCodebuild } from "./constructs/api-publish-codebuild";
 import { WebAclForPublishedApi } from "./constructs/webacl-for-published-api";
 import { VpcConfig } from "./api-publishment-stack";
