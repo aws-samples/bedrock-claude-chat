@@ -13,7 +13,7 @@ import { Runtime } from "aws-cdk-lib/aws-lambda";
 import { PythonFunction } from "@aws-cdk/aws-lambda-python-alpha";
 import { Construct } from "constructs";
 import * as path from "path";
-import { Idp, TIdentityProvider } from "../utils/identityProvider";
+import { Idp, TIdentityProvider } from "../utils/identity-provider";
 
 export interface AuthProps {
   readonly origin: string;
