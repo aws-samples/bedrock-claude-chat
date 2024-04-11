@@ -4,7 +4,7 @@ import * as cdk from "aws-cdk-lib";
 import { BedrockChatStack } from "../lib/bedrock-chat-stack";
 import { FrontendWafStack } from "../lib/frontend-waf-stack";
 import { TIdentityProvider } from "../lib/utils/identityProvider";
-import { Schedules } from "../lib/utils/cron-schedule";
+import { CronScheduleProps } from "../lib/utils/cron-schedule";
 
 const app = new cdk.App();
 
@@ -33,7 +33,7 @@ const IDENTITY_PROVIDERS: TIdentityProvider[] =
 const USER_POOL_DOMAIN_PREFIX: string = app.node.tryGetContext(
   "userPoolDomainPrefix"
 );
-const RDS_SCHEDULES: Schedules = app.node.tryGetContext("rdbSchedules");
+const RDS_SCHEDULES: CronScheduleProps = app.node.tryGetContext("rdbSchedules");
 // WAF for frontend
 // 2023/9: Currently, the WAF for CloudFront needs to be created in the North America region (us-east-1), so the stacks are separated
 // https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-wafv2-webacl.html
