@@ -3,6 +3,11 @@
 // const translation: typeof en = {
 const translation = {
   translation: {
+    signIn: {
+      button: {
+        login: 'ログイン',
+      },
+    },
     app: {
       name: 'Bedrock Claude Chat',
       inputMessage: '入力してください',
@@ -153,7 +158,7 @@ const translation = {
           rateLimit:
             'クライアントがAPIを呼び出すことができるレートを1秒あたりのリクエスト数で入力します。',
           burstLimit:
-            'クライアントがPAIに対して同時に実行できるリクエストの数を入力します。',
+            'クライアントがAPIに対して同時に実行できるリクエストの数を入力します。',
           quota:
             'ある期間にユーザがAPIに対して実行できるリクエストの数を制限します。',
           requestLimit:

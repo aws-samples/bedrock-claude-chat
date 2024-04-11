@@ -21,6 +21,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials
 from pydantic import ValidationError
+from starlette.requests import Request
+from starlette.responses import Response
 from starlette.types import ASGIApp, Message
 
 CORS_ALLOW_ORIGINS = os.environ.get("CORS_ALLOW_ORIGINS", "*")
@@ -68,7 +70,7 @@ app.add_middleware(
 )
 
 
-def error_handler_factory(status_code: int) -> Callable[[Exception], JSONResponse]:
+def error_handler_factory(status_code: int) -> Callable[[Request, Exception], Response]:
     def error_handler(_: Request, exc: Exception) -> JSONResponse:
         logger.error(exc)
         logger.error("".join(traceback.format_tb(exc.__traceback__)))
@@ -122,12 +124,6 @@ async def add_log_requests(request: Request, call_next: ASGIApp):
     body = await request.body()
     logger.info(f"Request body: {body.decode('utf-8')[:100]}...")
 
-    # Avoid application blocking
-    # See: https://github.com/tiangolo/fastapi/issues/394
-    async def receive() -> Message:
-        return {"type": "http.request", "body": body}
-
-    request._receive = receive
     response = await call_next(request)  # type: ignore
 
     return response

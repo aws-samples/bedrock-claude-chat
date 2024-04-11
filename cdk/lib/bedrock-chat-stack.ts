@@ -28,6 +28,7 @@ export interface BedrockChatStackProps extends StackProps {
   readonly enableUsageAnalysis: boolean;
   readonly identityProviders: TIdentityProvider[];
   readonly userPoolDomainPrefix: string;
+  readonly dbEncryption: boolean;
   readonly publishedApiAllowedIpV4AddressRanges: string[];
   readonly publishedApiAllowedIpV6AddressRanges: string[];
   readonly allowedSignUpEmailDomains: string[] | null | undefined;
@@ -43,6 +44,7 @@ export class BedrockChatStack extends cdk.Stack {
     const vpc = new ec2.Vpc(this, "VPC", {});
     const vectorStore = new VectorStore(this, "VectorStore", {
       vpc: vpc,
+      dbEncryption: props.dbEncryption,
     });
     const idp = identityProvider(props.identityProviders);
     // CodeBuild is used for api publication

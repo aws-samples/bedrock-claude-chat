@@ -259,7 +259,14 @@ By default, this sample does not restrict the domains for sign-up email addresse
 
 ### External Identity Provider
 
-This sample supports external identity provider. Currently we only support Google. To set up, See [SETUP_IDP.md](./docs/SETUP_IDP.md).
+This sample supports external identity provider. Currently we support [Google](./docs/idp/SET_UP_GOOGLE.md) and [custom OIDC provider](./docs/idp/SET_UP_CUSTOM_OIDC.md).
+
+### Encrypt Aurora Serverless storage
+
+Open `cdk.json` and set `dbEncryption` to `true`. Default value is `false`.
+
+> [!Warning]
+> If already deployed with `false`, setting to `true` and re-deployment will replace existing cluster, which deletes all of vector items.
 
 ### Local Development
 
@@ -267,7 +274,11 @@ See [LOCAL DEVELOPMENT](./docs/LOCAL_DEVELOPMENT.md).
 
 ### Contribution
 
-Thank you for considering contributing to this repository! We welcome bug fixes, language translation, feature enhancements, and other improvements. Please see following:
+Thank you for considering contributing to this repository! We welcome bug fixes, language translations (i18n), feature enhancements, and other improvements.
+
+For feature enhancements and other improvements, **before creating a Pull Request, we would greatly appreciate it if you could create a Feature Request Issue to discuss the implementation approach and details. For bug fixes and language translations (i18n), proceed with creating a Pull Request directly.**
+
+Please also take a look at the following guidelines before contributing:
 
 - [Local Development](./docs/LOCAL_DEVELOPMENT.md)
 - [CONTRIBUTING](./CONTRIBUTING.md)

@@ -22,6 +22,7 @@ describe("Fine-grained Assertions Test", () => {
           },
         ],
         userPoolDomainPrefix: domainPrefix,
+        dbEncryption: false,
         publishedApiAllowedIpV4AddressRanges: [""],
         publishedApiAllowedIpV6AddressRanges: [""],
       }
@@ -51,6 +52,53 @@ describe("Fine-grained Assertions Test", () => {
     );
   });
 
+  test("Custom OIDC Provider Generation", () => {
+    const app = new cdk.App();
+    const domainPrefix = "test-domain";
+    const hasOidcProviderStack = new BedrockChatStack(
+      app,
+      "OidcProviderGenerateStack",
+      {
+        bedrockRegion: "us-east-1",
+        crossRegionReferences: true,
+        webAclId: "",
+        enableUsageAnalysis: true,
+        identityProviders: [
+          {
+            secretName: "MyOidcTestSecret",
+            service: "oidc",
+            serviceName: "MyOidcProvider",
+          },
+        ],
+        userPoolDomainPrefix: domainPrefix,
+        dbEncryption: false,
+        publishedApiAllowedIpV4AddressRanges: [""],
+        publishedApiAllowedIpV6AddressRanges: [""],
+      }
+    );
+    const hasOidcProviderTemplate = Template.fromStack(hasOidcProviderStack);
+
+    hasOidcProviderTemplate.hasResourceProperties(
+      "AWS::Cognito::UserPoolDomain",
+      {
+        Domain: domainPrefix,
+      }
+    );
+
+    hasOidcProviderTemplate.hasResourceProperties(
+      "AWS::Cognito::UserPoolClient",
+      {
+        SupportedIdentityProviders: ["MyOidcProvider", "COGNITO"],
+      }
+    );
+    hasOidcProviderTemplate.hasResourceProperties(
+      "AWS::Cognito::UserPoolIdentityProvider",
+      {
+        ProviderType: "OIDC",
+      }
+    );
+  });
+
   test("default stack", () => {
     const app = new cdk.App();
 
@@ -61,6 +109,7 @@ describe("Fine-grained Assertions Test", () => {
       enableUsageAnalysis: true,
       identityProviders: [],
       userPoolDomainPrefix: "",
+      dbEncryption: false,
       publishedApiAllowedIpV4AddressRanges: [""],
       publishedApiAllowedIpV6AddressRanges: [""],
     });

@@ -3,7 +3,7 @@ import {
   AttributeType,
   BillingMode,
   Table,
-  ProjectionType,
+  TableEncryption,
   StreamViewType,
 } from "aws-cdk-lib/aws-dynamodb";
 import { AccountPrincipal, Role } from "aws-cdk-lib/aws-iam";
@@ -30,6 +30,7 @@ export class Database extends Construct {
       removalPolicy: RemovalPolicy.DESTROY,
       stream: StreamViewType.NEW_IMAGE,
       pointInTimeRecovery: props?.pointInTimeRecovery,
+      encryption: TableEncryption.AWS_MANAGED,
     });
     table.addGlobalSecondaryIndex({
       // Used to fetch conversation or bot by id

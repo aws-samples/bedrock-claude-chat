@@ -4,7 +4,8 @@ import { initReactI18next } from 'react-i18next';
 import en from './en';
 import ja from './ja';
 import ko from './ko';
-import zh from './zh';
+import zhhans from './zh-hans';
+import zhhant from './zh-hant';
 import fr from './fr';
 import de from './de';
 
@@ -33,8 +34,12 @@ export const LANGUAGES: {
     label: '한국어',
   },
   {
-    value: 'zh',
-    label: '中文',
+    value: 'zhhans',
+    label: '中文 (简体)',
+  },
+  {
+    value: 'zhhant',
+    label: '中文 (繁體)',
   },
 ];
 
@@ -44,7 +49,8 @@ const resources = {
   fr,
   ja,
   ko,
-  zh,
+  zhhans,
+  zhhant,
 };
 
 // Settings i18n

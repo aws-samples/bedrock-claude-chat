@@ -28,6 +28,7 @@ const ALLOWED_SIGN_UP_EMAIL_DOMAINS: string[] | null | undefined =
 const ENABLE_USAGE_ANALYSIS: boolean = app.node.tryGetContext(
   "enableUsageAnalysis"
 );
+const DB_ENCRYPTION: boolean = app.node.tryGetContext("dbEncryption");
 const IDENTITY_PROVIDERS: TIdentityProvider[] =
   app.node.tryGetContext("identityProviders");
 const USER_POOL_DOMAIN_PREFIX: string = app.node.tryGetContext(
@@ -55,6 +56,7 @@ const chat = new BedrockChatStack(app, `BedrockChatStack`, {
   bedrockRegion: BEDROCK_REGION,
   webAclId: waf.webAclArn.value,
   enableUsageAnalysis: ENABLE_USAGE_ANALYSIS,
+  dbEncryption: DB_ENCRYPTION,
   identityProviders: IDENTITY_PROVIDERS,
   userPoolDomainPrefix: USER_POOL_DOMAIN_PREFIX,
   publishedApiAllowedIpV4AddressRanges:
