@@ -23,11 +23,6 @@ const PUBLISHED_API_ALLOWED_IP_V4_ADDRESS_RANGES: string[] =
   app.node.tryGetContext("publishedApiAllowedIpV4AddressRanges");
 const PUBLISHED_API_ALLOWED_IP_V6_ADDRESS_RANGES: string[] =
   app.node.tryGetContext("publishedApiAllowedIpV6AddressRanges");
-
-const ENABLE_USAGE_ANALYSIS: boolean = app.node.tryGetContext(
-  "enableUsageAnalysis"
-);
-const DB_ENCRYPTION: boolean = app.node.tryGetContext("dbEncryption");
 const IDENTITY_PROVIDERS: TIdentityProvider[] =
   app.node.tryGetContext("identityProviders");
 const USER_POOL_DOMAIN_PREFIX: string = app.node.tryGetContext(
@@ -54,8 +49,6 @@ const chat = new BedrockChatStack(app, `BedrockChatStack`, {
   crossRegionReferences: true,
   bedrockRegion: BEDROCK_REGION,
   webAclId: waf.webAclArn.value,
-  enableUsageAnalysis: ENABLE_USAGE_ANALYSIS,
-  dbEncryption: DB_ENCRYPTION,
   identityProviders: IDENTITY_PROVIDERS,
   userPoolDomainPrefix: USER_POOL_DOMAIN_PREFIX,
   publishedApiAllowedIpV4AddressRanges:
