@@ -9,6 +9,7 @@ ALLOWED_SIGN_UP_EMAIL_DOMAINS = (
     else []
 )
 
+
 def check_email_domain(email: str) -> bool:
     # Determine whether to allow the email domain
     # Always disallow if the number of '@' in the email is not exactly one
@@ -20,6 +21,7 @@ def check_email_domain(email: str) -> bool:
     # (Always disallow if ALLOWED_SIGN_UP_EMAIL_DOMAINS is empty)
     domain = email.split("@")[1]
     return domain in ALLOWED_SIGN_UP_EMAIL_DOMAINS
+
 
 def handler(event: Dict, context: Dict) -> Dict:
     """
