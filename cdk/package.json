@@ -24,7 +24,6 @@
     "@aws-cdk/aws-glue-alpha": "^2.132.0-alpha.0",
     "@aws-cdk/aws-lambda-python-alpha": "^2.132.0-alpha.0",
     "aws-cdk-lib": "^2.132.0",
-    "bedrock-agents-cdk": "^0.0.9",
     "constructs": "^10.0.0",
     "deploy-time-build": "^0.3.2",
     "effect": "^2.4.3",

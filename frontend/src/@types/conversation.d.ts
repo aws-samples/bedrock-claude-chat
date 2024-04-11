@@ -30,7 +30,7 @@ export type PostMessageRequest = {
     parentMessageId: null | string;
   };
   botId?: string;
-  isAgent: boolean;
+  isAgent?: boolean;
 };
 
 export type PostMessageResponse = {
