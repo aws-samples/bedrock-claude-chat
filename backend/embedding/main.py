@@ -7,7 +7,11 @@ import pg8000
 import requests
 from app.config import EMBEDDING_CONFIG
 from app.repositories.common import _get_table_client, RecordNotFoundError
-from app.repositories.custom_bot import compose_bot_id, decompose_bot_id
+from app.repositories.custom_bot import (
+    compose_bot_id,
+    decompose_bot_id,
+    find_private_bot_by_id,
+)
 from app.routes.schemas.bot import type_sync_status
 from app.utils import compose_upload_document_s3_path
 from embedding.loaders import UrlLoader
@@ -206,23 +210,6 @@ def main(
     )
 
 
-def get_bot(user_id: str, sk: str, bot_id: str):
-    table = _get_table_client(user_id)
-    print(f"Finding bot with id: {bot_id}")
-    response = table.get_item(
-        Key={
-            "SK": sk,
-            "PK": user_id,
-        },
-    )
-
-    if "Item" in response:
-        item = response["Item"]
-        return item
-    else:
-        raise RecordNotFoundError(f"Bot with id {bot_id} not found")
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("Keys", type=str)
@@ -235,12 +222,12 @@ if __name__ == "__main__":
     pk = keys["PK"]["S"]
     user_id = pk
 
-    new_image = get_bot(user_id, sk, bot_id)
+    new_image = find_private_bot_by_id(user_id, bot_id)
 
-    knowledge = new_image["Knowledge"]
-    sitemap_urls = knowledge["sitemap_urls"]
-    source_urls = knowledge["source_urls"]
-    filenames = knowledge["filenames"]
+    knowledge = new_image.knowledge
+    sitemap_urls = knowledge.sitemap_urls
+    source_urls = knowledge.source_urls
+    filenames = knowledge.filenames
 
     print(f"source_urls to crawl: {source_urls}")
     print(f"sitemap_urls to crawl: {sitemap_urls}")
