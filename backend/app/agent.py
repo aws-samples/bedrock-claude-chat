@@ -1,11 +1,10 @@
 from langchain.tools import DuckDuckGoSearchRun
 from langchain.document_loaders import WebBaseLoader
 from langchain.tools import WikipediaQueryRun
-from langchain_community.utilities import WikipediaAPIWrapper
+from langchain.utilities import WikipediaAPIWrapper
 from langchain.agents import AgentExecutor, create_react_agent
-from langchainhub import hub
 from langchain.agents import Tool
-
+from langchain import hub
 # like this
 # agent = get_agent(llm_client)
 # agent.invoke({"message"})
