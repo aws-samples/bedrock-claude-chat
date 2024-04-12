@@ -34,7 +34,7 @@ def get_agent(llm_client):
             description="This tool searches Wikipedia for content when given a string as an argument. It only accepts string input." 
         )
     ]
-
+    # WIP
     agent = create_react_agent(llm_client, tools, prompt)
     # verbose True => Output LLM agent’s self-inference.
     agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True, handle_parsing_errors=True)

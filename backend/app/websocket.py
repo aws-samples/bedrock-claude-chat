@@ -102,6 +102,7 @@ def process_chat_input(
         ),
         stream=True,
     )
+
     # logger.debug(f"Invoking bedrock with args: {args}")
     try:
         # Invoke bedrock streaming api
