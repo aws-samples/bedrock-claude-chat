@@ -6,6 +6,9 @@ from langchain.agents import AgentExecutor, create_react_agent
 from langchainhub import hub
 from langchain.agents import Tool
 
+# like this
+# agent = get_agent(llm_client)
+# agent.invoke({"message"})
 
 def get_agent(llm_client):
     prompt = hub.pull("hwchase17/react") 
