@@ -1,15 +1,13 @@
 from langchain.tools import DuckDuckGoSearchRun
 from langchain.document_loaders import WebBaseLoader
-from langchain.chains import LLMChain
-from langchain.agents import XMLAgent
 from langchain.tools import WikipediaQueryRun
 from langchain_community.utilities import WikipediaAPIWrapper
 from langchain.agents import AgentExecutor, create_react_agent
-
+from langchainhub import hub
 from langchain.agents import Tool
 
 
-def get_agent(llm_client)
+def get_agent(llm_client):
     prompt = hub.pull("hwchase17/react") 
     wikipedia = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
     def web_page_reader(url: str) -> str:
