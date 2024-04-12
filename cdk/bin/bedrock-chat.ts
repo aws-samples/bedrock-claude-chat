@@ -23,6 +23,8 @@ const PUBLISHED_API_ALLOWED_IP_V4_ADDRESS_RANGES: string[] =
   app.node.tryGetContext("publishedApiAllowedIpV4AddressRanges");
 const PUBLISHED_API_ALLOWED_IP_V6_ADDRESS_RANGES: string[] =
   app.node.tryGetContext("publishedApiAllowedIpV6AddressRanges");
+const ALLOWED_SIGN_UP_EMAIL_DOMAINS: string[] =
+  app.node.tryGetContext('allowedSignUpEmailDomains');
 const IDENTITY_PROVIDERS: TIdentityProvider[] =
   app.node.tryGetContext("identityProviders");
 const USER_POOL_DOMAIN_PREFIX: string = app.node.tryGetContext(
@@ -55,6 +57,8 @@ const chat = new BedrockChatStack(app, `BedrockChatStack`, {
     PUBLISHED_API_ALLOWED_IP_V4_ADDRESS_RANGES,
   publishedApiAllowedIpV6AddressRanges:
     PUBLISHED_API_ALLOWED_IP_V6_ADDRESS_RANGES,
+  allowedSignUpEmailDomains: 
+    ALLOWED_SIGN_UP_EMAIL_DOMAINS,
   rdsSchedules: RDS_SCHEDULES,
 });
 chat.addDependency(waf);

@@ -267,6 +267,14 @@ const userPool = new UserPool(this, "UserPool", {
 });
 ```
 
+### Restrict Domains for Sign-Up Email Addresses
+
+By default, this sample does not restrict the domains for sign-up email addresses. To allow sign-ups only from specific domains, open `cdk.json` and specify the domains as a list in `allowedSignUpEmailDomains`.
+
+```ts
+"allowedSignUpEmailDomains": ["example.com"],
+```
+
 ### External Identity Provider
 
 This sample supports external identity provider. Currently we support [Google](./docs/idp/SET_UP_GOOGLE.md) and [custom OIDC provider](./docs/idp/SET_UP_CUSTOM_OIDC.md).
