@@ -29,6 +29,7 @@ from app.routes.schemas.conversation import (
 from app.usecases.bot import fetch_bot, modify_bot_last_used_time
 from app.utils import get_anthropic_client, get_current_time, is_running_on_lambda
 from app.vector_search import SearchResult, search_related_docs
+from app.agent import get_agent
 from ulid import ULID
 
 logger = logging.getLogger(__name__)
@@ -250,8 +251,15 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
             else None
         ),
     )
-    response: AnthropicMessage = client.messages.create(**args)
-    reply_txt = response.content[0].text
+    response: AnthropicMessage
+    
+    if chat_input.is_agent:
+        agent = get_agent(client)
+        response = agent.invoke(**args)
+        reply_txt = response.content[0].text
+    else:        
+        response = client.messages.create(**args)
+        reply_txt = response.content[0].text
 
     # Issue id for new assistant message
     assistant_msg_id = str(ULID())

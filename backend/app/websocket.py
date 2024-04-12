@@ -5,6 +5,7 @@ import traceback
 from datetime import datetime
 from decimal import Decimal as decimal
 
+from app.agent import get_agent
 import boto3
 from anthropic.types import ContentBlockDeltaEvent, MessageDeltaEvent, MessageStopEvent
 from app.auth import verify_token
@@ -104,7 +105,11 @@ def process_chat_input(
     # logger.debug(f"Invoking bedrock with args: {args}")
     try:
         # Invoke bedrock streaming api
-        response = client.messages.create(**args)
+        if chat_input.is_agent:
+            agent = get_agent(client)
+            response = agent.invoke(**args)
+        else:
+            response = client.messages.create(**args)
     except Exception as e:
         logger.error(f"Failed to invoke bedrock: {e}")
         return {"statusCode": 500, "body": "Failed to invoke bedrock."}
