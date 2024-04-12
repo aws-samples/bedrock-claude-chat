@@ -11,7 +11,7 @@ const usePostMessageStreaming = create<{
     input: PostMessageRequest;
     hasKnowledge?: boolean;
     dispatch: (completion: string) => void;
-  }) => Promise<void>;
+  }) => Promise<string>;
 }>(() => {
   return {
     post: async ({ input, dispatch, hasKnowledge }) => {
@@ -36,9 +36,9 @@ const usePostMessageStreaming = create<{
       }
 
       let receivedCount = 0;
-      return new Promise<void>((resolve, reject) => {
-        const ws = new WebSocket(WS_ENDPOINT);
+      return new Promise<string>((resolve, reject) => {
         let completion = '';
+        const ws = new WebSocket(WS_ENDPOINT);
 
         ws.onopen = () => {
           ws.send('START');
@@ -106,7 +106,7 @@ const usePostMessageStreaming = create<{
           reject(i18next.t('error.predict.general'));
         };
         ws.onclose = () => {
-          resolve();
+          resolve(completion);
         };
       });
     },

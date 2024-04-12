@@ -1,9 +1,11 @@
 import json
 import logging
 import os
+from typing import Literal
 
 import pg8000
 from app.bedrock import calculate_query_embedding
+from app.utils import generate_presigned_url
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
@@ -20,6 +22,26 @@ class SearchResult(BaseModel):
     content: str
     source: str
     rank: int
+
+
+def get_source_link(source: str) -> tuple[Literal["s3", "url"], str]:
+    if source.startswith("s3://"):
+        s3_path = source[5:]  # Remove "s3://" prefix
+        path_parts = s3_path.split("/", 1)
+        bucket_name = path_parts[0]
+        object_key = path_parts[1] if len(path_parts) > 1 else ""
+
+        source_link = generate_presigned_url(
+            bucket=bucket_name,
+            key=object_key,
+            client_method="get_object",
+        )
+        return "s3", source_link
+    elif source.startswith("http://") or source.startswith("https://"):
+        return "url", source
+    else:
+        # Assume source is a youtube video id
+        return "url", f"https://www.youtube.com/watch?v={source}"
 
 
 def search_related_docs(bot_id: str, limit: int, query: str) -> list[SearchResult]:

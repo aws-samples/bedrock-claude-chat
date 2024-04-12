@@ -16,7 +16,14 @@ export type MessageContent = {
   model: Model;
 };
 
-export type MessageContentWithChildren = MessageContent & {
+export type RelatedDocument = {
+  chunkBody: string;
+  contentType: 's3' | 'url';
+  sourceLink: string;
+  rank: number;
+};
+
+export type DisplayMessageContent = MessageContent & {
   id: string;
   parent: null | string;
   children: string[];
@@ -25,7 +32,6 @@ export type MessageContentWithChildren = MessageContent & {
 
 export type PostMessageRequest = {
   conversationId?: string;
-  stream: boolean;
   message: MessageContent & {
     parentMessageId: null | string;
   };
@@ -37,6 +43,16 @@ export type PostMessageResponse = {
   createTime: number;
   message: MessageContent;
 };
+
+export type GetRelatedDocumentsRequest = {
+  conversationId: string;
+  message: MessageContent & {
+    parentMessageId: null | string;
+  };
+  botId: string;
+};
+
+export type GetRelatedDocumentsResponse = RelatedDocument[];
 
 export type ConversationMeta = {
   id: string;

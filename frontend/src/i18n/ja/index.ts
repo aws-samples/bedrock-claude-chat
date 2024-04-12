@@ -34,6 +34,7 @@ const translation = {
         noBots: 'ボットが登録されていません。',
         noBotsRecentlyUsed: '最近利用した公開ボットはありません。',
         retrievingKnowledge: '[ナレッジを取得中...]',
+        referenceLink: '参考ドキュメント',
         dndFileUpload:
           'ドラッグ＆ドロップでファイルをアップロードできます。\n対応ファイル: {{fileExtensions}}',
         uploadError: 'エラーメッセージ',

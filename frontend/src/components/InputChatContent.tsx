@@ -189,7 +189,6 @@ const InputChatContent: React.FC<Props> = (props) => {
       }
 
       for (let i = 0; i < clipboardItems.length; i++) {
-        console.log(clipboardItems[i].type);
         if (model?.supportMediaType.includes(clipboardItems[i].type)) {
           const pastedFile = clipboardItems[i].getAsFile();
           if (pastedFile) {
