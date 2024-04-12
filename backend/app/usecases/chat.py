@@ -190,7 +190,9 @@ def insert_knowledge(
     if len(search_results) == 0:
         return conversation
 
-    instruction_prompt = conversation.message_map["instruction"].content[0].body
+    # Currently, we not use instruction prompt when inserting knowledge.
+    # If needed, must be verified by putting the instruction prompt in the following `inserted_prompt`.
+    # instruction_prompt = conversation.message_map["instruction"].content[0].body
 
     context_prompt = ""
     for result in search_results:
@@ -221,7 +223,7 @@ first answer [^3]. second answer [^1][^2].
 first answer [^1][^5]. second answer [^2][^3][^4]. third answer [^4].
 </example>
 """.format(
-        context_prompt, instruction_prompt
+        context_prompt
     )
     logger.info(f"Inserted prompt: {inserted_prompt}")
 
