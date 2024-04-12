@@ -9,8 +9,9 @@ python-jose==3.3.0
 boto3==1.28.57
 pg8000==1.30.3
 argparse==1.4.0
-anthropic==0.18.1
-anthropic[bedrock]==0.18.1
+anthropic==0.23.0
+anthropic[bedrock]==0.23.0
 langchain-core==0.1.42
 langchainhub==0.1.15
 duckduckgo-search==5.3.0
+langchain-anthropic==0.1.8
