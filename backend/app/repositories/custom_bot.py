@@ -22,6 +22,7 @@ from app.repositories.models.custom_bot import (
     BotMeta,
     BotMetaWithStackInfo,
     BotModel,
+    EmbeddingParamsModel,
     KnowledgeModel,
 )
 from app.routes.schemas.bot import type_sync_status
@@ -48,6 +49,7 @@ def store_bot(user_id: str, custom_bot: BotModel):
         "CreateTime": decimal(custom_bot.create_time),
         "LastBotUsed": decimal(custom_bot.last_used_time),
         "IsPinned": custom_bot.is_pinned,
+        "EmbeddingParams": custom_bot.embedding_params.model_dump(),
         "Knowledge": custom_bot.knowledge.model_dump(),
         "SyncStatus": custom_bot.sync_status,
         "SyncStatusReason": custom_bot.sync_status_reason,
@@ -67,6 +69,7 @@ def update_bot(
     title: str,
     description: str,
     instruction: str,
+    embedding_params: EmbeddingParamsModel,
     knowledge: KnowledgeModel,
     sync_status: type_sync_status,
     sync_status_reason: str,
@@ -80,12 +83,13 @@ def update_bot(
     try:
         response = table.update_item(
             Key={"PK": user_id, "SK": compose_bot_id(user_id, bot_id)},
-            UpdateExpression="SET Title = :title, Description = :description, Instruction = :instruction, Knowledge = :knowledge, SyncStatus = :sync_status, SyncStatusReason = :sync_status_reason",
+            UpdateExpression="SET Title = :title, Description = :description, Instruction = :instruction,EmbeddingParams = :embedding_params, Knowledge = :knowledge, SyncStatus = :sync_status, SyncStatusReason = :sync_status_reason",
             ExpressionAttributeValues={
                 ":title": title,
                 ":description": description,
                 ":instruction": instruction,
                 ":knowledge": knowledge.model_dump(),
+                ":embedding_params": embedding_params.model_dump(),
                 ":sync_status": sync_status,
                 ":sync_status_reason": sync_status_reason,
             },
@@ -297,6 +301,20 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
         is_pinned=item["IsPinned"],
         public_bot_id=None if "PublicBotId" not in item else item["PublicBotId"],
         owner_user_id=user_id,
+        embedding_params=EmbeddingParamsModel(
+            # For backward compatibility
+            chunk_size=(
+                item["EmbeddingParams"]["chunk_size"]
+                if "EmbeddingParams" in item and "chunk_size" in item["EmbeddingParams"]
+                else 1000
+            ),
+            chunk_overlap=(
+                item["EmbeddingParams"]["chunk_overlap"]
+                if "EmbeddingParams" in item
+                and "chunk_overlap" in item["EmbeddingParams"]
+                else 200
+            ),
+        ),
         knowledge=KnowledgeModel(**item["Knowledge"]),
         sync_status=item["SyncStatus"],
         sync_status_reason=item["SyncStatusReason"],
@@ -342,6 +360,20 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
         is_pinned=item["IsPinned"],
         public_bot_id=item["PublicBotId"],
         owner_user_id=item["PK"],
+        embedding_params=EmbeddingParamsModel(
+            # For backward compatibility
+            chunk_size=(
+                item["EmbeddingParams"]["chunk_size"]
+                if "EmbeddingParams" in item and "chunk_size" in item["EmbeddingParams"]
+                else 1000
+            ),
+            chunk_overlap=(
+                item["EmbeddingParams"]["chunk_overlap"]
+                if "EmbeddingParams" in item
+                and "chunk_overlap" in item["EmbeddingParams"]
+                else 200
+            ),
+        ),
         knowledge=KnowledgeModel(**item["Knowledge"]),
         sync_status=item["SyncStatus"],
         sync_status_reason=item["SyncStatusReason"],

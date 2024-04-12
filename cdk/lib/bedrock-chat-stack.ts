@@ -17,20 +17,21 @@ import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { DbConfig, Embedding } from "./constructs/embedding";
 import { VectorStore } from "./constructs/vectorstore";
 import { UsageAnalysis } from "./constructs/usage-analysis";
-import { TIdentityProvider, identityProvider } from "./utils/identityProvider";
+import { TIdentityProvider, identityProvider } from "./utils/identity-provider";
 import { ApiPublishCodebuild } from "./constructs/api-publish-codebuild";
 import { WebAclForPublishedApi } from "./constructs/webacl-for-published-api";
 import { VpcConfig } from "./api-publishment-stack";
+import { CronScheduleProps, createCronSchedule } from "./utils/cron-schedule";
 
 export interface BedrockChatStackProps extends StackProps {
   readonly bedrockRegion: string;
   readonly webAclId: string;
-  readonly enableUsageAnalysis: boolean;
   readonly identityProviders: TIdentityProvider[];
   readonly userPoolDomainPrefix: string;
-  readonly dbEncryption: boolean;
   readonly publishedApiAllowedIpV4AddressRanges: string[];
   readonly publishedApiAllowedIpV6AddressRanges: string[];
+  readonly allowedSignUpEmailDomains: string[];
+  readonly rdsSchedules: CronScheduleProps;
 }
 
 export class BedrockChatStack extends cdk.Stack {
@@ -39,11 +40,12 @@ export class BedrockChatStack extends cdk.Stack {
       description: "Bedrock Chat Stack (uksb-1tupboc46)",
       ...props,
     });
+    const cronSchedule = createCronSchedule(props.rdsSchedules);
 
     const vpc = new ec2.Vpc(this, "VPC", {});
     const vectorStore = new VectorStore(this, "VectorStore", {
       vpc: vpc,
-      dbEncryption: props.dbEncryption,
+      rdsSchedule: cronSchedule,
     });
     const idp = identityProvider(props.identityProviders);
     // CodeBuild is used for api publication
@@ -97,6 +99,7 @@ export class BedrockChatStack extends cdk.Stack {
       origin: frontend.getOrigin(),
       userPoolDomainPrefixKey: props.userPoolDomainPrefix,
       idp,
+      allowedSignUpEmailDomains: props.allowedSignUpEmailDomains,
     });
     const largeMessageBucket = new Bucket(this, "LargeMessageBucket", {
       encryption: BucketEncryption.S3_MANAGED,
@@ -108,16 +111,13 @@ export class BedrockChatStack extends cdk.Stack {
     });
 
     const database = new Database(this, "Database", {
-      // Enable PITR to export data to s3 if usage analysis is enabled
-      pointInTimeRecovery: props.enableUsageAnalysis,
+      // Enable PITR to export data to s3
+      pointInTimeRecovery: true,
     });
 
-    let usageAnalysis;
-    if (props.enableUsageAnalysis) {
-      usageAnalysis = new UsageAnalysis(this, "UsageAnalysis", {
-        sourceDatabase: database,
-      });
-    }
+    const usageAnalysis = new UsageAnalysis(this, "UsageAnalysis", {
+      sourceDatabase: database,
+    });
 
     const backendApi = new Api(this, "BackendApi", {
       vpc,

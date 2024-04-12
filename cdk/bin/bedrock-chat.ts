@@ -3,7 +3,8 @@ import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
 import { BedrockChatStack } from "../lib/bedrock-chat-stack";
 import { FrontendWafStack } from "../lib/frontend-waf-stack";
-import { TIdentityProvider } from "../lib/utils/identityProvider";
+import { TIdentityProvider } from "../lib/utils/identity-provider";
+import { CronScheduleProps } from "../lib/utils/cron-schedule";
 
 const app = new cdk.App();
 
@@ -22,17 +23,14 @@ const PUBLISHED_API_ALLOWED_IP_V4_ADDRESS_RANGES: string[] =
   app.node.tryGetContext("publishedApiAllowedIpV4AddressRanges");
 const PUBLISHED_API_ALLOWED_IP_V6_ADDRESS_RANGES: string[] =
   app.node.tryGetContext("publishedApiAllowedIpV6AddressRanges");
-
-const ENABLE_USAGE_ANALYSIS: boolean = app.node.tryGetContext(
-  "enableUsageAnalysis"
-);
-const DB_ENCRYPTION: boolean = app.node.tryGetContext("dbEncryption");
+const ALLOWED_SIGN_UP_EMAIL_DOMAINS: string[] =
+  app.node.tryGetContext('allowedSignUpEmailDomains');
 const IDENTITY_PROVIDERS: TIdentityProvider[] =
   app.node.tryGetContext("identityProviders");
 const USER_POOL_DOMAIN_PREFIX: string = app.node.tryGetContext(
   "userPoolDomainPrefix"
 );
-
+const RDS_SCHEDULES: CronScheduleProps = app.node.tryGetContext("rdbSchedules");
 // WAF for frontend
 // 2023/9: Currently, the WAF for CloudFront needs to be created in the North America region (us-east-1), so the stacks are separated
 // https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-wafv2-webacl.html
@@ -53,13 +51,14 @@ const chat = new BedrockChatStack(app, `BedrockChatStack`, {
   crossRegionReferences: true,
   bedrockRegion: BEDROCK_REGION,
   webAclId: waf.webAclArn.value,
-  enableUsageAnalysis: ENABLE_USAGE_ANALYSIS,
-  dbEncryption: DB_ENCRYPTION,
   identityProviders: IDENTITY_PROVIDERS,
   userPoolDomainPrefix: USER_POOL_DOMAIN_PREFIX,
   publishedApiAllowedIpV4AddressRanges:
     PUBLISHED_API_ALLOWED_IP_V4_ADDRESS_RANGES,
   publishedApiAllowedIpV6AddressRanges:
     PUBLISHED_API_ALLOWED_IP_V6_ADDRESS_RANGES,
+  allowedSignUpEmailDomains: 
+    ALLOWED_SIGN_UP_EMAIL_DOMAINS,
+  rdsSchedules: RDS_SCHEDULES,
 });
 chat.addDependency(waf);

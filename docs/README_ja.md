@@ -188,7 +188,7 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 
 ## その他
 
-### テキスト生成パラメータ・ベクトル埋め込みパラメータの設定
+### テキスト生成パラメータの設定
 
 [config.py](../backend/app/config.py)を編集後、`cdk deploy`を実行してください。
 
@@ -200,17 +200,42 @@ GENERATION_CONFIG = {
     "top_p": 0.999,
     "stop_sequences": ["Human: ", "Assistant: "],
 }
+```
 
-EMBEDDING_CONFIG = {
-    "model_id": "amazon.titan-embed-text-v1",
-    "chunk_size": 1000,
-    "chunk_overlap": 100,
-}
+### サインアップ可能なメールアドレスのドメインを制限
+
+このサンプルはデフォルトではサインアップ可能なメールアドレスのドメインに制限がありません。特定のドメインのみに限定してサインアップを可能にするには、 `cdk.json` を開き、`allowedSignUpEmailDomains` にリスト形式でドメインを指定してください。
+```
+"allowedSignUpEmailDomains": ["example.com"],
 ```
 
 ### リソースの削除
 
 cli および CDK を利用されている場合、`cdk destroy`を実行してください。そうでない場合は[CloudFormation](https://console.aws.amazon.com/cloudformation/home)へアクセスし、手動で`BedrockChatStack`および`FrontendWafStack`を削除してください。なお`FrontendWafStack`は `us-east-1` リージョンにあります。
+
+### RAG 用ベクトル DB の停止
+
+[cdk.json](../cdk/cdk.json) を以下のように CRON 形式で設定することで、[VectorStore コンストラクト](../cdk/lib/constructs/vectorstore.ts)で作成される Aurora Serverless リソースを停止・再起動できます。この設定を適用することで運用コストの削減が見込めます。なお、デフォルト設定で Aurora Serverless は常時起動状態になっています。なお UTC で実行される点に留意ください。
+
+```json
+...
+"rdbSchedules": {
+  "stop": {
+    "minute": "50",
+    "hour": "10",
+    "day": "*",
+    "month": "*",
+    "year": "*"
+  },
+  "start": {
+    "minute": "40",
+    "hour": "2",
+    "day": "*",
+    "month": "*",
+    "year": "*"
+  }
+}
+```
 
 ### 言語設定について
 
@@ -220,7 +245,7 @@ cli および CDK を利用されている場合、`cdk destroy`を実行して�
 
 ### セルフサインアップを無効化する
 
-このサンプルはデフォルトでセルフサインアップが有効化してあります。セルフサインアップを無効にするには、[auth.ts](./cdk/lib/constructs/auth.ts)を開き、`selfSignUpEnabled` を `false` に切り替えてから再デプロイしてください。
+このサンプルはデフォルトでセルフサインアップが有効化してあります。セルフサインアップを無効にするには、[auth.ts](./cdk/lib/constructs/auth.ts)を開き、`selfSignUpEnabled` を `false` に変更してから再デプロイしてください。
 
 ```ts
 const userPool = new UserPool(this, "UserPool", {
@@ -230,7 +255,7 @@ const userPool = new UserPool(this, "UserPool", {
     requireDigits: true,
     minLength: 8,
   },
-  // true -> false
+  // Set to false
   selfSignUpEnabled: false,
   signInAliases: {
     username: false,
