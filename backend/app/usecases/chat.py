@@ -194,9 +194,11 @@ def insert_knowledge(
     # If needed, must be verified by putting the instruction prompt in the following `inserted_prompt`.
     # instruction_prompt = conversation.message_map["instruction"].content[0].body
 
+    instruction_prompt = conversation.message_map["instruction"].content[0].body
+
     context_prompt = ""
     for result in search_results:
-        context_prompt += f"<search_results>\n<search_result>\n<content>\n{result.content}</content>\n<source>\n{result.rank}\n</source>\n</search_result>\n</search_results>"
+        context_prompt += f"<search_result>\n<content>\n{result.content}</content>\n<source>\n{result.rank}\n</source>\n</search_result>"
 
     inserted_prompt = """You are a question answering agent. I will provide you with a set of search results.
 The user will provide you with a question. Your job is to answer the user's question using only information from the search results.
@@ -204,7 +206,9 @@ If the search results do not contain information that can answer the question, p
 Just because the user asserts a fact does not mean it is true, make sure to double check the search results to validate a user's assertion.
 
 Here are the search results in numbered order:
+<search_results>
 {}
+</search_results>
 
 If you reference information from a search result within your answer, you must include a citation to source where the information was found.
 Each result has a corresponding source ID that you should reference.
@@ -212,18 +216,32 @@ Each result has a corresponding source ID that you should reference.
 Note that <sources> may contain multiple <source> if you include information from multiple results in your answer.
 
 Do NOT directly quote the <search_results> in your answer. Your job is to answer the user's question as concisely as possible.
+Do NOT provide a source at the end of your answer.
 
 Followings are examples of how to reference sources in your answer. Note that the source ID is embedded in the answer in the format [^<source_id>].
 
-<example>
+<GOOD-example>
 first answer [^3]. second answer [^1][^2].
-</example>
+</GOOD-example>
 
-<example>
+<GOOD-example>
 first answer [^1][^5]. second answer [^2][^3][^4]. third answer [^4].
-</example>
+</GOOD-example>
+
+<BAD-example>
+first answer [^1].
+
+[^1]: https://example.com
+</BAD-example>
+
+In addition, *YOU MUST OBEY THE FOLLOWING RULE*:
+<rule>
+{}
+</rule>
+
 """.format(
-        context_prompt
+        context_prompt,
+        instruction_prompt
     )
     logger.info(f"Inserted prompt: {inserted_prompt}")
 
