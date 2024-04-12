@@ -197,7 +197,7 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 
 ## Others
 
-### Configure text generation / embedding parameters
+### Configure text generation
 
 Edit [config.py](./backend/app/config.py) and run `cdk deploy`.
 
@@ -210,17 +210,35 @@ GENERATION_CONFIG = {
     "temperature": 0.6,
     "stop_sequences": ["Human: ", "Assistant: "],
 }
-
-EMBEDDING_CONFIG = {
-    "model_id": "cohere.embed-multilingual-v3",
-    "chunk_size": 1000,
-    "chunk_overlap": 200,
-}
 ```
 
 ### Remove resources
 
 If using cli and CDK, please `cdk destroy`. If not, access [CloudFormation](https://console.aws.amazon.com/cloudformation/home) and then delete `BedrockChatStack` and `FrontendWafStack` manually. Please note that `FrontendWafStack` is in `us-east-1` region.
+
+### Stopping Vector DB for RAG
+
+By setting [cdk.json](./cdk/cdk.json) in the following CRON format, you can stop and restart Aurora Serverless resources created by the [VectorStore construct](./cdk/lib/constructs/vectorstore.ts). Applying this setting can reduce operating costs. By default, Aurora Serverless is always running. Note that it will be executed in UTC time.
+
+```json
+...
+"rdbSchedules": {
+  "stop": {
+    "minute": "50",
+    "hour": "10",
+    "day": "*",
+    "month": "*",
+    "year": "*"
+  },
+  "start": {
+    "minute": "40",
+    "hour": "2",
+    "day": "*",
+    "month": "*",
+    "year": "*"
+  }
+}
+```
 
 ### Language Settings
 
@@ -240,7 +258,7 @@ const userPool = new UserPool(this, "UserPool", {
     requireDigits: true,
     minLength: 8,
   },
-  // true -> false
+  // Set to false
   selfSignUpEnabled: false,
   signInAliases: {
     username: false,
@@ -249,13 +267,29 @@ const userPool = new UserPool(this, "UserPool", {
 });
 ```
 
+### Restrict Domains for Sign-Up Email Addresses
+
+By default, this sample does not restrict the domains for sign-up email addresses. To allow sign-ups only from specific domains, open `cdk.json` and specify the domains as a list in `allowedSignUpEmailDomains`.
+
+```ts
+"allowedSignUpEmailDomains": ["example.com"],
+```
+
+### External Identity Provider
+
+This sample supports external identity provider. Currently we support [Google](./docs/idp/SET_UP_GOOGLE.md) and [custom OIDC provider](./docs/idp/SET_UP_CUSTOM_OIDC.md).
+
 ### Local Development
 
 See [LOCAL DEVELOPMENT](./docs/LOCAL_DEVELOPMENT.md).
 
 ### Contribution
 
-Thank you for considering contributing to this repository! We welcome bug fixes, language translation, feature enhancements, and other improvements. Please see following:
+Thank you for considering contributing to this repository! We welcome bug fixes, language translations (i18n), feature enhancements, and other improvements.
+
+For feature enhancements and other improvements, **before creating a Pull Request, we would greatly appreciate it if you could create a Feature Request Issue to discuss the implementation approach and details. For bug fixes and language translations (i18n), proceed with creating a Pull Request directly.**
+
+Please also take a look at the following guidelines before contributing:
 
 - [Local Development](./docs/LOCAL_DEVELOPMENT.md)
 - [CONTRIBUTING](./CONTRIBUTING.md)

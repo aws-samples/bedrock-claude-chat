@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import traceback
 from datetime import datetime
 from decimal import Decimal as decimal
 
@@ -242,27 +243,29 @@ def handler(event, context):
             return {"statusCode": 200, "body": "Session started."}
         elif body == "END":
             # Concatenate the message parts
-            response = table.query(
-                KeyConditionExpression=Key("ConnectionId").eq(connection_id)
-            )
-            message_parts = response["Items"]
-            logger.debug(f"Message parts: {message_parts}")
+            message_parts = []
+            last_evaluated_key = None
+
+            while True:
+                if last_evaluated_key:
+                    response = table.query(
+                        KeyConditionExpression=Key("ConnectionId").eq(connection_id),
+                        ExclusiveStartKey=last_evaluated_key,
+                    )
+                else:
+                    response = table.query(
+                        KeyConditionExpression=Key("ConnectionId").eq(connection_id)
+                    )
+
+                message_parts.extend(response["Items"])
+
+                if "LastEvaluatedKey" in response:
+                    last_evaluated_key = response["LastEvaluatedKey"]
+                else:
+                    break
+
+            logger.info(f"Number of message chunks: {len(message_parts)}")
             full_message = "".join(item["MessagePart"] for item in message_parts)
-            logger.debug(f"Full message: {full_message}")
-
-            response = table.query(
-                KeyConditionExpression=Key("ConnectionId").eq(connection_id)
-            )
-
-            # Delete the message parts
-            # Note: commented out for now to improve TTFT (time-to-first-token)
-            # for item in response["Items"]:
-            #     table.delete_item(
-            #         Key={
-            #             "ConnectionId": item["ConnectionId"],
-            #             "MessagePartId": item["MessagePartId"],
-            #         }
-            #     )
 
             # Process the concatenated full message
             chat_input = ChatInputWithToken(**json.loads(full_message))
@@ -286,6 +289,7 @@ def handler(event, context):
 
     except Exception as e:
         logger.error(f"Operation failed: {e}")
+        logger.error("".join(traceback.format_tb(e.__traceback__)))
         gatewayapi.post_to_connection(
             ConnectionId=connection_id,
             Data=json.dumps({"status": "ERROR", "reason": str(e)}).encode("utf-8"),

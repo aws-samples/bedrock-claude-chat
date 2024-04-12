@@ -54,11 +54,17 @@
       "0000:0000:0000:0000:0000:0000:0000:0000/1",
       "8000:0000:0000:0000:0000:0000:0000:0000/1"
     ],
+    "identityProviders": [],
+    "userPoolDomainPrefix": "",
+    "allowedSignUpEmailDomains": [],
     "publishedApiAllowedIpV4AddressRanges": ["0.0.0.0/1", "128.0.0.0/1"],
     "publishedApiAllowedIpV6AddressRanges": [
       "0000:0000:0000:0000:0000:0000:0000:0000/1",
       "8000:0000:0000:0000:0000:0000:0000:0000/1"
     ],
-    "enableUsageAnalysis": true
+    "rdbSchedules": {
+      "stop": {},
+      "start": {}
+    }
   }
 }

@@ -37,8 +37,8 @@ uvicorn app.main:app  --reload --host 0.0.0.0 --port 8000
 
 ```sh
 python tests/test_bedrock.py
-python tests/repositories/test_conversation.py
-python tests/repositories/test_custom_bot.py
-python tests/usecases/test_bot.py
-python tests/usecases/test_chat.py
+python tests/test_repositories/test_conversation.py
+python tests/test_repositories/test_custom_bot.py
+python tests/test_usecases/test_bot.py
+python tests/test_usecases/test_chat.py
 ```

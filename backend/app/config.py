@@ -27,7 +27,7 @@ GENERATION_CONFIG: GenerationConfig = {
 }
 
 # Configure embedding parameter.
-EMBEDDING_CONFIG: EmbeddingConfig = {
+DEFAULT_EMBEDDING_CONFIG: EmbeddingConfig = {
     # DO NOT change `model_id` (currently other models are not supported)
     "model_id": "cohere.embed-multilingual-v3",
     # NOTE: consider that cohere allows up to 2048 tokens per request
