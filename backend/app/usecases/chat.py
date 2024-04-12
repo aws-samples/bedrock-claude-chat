@@ -217,7 +217,7 @@ Each result has a corresponding source ID that you should reference.
 Note that <sources> may contain multiple <source> if you include information from multiple results in your answer.
 
 Do NOT directly quote the <search_results> in your answer. Your job is to answer the user's question as concisely as possible.
-Do NOT provide sources at the end of your answer.
+Do NOT outputs sources at the end of your answer.
 
 Followings are examples of how to reference sources in your answer. Note that the source ID is embedded in the answer in the format [^<source_id>].
 
@@ -233,6 +233,14 @@ first answer [^1][^5]. second answer [^2][^3][^4]. third answer [^4].
 first answer [^1].
 
 [^1]: https://example.com
+</BAD-example>
+
+<BAD-example>
+first answer [^1].
+
+<sources>
+[^1]: https://example.com
+</sources>
 </BAD-example>
 """.format(
         context_prompt, instruction_prompt
