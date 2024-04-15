@@ -3,7 +3,6 @@ import ChatMessageMarkdown from './ChatMessageMarkdown';
 import ButtonCopy from './ButtonCopy';
 import { PiCaretLeftBold, PiNotePencil, PiUserFill } from 'react-icons/pi';
 import { BaseProps } from '../@types/common';
-import MLIcon from '../assets/ML-icon.svg';
 import { DisplayMessageContent, RelatedDocument } from '../@types/conversation';
 import ButtonIcon from './ButtonIcon';
 import Textarea from './Textarea';
@@ -97,8 +96,8 @@ const ChatMessage: React.FC<Props> = (props) => {
           </div>
         )}
         {chatContent?.role === 'assistant' && (
-          <div className="min-w-[2.5rem] max-w-[2.5rem]">
-            <img src={MLIcon} />
+          <div className="min-w-[2.3rem] max-w-[2.3rem]">
+            <img src="/images/bedrock_icon_64.png" className="rounded" />
           </div>
         )}
 
