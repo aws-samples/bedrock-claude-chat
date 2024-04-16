@@ -17,6 +17,11 @@ const availableModels: {
     label: 'Claude 3 (Sonnet)',
     supportMediaType: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
   },
+  {
+    modelId: 'claude-v3-opus',
+    label: 'Claude 3 (Opus)',
+    supportMediaType: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+  },
 ];
 
 const useModelState = create<{

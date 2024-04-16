@@ -12,7 +12,7 @@
 
 ### 基本的な会話
 
-[Claude 3](https://www.anthropic.com/news/claude-3-family)によるテキストと画像の両方を利用したチャットが可能です。現在`Haiku`および`Sonnet`をサポートしています。
+[Claude 3](https://www.anthropic.com/news/claude-3-family)によるテキストと画像の両方を利用したチャットが可能です。現在`Haiku`および`Sonnet`、まだは`Opus`をサポートしています。
 ![](./imgs/demo_ja.gif)
 
 ### ボットのカスタマイズ
@@ -31,7 +31,7 @@
 
 ## 🚀 まずはお試し
 
-- us-east-1 リージョンにて、[Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > `Anthropic / Claude 3 Haiku`, `Anthropic / Claude 3 Sonnet`, `Cohere / Embed Multilingual`をチェックし、`Save changes`をクリックします
+- us-east-1 リージョンにて、[Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > `Anthropic / Claude 3 Haiku`, `Anthropic / Claude 3 Sonnet`, `Anthropic / Claude 3 Opus`, `Cohere / Embed Multilingual`をチェックし、`Save changes`をクリックします
 
 <details>
 <summary>スクリーンショット</summary>
