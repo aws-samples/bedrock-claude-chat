@@ -52,7 +52,7 @@ const translation = {
           'Définissez comment le bot doit se comporter. Donner des instructions ambiguës peut conduire à des comportements imprévisibles, alors fournissez des instructions claires et spécifiques.',
         knowledge: {
           overview:
-            "En fournissant des connaissances externes au bot, celui-ci devient capable de gérer des données sur lesquelles il 'a pas été pré-entraîné.",
+            "En fournissant des connaissances externes au bot, celui-ci devient capable de gérer des données sur lesquelles il n'a pas été pré-entraîné.",
           url: "Les informations de l'URL spécifiée seront utilisées comme connaissances. Si vous définissez l'URL d'une vidéo YouTube, la transcription de cette vidéo sera utilisée comme connaissance.",
           sitemap:
             "En spécifiant l'URL du plan du site, les informations obtenues en grattant automatiquement les sites Web qu'il contient seront utilisées comme connaissances.",
@@ -63,7 +63,7 @@ const translation = {
         sync: {
           error: {
             title: 'Erreur de synchronisation des connaissances',
-            body: "Une erreur s'est produite lors de la synchronisation de Knowledge. Veuillez vérifier le message suivant :",
+            body: "Une erreur s'est produite lors de la synchronisation des connaissances. Veuillez vérifier le message suivant :",
           },
           incomplete: {
             title: 'Pas prêt',
@@ -112,7 +112,7 @@ Comment catégoriseriez-vous cet e-mail ?`,
         instruction: 'Instructions',
       },
       button: {
-        newBot: 'Créeer un nouveau Bot',
+        newBot: 'Créer un nouveau Bot',
         create: 'Créer',
         edit: 'Modifier',
         delete: 'Supprimer',
@@ -148,7 +148,7 @@ Comment catégoriseriez-vous cet e-mail ?`,
     },
     clearDialog: {
       title: 'Delete ALL?',
-      content: 'Êtes-vous sûr de supprimer TOUTES les conversations ?',
+      content: 'Êtes-vous sûr de supprimer TOUTES les conversations ?',
     },
     languageDialog: {
       title: 'Changer de langue',
