@@ -139,7 +139,7 @@ export class BedrockChatStack extends cdk.Stack {
     });
     documentBucket.addCorsRule({
       allowedMethods: [HttpMethods.PUT],
-      allowedOrigins: [frontend.getOrigin(), "http://localhost:5173"],
+      allowedOrigins: [frontend.getOrigin(), "http://localhost:5173", "*"],
       allowedHeaders: ["*"],
       maxAge: 3000,
     });
