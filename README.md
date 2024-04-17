@@ -12,7 +12,7 @@ This repository is a sample chatbot using the Anthropic company's LLM [Claude](h
 
 ### Basic Conversation
 
-Not only text but also images are available with [Anthropic's Claude 3](https://www.anthropic.com/news/claude-3-family). Currently we support `Haiku` and `Sonnet`.
+Not only text but also images are available with [Anthropic's Claude 3](https://www.anthropic.com/news/claude-3-family). Currently we support `Haiku`, `Sonnet` and `Opus`.
 
 ![](./docs/imgs/demo.gif)
 
