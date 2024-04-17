@@ -2,6 +2,8 @@ import { MutatorCallback, useSWRConfig } from 'swr';
 import {
   Conversation,
   ConversationMeta,
+  GetRelatedDocumentsRequest,
+  GetRelatedDocumentsResponse,
   PostMessageRequest,
   PostMessageResponse,
 } from '../@types/conversation';
@@ -35,6 +37,14 @@ const useConversationApi = () => {
       return http.post<PostMessageResponse>('conversation', {
         ...input,
       });
+    },
+    getRelatedDocuments: (input: GetRelatedDocumentsRequest) => {
+      return http.post<GetRelatedDocumentsResponse>(
+        'conversation/related-documents',
+        {
+          ...input,
+        }
+      );
     },
     deleteConversation: (conversationId: string) => {
       return http.delete(`conversation/${conversationId}`);

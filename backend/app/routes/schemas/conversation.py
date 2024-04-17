@@ -4,7 +4,11 @@ from app.routes.schemas.base import BaseSchema
 from pydantic import Field
 
 type_model_name = Literal[
-    "claude-instant-v1", "claude-v2", "claude-v3-sonnet", "claude-v3-haiku"
+    "claude-instant-v1",
+    "claude-v2",
+    "claude-v3-sonnet",
+    "claude-v3-haiku",
+    "claude-v3-opus",
 ]
 
 
@@ -52,6 +56,13 @@ class ChatOutput(BaseSchema):
     message: MessageOutput
     bot_id: str | None
     create_time: float
+
+
+class RelatedDocumentsOutput(BaseSchema):
+    chunk_body: str
+    content_type: Literal["s3", "url"]
+    source_link: str
+    rank: int
 
 
 class ConversationMetaOutput(BaseSchema):

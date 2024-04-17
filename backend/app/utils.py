@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from typing import List
+from typing import List, Literal
 
 import boto3
 from anthropic import AnthropicBedrock
@@ -26,7 +26,6 @@ def get_bedrock_client(region=BEDROCK_REGION):
 
 def get_anthropic_client(region=BEDROCK_REGION):
     client = AnthropicBedrock(aws_region=region)
-
     return client
 
 
@@ -35,18 +34,27 @@ def get_current_time():
     return int(datetime.now().timestamp() * 1000)
 
 
-def generate_presigned_url(bucket: str, key: str, content_type: str, expiration=3600):
+def generate_presigned_url(
+    bucket: str,
+    key: str,
+    content_type: str | None = None,
+    expiration=3600,
+    client_method: Literal["put_object", "get_object"] = "put_object",
+):
     # See: https://github.com/boto/boto3/issues/421#issuecomment-1849066655
     client = boto3.client(
         "s3",
         region_name=REGION,
         config=Config(signature_version="v4", s3={"addressing_style": "path"}),
     )
+    params = {"Bucket": bucket, "Key": key}
+    if content_type:
+        params["ContentType"] = content_type
     response = client.generate_presigned_url(
-        ClientMethod="put_object",
-        Params={"Bucket": bucket, "Key": key, "ContentType": content_type},
+        ClientMethod=client_method,
+        Params=params,
         ExpiresIn=expiration,
-        HttpMethod="PUT",
+        HttpMethod="PUT" if client_method == "put_object" else "GET",
     )
 
     return response

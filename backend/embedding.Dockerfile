@@ -4,6 +4,7 @@ ENV PYTHONPATH="${PYTHONPATH}:/src"
 
 RUN apt-get update && apt-get install -y \
     build-essential cmake \
+    poppler-utils tesseract-ocr \
     # opencv package requirements
     libgl1 \
     libglib2.0-0 \

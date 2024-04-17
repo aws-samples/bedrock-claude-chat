@@ -3,7 +3,10 @@
 ![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/cdk.yml/badge.svg)
 
 > [!Tip]
-> 🔔**API publication / Admin dashboard feature released.** See [release](https://github.com/aws-samples/bedrock-claude-chat/releases/tag/v0.4.5) for the detail.
+> 🔔**Claude3 Opus supported.** As of 04/17/2024, Bedrock only supports the `us-west-2` region. In this repository, Bedrock uses the `us-east-1` region by default. Therefore, if you plan to use it, please change the value of `bedrockRegion` before deployment. For more details, please refer [here](#deploy-using-cdk).
+
+> [!Info]
+> We'd like to hear your feedback to implement bot creation permission management feature. The plan is to grant permissions to individual users through the admin panel, but this may increase operational overhead for existing users. [Please take the survey](https://github.com/aws-samples/bedrock-claude-chat/issues/161#issuecomment-2058194533).
 
 > [!Warning]
 > The current version (`v0.4.x`) has no compatibility with the previous version (~`v0.3.0`) due to changes in the DynamoDB table schema. **Please note that the UPDATE (i.e. `cdk deploy`) FROM PREVIOUS VERSION TO `v0.4.x` WILL DESTROY ALL OF THE EXISTING CONVERSATIONS.**
@@ -12,7 +15,7 @@ This repository is a sample chatbot using the Anthropic company's LLM [Claude](h
 
 ### Basic Conversation
 
-Not only text but also images are available with [Anthropic's Claude 3](https://www.anthropic.com/news/claude-3-family). Currently we support `Haiku` and `Sonnet`.
+Not only text but also images are available with [Anthropic's Claude 3](https://www.anthropic.com/news/claude-3-family). Currently we support `Haiku`, `Sonnet` and `Opus`.
 
 ![](./docs/imgs/demo.gif)
 

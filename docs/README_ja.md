@@ -3,7 +3,10 @@
 ![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/test.yml/badge.svg)
 
 > [!Tip]
-> 🔔**API 公開/管理ダッシュボードの機能がリリースされました。** 詳細は[Release](https://github.com/aws-samples/bedrock-claude-chat/releases/tag/v0.4.5)をご確認ください。
+> 🔔**Claude3 Opus をサポートしました。** 2024/04/17 現在、Bedrock は`us-west-2`のみサポートしています。このリポジトリでは Bedrock はデフォルトで`us-east-1`リージョンを利用します。このため、ご利用される場合はデプロイ前に`bedrockRegion`の値を変更してください。詳細は[こちら](#deploy-using-cdk)
+
+> [!Info]
+> ボット作成権限の管理機能実装について、ご意見をお聞かせください。管理者パネルから個別にユーザーに権限を付与する予定ですが、既存ユーザーの皆さんの運用オーバーヘッドが大幅に増加する可能性があります。[アンケートにご協力ください](https://github.com/aws-samples/bedrock-claude-chat/issues/161#issuecomment-2058194533)。
 
 > [!Warning]
 > 現在のバージョン(v0.4.x)は、DynamoDB テーブルスキーマの変更のため、過去バージョン(~v0.3.0)とは互換性がありません。**以前のバージョンから v0.4.x へアップデートすると、既存の対話記録は全て破棄されますので注意が必要です。**
@@ -12,7 +15,7 @@
 
 ### 基本的な会話
 
-[Claude 3](https://www.anthropic.com/news/claude-3-family)によるテキストと画像の両方を利用したチャットが可能です。現在`Haiku`および`Sonnet`をサポートしています。
+[Claude 3](https://www.anthropic.com/news/claude-3-family)によるテキストと画像の両方を利用したチャットが可能です。現在`Haiku`および`Sonnet`、まだは`Opus`をサポートしています。
 ![](./imgs/demo_ja.gif)
 
 ### ボットのカスタマイズ
@@ -31,7 +34,7 @@
 
 ## 🚀 まずはお試し
 
-- us-east-1 リージョンにて、[Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > `Anthropic / Claude 3 Haiku`, `Anthropic / Claude 3 Sonnet`, `Cohere / Embed Multilingual`をチェックし、`Save changes`をクリックします
+- us-east-1 リージョンにて、[Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > `Anthropic / Claude 3 Haiku`, `Anthropic / Claude 3 Sonnet` `Cohere / Embed Multilingual`をチェックし、`Save changes`をクリックします
 
 <details>
 <summary>スクリーンショット</summary>
@@ -205,6 +208,7 @@ GENERATION_CONFIG = {
 ### サインアップ可能なメールアドレスのドメインを制限
 
 このサンプルはデフォルトではサインアップ可能なメールアドレスのドメインに制限がありません。特定のドメインのみに限定してサインアップを可能にするには、 `cdk.json` を開き、`allowedSignUpEmailDomains` にリスト形式でドメインを指定してください。
+
 ```
 "allowedSignUpEmailDomains": ["example.com"],
 ```
