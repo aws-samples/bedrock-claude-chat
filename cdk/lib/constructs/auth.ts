@@ -99,6 +99,7 @@ export class Auth extends Construct {
             }
           );
           client.node.addDependency(googleProvider);
+          break;
         }
         case "oidc": {
           const issuerUrl = secret
@@ -124,6 +125,7 @@ export class Auth extends Construct {
             }
           );
           client.node.addDependency(oidcProvider);
+          break;
         }
       }
     };
@@ -141,10 +143,16 @@ export class Auth extends Construct {
     }
 
     if (props.allowedSignUpEmailDomains.length >= 1) {
-      const checkEmailDomainFunction = new PythonFunction(this, 'CheckEmailDomain',{
+      const checkEmailDomainFunction = new PythonFunction(
+        this,
+        "CheckEmailDomain",
+        {
           runtime: Runtime.PYTHON_3_12,
-          index: 'check_email_domain.py',
-          entry: path.join(__dirname, "../../../backend/auth/check_email_domain"),
+          index: "check_email_domain.py",
+          entry: path.join(
+            __dirname,
+            "../../../backend/auth/check_email_domain"
+          ),
           timeout: Duration.minutes(1),
           environment: {
             ALLOWED_SIGN_UP_EMAIL_DOMAINS_STR: JSON.stringify(
