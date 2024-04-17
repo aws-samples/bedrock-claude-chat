@@ -18,6 +18,9 @@ from app.usecases.chat import (
 
 MODEL: type_model_name = "mistral-7b-instruct"
 
+prompt = "あなたの名前は何ですか?"
+# You may customize the below prompt template for different models.
+body = f"<s>[INST]{prompt}[/INST]"
 
 class TestBedrockChat(unittest.TestCase):
     def test_chat(self):
@@ -28,7 +31,7 @@ class TestBedrockChat(unittest.TestCase):
                 content=[
                     Content(
                         content_type="text",
-                        body="あなたの名前は何ですか？",
+                        body=body,
                         media_type=None,
                     )
                 ],
@@ -38,6 +41,8 @@ class TestBedrockChat(unittest.TestCase):
             ),
             bot_id=None,
         )
+        print(chat_input)
+        print(MODEL)
         output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
         self.output = output
 

@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { convertMessageMapToArray } from '../MessageUtils';
-import {
-  MessageContentWithChildren,
-  MessageMap,
-} from '../../@types/conversation';
+import { DisplayMessageContent, MessageMap } from '../../@types/conversation';
 
 describe('convertMessageMapToArray', () => {
   it('1件のみ', () => {
@@ -21,7 +18,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
       },
     };
-    const expected: MessageContentWithChildren[] = [
+    const expected: DisplayMessageContent[] = [
       {
         id: '1',
         role: 'user',
@@ -70,7 +67,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
       },
     };
-    const expected: MessageContentWithChildren[] = [
+    const expected: DisplayMessageContent[] = [
       {
         id: '1',
         role: 'user',
@@ -143,7 +140,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
       },
     };
-    const expected: MessageContentWithChildren[] = [
+    const expected: DisplayMessageContent[] = [
       {
         id: '1',
         role: 'user',
@@ -230,7 +227,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
       },
     };
-    const expected: MessageContentWithChildren[] = [
+    const expected: DisplayMessageContent[] = [
       {
         id: '1',
         role: 'user',
@@ -303,7 +300,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
       },
     };
-    const expected: MessageContentWithChildren[] = [
+    const expected: DisplayMessageContent[] = [
       {
         id: '1',
         role: 'user',
@@ -388,7 +385,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
       },
     };
-    const expected: MessageContentWithChildren[] = [
+    const expected: DisplayMessageContent[] = [
       {
         id: '1',
         role: 'user',
@@ -487,7 +484,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
       },
     };
-    const expected: MessageContentWithChildren[] = [
+    const expected: DisplayMessageContent[] = [
       {
         id: '1',
         role: 'user',
@@ -622,7 +619,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
       },
     };
-    const expected: MessageContentWithChildren[] = [
+    const expected: DisplayMessageContent[] = [
       {
         id: '1',
         role: 'user',
@@ -737,7 +734,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
       },
     };
-    const expected: MessageContentWithChildren[] = [
+    const expected: DisplayMessageContent[] = [
       {
         id: '1',
         role: 'user',
@@ -834,7 +831,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
       },
     };
-    const expected: MessageContentWithChildren[] = [
+    const expected: DisplayMessageContent[] = [
       {
         id: '1-1',
         role: 'user',
@@ -931,7 +928,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
       },
     };
-    const expected: MessageContentWithChildren[] = [
+    const expected: DisplayMessageContent[] = [
       {
         id: '1-2',
         role: 'user',
@@ -1028,7 +1025,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
       },
     };
-    const expected: MessageContentWithChildren[] = [
+    const expected: DisplayMessageContent[] = [
       {
         id: '1-1',
         role: 'user',
@@ -1132,7 +1129,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
       },
     };
-    const expected: MessageContentWithChildren[] = [
+    const expected: DisplayMessageContent[] = [
       {
         id: '1',
         role: 'user',
@@ -1220,7 +1217,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
       },
     };
-    const expected: MessageContentWithChildren[] = [
+    const expected: DisplayMessageContent[] = [
       {
         id: '2',
         role: 'user',
@@ -1294,7 +1291,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
       },
     };
-    const expected: MessageContentWithChildren[] = [
+    const expected: DisplayMessageContent[] = [
       {
         id: '1',
         role: 'user',
@@ -1368,7 +1365,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
       },
     };
-    const expected: MessageContentWithChildren[] = [
+    const expected: DisplayMessageContent[] = [
       {
         id: '2',
         role: 'user',
@@ -1442,7 +1439,7 @@ describe('convertMessageMapToArray', () => {
         children: [],
       },
     };
-    const expected: MessageContentWithChildren[] = [
+    const expected: DisplayMessageContent[] = [
       {
         id: '1',
         role: 'user',

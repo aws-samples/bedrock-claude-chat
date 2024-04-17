@@ -14,6 +14,7 @@ from app.routes.schemas.bot import (
     BotPresignedUrlOutput,
     BotSummaryOutput,
     BotSwitchVisibilityInput,
+    EmbeddingParams,
     Knowledge,
 )
 from app.usecases.bot import (
@@ -124,6 +125,10 @@ def get_private_bot(request: Request, bot_id: str):
         is_public=True if bot.public_bot_id else False,
         is_pinned=bot.is_pinned,
         owned=True,
+        embedding_params=EmbeddingParams(
+            chunk_size=bot.embedding_params.chunk_size,
+            chunk_overlap=bot.embedding_params.chunk_overlap,
+        ),
         knowledge=Knowledge(
             source_urls=bot.knowledge.source_urls,
             sitemap_urls=bot.knowledge.sitemap_urls,

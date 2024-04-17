@@ -191,7 +191,9 @@ export class Embedding extends Construct {
             // Ref: https://repost.aws/questions/QU_WC7301mT8qR7ip_9cyjdQ/eventbridge-pipes-and-ecs-task
             containerOverrides: [
               {
-                command: ["-u", "embedding/main.py", "$.dynamodb.NewImage"],
+                // Only pass keys and load the object from within the ECS task.
+                // https://github.com/aws-samples/bedrock-claude-chat/issues/190
+                command: ["-u", "embedding/main.py", "$.dynamodb.Keys"],
                 name: taskDefinition.defaultContainer!.containerName,
               },
             ],

@@ -18,6 +18,11 @@ const availableModels: {
       supportMediaType: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
     },
     {
+      modelId: 'claude-v3-opus',
+      label: 'Claude 3 (Opus)',
+      supportMediaType: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+    },
+    {
       modelId: 'mistral-7b-instruct',
       label: 'Mistral 7B',
       supportMediaType: [],

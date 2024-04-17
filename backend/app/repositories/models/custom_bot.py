@@ -2,6 +2,11 @@ from app.routes.schemas.bot import type_sync_status
 from pydantic import BaseModel
 
 
+class EmbeddingParamsModel(BaseModel):
+    chunk_size: int
+    chunk_overlap: int
+
+
 class KnowledgeModel(BaseModel):
     source_urls: list[str]
     sitemap_urls: list[str]
@@ -19,6 +24,7 @@ class BotModel(BaseModel):
     public_bot_id: str | None
     owner_user_id: str
     is_pinned: bool
+    embedding_params: EmbeddingParamsModel
     knowledge: KnowledgeModel
     sync_status: type_sync_status
     sync_status_reason: str

@@ -36,7 +36,7 @@ MISTRAL_GENERATION_CONFIG: GenerationConfig = {
 }
 
 # Configure embedding parameter.
-EMBEDDING_CONFIG: EmbeddingConfig = {
+DEFAULT_EMBEDDING_CONFIG: EmbeddingConfig = {
     # DO NOT change `model_id` (currently other models are not supported)
     "model_id": "cohere.embed-multilingual-v3",
     # NOTE: consider that cohere allows up to 2048 tokens per request
@@ -59,10 +59,6 @@ ANTHROPIC_PRICING = {
             "output": 0.00240,
         },
         "claude-v2": {
-            "input": 0.00080,
-            "output": 0.00240,
-        },
-        "claude-v2-1": {
             "input": 0.00080,
             "output": 0.00240,
         },
@@ -94,7 +90,8 @@ ANTHROPIC_PRICING = {
         "mixtral-8x7b-instruct": {
             "input": 0.00045,
             "output": 0.0007
-        }
+        },
+        "claude-v3-opus": {"input": 0.01500, "output": 0.07500},
     },
     "ap-northeast-1": {
         "claude-instant-v1": {
@@ -115,10 +112,6 @@ ANTHROPIC_PRICING = {
             "input": 0.00080,
             "output": 0.00240,
         },
-        "claude-v2-1": {
-            "input": 0.00080,
-            "output": 0.00240,
-        },
         "claude-v3-haiku": {"input": 0.00025, "output": 0.00125},
         "claude-v3-sonnet": {"input": 0.00300, "output": 0.01500},
         "mistral-7b-instruct": {
@@ -128,6 +121,7 @@ ANTHROPIC_PRICING = {
         "mixtral-8x7b-instruct": {
             "input": 0.00045,
             "output": 0.0007
-        }
+        },
+        "claude-v3-opus": {"input": 0.01500, "output": 0.07500},
     },
 }

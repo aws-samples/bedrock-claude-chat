@@ -2,15 +2,26 @@ import { Construct } from "constructs";
 import * as rds from "aws-cdk-lib/aws-rds";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { CustomResource, Duration } from "aws-cdk-lib";
+
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as path from "path";
+import * as events from "aws-cdk-lib/aws-events";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
+import { CronSchedule } from "../utils/cron-schedule";
+import { CfnSchedule } from "aws-cdk-lib/aws-scheduler";
+import {
+  Effect,
+  PolicyStatement,
+  Role,
+  ServicePrincipal,
+} from "aws-cdk-lib/aws-iam";
 
 const DB_NAME = "postgres";
 
 export interface VectorStoreProps {
   readonly vpc: ec2.IVpc;
+  readonly rdsSchedule: CronSchedule;
 }
 
 export class VectorStore extends Construct {
@@ -47,6 +58,54 @@ export class VectorStore extends Construct {
       // ],
     });
 
+    const dbClusterIdentifier = cluster
+      .secret!.secretValueFromJson("dbClusterIdentifier")
+      .unsafeUnwrap()
+      .toString();
+
+    if (props.rdsSchedule.hasCron()) {
+      const rdsSchedulerRole = new Role(this, "role-rds-scheduler", {
+        assumedBy: new ServicePrincipal("scheduler.amazonaws.com"),
+        description: "start and stop RDS",
+      });
+
+      rdsSchedulerRole.addToPolicy(
+        new PolicyStatement({
+          resources: ["*"],
+          effect: Effect.ALLOW,
+          actions: ["rds:startDBCluster", "rds:stopDBCluster"],
+        })
+      );
+
+      new CfnSchedule(this, "StartRdsScheduler", {
+        description: "Start RDS Instance",
+        scheduleExpression: events.Schedule.cron(props.rdsSchedule.startCron)
+          .expressionString,
+        flexibleTimeWindow: { mode: "OFF" },
+        target: {
+          arn: "arn:aws:scheduler:::aws-sdk:rds:startDBCluster",
+          roleArn: rdsSchedulerRole.roleArn,
+          input: JSON.stringify({
+            DbClusterIdentifier: dbClusterIdentifier,
+          }),
+        },
+      });
+
+      new CfnSchedule(this, "StopRdsScheduler", {
+        description: "Stop RDS Instance",
+        scheduleExpression: events.Schedule.cron(props.rdsSchedule.stopCron)
+          .expressionString,
+        flexibleTimeWindow: { mode: "OFF" },
+        target: {
+          arn: "arn:aws:scheduler:::aws-sdk:rds:stopDBCluster",
+          roleArn: rdsSchedulerRole.roleArn,
+          input: JSON.stringify({
+            DbClusterIdentifier: dbClusterIdentifier,
+          }),
+        },
+      });
+    }
+
     const setupHandler = new NodejsFunction(this, "CustomResourceHandler", {
       vpc: props.vpc,
       runtime: lambda.Runtime.NODEJS_18_X,
@@ -71,10 +130,7 @@ export class VectorStore extends Construct {
           .unsafeUnwrap()
           .toString(),
         DB_PORT: cluster.clusterEndpoint.port.toString(),
-        DB_CLUSTER_IDENTIFIER: cluster
-          .secret!.secretValueFromJson("dbClusterIdentifier")
-          .unsafeUnwrap()
-          .toString(),
+        DB_CLUSTER_IDENTIFIER: dbClusterIdentifier,
       },
     });
 

@@ -4,7 +4,13 @@ from app.routes.schemas.base import BaseSchema
 from pydantic import Field
 
 type_model_name = Literal[
-    "claude-instant-v1", "claude-v2", "claude-v3-sonnet", "claude-v3-haiku", "claude-v2-1", "mistral-7b-instruct", "mixtral-8x7b-instruct"
+    "claude-instant-v1",
+    "claude-v2",
+    "claude-v3-sonnet",
+    "claude-v3-haiku",
+    "claude-v3-opus",
+    "mistral-7b-instruct",
+    "mixtral-8x7b-instruct"
 ]
 
 
@@ -16,7 +22,8 @@ class Content(BaseSchema):
         None,
         description="MIME type of the image. Must be specified if `content_type` is `image`.",
     )
-    body: str = Field(..., description="Content body. Text or base64 encoded image.")
+    body: str = Field(...,
+                      description="Content body. Text or base64 encoded image.")
 
 
 class MessageInput(BaseSchema):
@@ -30,7 +37,8 @@ class MessageInput(BaseSchema):
 
 
 class MessageOutput(BaseSchema):
-    role: str = Field(..., description="Role of the message. Either `user` or `bot`.")
+    role: str = Field(...,
+                      description="Role of the message. Either `user` or `bot`.")
     content: list[Content]
     model: type_model_name
     children: list[str]
@@ -52,6 +60,13 @@ class ChatOutput(BaseSchema):
     message: MessageOutput
     bot_id: str | None
     create_time: float
+
+
+class RelatedDocumentsOutput(BaseSchema):
+    chunk_body: str
+    content_type: Literal["s3", "url"]
+    source_link: str
+    rank: int
 
 
 class ConversationMetaOutput(BaseSchema):

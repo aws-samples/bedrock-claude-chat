@@ -1,5 +1,10 @@
 const translation = {
   translation: {
+    signIn: {
+      button: {
+        login: 'Login',
+      },
+    },
     app: {
       name: 'Bedrock Claude Chat',
       inputMessage: 'Send a message',
@@ -29,6 +34,7 @@ const translation = {
         dndFileUpload:
           'You can upload files by drag and drop.\nSupported files: {{fileExtensions}}',
         uploadError: 'Error Message',
+        referenceLink: 'Reference Link',
         syncStatus: {
           queue: 'Waiting Sync',
           running: 'Syncing',
@@ -336,6 +342,33 @@ How would you categorize this email?`,
         invalidOriginFormat: 'Invalid Origin format.',
       },
     },
+    embeddingSettings: {
+      title: 'Embedding Setting',
+      description:
+        'You can configure the parameters for vector embeddings. By adjusting the parameters, you can change the accuracy of document retrieval.',
+      chunkSize: {
+        label: 'chunk size',
+        hint: 'The chunk size refers to the size at which a document is divided into smaller segments',
+      },
+      chunkOverlap: {
+        label: 'chunk overlap',
+        hint: 'You can specify the number of overlapping characters between adjacent chunks.',
+      },
+      help: {
+        chunkSize:
+          "When the chunk size is too small, contextual information can be lost, and when it's too large, different contextual information may exist within the same chunk, potentially reducing search accuracy.",
+        chunkOverlap:
+          'By specifying chunk overlap, you can preserve contextual information around chunk boundaries. Increasing the chunk size can sometimes improve search accuracy. However, be aware that increasing the chunk overlap can lead to higher computational costs.',
+      },
+      alert: {
+        sync: {
+          error: {
+            title: 'Sentence Splitte Error',
+            body: 'Try again with less chunk overlap value',
+          },
+        },
+      },
+    },
     error: {
       answerResponse: 'An error occurred while responding.',
       notFoundConversation:
@@ -347,6 +380,15 @@ How would you categorize this email?`,
           'Unexpected response received. The response format does not match the expected format.',
       },
       notSupportedImage: 'The selected model does not support images.',
+    },
+    validation: {
+      title: 'Validation Error',
+      maxRange: {
+        message: 'The maximum value that can be set is {{size}}',
+      },
+      chunkOverlapLessThanChunkSize: {
+        message: 'Chunk overlap must be set to less than Chunk size',
+      },
     },
   },
 };

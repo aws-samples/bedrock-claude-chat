@@ -3,6 +3,11 @@
 // const translation: typeof en = {
 const translation = {
   translation: {
+    signIn: {
+      button: {
+        login: 'ログイン',
+      },
+    },
     app: {
       name: 'Bedrock Claude Chat',
       inputMessage: '入力してください',
@@ -29,6 +34,7 @@ const translation = {
         noBots: 'ボットが登録されていません。',
         noBotsRecentlyUsed: '最近利用した公開ボットはありません。',
         retrievingKnowledge: '[ナレッジを取得中...]',
+        referenceLink: '参考ドキュメント',
         dndFileUpload:
           'ドラッグ＆ドロップでファイルをアップロードできます。\n対応ファイル: {{fileExtensions}}',
         uploadError: 'エラーメッセージ',
@@ -153,7 +159,7 @@ const translation = {
           rateLimit:
             'クライアントがAPIを呼び出すことができるレートを1秒あたりのリクエスト数で入力します。',
           burstLimit:
-            'クライアントがPAIに対して同時に実行できるリクエストの数を入力します。',
+            'クライアントがAPIに対して同時に実行できるリクエストの数を入力します。',
           quota:
             'ある期間にユーザがAPIに対して実行できるリクエストの数を制限します。',
           requestLimit:
@@ -340,6 +346,33 @@ const translation = {
         invalidOriginFormat: 'オリジンのフォーマットが異なります。',
       },
     },
+    embeddingSettings: {
+      title: 'ベクトル埋め込みパラメーター設定',
+      description:
+        'ベクトル埋め込みのパラメーター設定が行えます。パラメーターを変更することで、ドキュメントの検索精度が変わります。',
+      chunkSize: {
+        label: 'チャンクサイズ',
+        hint: '埋め込み時のドキュメントの分割サイズを指定します。',
+      },
+      chunkOverlap: {
+        label: 'チャンクオーバーラップ',
+        hint: '隣接するチャンク同士で重複する文字数を指定します。',
+      },
+      help: {
+        chunkSize:
+          'チャンクサイズが小さすぎると文脈情報が失われ、大きすぎると同一チャンクの中に異なる文脈の情報が存在することになり、検索精度が低下する場合があります。',
+        chunkOverlap:
+          'チャンクオーバーラップを指定することで、チャンク境界付近の文脈情報を保持することができます。チャンクサイズを大きくすることで、検索精度の向上ができる場合があります。しかし、チャンクオーバーラップを大きくすると、計算コストが増大するのでご注意ください。',
+      },
+      alert: {
+        sync: {
+          error: {
+            title: 'チャンキングエラー',
+            body: 'チャンクオーバーラップ値を小さくして再試行してください',
+          },
+        },
+      },
+    },
     error: {
       answerResponse: '回答中にエラーが発生しました。',
       notFoundConversation:
@@ -350,6 +383,16 @@ const translation = {
         invalidResponse: '想定外のResponseが返ってきました。',
       },
       notSupportedImage: '選択しているモデルは、画像を利用できません。',
+    },
+    validation: {
+      title: 'バリデーションエラー',
+      maxRange: {
+        message: '設定できる最大値は{{size}}です',
+      },
+      chunkOverlapLessThanChunkSize: {
+        message:
+          'チャンクオーバーラップはチャンクサイズより小さく設定する必要があります',
+      },
     },
   },
 };

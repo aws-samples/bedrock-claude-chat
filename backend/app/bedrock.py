@@ -3,7 +3,7 @@ import logging
 import os
 
 from anthropic import AnthropicBedrock
-from app.config import ANTHROPIC_PRICING, EMBEDDING_CONFIG, GENERATION_CONFIG, MISTRAL_GENERATION_CONFIG
+from app.config import ANTHROPIC_PRICING, DEFAULT_EMBEDDING_CONFIG, GENERATION_CONFIG, MISTRAL_GENERATION_CONFIG
 from app.repositories.models.conversation import MessageModel
 from app.utils import get_bedrock_client, is_anthropic_model
 
@@ -31,6 +31,7 @@ def compose_args(
         )
     else:
         return compose_args_for_other_client(messages, model, instruction, stream)
+
 
 def compose_args_for_other_client(
     messages: list[MessageModel],
@@ -137,18 +138,18 @@ def get_model_id(model: str) -> str:
         return "anthropic.claude-3-sonnet-20240229-v1:0"
     elif model == "claude-v3-haiku":
         return "anthropic.claude-3-haiku-20240307-v1:0"
-    elif model == "claude-v2-1":
-        return "anthropic.claude-v2:1"
     elif model == "mistral-7b-instruct":
         return "mistral.mistral-7b-instruct-v0:2"
     elif model == "mixtral-8x7b-instruct":
         return "mistral.mixtral-8x7b-instruct-v0:1"
+    elif model == "claude-v3-opus":
+        return "anthropic.claude-3-opus-20240229-v1:0"
     else:
         raise NotImplementedError()
 
 
 def calculate_query_embedding(question: str) -> list[float]:
-    model_id = EMBEDDING_CONFIG["model_id"]
+    model_id = DEFAULT_EMBEDDING_CONFIG["model_id"]
 
     # Currently only supports "cohere.embed-multilingual-v3"
     assert model_id == "cohere.embed-multilingual-v3"
@@ -168,7 +169,8 @@ def calculate_query_embedding(question: str) -> list[float]:
 
 def calculate_document_embeddings(documents: list[str]) -> list[list[float]]:
     def _calculate_document_embeddings(documents: list[str]) -> list[list[float]]:
-        payload = json.dumps({"texts": documents, "input_type": "search_document"})
+        payload = json.dumps(
+            {"texts": documents, "input_type": "search_document"})
         accept = "application/json"
         content_type = "application/json"
 
@@ -181,7 +183,7 @@ def calculate_document_embeddings(documents: list[str]) -> list[list[float]]:
         return embeddings
 
     BATCH_SIZE = 10
-    model_id = EMBEDDING_CONFIG["model_id"]
+    model_id = DEFAULT_EMBEDDING_CONFIG["model_id"]
 
     # Currently only supports "cohere.embed-multilingual-v3"
     assert model_id == "cohere.embed-multilingual-v3"
@@ -189,7 +191,7 @@ def calculate_document_embeddings(documents: list[str]) -> list[list[float]]:
     embeddings = []
     for i in range(0, len(documents), BATCH_SIZE):
         # Split documents into batches to avoid exceeding the payload size limit
-        batch = documents[i : i + BATCH_SIZE]
+        batch = documents[i: i + BATCH_SIZE]
         embeddings += _calculate_document_embeddings(batch)
 
     return embeddings

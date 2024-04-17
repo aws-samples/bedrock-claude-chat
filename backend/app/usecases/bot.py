@@ -25,6 +25,7 @@ from app.repositories.models.custom_bot import (
     BotAliasModel,
     BotMeta,
     BotModel,
+    EmbeddingParamsModel,
     KnowledgeModel,
 )
 from app.routes.schemas.bot import (
@@ -33,6 +34,7 @@ from app.routes.schemas.bot import (
     BotModifyOutput,
     BotOutput,
     BotSummaryOutput,
+    EmbeddingParams,
     Knowledge,
     type_sync_status,
 )
@@ -46,6 +48,8 @@ from app.utils import (
     get_current_time,
     move_file_in_s3,
 )
+
+from app.config import DEFAULT_EMBEDDING_CONFIG
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
 
@@ -99,6 +103,18 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         )
         filenames = bot_input.knowledge.filenames
 
+    chunk_size = (
+        bot_input.embedding_params.chunk_size
+        if bot_input.embedding_params
+        else DEFAULT_EMBEDDING_CONFIG["chunk_size"]
+    )
+
+    chunk_overlap = (
+        bot_input.embedding_params.chunk_overlap
+        if bot_input.embedding_params
+        else DEFAULT_EMBEDDING_CONFIG["chunk_overlap"]
+    )
+
     store_bot(
         user_id,
         BotModel(
@@ -111,6 +127,10 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             public_bot_id=None,
             is_pinned=False,
             owner_user_id=user_id,  # Owner is the creator
+            embedding_params=EmbeddingParamsModel(
+                chunk_size=chunk_size,
+                chunk_overlap=chunk_overlap,
+            ),
             knowledge=KnowledgeModel(
                 source_urls=source_urls, sitemap_urls=sitemap_urls, filenames=filenames
             ),
@@ -132,6 +152,10 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         is_public=False,
         is_pinned=False,
         owned=True,
+        embedding_params=EmbeddingParams(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+        ),
         knowledge=Knowledge(
             source_urls=source_urls, sitemap_urls=sitemap_urls, filenames=filenames
         ),
@@ -170,12 +194,28 @@ def modify_owned_bot(
             + modify_input.knowledge.unchanged_filenames
         )
 
+    chunk_size = (
+        modify_input.embedding_params.chunk_size
+        if modify_input.embedding_params
+        else DEFAULT_EMBEDDING_CONFIG["chunk_size"]
+    )
+
+    chunk_overlap = (
+        modify_input.embedding_params.chunk_overlap
+        if modify_input.embedding_params
+        else DEFAULT_EMBEDDING_CONFIG["chunk_overlap"]
+    )
+
     update_bot(
         user_id,
         bot_id,
         title=modify_input.title,
         instruction=modify_input.instruction,
         description=modify_input.description if modify_input.description else "",
+        embedding_params=EmbeddingParamsModel(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+        ),
         knowledge=KnowledgeModel(
             source_urls=source_urls,
             sitemap_urls=sitemap_urls,
@@ -189,6 +229,10 @@ def modify_owned_bot(
         title=modify_input.title,
         instruction=modify_input.instruction,
         description=modify_input.description if modify_input.description else "",
+        embedding_params=EmbeddingParams(
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
+        ),
         knowledge=Knowledge(
             source_urls=source_urls,
             sitemap_urls=sitemap_urls,
@@ -366,6 +410,22 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
     try:
         # NOTE: At the first time using shared bot, alias is not created yet.
         bot = find_public_bot_by_id(bot_id)
+        current_time = get_current_time()
+        # Store alias when opened shared bot page
+        store_alias(
+            user_id,
+            BotAliasModel(
+                id=bot.id,
+                title=bot.title,
+                description=bot.description,
+                original_bot_id=bot_id,
+                create_time=current_time,
+                last_used_time=current_time,
+                is_pinned=False,
+                sync_status=bot.sync_status,
+                has_knowledge=bot.has_knowledge(),
+            ),
+        )
         return BotSummaryOutput(
             id=bot_id,
             title=bot.title,
@@ -431,6 +491,7 @@ def issue_presigned_url(
         compose_upload_temp_s3_path(user_id, bot_id, filename),
         content_type=content_type,
         expiration=3600,
+        client_method="put_object",
     )
     return response
 

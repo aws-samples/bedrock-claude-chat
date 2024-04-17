@@ -3,10 +3,12 @@ import useConversationApi from './useConversationApi';
 import { produce } from 'immer';
 import {
   MessageContent,
-  MessageContentWithChildren,
+  DisplayMessageContent,
   MessageMap,
   Model,
   PostMessageRequest,
+  RelatedDocument,
+  Conversation,
 } from '../@types/conversation';
 import useConversation from './useConversation';
 import { create } from 'zustand';
@@ -40,6 +42,9 @@ const useChatState = create<{
   postingMessage: boolean;
   setPostingMessage: (b: boolean) => void;
   chats: ChatStateType;
+  relatedDocuments: {
+    [messageId: string]: RelatedDocument[];
+  };
   setMessages: (id: string, messageMap: MessageMap) => void;
   copyMessages: (fromId: string, toId: string) => void;
   pushMessage: (
@@ -53,12 +58,18 @@ const useChatState = create<{
   getMessages: (
     id: string,
     currentMessageId: string
-  ) => MessageContentWithChildren[];
+  ) => DisplayMessageContent[];
+  setRelatedDocuments: (
+    messageId: string,
+    documents: RelatedDocument[]
+  ) => void;
+  moveRelatedDocuments: (fromMessageId: string, toMessageId: string) => void;
   currentMessageId: string;
   setCurrentMessageId: (s: string) => void;
   isGeneratedTitle: boolean;
   setIsGeneratedTitle: (b: boolean) => void;
   getPostedModel: () => Model;
+  shouldUpdateMessages: (currentConversation: Conversation) => boolean;
 }>((set, get) => {
   return {
     conversationId: '',
@@ -76,6 +87,7 @@ const useChatState = create<{
       }));
     },
     chats: {},
+    relatedDocuments: {},
     setMessages: (id: string, messageMap: MessageMap) => {
       set((state) => ({
         chats: produce(state.chats, (draft) => {
@@ -96,8 +108,8 @@ const useChatState = create<{
       currentMessageId: string,
       content: MessageContent
     ) => {
-      set((state) => ({
-        chats: produce(state.chats, (draft) => {
+      set(() => ({
+        chats: produce(get().chats, (draft) => {
           // 追加対象が子ノードの場合は親ノードに参照情報を追加
           if (draft[id] && parentMessageId && parentMessageId !== 'system') {
             draft[id][parentMessageId] = {
@@ -125,8 +137,8 @@ const useChatState = create<{
       }));
     },
     editMessage: (id: string, messageId: string, content: string) => {
-      set((state) => ({
-        chats: produce(state.chats, (draft) => {
+      set(() => ({
+        chats: produce(get().chats, (draft) => {
           draft[id][messageId].content[0].body = content;
         }),
       }));
@@ -159,6 +171,21 @@ const useChatState = create<{
     getMessages: (id: string, currentMessageId: string) => {
       return convertMessageMapToArray(get().chats[id] ?? {}, currentMessageId);
     },
+    setRelatedDocuments: (messageId, documents) => {
+      set((state) => ({
+        relatedDocuments: produce(state.relatedDocuments, (draft) => {
+          draft[messageId] = documents;
+        }),
+      }));
+    },
+    moveRelatedDocuments: (fromId, toId) => {
+      set(() => ({
+        relatedDocuments: produce(get().relatedDocuments, (draft) => {
+          draft[toId] = get().relatedDocuments[fromId];
+          draft[fromId] = [];
+        }),
+      }));
+    },
     currentMessageId: '',
     setCurrentMessageId: (s: string) => {
       set(() => ({
@@ -176,6 +203,14 @@ const useChatState = create<{
         get().chats[get().conversationId]?.system?.model ??
         // 画面に即時反映するためNEW_MESSAGEを評価
         get().chats['']?.[NEW_MESSAGE_ID.ASSISTANT]?.model
+      );
+    },
+    shouldUpdateMessages: (currentConversation) => {
+      return (
+        !!get().conversationId &&
+        currentConversation.id === get().conversationId &&
+        !get().postingMessage &&
+        get().currentMessageId !== currentConversation.lastMessageId
       );
     },
   };
@@ -200,6 +235,10 @@ const useChat = () => {
     isGeneratedTitle,
     setIsGeneratedTitle,
     getPostedModel,
+    relatedDocuments,
+    setRelatedDocuments,
+    moveRelatedDocuments,
+    shouldUpdateMessages,
   } = useChatState();
   const { open: openSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -226,7 +265,7 @@ const useChat = () => {
     setMessages('', {});
   }, [setConversationId, setMessages]);
 
-  // エラー処理
+  // Error Handling
   useEffect(() => {
     if (error?.response?.status === 404) {
       openSnackbar(t('error.notFoundConversation'));
@@ -237,20 +276,18 @@ const useChat = () => {
     }
   }, [error, navigate, newChat, openSnackbar, t]);
 
+  // when updated messages
   useEffect(() => {
-    if (conversationId && data?.id === conversationId) {
+    if (data && shouldUpdateMessages(data)) {
       setMessages(conversationId, data.messageMap);
       setCurrentMessageId(data.lastMessageId);
       setModelId(getPostedModel());
+      if ((relatedDocuments[NEW_MESSAGE_ID.ASSISTANT]?.length ?? 0) > 0) {
+        moveRelatedDocuments(NEW_MESSAGE_ID.ASSISTANT, data.lastMessageId);
+      }
     }
-  }, [
-    conversationId,
-    data,
-    getPostedModel,
-    setCurrentMessageId,
-    setMessages,
-    setModelId,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversationId, data]);
 
   useEffect(() => {
     setIsGeneratedTitle(false);
@@ -337,11 +374,10 @@ const useChat = () => {
         ...messageContent,
         parentMessageId: parentMessageId,
       },
-      stream: true,
       botId: bot?.botId,
     };
     const createNewConversation = () => {
-      // 画面のチラつき防止のために、Stateをコピーする
+      // Copy State to prevent screen flicker
       copyMessages('', newConversationId);
 
       conversationApi
@@ -358,20 +394,21 @@ const useChat = () => {
 
     setPostingMessage(true);
 
-    // 画面に即時反映するために、Stateを更新する
+    // Update State for immediate reflection on screen
     pushNewMessage(parentMessageId, messageContent);
 
-    const postPromise: Promise<void> = new Promise((resolve, reject) => {
+    // post message
+    const postPromise: Promise<string> = new Promise((resolve, reject) => {
       if (USE_STREAMING) {
         postStreaming({
           input,
           hasKnowledge: bot?.hasKnowledge,
           dispatch: (c: string) => {
-            editMessage(conversationId ?? '', NEW_MESSAGE_ID.ASSISTANT, c);
+            editMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT, c);
           },
         })
-          .then(() => {
-            resolve();
+          .then((message) => {
+            resolve(message);
           })
           .catch((e) => {
             reject(e);
@@ -381,11 +418,11 @@ const useChat = () => {
           .postMessage(input)
           .then((res) => {
             editMessage(
-              conversationId ?? '',
+              conversationId,
               NEW_MESSAGE_ID.ASSISTANT,
               res.data.message.content[0].body
             );
-            resolve();
+            resolve(res.data.message.content[0].body);
           })
           .catch((e) => {
             reject(e);
@@ -395,7 +432,6 @@ const useChat = () => {
 
     postPromise
       .then(() => {
-        // 新規チャットの場合の処理
         if (isNewChat) {
           createNewConversation();
         } else {
@@ -404,11 +440,26 @@ const useChat = () => {
       })
       .catch((e) => {
         console.error(e);
-        removeMessage(conversationId ?? '', NEW_MESSAGE_ID.ASSISTANT);
+        removeMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT);
       })
       .finally(() => {
         setPostingMessage(false);
       });
+
+    // get related document (for RAG)
+    const documents: RelatedDocument[] = [];
+    if (input.botId) {
+      conversationApi
+        .getRelatedDocuments({
+          botId: input.botId,
+          conversationId: input.conversationId!,
+          message: input.message,
+        })
+        .then((res) => {
+          documents.push(...res.data);
+          setRelatedDocuments(NEW_MESSAGE_ID.ASSISTANT, documents);
+        });
+    }
   };
 
   /**
@@ -450,7 +501,6 @@ const useChat = () => {
         ...parentMessage,
         parentMessageId: parentMessage.parent,
       },
-      stream: true,
       botId: props?.bot?.botId,
     };
 
@@ -500,6 +550,21 @@ const useChat = () => {
       .finally(() => {
         setPostingMessage(false);
       });
+
+    // get related document (for RAG)
+    const documents: RelatedDocument[] = [];
+    if (input.botId) {
+      conversationApi
+        .getRelatedDocuments({
+          botId: input.botId,
+          conversationId: input.conversationId!,
+          message: input.message,
+        })
+        .then((res) => {
+          documents.push(...res.data);
+          setRelatedDocuments(NEW_MESSAGE_ID.ASSISTANT, documents);
+        });
+    }
   };
 
   const hasError = useMemo(() => {
@@ -548,6 +613,9 @@ const useChat = () => {
           bot: params.bot,
         });
       }
+    },
+    getRelatedDocuments: (messageId: string) => {
+      return relatedDocuments[messageId] ?? [];
     },
   };
 };

@@ -19,6 +19,7 @@ import { twMerge } from 'tailwind-merge';
 import { create } from 'zustand';
 import ButtonFileChoose from './ButtonFileChoose';
 import { BaseProps } from '../@types/common';
+import ModalDialog from './ModalDialog';
 
 type Props = BaseProps & {
   disabledSend?: boolean;
@@ -37,6 +38,10 @@ const useInputChatContentState = create<{
   pushBase64EncodedImage: (encodedImage: string) => void;
   removeBase64EncodedImage: (index: number) => void;
   clearBase64EncodedImages: () => void;
+  previewImageUrl: string | null;
+  setPreviewImageUrl: (url: string | null) => void;
+  isOpenPreviewImage: boolean;
+  setIsOpenPreviewImage: (isOpen: boolean) => void;
 }>((set, get) => ({
   base64EncodedImages: [],
   pushBase64EncodedImage: (encodedImage) => {
@@ -58,6 +63,14 @@ const useInputChatContentState = create<{
       base64EncodedImages: [],
     });
   },
+  previewImageUrl: null,
+  setPreviewImageUrl: (url) => {
+    set({ previewImageUrl: url });
+  },
+  isOpenPreviewImage: false,
+  setIsOpenPreviewImage: (isOpen) => {
+    set({ isOpenPreviewImage: isOpen });
+  },
 }));
 
 const InputChatContent: React.FC<Props> = (props) => {
@@ -71,6 +84,10 @@ const InputChatContent: React.FC<Props> = (props) => {
     pushBase64EncodedImage,
     removeBase64EncodedImage,
     clearBase64EncodedImages,
+    previewImageUrl,
+    setPreviewImageUrl,
+    isOpenPreviewImage,
+    setIsOpenPreviewImage,
   } = useInputChatContentState();
 
   useEffect(() => {
@@ -172,7 +189,6 @@ const InputChatContent: React.FC<Props> = (props) => {
       }
 
       for (let i = 0; i < clipboardItems.length; i++) {
-        console.log(clipboardItems[i].type);
         if (model?.supportMediaType.includes(clipboardItems[i].type)) {
           const pastedFile = clipboardItems[i].getAsFile();
           if (pastedFile) {
@@ -269,6 +285,10 @@ const InputChatContent: React.FC<Props> = (props) => {
                 <img
                   src={imageFile}
                   className="h-16 rounded border border-aws-squid-ink"
+                  onClick={() => {
+                    setPreviewImageUrl(imageFile);
+                    setIsOpenPreviewImage(true);
+                  }}
                 />
                 <ButtonIcon
                   className="absolute right-0 top-0 -m-2 border border-aws-sea-blue bg-white p-1 text-xs text-aws-sea-blue"
@@ -286,6 +306,19 @@ const InputChatContent: React.FC<Props> = (props) => {
                 </div>
               </div>
             )}
+            <ModalDialog
+              isOpen={isOpenPreviewImage}
+              onClose={() => setIsOpenPreviewImage(false)}
+              // Set image null after transition end
+              onAfterLeave={() => setPreviewImageUrl(null)}
+              widthFromContent={true}>
+              {previewImageUrl && (
+                <img
+                  src={previewImageUrl}
+                  className="mx-auto max-h-[80vh] max-w-full rounded-md"
+                />
+              )}
+            </ModalDialog>
           </div>
         )}
         {messages.length > 1 && (
