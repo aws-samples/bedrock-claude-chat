@@ -305,7 +305,7 @@ const useChat = () => {
       : tmpMessages[tmpMessages.length - 1].id;
 
     const modelToPost = isNewChat ? modelId : getPostedModel();
-
+    console.log(modelToPost)
     const imageContents: MessageContent['content'] = (
       base64EncodedImages ?? []
     ).map((encodedImage) => {

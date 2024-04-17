@@ -7,17 +7,27 @@ const availableModels: {
   label: string;
   supportMediaType: string[];
 }[] = [
-  {
-    modelId: 'claude-v3-haiku',
-    label: 'Claude 3 (Haiku)',
-    supportMediaType: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
-  },
-  {
-    modelId: 'claude-v3-sonnet',
-    label: 'Claude 3 (Sonnet)',
-    supportMediaType: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
-  },
-];
+    {
+      modelId: 'claude-v3-haiku',
+      label: 'Claude 3 (Haiku)',
+      supportMediaType: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+    },
+    {
+      modelId: 'claude-v3-sonnet',
+      label: 'Claude 3 (Sonnet)',
+      supportMediaType: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+    },
+    {
+      modelId: 'mistral-7b-instruct',
+      label: 'Mistral 7B',
+      supportMediaType: [],
+    },
+    {
+      modelId: 'mixtral-8x7b-instruct',
+      label: 'Mixtral-8x7B',
+      supportMediaType: [],
+    },
+  ];
 
 const useModelState = create<{
   modelId: Model;

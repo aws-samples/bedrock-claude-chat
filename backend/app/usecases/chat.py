@@ -46,7 +46,8 @@ def prepare_conversation(
 
     try:
         # Fetch existing conversation
-        conversation = find_conversation_by_id(user_id, chat_input.conversation_id)
+        conversation = find_conversation_by_id(
+            user_id, chat_input.conversation_id)
         logger.info(f"Found conversation: {conversation}")
         parent_id = chat_input.message.parent_message_id
         if chat_input.message.parent_message_id == "system" and chat_input.bot_id:
@@ -158,7 +159,8 @@ def prepare_conversation(
         create_time=current_time,
     )
     conversation.message_map[message_id] = new_message
-    conversation.message_map[parent_id].children.append(message_id)  # type: ignore
+    conversation.message_map[parent_id].children.append(
+        message_id)  # type: ignore
 
     return (message_id, conversation, bot)
 
@@ -237,18 +239,29 @@ def get_bedrock_response(args: dict):
         "temperature": args['temperature'],
     })
 
-    response = client.invoke_model(
-        modelId=args['model'],
-        body=body,
-    )
-    response_body = json.loads(response.get('body').read())
-    logger.debug(response_body)
-    return response_body
+    logger.debug(args)
+    if args['stream']:
+        # TODO:
+        try:
+            response = client.invoke_model_with_response_stream(
+                modelId=args['model'],
+                body=body,
+            )
+            return response.get('body')
+        except Exception as e:
+            logger.error(e)
+    else:
+        response = client.invoke_model(
+            modelId=args['model'],
+            body=body,
+        )
+        response_body = json.loads(response.get('body').read())
+        logger.debug(response_body)
+        return response_body
 
 
 def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     user_msg_id, conversation, bot = prepare_conversation(user_id, chat_input)
-
 
     message_map = conversation.message_map
     if bot and is_running_on_lambda():
@@ -295,7 +308,8 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     # Append bedrock output to the existing conversation
     message = MessageModel(
         role="assistant",
-        content=[ContentModel(content_type="text", body=reply_txt, media_type=None)],
+        content=[ContentModel(content_type="text",
+                              body=reply_txt, media_type=None)],
         model=chat_input.message.model,
         children=[],
         parent=user_msg_id,
@@ -318,7 +332,8 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         input_tokens = 256
         output_tokens = 1024
 
-    price = calculate_price(chat_input.message.model, input_tokens, output_tokens)
+    price = calculate_price(chat_input.message.model,
+                            input_tokens, output_tokens)
     conversation.total_price += price
 
     # Store updated conversation
