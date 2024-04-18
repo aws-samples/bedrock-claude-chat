@@ -41,6 +41,7 @@ Analyze usage for each user / bot on administrator dashboard. [detail](./docs/AD
 - 中文 💬
 - Français 💬
 - Deutsch 💬
+- Español 💬
 
 ## 🚀 Super-easy Deployment
 
