@@ -74,3 +74,15 @@ export type MessageMap = {
 export type Conversation = ConversationMeta & {
   messageMap: MessageMap;
 };
+
+export type PostFeedbackRequest = {
+  thumbsUp: boolean;
+  category: null | string;
+  comment: null | string;
+};
+
+export type PostFeedbackResponse = {
+  thumbsUp: boolean;
+  category: string;
+  comment: string;
+};
