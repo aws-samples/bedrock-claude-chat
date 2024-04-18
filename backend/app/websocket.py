@@ -164,6 +164,7 @@ def process_chat_input(
                 children=[],
                 parent=user_msg_id,
                 create_time=get_current_time(),
+                feedback=None,
             )
             conversation.message_map[assistant_msg_id] = message
             # Append children to parent
