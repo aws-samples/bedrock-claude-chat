@@ -161,6 +161,7 @@ def prepare_conversation(
         create_time=current_time,
     )
     conversation.message_map[message_id] = new_message
+    logger.debug(f"parent_id in message_map: {parent_id}")
     conversation.message_map[parent_id].children.append(
         message_id)  # type: ignore
 
@@ -276,11 +277,12 @@ def get_bedrock_response(args: dict):
         "prompt": prompt,
         "max_tokens": args['max_tokens'],
         "temperature": args['temperature'],
+        "top_p": args['top_p'],
+        "top_k": args['top_k']
     })
 
     logger.debug(args)
     if args['stream']:
-        # TODO:
         try:
             response = client.invoke_model_with_response_stream(
                 modelId=args['model'],

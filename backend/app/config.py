@@ -29,10 +29,10 @@ GENERATION_CONFIG: GenerationConfig = {
 # Ref: https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-mistral.html#model-parameters-mistral-request-response
 MISTRAL_GENERATION_CONFIG: GenerationConfig = {
     "max_tokens": 4096,
-    "top_k": 200,
-    "top_p": 0.999,
+    "top_k": 50,
+    "top_p": 0.9,
     "temperature": 0.5,
-    "stop": 0,
+    "stop_sequences": [""],
 }
 
 # Configure embedding parameter.
