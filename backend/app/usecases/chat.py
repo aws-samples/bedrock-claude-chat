@@ -16,6 +16,7 @@ from app.repositories.custom_bot import find_alias_by_id, store_alias
 from app.repositories.models.conversation import (
     ContentModel,
     ConversationModel,
+    FeedbackModel,
     MessageModel,
 )
 from app.repositories.models.custom_bot import BotAliasModel, BotModel
@@ -24,6 +25,7 @@ from app.routes.schemas.conversation import (
     ChatOutput,
     Content,
     Conversation,
+    FeedbackOutput,
     MessageOutput,
     RelatedDocumentsOutput,
 )
@@ -79,6 +81,7 @@ def prepare_conversation(
                 children=[],
                 parent=None,
                 create_time=current_time,
+                feedback=None,
             )
         }
         parent_id = "system"
@@ -100,6 +103,7 @@ def prepare_conversation(
                 children=[],
                 parent="system",
                 create_time=current_time,
+                feedback=None,
             )
             initial_message_map["system"].children.append("instruction")
 
@@ -157,6 +161,7 @@ def prepare_conversation(
         children=[],
         parent=parent_id,
         create_time=current_time,
+        feedback=None,
     )
     conversation.message_map[message_id] = new_message
     conversation.message_map[parent_id].children.append(message_id)  # type: ignore
@@ -301,6 +306,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         children=[],
         parent=user_msg_id,
         create_time=get_current_time(),
+        feedback=None,
     )
     conversation.message_map[assistant_msg_id] = message
 
@@ -341,6 +347,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
             model=message.model,
             children=message.children,
             parent=message.parent,
+            feedback=None,
         ),
         bot_id=conversation.bot_id,
     )
@@ -389,6 +396,7 @@ def propose_conversation_title(
         children=[],
         parent=conversation.last_message_id,
         create_time=get_current_time(),
+        feedback=None,
     )
     messages.append(new_message)
 
@@ -419,6 +427,15 @@ def fetch_conversation(user_id: str, conversation_id: str) -> Conversation:
             model=message.model,
             children=message.children,
             parent=message.parent,
+            feedback=(
+                FeedbackOutput(
+                    thumbs_up=message.feedback.thumbs_up,
+                    category=message.feedback.category,
+                    comment=message.feedback.comment,
+                )
+                if message.feedback
+                else None
+            ),
         )
         for message_id, message in conversation.message_map.items()
     }

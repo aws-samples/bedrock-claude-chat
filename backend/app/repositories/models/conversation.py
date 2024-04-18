@@ -10,6 +10,12 @@ class ContentModel(BaseModel):
     body: str
 
 
+class FeedbackModel(BaseModel):
+    thumbs_up: bool
+    category: str
+    comment: str
+
+
 class MessageModel(BaseModel):
     role: str
     content: list[ContentModel]
@@ -17,6 +23,7 @@ class MessageModel(BaseModel):
     children: list[str]
     parent: str | None
     create_time: float
+    feedback: FeedbackModel | None
 
 
 class ConversationModel(BaseModel):
