@@ -4,12 +4,6 @@ sys.path.insert(0, ".")
 import unittest
 from pprint import pprint
 
-from tests.test_usecases.utils.bot_factory import (
-    create_test_private_bot,
-    create_test_public_bot,
-    create_test_instruction_template,
-)
-
 from anthropic.types import MessageStopEvent
 from app.bedrock import get_model_id
 from app.config import GENERATION_CONFIG
@@ -30,7 +24,6 @@ from app.repositories.models.conversation import (
     ConversationModel,
     MessageModel,
 )
-
 from app.routes.schemas.conversation import (
     ChatInput,
     ChatOutput,
@@ -48,6 +41,11 @@ from app.usecases.chat import (
 )
 from app.utils import get_anthropic_client
 from app.vector_search import SearchResult
+from tests.test_usecases.utils.bot_factory import (
+    create_test_instruction_template,
+    create_test_private_bot,
+    create_test_public_bot,
+)
 
 MODEL: type_model_name = "claude-instant-v1"
 
@@ -64,6 +62,7 @@ class TestTraceToRoot(unittest.TestCase):
                 children=["bot_1"],
                 parent=None,
                 create_time=1627984879.9,
+                feedback=None,
             ),
             "bot_1": MessageModel(
                 role="assistant",
@@ -74,6 +73,7 @@ class TestTraceToRoot(unittest.TestCase):
                 children=["user_2"],
                 parent="user_1",
                 create_time=1627984879.9,
+                feedback=None,
             ),
             "user_2": MessageModel(
                 role="user",
@@ -84,6 +84,7 @@ class TestTraceToRoot(unittest.TestCase):
                 children=["bot_2"],
                 parent="bot_1",
                 create_time=1627984879.9,
+                feedback=None,
             ),
             "bot_2": MessageModel(
                 role="assistant",
@@ -94,6 +95,7 @@ class TestTraceToRoot(unittest.TestCase):
                 children=["user_3a", "user_3b"],
                 parent="user_2",
                 create_time=1627984879.9,
+                feedback=None,
             ),
             "user_3a": MessageModel(
                 role="user",
@@ -104,6 +106,7 @@ class TestTraceToRoot(unittest.TestCase):
                 children=[],
                 parent="bot_2",
                 create_time=1627984879.9,
+                feedback=None,
             ),
             "user_3b": MessageModel(
                 role="user",
@@ -114,6 +117,7 @@ class TestTraceToRoot(unittest.TestCase):
                 children=[],
                 parent="bot_2",
                 create_time=1627984879.9,
+                feedback=None,
             ),
         }
         messages = trace_to_root("user_3a", message_map)
@@ -241,6 +245,7 @@ class TestContinueChat(unittest.TestCase):
                         children=["1-assistant"],
                         parent=None,
                         create_time=1627984879.9,
+                        feedback=None,
                     ),
                     "1-assistant": MessageModel(
                         role="assistant",
@@ -255,6 +260,7 @@ class TestContinueChat(unittest.TestCase):
                         children=[],
                         parent="1-user",
                         create_time=1627984879.9,
+                        feedback=None,
                     ),
                 },
                 bot_id=None,
@@ -325,6 +331,7 @@ class TestRegenerateChat(unittest.TestCase):
                         children=["a-2"],
                         parent=None,
                         create_time=1627984879.9,
+                        feedback=None,
                     ),
                     "a-2": MessageModel(
                         role="assistant",
@@ -339,6 +346,7 @@ class TestRegenerateChat(unittest.TestCase):
                         children=[],
                         parent="a-1",
                         create_time=1627984879.9,
+                        feedback=None,
                     ),
                     "b-1": MessageModel(
                         role="user",
@@ -353,6 +361,7 @@ class TestRegenerateChat(unittest.TestCase):
                         children=["b-2"],
                         parent=None,
                         create_time=1627984879.9,
+                        feedback=None,
                     ),
                     "b-2": MessageModel(
                         role="assistant",
@@ -367,6 +376,7 @@ class TestRegenerateChat(unittest.TestCase):
                         children=[],
                         parent="b-1",
                         create_time=1627984879.9,
+                        feedback=None,
                     ),
                 },
                 bot_id=None,
@@ -687,6 +697,7 @@ class TestInsertKnowledge(unittest.TestCase):
                     children=["1-user"],
                     parent=None,
                     create_time=1627984879.9,
+                    feedback=None,
                 ),
                 "1-user": MessageModel(
                     role="user",
@@ -701,6 +712,7 @@ class TestInsertKnowledge(unittest.TestCase):
                     children=[],
                     parent="instruction",
                     create_time=1627984879.9,
+                    feedback=None,
                 ),
             },
             bot_id="bot1",
