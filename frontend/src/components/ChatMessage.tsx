@@ -24,6 +24,7 @@ import useFeedback from '../hooks/useFeedback';
 import DialogFeedback from './DialogFeedback';
 
 type Props = BaseProps & {
+  conversationId: string;
   chatContent?: DisplayMessageContent;
   onChangeMessageId?: (messageId: string) => void;
   onSubmit?: (messageId: string, content: string) => void;
@@ -39,7 +40,10 @@ const ChatMessage: React.FC<Props> = (props) => {
   const [relatedDocuments, setRelatedDocuments] = useState<RelatedDocument[]>(
     []
   );
-  const { giveFeedback } = useFeedback(props.chatContent?.id ?? '');
+  const { giveFeedback } = useFeedback(
+    props.conversationId,
+    props.chatContent?.id ?? ''
+  );
 
   useEffect(() => {
     if (props.chatContent) {
@@ -78,7 +82,7 @@ const ChatMessage: React.FC<Props> = (props) => {
   const handleFeedbackSubmit = useCallback(
     (feedback: PutFeedbackRequest) => {
       if (chatContent && conversationId) {
-        giveFeedback(conversationId, chatContent.id, feedback);
+        giveFeedback(feedback);
       }
       setIsFeedbackOpen(false);
     },

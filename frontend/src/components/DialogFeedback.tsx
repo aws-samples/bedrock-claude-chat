@@ -41,9 +41,7 @@ const DialogFeedback: React.FC<Props> = (props) => {
           setCategory(val);
         }}
       />
-      <div className="mb-2 mt-2 font-bold">
-        {t('feedbackDialog.commentLabel')}
-      </div>
+      <div className="my-2 font-bold">{t('feedbackDialog.commentLabel')}</div>
       <Textarea
         value={comment}
         placeholder={t('feedbackDialog.commentPlaceholder')}

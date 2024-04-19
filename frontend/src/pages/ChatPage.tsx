@@ -307,6 +307,7 @@ const ChatPage: React.FC = () => {
                 message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
               }`}>
               <ChatMessage
+                conversationId={conversationId}
                 chatContent={message}
                 onChangeMessageId={onChangeCurrentMessageId}
                 onSubmit={onSubmitEditedContent}
