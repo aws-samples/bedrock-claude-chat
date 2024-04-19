@@ -6,12 +6,13 @@ import {
   PiNotePencil,
   PiUserFill,
   PiThumbsDown,
+  PiThumbsDownFill,
 } from 'react-icons/pi';
 import { BaseProps } from '../@types/common';
 import {
   DisplayMessageContent,
   RelatedDocument,
-  PostFeedbackRequest,
+  PutFeedbackRequest,
 } from '../@types/conversation';
 import ButtonIcon from './ButtonIcon';
 import Textarea from './Textarea';
@@ -38,7 +39,7 @@ const ChatMessage: React.FC<Props> = (props) => {
   const [relatedDocuments, setRelatedDocuments] = useState<RelatedDocument[]>(
     []
   );
-  const { postFeedback } = useFeedback();
+  const { giveFeedback } = useFeedback(props.chatContent?.id ?? '');
 
   useEffect(() => {
     if (props.chatContent) {
@@ -75,13 +76,13 @@ const ChatMessage: React.FC<Props> = (props) => {
   }, [changedContent, chatContent?.sibling, props]);
 
   const handleFeedbackSubmit = useCallback(
-    (feedback: PostFeedbackRequest) => {
+    (feedback: PutFeedbackRequest) => {
       if (chatContent && conversationId) {
-        postFeedback(conversationId, chatContent.id, feedback);
+        giveFeedback(conversationId, chatContent.id, feedback);
       }
       setIsFeedbackOpen(false);
     },
-    [chatContent, conversationId, postFeedback]
+    [chatContent, conversationId, giveFeedback]
   );
 
   return (
@@ -213,7 +214,11 @@ const ChatMessage: React.FC<Props> = (props) => {
               <ButtonIcon
                 className="text-dark-gray"
                 onClick={() => setIsFeedbackOpen(true)}>
-                <PiThumbsDown />
+                {chatContent.feedback && !chatContent.feedback.thumbsUp ? (
+                  <PiThumbsDownFill />
+                ) : (
+                  <PiThumbsDown />
+                )}
               </ButtonIcon>
               <ButtonCopy
                 className="text-dark-gray"
@@ -226,6 +231,7 @@ const ChatMessage: React.FC<Props> = (props) => {
       <DialogFeedback
         isOpen={isFeedbackOpen}
         thumbsUp={false}
+        feedback={chatContent?.feedback ?? undefined}
         onClose={() => setIsFeedbackOpen(false)}
         onSubmit={handleFeedbackSubmit}
       />

@@ -5,7 +5,7 @@
 > [!Tip]
 > 🔔**Claude3 Opus supported.** As of 04/17/2024, Bedrock only supports the `us-west-2` region. In this repository, Bedrock uses the `us-east-1` region by default. Therefore, if you plan to use it, please change the value of `bedrockRegion` before deployment. For more details, please refer [here](#deploy-using-cdk).
 
-> [!Info]
+> [!Important]
 > We'd like to hear your feedback to implement bot creation permission management feature. The plan is to grant permissions to individual users through the admin panel, but this may increase operational overhead for existing users. [Please take the survey](https://github.com/aws-samples/bedrock-claude-chat/issues/161#issuecomment-2058194533).
 
 > [!Warning]

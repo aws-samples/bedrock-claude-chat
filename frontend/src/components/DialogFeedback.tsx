@@ -5,15 +5,13 @@ import ModalDialog from './ModalDialog';
 import { useTranslation } from 'react-i18next';
 import Textarea from './Textarea';
 import Select from './Select';
+import { Feedback } from '../@types/conversation';
 
 type Props = BaseProps & {
   isOpen: boolean;
   thumbsUp: boolean;
-  onSubmit: (feedback: {
-    thumbsUp: boolean;
-    category: string | null;
-    comment: string | null;
-  }) => void;
+  feedback?: Feedback;
+  onSubmit: (feedback: Feedback) => void;
   onClose: () => void;
 };
 
@@ -22,8 +20,10 @@ const DialogFeedback: React.FC<Props> = (props) => {
   const categoryOptions = t('feedbackDialog.categories', {
     returnObjects: true,
   });
-  const [category, setCategory] = useState<string>(categoryOptions[0].value);
-  const [comment, setComment] = useState<string>('');
+  const [category, setCategory] = useState<string>(
+    props.feedback?.category || categoryOptions[0].value
+  );
+  const [comment, setComment] = useState<string>(props.feedback?.comment || '');
 
   const handleSubmit = () => {
     props.onSubmit({ thumbsUp: props.thumbsUp, category, comment });

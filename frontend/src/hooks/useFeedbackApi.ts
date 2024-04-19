@@ -1,19 +1,16 @@
 import useHttp from './useHttp';
-import {
-  PostFeedbackRequest,
-  PostFeedbackResponse,
-} from '../@types/conversation';
+import { PutFeedbackRequest, Feedback } from '../@types/conversation';
 
 const useFeedbackApi = () => {
   const http = useHttp();
 
   return {
-    postFeedback: (
+    putFeedback: (
       conversationId: string,
       messageId: string,
-      req: PostFeedbackRequest
+      req: PutFeedbackRequest
     ) => {
-      return http.put<PostFeedbackResponse, PostFeedbackRequest>(
+      return http.put<Feedback, PutFeedbackRequest>(
         `/conversation/${conversationId}/${messageId}/feedback`,
         req
       );
