@@ -152,36 +152,38 @@ const ChatMessageMarkdown: React.FC<Props> = ({
           // Footnote's Link is replaced with a component that displays the Reference document
           return (
             <sup className={className}>
-              {children.map((child, idx) => {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                if (child?.props['data-footnote-ref']) {
+              {
+                children.map ? children.map((child, idx) => {
                   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                   // @ts-ignore
-                  const href: string = child.props.href ?? '';
-                  if (/#user-content-fn-[\d]+/.test(href ?? '')) {
-                    const docNo = Number.parseInt(
-                      href.replace('#user-content-fn-', '')
-                    );
-                    const doc = relatedDocuments?.filter(
-                      (doc) => doc.rank === docNo
-                    )[0];
-
+                  if (child?.props['data-footnote-ref']) {
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
-                    const refNo = child.props.children[0];
-                    return (
-                      <RelatedDocumentLink
-                        key={`${idx}-${docNo}`}
-                        linkId={`${messageId}-${idx}-${docNo}`}
-                        relatedDocument={doc}>
-                        [{refNo}]
-                      </RelatedDocumentLink>
-                    );
+                    const href: string = child.props.href ?? '';
+                    if (/#user-content-fn-[\d]+/.test(href ?? '')) {
+                      const docNo = Number.parseInt(
+                        href.replace('#user-content-fn-', '')
+                      );
+                      const doc = relatedDocuments?.filter(
+                        (doc) => doc.rank === docNo
+                      )[0];
+  
+                      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                      // @ts-ignore
+                      const refNo = child.props.children[0];
+                      return (
+                        <RelatedDocumentLink
+                          key={`${idx}-${docNo}`}
+                          linkId={`${messageId}-${idx}-${docNo}`}
+                          relatedDocument={doc}>
+                          [{refNo}]
+                        </RelatedDocumentLink>
+                      );
+                    }
                   }
-                }
-                return child;
-              })}
+                  return child;
+                }) : []
+              }
             </sup>
           );
         },
