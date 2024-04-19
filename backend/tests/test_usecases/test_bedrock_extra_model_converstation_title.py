@@ -38,10 +38,12 @@ class TestConversationTitlePropose(unittest.TestCase):
             ),
             bot_id=None,
         )
-        output = propose_conversation_title(user_id="user1",
-                                            conversation_id=chat_input.conversation_id, model=MODEL)
+        output = propose_conversation_title(
+            user_id="user1", conversation_id=chat_input.conversation_id, model=MODEL
+        )
         self.output = output
         pprint(output)
+
 
 if __name__ == "__main__":
     unittest.main()

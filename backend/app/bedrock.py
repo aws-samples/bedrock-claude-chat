@@ -3,7 +3,12 @@ import logging
 import os
 
 from anthropic import AnthropicBedrock
-from app.config import ANTHROPIC_PRICING, DEFAULT_EMBEDDING_CONFIG, GENERATION_CONFIG, MISTRAL_GENERATION_CONFIG
+from app.config import (
+    ANTHROPIC_PRICING,
+    DEFAULT_EMBEDDING_CONFIG,
+    GENERATION_CONFIG,
+    MISTRAL_GENERATION_CONFIG,
+)
 from app.repositories.models.conversation import MessageModel
 from app.utils import get_bedrock_client, is_anthropic_model
 
@@ -26,9 +31,7 @@ def compose_args(
     # otherwise, use bedrock client
     model_id = get_model_id(model)
     if is_anthropic_model(model_id):
-        return compose_args_for_anthropic_client(
-            messages, model, instruction, stream
-        )
+        return compose_args_for_anthropic_client(messages, model, instruction, stream)
     else:
         return compose_args_for_other_client(messages, model, instruction, stream)
 
@@ -169,8 +172,7 @@ def calculate_query_embedding(question: str) -> list[float]:
 
 def calculate_document_embeddings(documents: list[str]) -> list[list[float]]:
     def _calculate_document_embeddings(documents: list[str]) -> list[list[float]]:
-        payload = json.dumps(
-            {"texts": documents, "input_type": "search_document"})
+        payload = json.dumps({"texts": documents, "input_type": "search_document"})
         accept = "application/json"
         content_type = "application/json"
 
@@ -191,7 +193,7 @@ def calculate_document_embeddings(documents: list[str]) -> list[list[float]]:
     embeddings = []
     for i in range(0, len(documents), BATCH_SIZE):
         # Split documents into batches to avoid exceeding the payload size limit
-        batch = documents[i: i + BATCH_SIZE]
+        batch = documents[i : i + BATCH_SIZE]
         embeddings += _calculate_document_embeddings(batch)
 
     return embeddings

@@ -1,6 +1,13 @@
 from ulid import ULID
 from app.vector_search import SearchResult, get_source_link, search_related_docs
-from app.utils import get_bedrock_client, get_anthropic_client, get_current_time, is_running_on_lambda, is_anthropic_model, is_mistral_model
+from app.utils import (
+    get_bedrock_client,
+    get_anthropic_client,
+    get_current_time,
+    is_running_on_lambda,
+    is_anthropic_model,
+    is_mistral_model,
+)
 import json
 import logging
 from copy import deepcopy
@@ -48,8 +55,7 @@ def prepare_conversation(
 
     try:
         # Fetch existing conversation
-        conversation = find_conversation_by_id(
-            user_id, chat_input.conversation_id)
+        conversation = find_conversation_by_id(user_id, chat_input.conversation_id)
         logger.info(f"Found conversation: {conversation}")
         parent_id = chat_input.message.parent_message_id
         if chat_input.message.parent_message_id == "system" and chat_input.bot_id:
@@ -162,8 +168,7 @@ def prepare_conversation(
     )
     conversation.message_map[message_id] = new_message
     logger.debug(f"parent_id in message_map: {parent_id}")
-    conversation.message_map[parent_id].children.append(
-        message_id)  # type: ignore
+    conversation.message_map[parent_id].children.append(message_id)  # type: ignore
 
     return (message_id, conversation, bot)
 
@@ -262,41 +267,48 @@ first answer [^1].
 def get_bedrock_response(args: dict):
 
     client = get_bedrock_client()
-    messages = args['messages']
+    messages = args["messages"]
 
     logger.debug(f"model: {args['model']}")
 
     prompt = "\n".join(
-        [message['content'][0]['text'] for message in messages if message['content'][0]['type'] == "text"])
+        [
+            message["content"][0]["text"]
+            for message in messages
+            if message["content"][0]["type"] == "text"
+        ]
+    )
 
-    if is_mistral_model(args['model']):
+    if is_mistral_model(args["model"]):
         prompt = f"<s>[INST] {prompt} [/INST]"
 
-    logger.info(f"Final Prompt: {prompt}")
-    body = json.dumps({
-        "prompt": prompt,
-        "max_tokens": args['max_tokens'],
-        "temperature": args['temperature'],
-        "top_p": args['top_p'],
-        "top_k": args['top_k']
-    })
+    logger.debug(f"Final Prompt: {prompt}")
+    body = json.dumps(
+        {
+            "prompt": prompt,
+            "max_tokens": args["max_tokens"],
+            "temperature": args["temperature"],
+            "top_p": args["top_p"],
+            "top_k": args["top_k"],
+        }
+    )
 
     logger.debug(args)
-    if args['stream']:
+    if args["stream"]:
         try:
             response = client.invoke_model_with_response_stream(
-                modelId=args['model'],
+                modelId=args["model"],
                 body=body,
             )
-            return response.get('body')
+            return response.get("body")
         except Exception as e:
             logger.error(e)
     else:
         response = client.invoke_model(
-            modelId=args['model'],
+            modelId=args["model"],
             body=body,
         )
-        response_body = json.loads(response.get('body').read())
+        response_body = json.loads(response.get("body").read())
         logger.debug(response_body)
         return response_body
 
@@ -332,25 +344,24 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
             message_map["instruction"].content[0].body
             if "instruction" in message_map
             else None
-        )
+        ),
     )
     logger.debug(args)
 
-    if is_anthropic_model(args['model']):
+    if is_anthropic_model(args["model"]):
         client = get_anthropic_client()
         response: AnthropicMessage = client.messages.create(**args)
         reply_txt = response.content[0].text
     else:
-        response: AnthropicMessage = get_bedrock_response(args)['outputs'][0]
-        reply_txt = response['text']
+        response: AnthropicMessage = get_bedrock_response(args)["outputs"][0]  # type: ignore[no-redef]
+        reply_txt = response["text"]  # type: ignore
 
     # Issue id for new assistant message
     assistant_msg_id = str(ULID())
     # Append bedrock output to the existing conversation
     message = MessageModel(
         role="assistant",
-        content=[ContentModel(content_type="text",
-                              body=reply_txt, media_type=None)],
+        content=[ContentModel(content_type="text", body=reply_txt, media_type=None)],
         model=chat_input.message.model,
         children=[],
         parent=user_msg_id,
@@ -362,19 +373,17 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     conversation.message_map[user_msg_id].children.append(assistant_msg_id)
     conversation.last_message_id = assistant_msg_id
 
-    if is_anthropic_model(args['model']):
+    if is_anthropic_model(args["model"]):
         # Update total pricing
         input_tokens = response.usage.input_tokens
         output_tokens = response.usage.output_tokens
 
-        logger.debug(
-            f"Input tokens: {input_tokens}, Output tokens: {output_tokens}")
+        logger.debug(f"Input tokens: {input_tokens}, Output tokens: {output_tokens}")
     else:
         input_tokens = 256
         output_tokens = 1024
 
-    price = calculate_price(chat_input.message.model,
-                            input_tokens, output_tokens)
+    price = calculate_price(chat_input.message.model, input_tokens, output_tokens)
     conversation.total_price += price
 
     # Store updated conversation
@@ -418,7 +427,7 @@ def propose_conversation_title(
         "claude-v3-sonnet",
         "claude-v3-haiku",
         "mistral-7b-instruct",
-        "mixtral-8x7b-instruct"
+        "mixtral-8x7b-instruct",
     ] = "claude-v3-haiku",
 ) -> str:
     PROMPT = """Reading the conversation above, what is the appropriate title for the conversation? When answering the title, please follow the rules below:
@@ -459,12 +468,12 @@ def propose_conversation_title(
         messages=messages,
         model=model,
     )
-    if is_anthropic_model(args['model']):
+    if is_anthropic_model(args["model"]):
         response = client.messages.create(**args)
         reply_txt = response.content[0].text
     else:
-        response: AnthropicMessage = get_bedrock_response(args)['outputs'][0]
-        reply_txt = response['text']
+        response: AnthropicMessage = get_bedrock_response(args)["outputs"][0]  # type: ignore[no-redef]
+        reply_txt = response["text"]
     return reply_txt
 
 

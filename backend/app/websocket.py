@@ -15,7 +15,12 @@ from app.repositories.conversation import RecordNotFoundError, store_conversatio
 from app.repositories.models.conversation import ContentModel, MessageModel
 from app.routes.schemas.conversation import ChatInputWithToken
 from app.usecases.bot import modify_bot_last_used_time
-from app.usecases.chat import insert_knowledge, prepare_conversation, trace_to_root, get_bedrock_response
+from app.usecases.chat import (
+    insert_knowledge,
+    prepare_conversation,
+    trace_to_root,
+    get_bedrock_response,
+)
 from app.utils import get_anthropic_client, get_current_time, is_anthropic_model
 from app.vector_search import search_related_docs
 from boto3.dynamodb.conditions import Key
@@ -48,8 +53,7 @@ def process_chat_input(
 
     user_id = decoded["sub"]
     try:
-        user_msg_id, conversation, bot = prepare_conversation(
-            user_id, chat_input)
+        user_msg_id, conversation, bot = prepare_conversation(user_id, chat_input)
     except RecordNotFoundError:
         if chat_input.bot_id:
             gatewayapi.post_to_connection(
@@ -105,7 +109,7 @@ def process_chat_input(
         stream=True,
     )
 
-    is_anthropic = is_anthropic_model(args['model'])
+    is_anthropic = is_anthropic_model(args["model"])
     logger.info(f"Invoking bedrock with args: {args}")
     try:
         if is_anthropic:
@@ -176,13 +180,11 @@ def process_chat_input(
                 )
                 conversation.message_map[assistant_msg_id] = message
                 # Append children to parent
-                conversation.message_map[user_msg_id].children.append(
-                    assistant_msg_id)
+                conversation.message_map[user_msg_id].children.append(assistant_msg_id)
                 conversation.last_message_id = assistant_msg_id
 
                 # Update total pricing
-                metrics = event.model_dump(
-                )["amazon-bedrock-invocationMetrics"]
+                metrics = event.model_dump()["amazon-bedrock-invocationMetrics"]
                 input_token_count = metrics.get("inputTokenCount")
                 output_token_count = metrics.get("outputTokenCount")
 
@@ -200,12 +202,12 @@ def process_chat_input(
                 continue
     else:
         for event in response:
-            chunk = event.get('chunk')
+            chunk = event.get("chunk")
             if chunk:
                 msg_chunk = json.loads(chunk.get("bytes").decode())
-                is_stop = msg_chunk['outputs'][0]['stop_reason']
+                is_stop = msg_chunk["outputs"][0]["stop_reason"]
                 if not is_stop:
-                    msg = msg_chunk['outputs'][0]['text']
+                    msg = msg_chunk["outputs"][0]["text"]
                     completions.append(msg)
                     data_to_send = json.dumps(
                         dict(
@@ -218,10 +220,7 @@ def process_chat_input(
                     )
                 else:
                     last_data_to_send = json.dumps(
-                        dict(
-                            completion="",
-                            stop_reason=is_stop
-                        )
+                        dict(completion="", stop_reason=is_stop)
                     ).encode("utf-8")
 
                     concatenated = "".join(completions)
@@ -241,7 +240,8 @@ def process_chat_input(
                     conversation.message_map[assistant_msg_id] = message
                     # Append children to parent
                     conversation.message_map[user_msg_id].children.append(
-                        assistant_msg_id)
+                        assistant_msg_id
+                    )
                     conversation.last_message_id = assistant_msg_id
 
                     # Update total pricing
@@ -262,8 +262,7 @@ def process_chat_input(
 
     # Send last completion after saving conversation
     try:
-        logger.debug(
-            f"Sending last completion: {last_data_to_send.decode('utf-8')}")
+        logger.debug(f"Sending last completion: {last_data_to_send.decode('utf-8')}")
         gatewayapi.post_to_connection(
             ConnectionId=connection_id, Data=last_data_to_send
         )
@@ -295,8 +294,7 @@ def handler(event, context):
     domain_name = event["requestContext"]["domainName"]
     stage = event["requestContext"]["stage"]
     endpoint_url = f"https://{domain_name}/{stage}"
-    gatewayapi = boto3.client(
-        "apigatewaymanagementapi", endpoint_url=endpoint_url)
+    gatewayapi = boto3.client("apigatewaymanagementapi", endpoint_url=endpoint_url)
 
     now = datetime.now()
     expire = int(now.timestamp()) + 60 * 2  # 2 minute from now
@@ -323,14 +321,12 @@ def handler(event, context):
             while True:
                 if last_evaluated_key:
                     response = table.query(
-                        KeyConditionExpression=Key(
-                            "ConnectionId").eq(connection_id),
+                        KeyConditionExpression=Key("ConnectionId").eq(connection_id),
                         ExclusiveStartKey=last_evaluated_key,
                     )
                 else:
                     response = table.query(
-                        KeyConditionExpression=Key(
-                            "ConnectionId").eq(connection_id)
+                        KeyConditionExpression=Key("ConnectionId").eq(connection_id)
                     )
 
                 message_parts.extend(response["Items"])
@@ -341,8 +337,7 @@ def handler(event, context):
                     break
 
             logger.info(f"Number of message chunks: {len(message_parts)}")
-            full_message = "".join(item["MessagePart"]
-                                   for item in message_parts)
+            full_message = "".join(item["MessagePart"] for item in message_parts)
 
             # Process the concatenated full message
             chat_input = ChatInputWithToken(**json.loads(full_message))
@@ -369,7 +364,6 @@ def handler(event, context):
         logger.error("".join(traceback.format_tb(e.__traceback__)))
         gatewayapi.post_to_connection(
             ConnectionId=connection_id,
-            Data=json.dumps(
-                {"status": "ERROR", "reason": str(e)}).encode("utf-8"),
+            Data=json.dumps({"status": "ERROR", "reason": str(e)}).encode("utf-8"),
         )
         return {"statusCode": 500, "body": str(e)}

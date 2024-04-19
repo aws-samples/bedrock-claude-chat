@@ -22,6 +22,7 @@ prompt = "あなたの名前は何ですか?"
 # You may customize the below prompt template for different models.
 body = f"<s>[INST]{prompt}[/INST]"
 
+
 class TestBedrockChat(unittest.TestCase):
     def test_chat(self):
         chat_input = ChatInput(
@@ -47,6 +48,7 @@ class TestBedrockChat(unittest.TestCase):
         self.output = output
 
         pprint(output.model_dump())
+
 
 if __name__ == "__main__":
     unittest.main()
