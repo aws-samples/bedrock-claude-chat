@@ -1,16 +1,18 @@
 import React, { ReactNode, useMemo } from 'react';
 import { BaseProps } from '../@types/common';
-import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import ReactMarkdown from 'react-markdown';
+import rehypeHighlight from 'rehype-highlight';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
-import ButtonCopy from './ButtonCopy';
 import { RelatedDocument } from '../@types/conversation';
 import { twMerge } from 'tailwind-merge';
 import { useTranslation } from 'react-i18next';
 import { create } from 'zustand';
 import { produce } from 'immer';
+import rehypeExternalLinks, { Options } from 'rehype-external-links';
+import rehypeKatex from 'rehype-katex';
+import remarkMath from 'remark-math';
+import "katex/dist/katex.min.css"
 
 type Props = BaseProps & {
   children: string;
@@ -117,78 +119,59 @@ const ChatMessageMarkdown: React.FC<Props> = ({
       ? `${children}\n${results.map((result) => `${result}: dummy`).join('\n')}`
       : children;
   }, [children]);
+  const rehypeExternalLinksOptions: Options = {
+    target: '_blank',
+    properties: { style: "word-break: break-all;", }
+  }
 
   return (
     <ReactMarkdown
       className={`${className ?? ''} prose max-w-full`}
       children={text}
-      remarkPlugins={[remarkGfm, remarkBreaks]}
+      remarkPlugins={[remarkGfm, remarkBreaks, remarkMath]}
+      rehypePlugins={[rehypeKatex, [rehypeExternalLinks, rehypeExternalLinksOptions], rehypeHighlight]}
       components={{
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        code({ node, inline, className, children, ...props }) {
-          const match = /language-(\w+)/.exec(className || '');
-          const codeText = String(children).replace(/\n$/, '');
-
-          return !inline && match ? (
-            <CopyToClipboard codeText={codeText}>
-              <SyntaxHighlighter
-                {...props}
-                children={codeText}
-                style={vscDarkPlus}
-                language={match[1]}
-                x
-                PreTag="div"
-                wrapLongLines={true}
-              />
-            </CopyToClipboard>
-          ) : (
-            <code {...props} className={className}>
-              {children}
-            </code>
-          );
-        },
-        //
+        // @ts-ignore
         sup({ className, children }) {
           // Footnote's Link is replaced with a component that displays the Reference document
           return (
             <sup className={className}>
-              {children.map((child, idx) => {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              {
                 // @ts-ignore
-                if (child?.props['data-footnote-ref']) {
-                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                  // @ts-ignore
-                  const href: string = child.props.href ?? '';
-                  if (/#user-content-fn-[\d]+/.test(href ?? '')) {
-                    const docNo = Number.parseInt(
-                      href.replace('#user-content-fn-', '')
-                    );
-                    const doc = relatedDocuments?.filter(
-                      (doc) => doc.rank === docNo
-                    )[0];
-
-                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                children.map ? children.map((child, idx) => {
+                  if (child?.props['data-footnote-ref']) {
                     // @ts-ignore
-                    const refNo = child.props.children[0];
-                    return (
-                      <RelatedDocumentLink
-                        key={`${idx}-${docNo}`}
-                        linkId={`${messageId}-${idx}-${docNo}`}
-                        relatedDocument={doc}>
-                        [{refNo}]
-                      </RelatedDocumentLink>
-                    );
+                    const href: string = child.props.href ?? '';
+                    if (/#user-content-fn-[\d]+/.test(href ?? '')) {
+                      const docNo = Number.parseInt(
+                        href.replace('#user-content-fn-', '')
+                      );
+                      const doc = relatedDocuments?.filter(
+                        (doc) => doc.rank === docNo
+                      )[0];
+                      // @ts-ignore
+                      const refNo = child.props.children[0];
+                      return (
+                        <RelatedDocumentLink
+                          key={`${idx}-${docNo}`}
+                          linkId={`${messageId}-${idx}-${docNo}`}
+                          relatedDocument={doc}>
+                          [{refNo}]
+                        </RelatedDocumentLink>
+                      );
+                    }
                   }
-                }
-                return child;
-              })}
+                  return child;
+                }) : []
+              }
             </sup>
           );
         },
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         section({ className, children, ...props }) {
-          // Normal Footnote not shown for RAG reference documents
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
+          // Normal Footnote not shown for RAG reference documents
           if (props['data-footnotes']) {
             return null;
           } else {
@@ -197,21 +180,6 @@ const ChatMessageMarkdown: React.FC<Props> = ({
         },
       }}
     />
-  );
-};
-
-const CopyToClipboard = ({
-  children,
-  codeText,
-}: {
-  children: React.ReactNode;
-  codeText: string;
-}) => {
-  return (
-    <div className="relative">
-      {children}
-      <ButtonCopy text={codeText} className="absolute right-2 top-2" />
-    </div>
   );
 };
 
