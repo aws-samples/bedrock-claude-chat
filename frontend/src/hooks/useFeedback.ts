@@ -6,9 +6,7 @@ const useFeedback = (conversationId: string, messageId: string) => {
   const { putFeedback } = useFeedbackApi();
   const conversationApi = useConversationApi();
 
-  const { mutate, data } = conversationApi.getConversation(conversationId);
-
-  const feedback = data?.messageMap[messageId].feedback;
+  const { mutate } = conversationApi.getConversation(conversationId);
 
   const giveFeedback = (feedback: PutFeedbackRequest) => {
     putFeedback(conversationId, messageId, feedback)
@@ -22,7 +20,6 @@ const useFeedback = (conversationId: string, messageId: string) => {
 
   return {
     giveFeedback,
-    feedback,
   };
 };
 
