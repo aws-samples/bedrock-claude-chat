@@ -131,18 +131,18 @@ const ChatMessageMarkdown: React.FC<Props> = ({
       remarkPlugins={[remarkGfm, remarkBreaks, remarkMath]}
       rehypePlugins={[rehypeKatex, [rehypeExternalLinks, rehypeExternalLinksOptions], rehypeHighlight]}
       components={{
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        // eslint-disable-next-line @ts-ignore
         // @ts-ignore
         sup({ className, children }) {
           // Footnote's Link is replaced with a component that displays the Reference document
           return (
             <sup className={className}>
               {
-                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                // eslint-disable-next-line @ts-ignore
                 // @ts-ignore
                 children.map ? children.map((child, idx) => {
                   if (child?.props['data-footnote-ref']) {
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                    // eslint-disable-next-line @ts-ignore
                     // @ts-ignore
                     const href: string = child.props.href ?? '';
                     if (/#user-content-fn-[\d]+/.test(href ?? '')) {
@@ -170,10 +170,10 @@ const ChatMessageMarkdown: React.FC<Props> = ({
             </sup>
           );
         },
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // eslint-disable-next-line @ts-ignore
         // @ts-ignore
         section({ className, children, ...props }) {
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          // eslint-disable-next-line @ts-ignore
           // @ts-ignore
           // Normal Footnote not shown for RAG reference documents
           if (props['data-footnotes']) {
