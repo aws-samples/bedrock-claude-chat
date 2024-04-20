@@ -13,6 +13,7 @@ import rehypeExternalLinks, { Options } from 'rehype-external-links';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
 import "katex/dist/katex.min.css"
+import ButtonCopy from './ButtonCopy';
 
 type Props = BaseProps & {
   children: string;
@@ -131,18 +132,25 @@ const ChatMessageMarkdown: React.FC<Props> = ({
       remarkPlugins={[remarkGfm, remarkBreaks, remarkMath]}
       rehypePlugins={[rehypeKatex, [rehypeExternalLinks, rehypeExternalLinksOptions], rehypeHighlight]}
       components={{
-        // eslint-disable-next-line @ts-ignore
-        // @ts-ignore
+        code({ children }) {
+          const codeText = String(children).replace(/\n$/, '');
+
+          return <>
+            <CopyToClipboard codeText={codeText}>
+              {children}
+            </CopyToClipboard>
+          </>
+        },
         sup({ className, children }) {
           // Footnote's Link is replaced with a component that displays the Reference document
           return (
             <sup className={className}>
               {
-                // eslint-disable-next-line @ts-ignore
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
                 children.map ? children.map((child, idx) => {
                   if (child?.props['data-footnote-ref']) {
-                    // eslint-disable-next-line @ts-ignore
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
                     const href: string = child.props.href ?? '';
                     if (/#user-content-fn-[\d]+/.test(href ?? '')) {
@@ -152,6 +160,8 @@ const ChatMessageMarkdown: React.FC<Props> = ({
                       const doc = relatedDocuments?.filter(
                         (doc) => doc.rank === docNo
                       )[0];
+
+                      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                       // @ts-ignore
                       const refNo = child.props.children[0];
                       return (
@@ -170,12 +180,10 @@ const ChatMessageMarkdown: React.FC<Props> = ({
             </sup>
           );
         },
-        // eslint-disable-next-line @ts-ignore
-        // @ts-ignore
         section({ className, children, ...props }) {
-          // eslint-disable-next-line @ts-ignore
-          // @ts-ignore
           // Normal Footnote not shown for RAG reference documents
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
           if (props['data-footnotes']) {
             return null;
           } else {
@@ -184,6 +192,21 @@ const ChatMessageMarkdown: React.FC<Props> = ({
         },
       }}
     />
+  );
+};
+
+const CopyToClipboard = ({
+  children,
+  codeText,
+}: {
+  children: React.ReactNode;
+  codeText: string;
+}) => {
+  return (
+    <div className="relative">
+      {children}
+      <ButtonCopy text={codeText} className="absolute right-2 top-2" />
+    </div>
   );
 };
 
