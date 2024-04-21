@@ -183,6 +183,7 @@ const ChatMessageMarkdown: React.FC<Props> = ({
         },
         section({ className, children, ...props }) {
           // Normal Footnote not shown for RAG reference documents
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           if (props['data-footnotes']) {
             return null;
