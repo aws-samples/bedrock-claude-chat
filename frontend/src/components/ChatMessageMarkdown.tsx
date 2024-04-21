@@ -14,6 +14,7 @@ import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
 import "katex/dist/katex.min.css"
 import ButtonCopy from './ButtonCopy';
+import { onlyText } from 'react-children-utilities';
 
 type Props = BaseProps & {
   children: string;
@@ -133,7 +134,7 @@ const ChatMessageMarkdown: React.FC<Props> = ({
       rehypePlugins={[rehypeKatex, [rehypeExternalLinks, rehypeExternalLinksOptions], rehypeHighlight]}
       components={{
         code({ children }) {
-          const codeText = String(children).replace(/\n$/, '');
+          const codeText = onlyText(children).replace(/\n$/, '');
 
           return <>
             <CopyToClipboard codeText={codeText}>
@@ -182,7 +183,6 @@ const ChatMessageMarkdown: React.FC<Props> = ({
         },
         section({ className, children, ...props }) {
           // Normal Footnote not shown for RAG reference documents
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
           if (props['data-footnotes']) {
             return null;
@@ -209,5 +209,4 @@ const CopyToClipboard = ({
     </div>
   );
 };
-
 export default ChatMessageMarkdown;
