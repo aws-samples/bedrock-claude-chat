@@ -11,12 +11,12 @@ from app.auth import verify_token
 from app.bedrock import calculate_price, compose_args_for_anthropic_client
 from app.config import GENERATION_CONFIG, SEARCH_CONFIG
 from app.repositories.conversation import RecordNotFoundError, store_conversation
-from app.repositories.models.conversation import ContentModel, MessageModel
+from app.repositories.models.conversation import ChunkModel, ContentModel, MessageModel
 from app.routes.schemas.conversation import ChatInputWithToken
 from app.usecases.bot import modify_bot_last_used_time
 from app.usecases.chat import insert_knowledge, prepare_conversation, trace_to_root
 from app.utils import get_anthropic_client, get_current_time
-from app.vector_search import search_related_docs
+from app.vector_search import filter_used_results, search_related_docs
 from boto3.dynamodb.conditions import Key
 from ulid import ULID
 
@@ -63,6 +63,7 @@ def process_chat_input(
             return {"statusCode": 400, "body": "Invalid request."}
 
     message_map = conversation.message_map
+    search_results = []
     if bot and bot.has_knowledge():
         gatewayapi.post_to_connection(
             ConnectionId=connection_id,
@@ -75,13 +76,13 @@ def process_chat_input(
         # Fetch most related documents from vector store
         # NOTE: Currently embedding not support multi-modal. For now, use the last text content.
         query = conversation.message_map[user_msg_id].content[-1].body
-        results = search_related_docs(
+        search_results = search_related_docs(
             bot_id=bot.id, limit=SEARCH_CONFIG["max_results"], query=query
         )
-        logger.info(f"Search results from vector store: {results}")
+        logger.info(f"Search results from vector store: {search_results}")
 
         # Insert contexts to instruction
-        conversation_with_context = insert_knowledge(conversation, results)
+        conversation_with_context = insert_knowledge(conversation, search_results)
         message_map = conversation_with_context.message_map
 
     messages = trace_to_root(
@@ -151,6 +152,15 @@ def process_chat_input(
         elif isinstance(event, MessageStopEvent):
             # Persist conversation before finish streaming so that front-end can avoid 404 issue
             concatenated = "".join(completions)
+
+            # Used chunks for RAG generation
+            used_chunks = None
+            if bot:
+                used_chunks = [
+                    ChunkModel(content=r.content, source=r.source, rank=r.rank)
+                    for r in filter_used_results(concatenated, search_results)
+                ]
+
             # Append entire completion as the last message
             assistant_msg_id = str(ULID())
             message = MessageModel(
@@ -165,6 +175,7 @@ def process_chat_input(
                 parent=user_msg_id,
                 create_time=get_current_time(),
                 feedback=None,
+                used_chunks=used_chunks,
             )
             conversation.message_map[assistant_msg_id] = message
             # Append children to parent

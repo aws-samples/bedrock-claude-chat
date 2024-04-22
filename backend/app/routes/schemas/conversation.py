@@ -47,6 +47,12 @@ class FeedbackOutput(BaseSchema):
     comment: str
 
 
+class Chunk(BaseSchema):
+    content: str
+    source: str
+    rank: int
+
+
 class MessageInput(BaseSchema):
     role: str
     content: list[Content]
@@ -63,6 +69,7 @@ class MessageOutput(BaseSchema):
     model: type_model_name
     children: list[str]
     feedback: FeedbackOutput | None
+    used_chunks: list[Chunk] | None
     parent: str | None
 
 

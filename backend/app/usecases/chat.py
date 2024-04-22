@@ -14,15 +14,16 @@ from app.repositories.conversation import (
 )
 from app.repositories.custom_bot import find_alias_by_id, store_alias
 from app.repositories.models.conversation import (
+    ChunkModel,
     ContentModel,
     ConversationModel,
-    FeedbackModel,
     MessageModel,
 )
 from app.repositories.models.custom_bot import BotAliasModel, BotModel
 from app.routes.schemas.conversation import (
     ChatInput,
     ChatOutput,
+    Chunk,
     Content,
     Conversation,
     FeedbackOutput,
@@ -31,7 +32,12 @@ from app.routes.schemas.conversation import (
 )
 from app.usecases.bot import fetch_bot, modify_bot_last_used_time
 from app.utils import get_anthropic_client, get_current_time, is_running_on_lambda
-from app.vector_search import SearchResult, get_source_link, search_related_docs
+from app.vector_search import (
+    SearchResult,
+    filter_used_results,
+    get_source_link,
+    search_related_docs,
+)
 from ulid import ULID
 
 logger = logging.getLogger(__name__)
@@ -67,7 +73,7 @@ def prepare_conversation(
         )
 
         initial_message_map = {
-            # Dummy system message
+            # Dummy system message, which is used for root node of the message tree.
             "system": MessageModel(
                 role="system",
                 content=[
@@ -82,6 +88,7 @@ def prepare_conversation(
                 parent=None,
                 create_time=current_time,
                 feedback=None,
+                used_chunks=None,
             )
         }
         parent_id = "system"
@@ -104,6 +111,7 @@ def prepare_conversation(
                 parent="system",
                 create_time=current_time,
                 feedback=None,
+                used_chunks=None,
             )
             initial_message_map["system"].children.append("instruction")
 
@@ -162,6 +170,7 @@ def prepare_conversation(
         parent=parent_id,
         create_time=current_time,
         feedback=None,
+        used_chunks=None,
     )
     conversation.message_map[message_id] = new_message
     conversation.message_map[parent_id].children.append(message_id)  # type: ignore
@@ -264,18 +273,19 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     user_msg_id, conversation, bot = prepare_conversation(user_id, chat_input)
 
     message_map = conversation.message_map
+    search_results = []
     if bot and is_running_on_lambda():
         # NOTE: `is_running_on_lambda`is a workaround for local testing due to no postgres mock.
         # Fetch most related documents from vector store
         # NOTE: Currently embedding not support multi-modal. For now, use the last content.
         query = conversation.message_map[user_msg_id].content[-1].body
-        results = search_related_docs(
+        search_results = search_related_docs(
             bot_id=bot.id, limit=SEARCH_CONFIG["max_results"], query=query
         )
-        logger.info(f"Search results from vector store: {results}")
+        logger.info(f"Search results from vector store: {search_results}")
 
         # Insert contexts to instruction
-        conversation_with_context = insert_knowledge(conversation, results)
+        conversation_with_context = insert_knowledge(conversation, search_results)
         message_map = conversation_with_context.message_map
 
     messages = trace_to_root(
@@ -296,6 +306,14 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     response: AnthropicMessage = client.messages.create(**args)
     reply_txt = response.content[0].text
 
+    # Used chunks for RAG generation
+    used_chunks = None
+    if bot and is_running_on_lambda():
+        used_chunks = [
+            ChunkModel(content=r.content, source=r.source, rank=r.rank)
+            for r in filter_used_results(reply_txt, search_results)
+        ]
+
     # Issue id for new assistant message
     assistant_msg_id = str(ULID())
     # Append bedrock output to the existing conversation
@@ -307,6 +325,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         parent=user_msg_id,
         create_time=get_current_time(),
         feedback=None,
+        used_chunks=used_chunks,
     )
     conversation.message_map[assistant_msg_id] = message
 
@@ -348,6 +367,18 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
             children=message.children,
             parent=message.parent,
             feedback=None,
+            used_chunks=(
+                [
+                    Chunk(
+                        content=c.content,
+                        source=c.source,
+                        rank=c.rank,
+                    )
+                    for c in message.used_chunks
+                ]
+                if message.used_chunks
+                else None
+            ),
         ),
         bot_id=conversation.bot_id,
     )
@@ -397,6 +428,7 @@ def propose_conversation_title(
         parent=conversation.last_message_id,
         create_time=get_current_time(),
         feedback=None,
+        used_chunks=None,
     )
     messages.append(new_message)
 
@@ -434,6 +466,18 @@ def fetch_conversation(user_id: str, conversation_id: str) -> Conversation:
                     comment=message.feedback.comment,
                 )
                 if message.feedback
+                else None
+            ),
+            used_chunks=(
+                [
+                    Chunk(
+                        content=c.content,
+                        source=c.source,
+                        rank=c.rank,
+                    )
+                    for c in message.used_chunks
+                ]
+                if message.used_chunks
                 else None
             ),
         )

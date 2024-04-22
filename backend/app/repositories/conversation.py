@@ -14,6 +14,7 @@ from app.repositories.common import (
     decompose_conv_id,
 )
 from app.repositories.models.conversation import (
+    ChunkModel,
     ContentModel,
     ConversationMeta,
     ConversationModel,
@@ -212,6 +213,18 @@ def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationM
                         comment=v["feedback"]["comment"],
                     )
                     if v.get("feedback")
+                    else None
+                ),
+                used_chunks=(
+                    [
+                        ChunkModel(
+                            content=c["content"],
+                            source=c["source"],
+                            rank=c["rank"],
+                        )
+                        for c in v["used_chunks"]
+                    ]
+                    if v.get("used_chunks")
                     else None
                 ),
             )

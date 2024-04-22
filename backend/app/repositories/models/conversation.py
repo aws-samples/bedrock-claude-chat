@@ -16,6 +16,12 @@ class FeedbackModel(BaseModel):
     comment: str
 
 
+class ChunkModel(BaseModel):
+    content: str
+    source: str
+    rank: int
+
+
 class MessageModel(BaseModel):
     role: str
     content: list[ContentModel]
@@ -24,6 +30,7 @@ class MessageModel(BaseModel):
     parent: str | None
     create_time: float
     feedback: FeedbackModel | None
+    used_chunks: list[ChunkModel] | None
 
 
 class ConversationModel(BaseModel):

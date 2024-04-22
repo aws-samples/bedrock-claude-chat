@@ -136,6 +136,7 @@ class TestConversationRepository(unittest.TestCase):
                     parent="z",
                     create_time=1627984879.9,
                     feedback=None,
+                    used_chunks=None,
                 )
             },
             last_message_id="x",
@@ -235,6 +236,7 @@ class TestConversationRepository(unittest.TestCase):
                 parent=None,
                 create_time=1627984879.9,
                 feedback=None,
+                used_chunks=None,
             )
             for i in range(10)  # Create 10 large messages
         }
@@ -316,6 +318,7 @@ class TestConversationBotRepository(unittest.TestCase):
                     parent="z",
                     create_time=1627984879.9,
                     feedback=None,
+                    used_chunks=None,
                 )
             },
             last_message_id="x",
@@ -344,6 +347,7 @@ class TestConversationBotRepository(unittest.TestCase):
                     parent="z",
                     create_time=1627984879.9,
                     feedback=None,
+                    used_chunks=None,
                 )
             },
             last_message_id="x",
