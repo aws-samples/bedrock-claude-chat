@@ -15,7 +15,7 @@
       "package*.json",
       "yarn.lock",
       "node_modules",
-      "test"
+      "../backend/tests/**"
     ]
   },
   "context": {
