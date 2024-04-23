@@ -34,8 +34,7 @@ dynamodb_client = boto3.resource("dynamodb")
 table = dynamodb_client.Table(WEBSOCKET_SESSION_TABLE_NAME)
 
 logger = logging.getLogger(__name__)
-# logger.setLevel(logging.INFO)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 
 def process_chat_input(
@@ -110,7 +109,7 @@ def process_chat_input(
     )
 
     is_anthropic = is_anthropic_model(args["model"])
-    logger.info(f"Invoking bedrock with args: {args}")
+    # logger.debug(f"Invoking bedrock with args: {args}")
     try:
         if is_anthropic:
             response = client.messages.create(**args)
@@ -201,7 +200,7 @@ def process_chat_input(
             else:
                 continue
     else:
-        for event in response:
+        for event in response.get("body"):
             chunk = event.get("chunk")
             if chunk:
                 msg_chunk = json.loads(chunk.get("bytes").decode())

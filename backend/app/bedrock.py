@@ -10,7 +10,7 @@ from app.config import (
     MISTRAL_GENERATION_CONFIG,
 )
 from app.repositories.models.conversation import MessageModel
-from app.utils import get_bedrock_client, is_anthropic_model
+from app.utils import get_bedrock_client, is_anthropic_model, is_mistral_model
 
 logger = logging.getLogger(__name__)
 
@@ -197,3 +197,50 @@ def calculate_document_embeddings(documents: list[str]) -> list[list[float]]:
         embeddings += _calculate_document_embeddings(batch)
 
     return embeddings
+
+
+def get_bedrock_response(args: dict) -> dict:
+
+    client = get_bedrock_client()
+    messages = args["messages"]
+
+    prompt = "\n".join(
+        [
+            message["content"][0]["text"]
+            for message in messages
+            if message["content"][0]["type"] == "text"
+        ]
+    )
+
+    if is_mistral_model(args["model"]):
+        prompt = f"<s>[INST] {prompt} [/INST]"
+
+    logger.info(f"Final Prompt: {prompt}")
+    body = json.dumps(
+        {
+            "prompt": prompt,
+            "max_tokens": args["max_tokens"],
+            "temperature": args["temperature"],
+            "top_p": args["top_p"],
+            "top_k": args["top_k"],
+        }
+    )
+
+    logger.info(f"The args before invoke bedrock: {args}")
+    if args["stream"]:
+        try:
+            response = client.invoke_model_with_response_stream(
+                modelId=args["model"],
+                body=body,
+            )
+            response_body = response
+            return response_body
+        except Exception as e:
+            logger.error(e)
+    else:
+        response = client.invoke_model(
+            modelId=args["model"],
+            body=body,
+        )
+        response_body = json.loads(response.get("body").read())
+        return response_body

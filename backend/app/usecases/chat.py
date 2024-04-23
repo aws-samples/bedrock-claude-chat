@@ -15,7 +15,7 @@ from datetime import datetime
 from typing import Literal
 
 from anthropic.types import Message as AnthropicMessage
-from app.bedrock import calculate_price, compose_args
+from app.bedrock import calculate_price, compose_args, get_bedrock_response
 from app.config import GENERATION_CONFIG, SEARCH_CONFIG
 from app.repositories.conversation import (
     RecordNotFoundError,
@@ -167,7 +167,6 @@ def prepare_conversation(
         create_time=current_time,
     )
     conversation.message_map[message_id] = new_message
-    logger.debug(f"parent_id in message_map: {parent_id}")
     conversation.message_map[parent_id].children.append(message_id)  # type: ignore
 
     return (message_id, conversation, bot)
@@ -264,55 +263,6 @@ first answer [^1].
     return conversation_with_context
 
 
-def get_bedrock_response(args: dict):
-
-    client = get_bedrock_client()
-    messages = args["messages"]
-
-    logger.debug(f"model: {args['model']}")
-
-    prompt = "\n".join(
-        [
-            message["content"][0]["text"]
-            for message in messages
-            if message["content"][0]["type"] == "text"
-        ]
-    )
-
-    if is_mistral_model(args["model"]):
-        prompt = f"<s>[INST] {prompt} [/INST]"
-
-    logger.debug(f"Final Prompt: {prompt}")
-    body = json.dumps(
-        {
-            "prompt": prompt,
-            "max_tokens": args["max_tokens"],
-            "temperature": args["temperature"],
-            "top_p": args["top_p"],
-            "top_k": args["top_k"],
-        }
-    )
-
-    logger.debug(args)
-    if args["stream"]:
-        try:
-            response = client.invoke_model_with_response_stream(
-                modelId=args["model"],
-                body=body,
-            )
-            return response.get("body")
-        except Exception as e:
-            logger.error(e)
-    else:
-        response = client.invoke_model(
-            modelId=args["model"],
-            body=body,
-        )
-        response_body = json.loads(response.get("body").read())
-        logger.debug(response_body)
-        return response_body
-
-
 def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     user_msg_id, conversation, bot = prepare_conversation(user_id, chat_input)
 
@@ -346,14 +296,14 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
             else None
         ),
     )
-    logger.debug(args)
+    logger.info(f"args in chat: {args}")
 
     if is_anthropic_model(args["model"]):
         client = get_anthropic_client()
         response: AnthropicMessage = client.messages.create(**args)
         reply_txt = response.content[0].text
     else:
-        response: AnthropicMessage = get_bedrock_response(args)["outputs"][0]  # type: ignore[no-redef]
+        response = get_bedrock_response(args)["outputs"][0]  # type: ignore[no-redef]
         reply_txt = response["text"]  # type: ignore
 
     # Issue id for new assistant message
@@ -377,8 +327,6 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         # Update total pricing
         input_tokens = response.usage.input_tokens
         output_tokens = response.usage.output_tokens
-
-        logger.debug(f"Input tokens: {input_tokens}, Output tokens: {output_tokens}")
     else:
         input_tokens = 256
         output_tokens = 1024
