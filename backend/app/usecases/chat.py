@@ -6,7 +6,6 @@ from app.utils import (
     get_current_time,
     is_running_on_lambda,
     is_anthropic_model,
-    is_mistral_model,
 )
 import json
 import logging

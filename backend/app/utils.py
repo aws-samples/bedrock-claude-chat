@@ -19,12 +19,8 @@ def is_running_on_lambda():
     return "AWS_EXECUTION_ENV" in os.environ
 
 
-def is_anthropic_model(model_id) -> bool:
+def is_anthropic_model(model_id: str) -> bool:
     return model_id.startswith("anthropic") or False
-
-
-def is_mistral_model(model_id) -> bool:
-    return model_id.startswith("mistral") or False
 
 
 def get_bedrock_client(region=BEDROCK_REGION):

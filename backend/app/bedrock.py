@@ -10,7 +10,7 @@ from app.config import (
     MISTRAL_GENERATION_CONFIG,
 )
 from app.repositories.models.conversation import MessageModel
-from app.utils import get_bedrock_client, is_anthropic_model, is_mistral_model
+from app.utils import get_bedrock_client, is_anthropic_model
 
 logger = logging.getLogger(__name__)
 
@@ -212,7 +212,9 @@ def get_bedrock_response(args: dict) -> dict:
         ]
     )
 
-    if is_mistral_model(args["model"]):
+    model_id = args["model"]
+    is_mistral_model = model_id.startswith("mistral")
+    if is_mistral_model:
         prompt = f"<s>[INST] {prompt} [/INST]"
 
     logger.info(f"Final Prompt: {prompt}")
@@ -230,7 +232,7 @@ def get_bedrock_response(args: dict) -> dict:
     if args["stream"]:
         try:
             response = client.invoke_model_with_response_stream(
-                modelId=args["model"],
+                modelId=model_id,
                 body=body,
             )
             response_body = response
@@ -239,7 +241,7 @@ def get_bedrock_response(args: dict) -> dict:
             logger.error(e)
     else:
         response = client.invoke_model(
-            modelId=args["model"],
+            modelId=model_id,
             body=body,
         )
         response_body = json.loads(response.get("body").read())
