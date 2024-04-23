@@ -32,7 +32,7 @@ MISTRAL_GENERATION_CONFIG: GenerationConfig = {
     "top_k": 50,
     "top_p": 0.9,
     "temperature": 0.5,
-    "stop_sequences": [""],
+    "stop_sequences": ["[INST]", "[/INST]"],
 }
 
 # Configure embedding parameter.
