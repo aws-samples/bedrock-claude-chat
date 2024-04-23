@@ -26,6 +26,7 @@ from app.repositories.models.conversation import (
     ContentModel,
     ConversationModel,
     MessageModel,
+    InvocationMetrics,
 )
 from app.repositories.models.custom_bot import BotAliasModel, BotModel
 from app.routes.schemas.conversation import (
@@ -302,8 +303,8 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         response: AnthropicMessage = client.messages.create(**args)
         reply_txt = response.content[0].text
     else:
-        response = get_bedrock_response(args)["outputs"][0]  # type: ignore[no-redef]
-        reply_txt = response["text"]  # type: ignore
+        response = get_bedrock_response(args)  # type: ignore[no-redef]
+        reply_txt = response["outputs"][0]["text"]  # type: ignore
 
     # Issue id for new assistant message
     assistant_msg_id = str(ULID())
@@ -327,8 +328,10 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         input_tokens = response.usage.input_tokens
         output_tokens = response.usage.output_tokens
     else:
-        input_tokens = 256
-        output_tokens = 1024
+
+        metrics: InvocationMetrics = response["amazon-bedrock-invocationMetrics"]
+        input_tokens = metrics.input_tokens
+        output_tokens = metrics.output_tokens
 
     price = calculate_price(chat_input.message.model, input_tokens, output_tokens)
     conversation.total_price += price

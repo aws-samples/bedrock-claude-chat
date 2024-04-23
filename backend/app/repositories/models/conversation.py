@@ -35,3 +35,8 @@ class ConversationMeta(BaseModel):
     create_time: float
     model: str
     bot_id: str | None
+
+
+class InvocationMetrics(BaseModel):
+    input_tokens: int
+    output_tokens: int

@@ -9,7 +9,7 @@ from app.config import (
     GENERATION_CONFIG,
     MISTRAL_GENERATION_CONFIG,
 )
-from app.repositories.models.conversation import MessageModel
+from app.repositories.models.conversation import MessageModel, InvocationMetrics
 from app.utils import get_bedrock_client, is_anthropic_model
 
 logger = logging.getLogger(__name__)
@@ -235,6 +235,7 @@ def get_bedrock_response(args: dict) -> dict:
                 modelId=model_id,
                 body=body,
             )
+            # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-runtime/client/invoke_model_with_response_stream.html
             response_body = response
             return response_body
         except Exception as e:
@@ -244,5 +245,16 @@ def get_bedrock_response(args: dict) -> dict:
             modelId=model_id,
             body=body,
         )
+        # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-runtime/client/invoke_model.html
         response_body = json.loads(response.get("body").read())
+
+        invocation_metrics = InvocationMetrics(
+            input_tokens=response["ResponseMetadata"]["HTTPHeaders"][
+                "x-amzn-bedrock-input-token-count"
+            ],
+            output_tokens=response["ResponseMetadata"]["HTTPHeaders"][
+                "x-amzn-bedrock-output-token-count"
+            ],
+        )
+        response_body["amazon-bedrock-invocationMetrics"] = invocation_metrics
         return response_body
