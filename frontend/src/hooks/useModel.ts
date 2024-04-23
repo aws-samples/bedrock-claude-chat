@@ -3,12 +3,11 @@ import { Model } from '../@types/conversation';
 import { useMemo } from 'react';
 
 const ENABLE_MISTRAL: boolean = import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
-let availableModels: {
+const availableModels: {
   modelId: Model;
   label: string;
   supportMediaType: string[];
-}[]
-availableModels = !ENABLE_MISTRAL ? [
+}[] = !ENABLE_MISTRAL ? [
   {
     modelId: 'claude-v3-haiku',
     label: 'Claude 3 (Haiku)',
@@ -25,17 +24,17 @@ availableModels = !ENABLE_MISTRAL ? [
     supportMediaType: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
   },
 ] : [
-  {
-    modelId: 'mistral-7b-instruct',
-    label: 'Mistral 7B',
-    supportMediaType: [],
-  },
-  {
-    modelId: 'mixtral-8x7b-instruct',
-    label: 'Mixtral-8x7B',
-    supportMediaType: [],
-  }
-]
+    {
+      modelId: 'mistral-7b-instruct',
+      label: 'Mistral 7B',
+      supportMediaType: [],
+    },
+    {
+      modelId: 'mixtral-8x7b-instruct',
+      label: 'Mixtral-8x7B',
+      supportMediaType: [],
+    }
+  ]
 
 const useModelState = create<{
   modelId: Model;
