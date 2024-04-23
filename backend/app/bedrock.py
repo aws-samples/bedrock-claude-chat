@@ -237,7 +237,6 @@ def get_bedrock_response(args: dict) -> dict:
             )
             # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-runtime/client/invoke_model_with_response_stream.html
             response_body = response
-            return response_body
         except Exception as e:
             logger.error(e)
     else:
@@ -247,7 +246,6 @@ def get_bedrock_response(args: dict) -> dict:
         )
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-runtime/client/invoke_model.html
         response_body = json.loads(response.get("body").read())
-
         invocation_metrics = InvocationMetrics(
             input_tokens=response["ResponseMetadata"]["HTTPHeaders"][
                 "x-amzn-bedrock-input-token-count"
@@ -257,4 +255,4 @@ def get_bedrock_response(args: dict) -> dict:
             ],
         )
         response_body["amazon-bedrock-invocationMetrics"] = invocation_metrics
-        return response_body
+    return response_body

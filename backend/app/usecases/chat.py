@@ -303,7 +303,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         response: AnthropicMessage = client.messages.create(**args)
         reply_txt = response.content[0].text
     else:
-        response = get_bedrock_response(args)  # type: ignore[no-redef]
+        response = get_bedrock_response(args)  # type: ignore
         reply_txt = response["outputs"][0]["text"]  # type: ignore
 
     # Issue id for new assistant message
@@ -328,8 +328,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         input_tokens = response.usage.input_tokens
         output_tokens = response.usage.output_tokens
     else:
-
-        metrics: InvocationMetrics = response["amazon-bedrock-invocationMetrics"]
+        metrics: InvocationMetrics = response["amazon-bedrock-invocationMetrics"]  # type: ignore
         input_tokens = metrics.input_tokens
         output_tokens = metrics.output_tokens
 
