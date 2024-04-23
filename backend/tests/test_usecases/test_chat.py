@@ -519,7 +519,7 @@ class TestChatWithCustomizedBot(unittest.TestCase):
 
         conv = find_conversation_by_id("user1", output.conversation_id)
         self.assertEqual(len(conv.message_map["system"].children), 1)
-        self.assertEqual(conv.message_map["system"].children[0], "instruction")
+        self.assertEqual(conv.message_map["system"].children, ["instruction"])
         self.assertEqual(len(conv.message_map["instruction"].children), 1)
 
         # Second message
@@ -755,6 +755,63 @@ class TestStreamingApi(unittest.TestCase):
                 input_token_count = metrics.get("inputTokenCount")
                 output_token_count = metrics.get("outputTokenCount")
                 print(input_token_count, output_token_count)
+
+
+class TestMistralModelChat(unittest.TestCase):
+
+    def test_chat(self):
+        prompt = "あなたの名前は何ですか?"
+        body = f"<s>[INST]{prompt}[/INST]"
+        model = "mistral-7b-instruct"
+
+        chat_input = ChatInput(
+            conversation_id="test_conversation_id",
+            message=MessageInput(
+                role="user",
+                content=[
+                    Content(
+                        content_type="text",
+                        body=body,
+                        media_type=None,
+                    )
+                ],
+                model=model,
+                parent_message_id=None,
+                message_id=None,
+            ),
+            bot_id=None,
+        )
+        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+        self.output = output
+
+        pprint(output.model_dump())
+
+
+class TestConversationTitlePropose(unittest.TestCase):
+    def test_converstation_title_propose(self):
+        model = "mistral-7b-instruct"
+        chat_input = ChatInput(
+            conversation_id="test_conversation_id",
+            message=MessageInput(
+                role="user",
+                content=[
+                    Content(
+                        content_type="text",
+                        body="あなたの名前は何ですか？",
+                        media_type=None,
+                    )
+                ],
+                model=model,
+                parent_message_id=None,
+                message_id=None,
+            ),
+            bot_id=None,
+        )
+        output = propose_conversation_title(
+            user_id="user1", conversation_id=chat_input.conversation_id, model=model
+        )
+        self.output = output
+        pprint(output)
 
 
 if __name__ == "__main__":
