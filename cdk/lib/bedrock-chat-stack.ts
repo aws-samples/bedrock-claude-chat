@@ -32,6 +32,7 @@ export interface BedrockChatStackProps extends StackProps {
   readonly publishedApiAllowedIpV6AddressRanges: string[];
   readonly allowedSignUpEmailDomains: string[];
   readonly rdsSchedules: CronScheduleProps;
+  readonly enableMistral: string;
 }
 
 export class BedrockChatStack extends cdk.Stack {
@@ -93,6 +94,7 @@ export class BedrockChatStack extends cdk.Stack {
     const frontend = new Frontend(this, "Frontend", {
       accessLogBucket,
       webAclId: props.webAclId,
+      enableMistral: props.enableMistral,
     });
 
     const auth = new Auth(this, "Auth", {
@@ -144,11 +146,11 @@ export class BedrockChatStack extends cdk.Stack {
       bedrockRegion: props.bedrockRegion,
       largeMessageBucket,
     });
-
     frontend.buildViteApp({
       backendApiEndpoint: backendApi.api.apiEndpoint,
       webSocketApiEndpoint: websocket.apiEndpoint,
       userPoolDomainPrefix: props.userPoolDomainPrefix,
+      enableMistral: props.enableMistral,
       auth,
       idp,
     });

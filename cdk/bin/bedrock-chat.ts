@@ -31,6 +31,8 @@ const USER_POOL_DOMAIN_PREFIX: string = app.node.tryGetContext(
   "userPoolDomainPrefix"
 );
 const RDS_SCHEDULES: CronScheduleProps = app.node.tryGetContext("rdbSchedules");
+const ENABLE_MISTRAL: string = app.node.tryGetContext("enableMistral") === true ? "true" : "false";
+
 // WAF for frontend
 // 2023/9: Currently, the WAF for CloudFront needs to be created in the North America region (us-east-1), so the stacks are separated
 // https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-wafv2-webacl.html
@@ -57,8 +59,9 @@ const chat = new BedrockChatStack(app, `BedrockChatStack`, {
     PUBLISHED_API_ALLOWED_IP_V4_ADDRESS_RANGES,
   publishedApiAllowedIpV6AddressRanges:
     PUBLISHED_API_ALLOWED_IP_V6_ADDRESS_RANGES,
-  allowedSignUpEmailDomains: 
+  allowedSignUpEmailDomains:
     ALLOWED_SIGN_UP_EMAIL_DOMAINS,
   rdsSchedules: RDS_SCHEDULES,
+  enableMistral: ENABLE_MISTRAL,
 });
 chat.addDependency(waf);

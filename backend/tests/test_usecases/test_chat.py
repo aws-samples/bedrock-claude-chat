@@ -758,7 +758,6 @@ class TestStreamingApi(unittest.TestCase):
 
 
 class TestMistralModelChat(unittest.TestCase):
-
     def test_chat(self):
         prompt = "あなたの名前は何ですか?"
         body = f"<s>[INST]{prompt}[/INST]"
