@@ -4,6 +4,7 @@ import { initReactI18next } from 'react-i18next';
 import en from './en';
 import ja from './ja';
 import ko from './ko';
+import es from './es';
 import zhhans from './zh-hans';
 import zhhant from './zh-hant';
 import fr from './fr';
@@ -24,6 +25,10 @@ export const LANGUAGES: {
   {
     value: 'fr',
     label: 'Français',
+  },
+  {
+    value: 'es',
+    label: 'Español',
   },
   {
     value: 'ja',
@@ -47,6 +52,7 @@ const resources = {
   en,
   de,
   fr,
+  es,
   ja,
   ko,
   zhhans,
