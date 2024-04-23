@@ -37,7 +37,7 @@ Edit `bot-id` and `datehour`. `bot-id` can be referred on Bot Management screen,
 SELECT
     d.newimage.PK.S AS UserId,
     d.newimage.SK.S AS ConversationId,
-    d.newimage.MessageMap AS MessageMap,
+    d.newimage.MessageMap.S AS MessageMap,
     d.newimage.TotalPrice.N AS TotalPrice,
     d.newimage.CreateTime.N AS CreateTime,
     d.newimage.LastMessageId.S AS LastMessageId,
@@ -64,7 +64,7 @@ Edit `user-id` and `datehour`. `user-id` can be referred on Bot Management scree
 SELECT
     d.newimage.PK.S AS UserId,
     d.newimage.SK.S AS ConversationId,
-    d.newimage.MessageMap AS MessageMap,
+    d.newimage.MessageMap.S AS MessageMap,
     d.newimage.TotalPrice.N AS TotalPrice,
     d.newimage.CreateTime.N AS CreateTime,
     d.newimage.LastMessageId.S AS LastMessageId,
