@@ -1,4 +1,4 @@
-import React, { ReactNode, useMemo } from 'react';
+import React, { ReactNode, useMemo, useState } from 'react';
 import { BaseProps } from '../@types/common';
 import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -11,6 +11,7 @@ import { twMerge } from 'tailwind-merge';
 import { useTranslation } from 'react-i18next';
 import { create } from 'zustand';
 import { produce } from 'immer';
+import {useDebounce, useThrottle, useThrottleFn} from 'react-use'
 
 type Props = BaseProps & {
   children: string;
@@ -110,13 +111,25 @@ const ChatMessageMarkdown: React.FC<Props> = ({
   relatedDocuments,
   messageId,
 }) => {
-  const text = useMemo(() => {
+  const [text, setText] = useState<string>("")
+
+  // This code works fine, but the experience is bad.
+  useDebounce(() => {
     const results = children.match(/\[\^(?<number>[\d])+?\]/g);
     // Default Footnote link is not shown, so set dummy
-    return results
+    setText(results
       ? `${children}\n${results.map((result) => `${result}: dummy`).join('\n')}`
-      : children;
-  }, [children]);
+      : children);
+  },100, [children]);
+
+  // This code doesn't work. I don't know why. Am I using it incorrectly?
+  // useThrottleFn((children) => {
+  //   const results = children.match(/\[\^(?<number>[\d])+?\]/g);
+  //   // Default Footnote link is not shown, so set dummy
+  //   setText(results
+  //     ? `${children}\n${results.map((result) => `${result}: dummy`).join('\n')}`
+  //     : children);
+  // },100, [children]);
 
   return (
     <ReactMarkdown
