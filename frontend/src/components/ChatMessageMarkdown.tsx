@@ -1,9 +1,11 @@
 import React, { ReactNode, useMemo } from 'react';
 import { BaseProps } from '../@types/common';
-import ReactMarkdown from 'react-markdown';
-import rehypeHighlight from 'rehype-highlight';
+import { ReactMarkdown } from 'react-markdown/lib/react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import remarkGfm from 'remark-gfm';
 import remarkBreaks from 'remark-breaks';
+import ButtonCopy from './ButtonCopy';
 import { RelatedDocument } from '../@types/conversation';
 import { twMerge } from 'tailwind-merge';
 import { useTranslation } from 'react-i18next';
@@ -13,7 +15,6 @@ import rehypeExternalLinks, { Options } from 'rehype-external-links';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
 import "katex/dist/katex.min.css"
-import ButtonCopy from './ButtonCopy';
 import { onlyText } from 'react-children-utilities';
 
 type Props = BaseProps & {
@@ -121,27 +122,54 @@ const ChatMessageMarkdown: React.FC<Props> = ({
       ? `${children}\n${results.map((result) => `${result}: dummy`).join('\n')}`
       : children;
   }, [children]);
-  const rehypeExternalLinksOptions: Options = {
-    target: '_blank',
-    properties: { style: "word-break: break-all;", }
-  }
+
+  const remarkPlugins = useMemo(() => {
+    return [remarkGfm, remarkBreaks, remarkMath]
+  }, [])
+  const rehypePlugins = useMemo(() => {
+    const rehypeExternalLinksOptions: Options = {
+      target: '_blank',
+      properties: { style: "word-break: break-all;", }
+    }
+    return [rehypeKatex, [rehypeExternalLinks, rehypeExternalLinksOptions]]
+  }, [])
 
   return (
     <ReactMarkdown
       className={`${className ?? ''} prose max-w-full`}
       children={text}
-      remarkPlugins={[remarkGfm, remarkBreaks, remarkMath]}
-      rehypePlugins={[rehypeKatex, [rehypeExternalLinks, rehypeExternalLinksOptions], rehypeHighlight]}
+      remarkPlugins={remarkPlugins}
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      rehypePlugins={rehypePlugins}
       components={{
-        code({ children }) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        code({ node, inline, className, children, ...props }) {
+          const match = /language-(\w+)/.exec(className || '');
           const codeText = onlyText(children).replace(/\n$/, '');
 
-          return <>
+          return !inline && match ? (
             <CopyToClipboard codeText={codeText}>
-              {children}
+              <SyntaxHighlighter
+                {...props}
+                children={codeText}
+                style={vscDarkPlus}
+                language={match[1]}
+                x
+                PreTag="div"
+                wrapLongLines={true}
+              />
             </CopyToClipboard>
-          </>
+          ) : (
+            <code {...props} className={className}>
+              {children}
+            </code>
+          );
         },
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         sup({ className, children }) {
           // Footnote's Link is replaced with a component that displays the Reference document
           return (
@@ -149,7 +177,9 @@ const ChatMessageMarkdown: React.FC<Props> = ({
               {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                children.map ? children.map((child, idx) => {
+                children.map((child, idx) => {
+                  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                  // @ts-ignore
                   if (child?.props['data-footnote-ref']) {
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
@@ -176,11 +206,12 @@ const ChatMessageMarkdown: React.FC<Props> = ({
                     }
                   }
                   return child;
-                }) : []
-              }
+                })}
             </sup>
           );
         },
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         section({ className, children, ...props }) {
           // Normal Footnote not shown for RAG reference documents
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -210,4 +241,5 @@ const CopyToClipboard = ({
     </div>
   );
 };
+
 export default ChatMessageMarkdown;
