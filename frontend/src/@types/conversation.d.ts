@@ -6,7 +6,8 @@ export type Model =
   | 'claude-v3-sonnet'
   | 'claude-v3-haiku'
   | 'mistral-7b-instruct'
-  | 'mixtral-8x7b-instruct';
+  | 'mixtral-8x7b-instruct'
+  | 'mistral-large';
 export type Content = {
   contentType: 'text' | 'image';
   mediaType?: string;

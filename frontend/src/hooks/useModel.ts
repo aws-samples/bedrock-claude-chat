@@ -33,7 +33,12 @@ const availableModels: {
       modelId: 'mixtral-8x7b-instruct',
       label: 'Mixtral-8x7B',
       supportMediaType: [],
-    }
+    },
+    {
+      modelId: 'mistral-large',
+      label: 'Mixtral Large',
+      supportMediaType: [],
+    },
   ]
 
 const useModelState = create<{

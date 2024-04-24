@@ -377,6 +377,7 @@ def propose_conversation_title(
         "claude-v3-haiku",
         "mistral-7b-instruct",
         "mixtral-8x7b-instruct",
+        "mistral-large",
     ] = "claude-v3-haiku",
 ) -> str:
     PROMPT = """Reading the conversation above, what is the appropriate title for the conversation? When answering the title, please follow the rules below:

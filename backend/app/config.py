@@ -66,6 +66,7 @@ ANTHROPIC_PRICING = {
         "claude-v3-sonnet": {"input": 0.00300, "output": 0.01500},
         "mistral-7b-instruct": {"input": 0.00015, "output": 0.0002},
         "mixtral-8x7b-instruct": {"input": 0.00045, "output": 0.0007},
+        "mistral-large": {"input": 0.008, "output": 0.024},
     },
     "us-west-2": {
         "claude-instant-v1": {
@@ -77,9 +78,10 @@ ANTHROPIC_PRICING = {
             "output": 0.00240,
         },
         "claude-v3-sonnet": {"input": 0.00300, "output": 0.01500},
+        "claude-v3-opus": {"input": 0.01500, "output": 0.07500},
         "mistral-7b-instruct": {"input": 0.00015, "output": 0.0002},
         "mixtral-8x7b-instruct": {"input": 0.00045, "output": 0.0007},
-        "claude-v3-opus": {"input": 0.01500, "output": 0.07500},
+        "mistral-large": {"input": 0.008, "output": 0.024},
     },
     "ap-northeast-1": {
         "claude-instant-v1": {
@@ -102,8 +104,9 @@ ANTHROPIC_PRICING = {
         },
         "claude-v3-haiku": {"input": 0.00025, "output": 0.00125},
         "claude-v3-sonnet": {"input": 0.00300, "output": 0.01500},
+        "claude-v3-opus": {"input": 0.01500, "output": 0.07500},
         "mistral-7b-instruct": {"input": 0.00015, "output": 0.0002},
         "mixtral-8x7b-instruct": {"input": 0.00045, "output": 0.0007},
-        "claude-v3-opus": {"input": 0.01500, "output": 0.07500},
+        "mistral-large": {"input": 0.008, "output": 0.024},
     },
 }
