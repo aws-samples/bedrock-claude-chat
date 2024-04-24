@@ -172,6 +172,7 @@ def modify_owned_bot(
     source_urls = []
     sitemap_urls = []
     filenames = []
+    sync_status="QUEUED"
 
     if modify_input.knowledge:
         source_urls = modify_input.knowledge.source_urls
@@ -206,6 +207,20 @@ def modify_owned_bot(
         else DEFAULT_EMBEDDING_CONFIG["chunk_overlap"]
     )
 
+    # if knowledge and embedding_params are not updated, skip embeding process.
+    # 'sync_status = "QUEUED"' will execute embeding process and update dynamodb record.
+    # 'sync_status= "SUCCEEDED"' will update only dynamodb record.
+    bot = find_private_bot_by_id(user_id, bot_id)
+    if (
+        (sorted(modify_input.knowledge.source_urls) == sorted(bot.knowledge.source_urls)) and 
+        (sorted(modify_input.knowledge.sitemap_urls) == sorted(bot.knowledge.sitemap_urls)) and 
+        (len(modify_input.knowledge.added_filenames)==0) and 
+        (len(modify_input.knowledge.deleted_filenames)==0) and 
+        (modify_input.embedding_params.chunk_size == bot.embedding_params.chunk_size) and 
+        (modify_input.embedding_params.chunk_overlap == bot.embedding_params.chunk_overlap)
+    ):
+        sync_status="SUCCEEDED"
+        
     update_bot(
         user_id,
         bot_id,
@@ -221,9 +236,10 @@ def modify_owned_bot(
             sitemap_urls=sitemap_urls,
             filenames=filenames,
         ),
-        sync_status="QUEUED",
+        sync_status=sync_status,
         sync_status_reason="",
     )
+
     return BotModifyOutput(
         id=bot_id,
         title=modify_input.title,
