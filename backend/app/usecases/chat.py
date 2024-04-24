@@ -296,7 +296,6 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
             else None
         ),
     )
-    logger.info(f"args in chat: {args}")
 
     if is_anthropic_model(args["model"]):
         client = get_anthropic_client()

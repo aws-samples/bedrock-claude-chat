@@ -69,7 +69,6 @@ def process_chat_input(
             return {"statusCode": 400, "body": "Invalid request."}
 
     message_map = conversation.message_map
-    logger.info(message_map)
     if bot and bot.has_knowledge():
         gatewayapi.post_to_connection(
             ConnectionId=connection_id,
