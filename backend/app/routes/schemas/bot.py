@@ -59,7 +59,7 @@ class BotModifyInput(BaseSchema):
         if self.has_update_files():
             return True
 
-        if self.knowledge is not None and current_bot_model.knowledge is not None:
+        if self.knowledge is not None and current_bot_model.has_knowledge():
             if set(self.knowledge.source_urls) == set(
                 current_bot_model.knowledge.source_urls
             ) and set(self.knowledge.sitemap_urls) == set(
