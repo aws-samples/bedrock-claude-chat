@@ -211,11 +211,7 @@ def modify_owned_bot(
     # 'sync_status = "QUEUED"' will execute embeding process and update dynamodb record.
     # 'sync_status= "SUCCEEDED"' will update only dynamodb record.
     bot = find_private_bot_by_id(user_id, bot_id)
-    sync_status = (
-        "QUEUED"
-        if modify_input.is_embedding_required(bot)
-        else "SUCCEEDED"
-    )
+    sync_status = "QUEUED" if modify_input.is_embedding_required(bot) else "SUCCEEDED"
 
     update_bot(
         user_id,

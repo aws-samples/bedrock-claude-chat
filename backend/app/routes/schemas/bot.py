@@ -46,31 +46,32 @@ class BotModifyInput(BaseSchema):
     embedding_params: EmbeddingParams | None
     knowledge: KnowledgeDiffInput | None
 
-    def has_update_files(self) -> bool: 
-        return (
-            self.knowledge is not None
-            and (
-                len(self.knowledge.added_filenames) > 0 
-                or len(self.knowledge.deleted_filenames) > 0
-            )
+    def has_update_files(self) -> bool:
+        return self.knowledge is not None and (
+            len(self.knowledge.added_filenames) > 0
+            or len(self.knowledge.deleted_filenames) > 0
         )
 
     def is_embedding_required(self, current_bot_model) -> bool:
         if (
             self.knowledge is not None
             and current_bot_model.knowledge is not None
-            and set(self.knowledge.source_urls) == set(current_bot_model.knowledge.source_urls)
-            and set(self.knowledge.sitemap_urls) == set(current_bot_model.knowledge.sitemap_urls)
+            and set(self.knowledge.source_urls)
+            == set(current_bot_model.knowledge.source_urls)
+            and set(self.knowledge.sitemap_urls)
+            == set(current_bot_model.knowledge.sitemap_urls)
             and self.embedding_params is not None
             and current_bot_model.embedding_params is not None
-            and self.embedding_params.chunk_size == current_bot_model.embedding_params.chunk_size
-            and self.embedding_params.chunk_overlap == current_bot_model.embedding_params.chunk_overlap
+            and self.embedding_params.chunk_size
+            == current_bot_model.embedding_params.chunk_size
+            and self.embedding_params.chunk_overlap
+            == current_bot_model.embedding_params.chunk_overlap
             and self.has_update_files() is False
         ):
             return False
         else:
             return True
-        
+
 
 class BotModifyOutput(BaseSchema):
     id: str
