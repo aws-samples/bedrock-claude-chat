@@ -6,6 +6,7 @@ import {
   GetRelatedDocumentsResponse,
   PostMessageRequest,
   PostMessageResponse,
+  PostStopGenerateResponse,
 } from '../@types/conversation';
 import useHttp from './useHttp';
 
@@ -36,6 +37,11 @@ const useConversationApi = () => {
     postMessage: (input: PostMessageRequest) => {
       return http.post<PostMessageResponse>('conversation', {
         ...input,
+      });
+    },
+    postStopGenerate: (conversationId: string) => {
+      return http.post<PostStopGenerateResponse>('conversation/stop-generate', {
+        conversationId,
       });
     },
     getRelatedDocuments: (input: GetRelatedDocumentsRequest) => {

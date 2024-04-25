@@ -35,6 +35,7 @@ const ChatPage: React.FC = () => {
   const {
     postingMessage,
     postChat,
+    postStopGenerate,
     messages,
     conversationId,
     setConversationId,
@@ -104,9 +105,9 @@ const ChatPage: React.FC = () => {
   const inputBotParams = useMemo(() => {
     return botId
       ? {
-          botId: botId,
-          hasKnowledge: bot?.hasKnowledge ?? false,
-        }
+        botId: botId,
+        hasKnowledge: bot?.hasKnowledge ?? false,
+      }
       : undefined;
   }, [bot?.hasKnowledge, botId]);
 
@@ -119,6 +120,13 @@ const ChatPage: React.FC = () => {
       });
     },
     [inputBotParams, postChat]
+  );
+
+  const onStopGenerate = useCallback(
+    () => {
+      postStopGenerate()
+    },
+    [postStopGenerate]
   );
 
   const onChangeCurrentMessageId = useCallback(
@@ -303,9 +311,8 @@ const ChatPage: React.FC = () => {
           messages.map((message, idx) => (
             <div
               key={idx}
-              className={`${
-                message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
-              }`}>
+              className={`${message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
+                }`}>
               <ChatMessage
                 chatContent={message}
                 onChangeMessageId={onChangeCurrentMessageId}
@@ -358,6 +365,7 @@ const ChatPage: React.FC = () => {
           }
           onSend={onSend}
           onRegenerate={onRegenerate}
+          onStopGenerate={onStopGenerate}
         />
       </div>
     </div>

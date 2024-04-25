@@ -28,6 +28,7 @@ type Props = BaseProps & {
   dndMode?: boolean;
   onSend: (content: string, base64EncodedImages?: string[]) => void;
   onRegenerate: () => void;
+  onStopGenerate: () => void;
 };
 
 const MAX_IMAGE_WIDTH = 800;
@@ -276,6 +277,7 @@ const InputChatContent: React.FC<Props> = (props) => {
             disabled={disabledSend || props.disabled}
             loading={postingMessage}
             onClick={sendContent}
+            onClickLoading={props.onStopGenerate}
           />
         </div>
         {base64EncodedImages.length > 0 && (

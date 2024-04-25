@@ -45,6 +45,11 @@ export type PostMessageResponse = {
   message: MessageContent;
 };
 
+export type PostStopGenerateResponse = {
+  stopGenerate: boolean;
+  message?: string;
+};
+
 export type GetRelatedDocumentsRequest = {
   conversationId: string;
   message: MessageContent & {

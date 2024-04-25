@@ -463,6 +463,25 @@ const useChat = () => {
   };
 
   /**
+   * 生成停止
+   */
+  const postStopGenerate = () => {
+    conversationApi
+      .postStopGenerate(conversationId)
+      .then((res) => {
+        editMessage(
+          conversationId,
+          NEW_MESSAGE_ID.ASSISTANT,
+          res.data.message.content[0].body
+        );
+        resolve(res.data.message.content[0].body);
+      })
+      .catch((e) => {
+        reject(e);
+      });
+  }
+
+  /**
    * 再生成
    * @param props content: 内容を上書きしたい場合に設定  messageId: 再生成対象のmessageId  botId: ボットの場合は設定する
    */
@@ -584,6 +603,7 @@ const useChat = () => {
     messages,
     setCurrentMessageId,
     postChat,
+    postStopGenerate,
     regenerate,
     getPostedModel,
     // エラーのリトライ
@@ -601,9 +621,9 @@ const useChat = () => {
           content: params.content ?? latestMessage.content[0].body,
           bot: params.bot
             ? {
-                botId: params.bot.botId,
-                hasKnowledge: params.bot.hasKnowledge,
-              }
+              botId: params.bot.botId,
+              hasKnowledge: params.bot.hasKnowledge,
+            }
             : undefined,
         });
       } else {

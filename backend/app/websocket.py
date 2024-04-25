@@ -185,6 +185,9 @@ def process_chat_input(
             conversation.total_price += price
 
             store_conversation(user_id, conversation)
+
+            # 3-2：DynamoDBの該当のレコードの中止フラグを確認し、中止フラグが立っていた場合はそれ以上の推論処理を中止。
+            # 現在の状況でDynamoDBに保存する。
         else:
             continue
 
