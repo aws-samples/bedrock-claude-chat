@@ -258,6 +258,8 @@ first answer [^1].
 def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     user_msg_id, conversation, bot = prepare_conversation(user_id, chat_input)
 
+    # 1：DynamoDBの該当のレコードの中止フラグを折る
+
     message_map = conversation.message_map
     if bot and is_running_on_lambda():
         # NOTE: `is_running_on_lambda`is a workaround for local testing due to no postgres mock.
@@ -304,6 +306,9 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     )
     conversation.message_map[assistant_msg_id] = message
 
+    # 3-2：DynamoDBの該当のレコードの中止フラグを確認し、中止フラグが立っていた場合は送信処理を中止。
+    # ユーザの入力のみ保存はする。
+
     # Append children to parent
     conversation.message_map[user_msg_id].children.append(assistant_msg_id)
     conversation.last_message_id = assistant_msg_id
@@ -346,6 +351,16 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     )
 
     return output
+
+def stop_generate(
+    user_id: str,
+    conversation_id: str,
+) -> bool:
+    try:
+        # 2：DynamoDBの該当のレコードに中止フラグを立てる
+        return True
+    except:
+        return False
 
 
 def propose_conversation_title(

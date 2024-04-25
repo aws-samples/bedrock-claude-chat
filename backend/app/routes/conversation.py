@@ -12,9 +12,11 @@ from app.routes.schemas.conversation import (
     NewTitleInput,
     ProposedTitle,
     RelatedDocumentsOutput,
+    StopGenerateOutput,
 )
 from app.usecases.chat import (
     chat,
+    stop_generate,
     fetch_conversation,
     fetch_related_documents,
     propose_conversation_title,
@@ -37,6 +39,18 @@ def post_message(request: Request, chat_input: ChatInput):
     current_user: User = request.state.current_user
 
     output = chat(user_id=current_user.id, chat_input=chat_input)
+    return output
+
+
+@router.post(
+    "/conversation/stop-generate", response_model=StopGenerateOutput
+)
+def post_stop_generate(request: Request, conversation_id: str):
+    """Stop generate chat message
+    NOTE: POST method is used to avoid query string length limit
+    """
+    current_user: User = request.state.current_user
+    output = stop_generate(user_id=current_user.id, conversation_id=conversation_id)
     return output
 
 

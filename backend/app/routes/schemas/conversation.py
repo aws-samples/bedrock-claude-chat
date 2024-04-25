@@ -58,6 +58,11 @@ class ChatOutput(BaseSchema):
     create_time: float
 
 
+class StopGenerateOutput(BaseSchema):
+    stop_generate: bool
+    message: str | None
+
+
 class RelatedDocumentsOutput(BaseSchema):
     chunk_body: str
     content_type: Literal["s3", "url"]
