@@ -11,6 +11,11 @@ import { twMerge } from 'tailwind-merge';
 import { useTranslation } from 'react-i18next';
 import { create } from 'zustand';
 import { produce } from 'immer';
+import rehypeExternalLinks, { Options } from 'rehype-external-links';
+import rehypeKatex from 'rehype-katex';
+import remarkMath from 'remark-math';
+import "katex/dist/katex.min.css"
+import { onlyText } from 'react-children-utilities';
 
 type Props = BaseProps & {
   children: string;
@@ -118,16 +123,32 @@ const ChatMessageMarkdown: React.FC<Props> = ({
       : children;
   }, [children]);
 
+  const remarkPlugins = useMemo(() => {
+    return [remarkGfm, remarkBreaks, remarkMath]
+  }, [])
+  const rehypePlugins = useMemo(() => {
+    const rehypeExternalLinksOptions: Options = {
+      target: '_blank',
+      properties: { style: "word-break: break-all;", }
+    }
+    return [rehypeKatex, [rehypeExternalLinks, rehypeExternalLinksOptions]]
+  }, [])
+
   return (
     <ReactMarkdown
       className={`${className ?? ''} prose max-w-full`}
       children={text}
-      remarkPlugins={[remarkGfm, remarkBreaks]}
+      remarkPlugins={remarkPlugins}
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      rehypePlugins={rehypePlugins}
       components={{
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         code({ node, inline, className, children, ...props }) {
           const match = /language-(\w+)/.exec(className || '');
-          const codeText = String(children).replace(/\n$/, '');
+          const codeText = onlyText(children).replace(/\n$/, '');
 
           return !inline && match ? (
             <CopyToClipboard codeText={codeText}>
@@ -147,44 +168,50 @@ const ChatMessageMarkdown: React.FC<Props> = ({
             </code>
           );
         },
-        //
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         sup({ className, children }) {
           // Footnote's Link is replaced with a component that displays the Reference document
           return (
             <sup className={className}>
-              {children.map((child, idx) => {
+              {
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                if (child?.props['data-footnote-ref']) {
+                children.map((child, idx) => {
                   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                   // @ts-ignore
-                  const href: string = child.props.href ?? '';
-                  if (/#user-content-fn-[\d]+/.test(href ?? '')) {
-                    const docNo = Number.parseInt(
-                      href.replace('#user-content-fn-', '')
-                    );
-                    const doc = relatedDocuments?.filter(
-                      (doc) => doc.rank === docNo
-                    )[0];
-
+                  if (child?.props['data-footnote-ref']) {
                     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                     // @ts-ignore
-                    const refNo = child.props.children[0];
-                    return (
-                      <RelatedDocumentLink
-                        key={`${idx}-${docNo}`}
-                        linkId={`${messageId}-${idx}-${docNo}`}
-                        relatedDocument={doc}>
-                        [{refNo}]
-                      </RelatedDocumentLink>
-                    );
+                    const href: string = child.props.href ?? '';
+                    if (/#user-content-fn-[\d]+/.test(href ?? '')) {
+                      const docNo = Number.parseInt(
+                        href.replace('#user-content-fn-', '')
+                      );
+                      const doc = relatedDocuments?.filter(
+                        (doc) => doc.rank === docNo
+                      )[0];
+
+                      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                      // @ts-ignore
+                      const refNo = child.props.children[0];
+                      return (
+                        <RelatedDocumentLink
+                          key={`${idx}-${docNo}`}
+                          linkId={`${messageId}-${idx}-${docNo}`}
+                          relatedDocument={doc}>
+                          [{refNo}]
+                        </RelatedDocumentLink>
+                      );
+                    }
                   }
-                }
-                return child;
-              })}
+                  return child;
+                })}
             </sup>
           );
         },
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
         section({ className, children, ...props }) {
           // Normal Footnote not shown for RAG reference documents
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
