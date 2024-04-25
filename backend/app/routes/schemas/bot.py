@@ -1,8 +1,5 @@
 from __future__ import annotations
-from typing import (
-  Literal,
-  TYPE_CHECKING
-)
+from typing import Literal, TYPE_CHECKING
 from app.routes.schemas.base import BaseSchema
 from pydantic import Field
 
@@ -59,20 +56,17 @@ class BotModifyInput(BaseSchema):
         )
 
     def is_embedding_required(self, current_bot_model: BotModel) -> bool:
-        if self.has_update_files(): return True
+        if self.has_update_files():
+            return True
 
-        if (
-            self.knowledge is not None
-            and current_bot_model.knowledge is not None
-        ): 
-            if (
-                set(self.knowledge.source_urls)
-                == set(current_bot_model.knowledge.source_urls)
-                and set(self.knowledge.sitemap_urls)
-                == set(current_bot_model.knowledge.sitemap_urls)
+        if self.knowledge is not None and current_bot_model.knowledge is not None:
+            if set(self.knowledge.source_urls) == set(
+                current_bot_model.knowledge.source_urls
+            ) and set(self.knowledge.sitemap_urls) == set(
+                current_bot_model.knowledge.sitemap_urls
             ):
                 pass
-            else: 
+            else:
                 return True
 
         if (
@@ -86,10 +80,11 @@ class BotModifyInput(BaseSchema):
                 == current_bot_model.embedding_params.chunk_overlap
             ):
                 pass
-            else: 
+            else:
                 return True
 
         return False
+
 
 class BotModifyOutput(BaseSchema):
     id: str
