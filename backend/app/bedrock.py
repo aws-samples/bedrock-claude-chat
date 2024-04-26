@@ -9,8 +9,9 @@ from app.config import (
     GENERATION_CONFIG,
     MISTRAL_GENERATION_CONFIG,
 )
-from app.repositories.models.conversation import MessageModel, InvocationMetrics
+from app.repositories.models.conversation import MessageModel
 from app.utils import get_bedrock_client, is_anthropic_model
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,11 @@ BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
 
 client = get_bedrock_client()
 anthropic_client = AnthropicBedrock()
+
+
+class InvocationMetrics(BaseModel):
+    input_tokens: int
+    output_tokens: int
 
 
 def compose_args(

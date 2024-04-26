@@ -14,7 +14,12 @@ from datetime import datetime
 from typing import Literal
 
 from anthropic.types import Message as AnthropicMessage
-from app.bedrock import calculate_price, compose_args, get_bedrock_response
+from app.bedrock import (
+    calculate_price,
+    compose_args,
+    get_bedrock_response,
+    InvocationMetrics,
+)
 from app.config import GENERATION_CONFIG, SEARCH_CONFIG
 from app.repositories.conversation import (
     RecordNotFoundError,
@@ -26,7 +31,6 @@ from app.repositories.models.conversation import (
     ContentModel,
     ConversationModel,
     MessageModel,
-    InvocationMetrics,
 )
 from app.repositories.models.custom_bot import BotAliasModel, BotModel
 from app.routes.schemas.conversation import (
