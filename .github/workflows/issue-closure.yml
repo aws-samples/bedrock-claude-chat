@@ -18,12 +18,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           EXPIRE_DAYS: 14
 
-      - name: Mark "bug" issues as "stale" if not responded
+      - name: Mark "needs-info" issues as "stale" if not responded
         uses: piroor/auto-mark-as-stale-issues@main
         env:
           LABEL: "stale"
-          EXCEPTION_LABELS: "enhancement,planned,identified"
-          CANDIDATE_LABELS: "bug"
+          EXCEPTION_LABELS: ""
+          CANDIDATE_LABELS: "needs-info"
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           EXPIRE_DAYS: 30
           EXTEND_DAYS_BY_COMMENTED: 14
