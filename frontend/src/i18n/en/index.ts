@@ -311,6 +311,27 @@ How would you categorize this email?`,
     languageDialog: {
       title: 'Switch language',
     },
+    feedbackDialog: {
+      title: 'Feedback',
+      content: 'Please provide more details.',
+      categoryLabel: 'Category',
+      commentLabel: 'Comment',
+      commentPlaceholder: '(Optional) Enter your comment',
+      categories: [
+        {
+          value: 'notFactuallyCorrect',
+          label: 'Not factually correct',
+        },
+        {
+          value: 'notFullyFollowRequest',
+          label: 'Not fully following my request',
+        },
+        {
+          value: 'other',
+          label: 'Other',
+        },
+      ],
+    },
     button: {
       newChat: 'New Chat',
       botConsole: 'Bot Console',

@@ -1,31 +1,28 @@
 import sys
 import unittest
 
-
 sys.path.append(".")
 
 from app.config import DEFAULT_EMBEDDING_CONFIG
-
 from app.repositories.conversation import (
     ContentModel,
     ConversationModel,
     MessageModel,
     RecordNotFoundError,
-    _get_table_client,
     change_conversation_title,
-    compose_conv_id,
     delete_conversation_by_id,
     delete_conversation_by_user_id,
     find_conversation_by_id,
     find_conversation_by_user_id,
     store_conversation,
+    update_feedback,
 )
 from app.repositories.custom_bot import (
     delete_bot_by_id,
-    find_private_bot_by_id,
     find_private_bots_by_user_id,
     store_bot,
 )
+from app.repositories.models.conversation import FeedbackModel
 from app.repositories.models.custom_bot import (
     BotModel,
     EmbeddingParamsModel,
@@ -138,6 +135,8 @@ class TestConversationRepository(unittest.TestCase):
                     children=["x", "y"],
                     parent="z",
                     create_time=1627984879.9,
+                    feedback=None,
+                    used_chunks=None,
                 )
             },
             last_message_id="x",
@@ -189,6 +188,25 @@ class TestConversationRepository(unittest.TestCase):
         )
         self.assertEqual(found_conversation.title, "Updated title")
 
+        # Test give a feedback
+        self.assertIsNone(found_conversation.message_map["a"].feedback)
+        response = update_feedback(
+            user_id="user",
+            conversation_id="1",
+            message_id="a",
+            feedback=FeedbackModel(
+                thumbs_up=True, category="Good", comment="The response is pretty good."
+            ),
+        )
+        found_conversation = find_conversation_by_id(
+            user_id="user", conversation_id="1"
+        )
+        feedback = found_conversation.message_map["a"].feedback
+        self.assertIsNotNone(feedback)
+        self.assertEqual(feedback.thumbs_up, True)  # type: ignore
+        self.assertEqual(feedback.category, "Good")  # type: ignore
+        self.assertEqual(feedback.comment, "The response is pretty good.")  # type: ignore
+
         # Test deleting conversation by id
         delete_conversation_by_id(user_id="user", conversation_id="1")
         with self.assertRaises(RecordNotFoundError):
@@ -217,6 +235,8 @@ class TestConversationRepository(unittest.TestCase):
                 children=[],
                 parent=None,
                 create_time=1627984879.9,
+                feedback=None,
+                used_chunks=None,
             )
             for i in range(10)  # Create 10 large messages
         }
@@ -297,6 +317,8 @@ class TestConversationBotRepository(unittest.TestCase):
                     children=["x", "y"],
                     parent="z",
                     create_time=1627984879.9,
+                    feedback=None,
+                    used_chunks=None,
                 )
             },
             last_message_id="x",
@@ -324,6 +346,8 @@ class TestConversationBotRepository(unittest.TestCase):
                     children=["x", "y"],
                     parent="z",
                     create_time=1627984879.9,
+                    feedback=None,
+                    used_chunks=None,
                 )
             },
             last_message_id="x",

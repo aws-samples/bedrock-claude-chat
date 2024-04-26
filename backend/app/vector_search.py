@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import re
 from typing import Literal
 
 import pg8000
@@ -22,6 +23,31 @@ class SearchResult(BaseModel):
     content: str
     source: str
     rank: int
+
+
+def filter_used_results(
+    generated_text: str, search_results: list[SearchResult]
+) -> list[SearchResult]:
+    """Filter the search results based on the citations in the generated text.
+    Note that the citations in the generated text are in the format of [^rank].
+    """
+    used_results: list[SearchResult] = []
+
+    try:
+        # Extract citations from the generated text
+        citations = [
+            citation.strip("[]^")
+            for citation in re.findall(r"\[\^(\d+)\]", generated_text)
+        ]
+    except Exception as e:
+        logger.error(f"Error extracting citations from the generated text: {e}")
+        return used_results
+
+    for result in search_results:
+        if str(result.rank) in citations:
+            used_results.append(result)
+
+    return used_results
 
 
 def get_source_link(source: str) -> tuple[Literal["s3", "url"], str]:

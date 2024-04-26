@@ -15,6 +15,7 @@ export type MessageContent = {
   role: Role;
   content: Content[];
   model: Model;
+  feedback: null | Feedback;
 };
 
 export type RelatedDocument = {
@@ -73,4 +74,16 @@ export type MessageMap = {
 
 export type Conversation = ConversationMeta & {
   messageMap: MessageMap;
+};
+
+export type PutFeedbackRequest = {
+  thumbsUp: boolean;
+  category: null | string;
+  comment: null | string;
+};
+
+export type Feedback = {
+  thumbsUp: boolean;
+  category: string;
+  comment: string;
 };

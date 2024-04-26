@@ -315,6 +315,27 @@ const translation = {
     languageDialog: {
       title: '言語の切替',
     },
+    feedbackDialog: {
+      title: 'フィードバック',
+      content: '詳細を教えてください。',
+      categoryLabel: 'カテゴリ',
+      commentLabel: '自由入力',
+      commentPlaceholder: '（任意）コメントを記入してください',
+      categories: [
+        {
+          value: 'notFactuallyCorrect',
+          label: '事実と異なる',
+        },
+        {
+          value: 'notFullyFollowRequest',
+          label: '要求に応えていない',
+        },
+        {
+          value: 'other',
+          label: 'その他',
+        },
+      ],
+    },
     button: {
       newChat: '新しいチャット',
       botConsole: 'ボットコンソール',

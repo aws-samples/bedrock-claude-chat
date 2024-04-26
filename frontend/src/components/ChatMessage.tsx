@@ -1,15 +1,26 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import ChatMessageMarkdown from './ChatMessageMarkdown';
 import ButtonCopy from './ButtonCopy';
-import { PiCaretLeftBold, PiNotePencil, PiUserFill } from 'react-icons/pi';
+import {
+  PiCaretLeftBold,
+  PiNotePencil,
+  PiUserFill,
+  PiThumbsDown,
+  PiThumbsDownFill,
+} from 'react-icons/pi';
 import { BaseProps } from '../@types/common';
-import { DisplayMessageContent, RelatedDocument } from '../@types/conversation';
+import {
+  DisplayMessageContent,
+  RelatedDocument,
+  PutFeedbackRequest,
+} from '../@types/conversation';
 import ButtonIcon from './ButtonIcon';
 import Textarea from './Textarea';
 import Button from './Button';
 import ModalDialog from './ModalDialog';
 import { useTranslation } from 'react-i18next';
 import useChat from '../hooks/useChat';
+import DialogFeedback from './DialogFeedback';
 
 type Props = BaseProps & {
   chatContent?: DisplayMessageContent;
@@ -21,8 +32,9 @@ const ChatMessage: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const [isEdit, setIsEdit] = useState(false);
   const [changedContent, setChangedContent] = useState('');
+  const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
-  const { getRelatedDocuments } = useChat();
+  const { getRelatedDocuments, conversationId, giveFeedback } = useChat();
   const [relatedDocuments, setRelatedDocuments] = useState<RelatedDocument[]>(
     []
   );
@@ -60,6 +72,16 @@ const ChatMessage: React.FC<Props> = (props) => {
       : null;
     setIsEdit(false);
   }, [changedContent, chatContent?.sibling, props]);
+
+  const handleFeedbackSubmit = useCallback(
+    (messageId: string, feedback: PutFeedbackRequest) => {
+      if (chatContent && conversationId) {
+        giveFeedback(messageId, feedback);
+      }
+      setIsFeedbackOpen(false);
+    },
+    [chatContent, conversationId, giveFeedback]
+  );
 
   return (
     <div className={`${props.className ?? ''} grid grid-cols-12 gap-2 p-3 `}>
@@ -174,10 +196,10 @@ const ChatMessage: React.FC<Props> = (props) => {
       </div>
 
       <div className="col-start-11">
-        <div className="flex">
+        <div className="flex flex-col items-end">
           {chatContent?.role === 'user' && !isEdit && (
             <ButtonIcon
-              className="mr-0.5 text-gray"
+              className="text-dark-gray"
               onClick={() => {
                 setChangedContent(chatContent.content[0].body);
                 setIsEdit(true);
@@ -186,15 +208,35 @@ const ChatMessage: React.FC<Props> = (props) => {
             </ButtonIcon>
           )}
           {chatContent?.role === 'assistant' && (
-            <>
+            <div className="flex">
+              <ButtonIcon
+                className="text-dark-gray"
+                onClick={() => setIsFeedbackOpen(true)}>
+                {chatContent.feedback && !chatContent.feedback.thumbsUp ? (
+                  <PiThumbsDownFill />
+                ) : (
+                  <PiThumbsDown />
+                )}
+              </ButtonIcon>
               <ButtonCopy
-                className="mr-0.5 text-gray"
+                className="text-dark-gray"
                 text={chatContent.content[0].body}
               />
-            </>
+            </div>
           )}
         </div>
       </div>
+      <DialogFeedback
+        isOpen={isFeedbackOpen}
+        thumbsUp={false}
+        feedback={chatContent?.feedback ?? undefined}
+        onClose={() => setIsFeedbackOpen(false)}
+        onSubmit={(feedback) => {
+          if (chatContent) {
+            handleFeedbackSubmit(chatContent.id, feedback);
+          }
+        }}
+      />
     </div>
   );
 };
