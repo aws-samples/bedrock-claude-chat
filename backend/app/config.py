@@ -52,7 +52,7 @@ SEARCH_CONFIG = {
 # Used for price estimation.
 # NOTE: The following is based on 2024-03-07
 # See: https://aws.amazon.com/bedrock/pricing/
-ANTHROPIC_PRICING = {
+BEDROCK_PRICING = {
     "us-east-1": {
         "claude-instant-v1": {
             "input": 0.00080,

@@ -4,7 +4,7 @@ import os
 
 from anthropic import AnthropicBedrock
 from app.config import (
-    ANTHROPIC_PRICING,
+    BEDROCK_PRICING,
     DEFAULT_EMBEDDING_CONFIG,
     GENERATION_CONFIG,
     MISTRAL_GENERATION_CONFIG,
@@ -124,14 +124,14 @@ def calculate_price(
     model: str, input_tokens: int, output_tokens: int, region: str = BEDROCK_REGION
 ) -> float:
     input_price = (
-        ANTHROPIC_PRICING.get(region, {})
+        BEDROCK_PRICING.get(region, {})
         .get(model, {})
-        .get("input", ANTHROPIC_PRICING["default"][model]["input"])
+        .get("input", BEDROCK_PRICING["default"][model]["input"])
     )
     output_price = (
-        ANTHROPIC_PRICING.get(region, {})
+        BEDROCK_PRICING.get(region, {})
         .get(model, {})
-        .get("output", ANTHROPIC_PRICING["default"][model]["output"])
+        .get("output", BEDROCK_PRICING["default"][model]["output"])
     )
 
     return input_price * input_tokens / 1000.0 + output_price * output_tokens / 1000.0
@@ -243,7 +243,7 @@ def get_bedrock_response(args: dict) -> dict:
                 modelId=model_id,
                 body=body,
             )
-            # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-runtime/client/invoke_model_with_response_stream.html
+            # Ref: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-runtime/client/invoke_model_with_response_stream.html
             response_body = response
         except Exception as e:
             logger.error(e)
@@ -252,7 +252,7 @@ def get_bedrock_response(args: dict) -> dict:
             modelId=model_id,
             body=body,
         )
-        # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-runtime/client/invoke_model.html
+        # Ref: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-runtime/client/invoke_model.html
         response_body = json.loads(response.get("body").read())
         invocation_metrics = InvocationMetrics(
             input_tokens=response["ResponseMetadata"]["HTTPHeaders"][
