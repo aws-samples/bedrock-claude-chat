@@ -9,6 +9,7 @@ import {
   PostMessageRequest,
   RelatedDocument,
   Conversation,
+  PutFeedbackRequest,
 } from '../@types/conversation';
 import useConversation from './useConversation';
 import { create } from 'zustand';
@@ -19,6 +20,7 @@ import { ulid } from 'ulid';
 import { convertMessageMapToArray } from '../utils/MessageUtils';
 import { useTranslation } from 'react-i18next';
 import useModel from './useModel';
+import useFeedbackApi from './useFeedbackApi';
 
 type ChatStateType = {
   [id: string]: MessageMap;
@@ -247,6 +249,7 @@ const useChat = () => {
   const { modelId, setModelId } = useModel();
 
   const conversationApi = useConversationApi();
+  const feedbackApi = useFeedbackApi();
   const {
     data,
     mutate,
@@ -318,6 +321,7 @@ const useChat = () => {
           },
         ],
         model: messageContent.model,
+        feedback: messageContent.feedback,
       }
     );
   };
@@ -366,6 +370,7 @@ const useChat = () => {
       ],
       model: modelToPost,
       role: 'user',
+      feedback: null,
     };
     const input: PostMessageRequest = {
       conversationId: isNewChat ? newConversationId : conversationId,
@@ -524,6 +529,7 @@ const useChat = () => {
             },
           ],
           model: messages[index].model,
+          feedback: messages[index].feedback,
         }
       );
     } else {
@@ -615,6 +621,13 @@ const useChat = () => {
     },
     getRelatedDocuments: (messageId: string) => {
       return relatedDocuments[messageId] ?? [];
+    },
+    giveFeedback: (messageId: string, feedback: PutFeedbackRequest) => {
+      return feedbackApi
+        .putFeedback(conversationId, messageId, feedback)
+        .then(() => {
+          mutate();
+        });
     },
   };
 };

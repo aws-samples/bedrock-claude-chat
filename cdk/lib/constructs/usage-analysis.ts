@@ -78,7 +78,11 @@ export class UsageAnalysis extends Construct {
       },
       {
         name: "MessageMap",
-        type: glue.Schema.STRING,
+        type: glue.Schema.struct([{ name: "S", type: glue.Schema.STRING }]),
+      },
+      {
+        name: "IsLargeMessage",
+        type: glue.Schema.struct([{ name: "BOOL", type: glue.Schema.BOOLEAN }]),
       },
       {
         name: "PK",

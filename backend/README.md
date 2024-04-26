@@ -23,6 +23,8 @@ export REGION=ap-northeast-1
 export BEDROCK_REGION=us-east-1
 export DOCUMENT_BUCKET=bedrockchatstack-documentbucketxxxxxxx
 export LARGE_MESSAGE_BUCKET=bedrockchatstack-largemessagebucketxxx
+export USER_POOL_ID=xxxxxxxxx
+export CLIENT_ID=xxxxxxxxx
 ```
 
 ## Launch local server

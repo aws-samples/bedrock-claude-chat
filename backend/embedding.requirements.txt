@@ -1,6 +1,6 @@
 boto3==1.28.57
 llama-index==0.10.19
-pydantic==2.1.1
+pydantic==2.4.0
 youtube-transcript-api==0.6.1
 playwright==1.40.0
 requests==2.31.0

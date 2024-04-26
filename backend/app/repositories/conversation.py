@@ -14,9 +14,11 @@ from app.repositories.common import (
     decompose_conv_id,
 )
 from app.repositories.models.conversation import (
+    ChunkModel,
     ContentModel,
     ConversationMeta,
     ConversationModel,
+    FeedbackModel,
     MessageModel,
 )
 from app.utils import get_current_time
@@ -204,6 +206,27 @@ def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationM
                 children=v["children"],
                 parent=v["parent"],
                 create_time=float(v["create_time"]),
+                feedback=(
+                    FeedbackModel(
+                        thumbs_up=v["feedback"]["thumbs_up"],
+                        category=v["feedback"]["category"],
+                        comment=v["feedback"]["comment"],
+                    )
+                    if v.get("feedback")
+                    else None
+                ),
+                used_chunks=(
+                    [
+                        ChunkModel(
+                            content=c["content"],
+                            source=c["source"],
+                            rank=c["rank"],
+                        )
+                        for c in v["used_chunks"]
+                    ]
+                    if v.get("used_chunks")
+                    else None
+                ),
             )
             for k, v in message_map.items()
         },
@@ -324,4 +347,29 @@ def change_conversation_title(user_id: str, conversation_id: str, new_title: str
 
     logger.info(f"Updated conversation title response: {response}")
 
+    return response
+
+
+def update_feedback(
+    user_id: str, conversation_id: str, message_id: str, feedback: FeedbackModel
+):
+    logger.info(f"Updating feedback for conversation: {conversation_id}")
+    table = _get_table_client(user_id)
+    conv = find_conversation_by_id(user_id, conversation_id)
+    message_map = conv.message_map
+    message_map[message_id].feedback = feedback
+
+    response = table.update_item(
+        Key={
+            "PK": user_id,
+            "SK": compose_conv_id(user_id, conversation_id),
+        },
+        UpdateExpression="set MessageMap = :m",
+        ExpressionAttributeValues={
+            ":m": json.dumps({k: v.model_dump() for k, v in message_map.items()})
+        },
+        ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
+        ReturnValues="UPDATED_NEW",
+    )
+    logger.info(f"Updated feedback response: {response}")
     return response
