@@ -8,6 +8,7 @@
     "exclude": [
       "README.md",
       "../backend/**/__pycache__",
+      "../backend/tests/**",
       "cdk*.json",
       "**/*.d.ts",
       "**/*.js",
@@ -15,7 +16,7 @@
       "package*.json",
       "yarn.lock",
       "node_modules",
-      "../backend/tests/**"
+      "test"
     ]
   },
   "context": {

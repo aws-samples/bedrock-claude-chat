@@ -17,7 +17,7 @@ import { Idp } from "../utils/identity-provider";
 export interface FrontendProps {
   readonly accessLogBucket: IBucket;
   readonly webAclId: string;
-  readonly enableMistral: string;
+  readonly enableMistral: boolean;
 }
 
 export class Frontend extends Construct {
@@ -91,20 +91,19 @@ export class Frontend extends Construct {
     backendApiEndpoint: string;
     webSocketApiEndpoint: string;
     userPoolDomainPrefix: string;
-    enableMistral: string;
+    enableMistral: boolean;
     auth: Auth;
     idp: Idp;
   }) {
     const region = Stack.of(auth.userPool).region;
     const cognitoDomain = `${userPoolDomainPrefix}.auth.${region}.amazoncognito.com/`;
-
     const buildEnvProps = (() => {
       const defaultProps = {
         VITE_APP_API_ENDPOINT: backendApiEndpoint,
         VITE_APP_WS_ENDPOINT: webSocketApiEndpoint,
         VITE_APP_USER_POOL_ID: auth.userPool.userPoolId,
         VITE_APP_USER_POOL_CLIENT_ID: auth.client.userPoolClientId,
-        VITE_APP_ENABLE_MISTRAL: enableMistral,
+        VITE_APP_ENABLE_MISTRAL: enableMistral.toString(),
         VITE_APP_REGION: region,
         VITE_APP_USE_STREAMING: "true",
       };

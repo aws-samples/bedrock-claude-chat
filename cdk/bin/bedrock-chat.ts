@@ -31,7 +31,7 @@ const USER_POOL_DOMAIN_PREFIX: string = app.node.tryGetContext(
   "userPoolDomainPrefix"
 );
 const RDS_SCHEDULES: CronScheduleProps = app.node.tryGetContext("rdbSchedules");
-const ENABLE_MISTRAL: string = app.node.tryGetContext("enableMistral") === true ? "true" : "false";
+const ENABLE_MISTRAL: boolean = app.node.tryGetContext("enableMistral");
 
 // WAF for frontend
 // 2023/9: Currently, the WAF for CloudFront needs to be created in the North America region (us-east-1), so the stacks are separated

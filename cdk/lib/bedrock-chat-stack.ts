@@ -32,7 +32,7 @@ export interface BedrockChatStackProps extends StackProps {
   readonly publishedApiAllowedIpV6AddressRanges: string[];
   readonly allowedSignUpEmailDomains: string[];
   readonly rdsSchedules: CronScheduleProps;
-  readonly enableMistral: string;
+  readonly enableMistral: boolean;
 }
 
 export class BedrockChatStack extends cdk.Stack {

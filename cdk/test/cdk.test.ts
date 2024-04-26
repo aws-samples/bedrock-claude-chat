@@ -28,7 +28,7 @@ describe("Fine-grained Assertions Test", () => {
           stop: {},
           start: {},
         },
-        enableMistral: "false",
+        enableMistral: false,
       }
     );
     const hasGoogleProviderTemplate = Template.fromStack(
@@ -81,7 +81,7 @@ describe("Fine-grained Assertions Test", () => {
           stop: {},
           start: {},
         },
-        enableMistral: "false",
+        enableMistral: false,
       }
     );
     const hasOidcProviderTemplate = Template.fromStack(hasOidcProviderStack);
@@ -123,7 +123,7 @@ describe("Fine-grained Assertions Test", () => {
         stop: {},
         start: {},
       },
-      enableMistral: "false",
+      enableMistral: false,
     });
     const template = Template.fromStack(stack);
 
@@ -165,7 +165,7 @@ describe("Scheduler Test", () => {
           year: "*",
         },
       },
-      enableMistral: "false",
+      enableMistral: false,
     });
     const template = Template.fromStack(hasScheduleStack);
     template.hasResourceProperties("AWS::Scheduler::Schedule", {
@@ -191,7 +191,7 @@ describe("Scheduler Test", () => {
         stop: {},
         start: {},
       },
-      enableMistral: "false",
+      enableMistral: false,
     });
     const template = Template.fromStack(defaultStack);
     // The stack should have only 1 rule for exporting the data from ddb to s3
