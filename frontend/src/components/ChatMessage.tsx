@@ -20,11 +20,9 @@ import Button from './Button';
 import ModalDialog from './ModalDialog';
 import { useTranslation } from 'react-i18next';
 import useChat from '../hooks/useChat';
-import useFeedback from '../hooks/useFeedback';
 import DialogFeedback from './DialogFeedback';
 
 type Props = BaseProps & {
-  conversationId: string;
   chatContent?: DisplayMessageContent;
   onChangeMessageId?: (messageId: string) => void;
   onSubmit?: (messageId: string, content: string) => void;
@@ -36,13 +34,9 @@ const ChatMessage: React.FC<Props> = (props) => {
   const [changedContent, setChangedContent] = useState('');
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
 
-  const { getRelatedDocuments, conversationId } = useChat();
+  const { getRelatedDocuments, conversationId, giveFeedback } = useChat();
   const [relatedDocuments, setRelatedDocuments] = useState<RelatedDocument[]>(
     []
-  );
-  const { giveFeedback } = useFeedback(
-    props.conversationId,
-    props.chatContent?.id ?? ''
   );
 
   useEffect(() => {
@@ -80,9 +74,9 @@ const ChatMessage: React.FC<Props> = (props) => {
   }, [changedContent, chatContent?.sibling, props]);
 
   const handleFeedbackSubmit = useCallback(
-    (feedback: PutFeedbackRequest) => {
+    (messageId: string, feedback: PutFeedbackRequest) => {
       if (chatContent && conversationId) {
-        giveFeedback(feedback);
+        giveFeedback(messageId, feedback);
       }
       setIsFeedbackOpen(false);
     },
@@ -237,7 +231,11 @@ const ChatMessage: React.FC<Props> = (props) => {
         thumbsUp={false}
         feedback={chatContent?.feedback ?? undefined}
         onClose={() => setIsFeedbackOpen(false)}
-        onSubmit={handleFeedbackSubmit}
+        onSubmit={(feedback) => {
+          if (chatContent) {
+            handleFeedbackSubmit(chatContent.id, feedback);
+          }
+        }}
       />
     </div>
   );

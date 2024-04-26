@@ -55,12 +55,7 @@ const DialogFeedback: React.FC<Props> = (props) => {
         <Button onClick={props.onClose} className="p-2" outlined>
           {t('button.cancel')}
         </Button>
-        <Button
-          onClick={handleSubmit}
-          className="bg-aws-sea-blue p-2 text-aws-font-color-white"
-          outlined>
-          {t('button.ok')}
-        </Button>
+        <Button onClick={handleSubmit}>{t('button.ok')}</Button>
       </div>
     </ModalDialog>
   );
