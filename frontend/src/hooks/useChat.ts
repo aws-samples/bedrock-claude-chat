@@ -627,9 +627,7 @@ const useChat = () => {
       return feedbackApi
         .putFeedback(conversationId, messageId, feedback)
         .then(() => {
-          mutate().then(() => {
-            getMessages(conversationId, currentMessageId);
-          });
+          mutate();
         });
     },
   };
