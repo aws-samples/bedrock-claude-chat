@@ -31,31 +31,33 @@ const DialogFeedback: React.FC<Props> = (props) => {
 
   return (
     <ModalDialog title={t('feedbackDialog.title')} {...props}>
-      <div className="mb-4">{t('feedbackDialog.content')}</div>
+      <div className="flex flex-col gap-2">
+        <div>{t('feedbackDialog.content')}</div>
 
-      <div className="mb-2 font-bold">{t('feedbackDialog.categoryLabel')}</div>
-      <Select
-        value={category}
-        options={categoryOptions}
-        onChange={(val) => {
-          setCategory(val);
-        }}
-      />
-      <div className="my-2 font-bold">{t('feedbackDialog.commentLabel')}</div>
-      <Textarea
-        value={comment}
-        placeholder={t('feedbackDialog.commentPlaceholder')}
-        rows={5}
-        onChange={(val) => {
-          setComment(val);
-        }}
-      />
+        <Select
+          label={t('feedbackDialog.categoryLabel')}
+          value={category}
+          options={categoryOptions}
+          onChange={(val) => {
+            setCategory(val);
+          }}
+        />
+        <Textarea
+          label={t('feedbackDialog.commentLabel')}
+          value={comment}
+          placeholder={t('feedbackDialog.commentPlaceholder')}
+          rows={5}
+          onChange={(val) => {
+            setComment(val);
+          }}
+        />
 
-      <div className="mt-4 flex justify-end gap-2">
-        <Button onClick={props.onClose} className="p-2" outlined>
-          {t('button.cancel')}
-        </Button>
-        <Button onClick={handleSubmit}>{t('button.ok')}</Button>
+        <div className="mt-2 flex justify-end gap-2">
+          <Button onClick={props.onClose} className="p-2" outlined>
+            {t('button.cancel')}
+          </Button>
+          <Button onClick={handleSubmit}>{t('button.ok')}</Button>
+        </div>
       </div>
     </ModalDialog>
   );
