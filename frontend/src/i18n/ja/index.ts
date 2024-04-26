@@ -1,6 +1,7 @@
 // Check for any missing settings by uncomment
 // import en from '../en';
 // const translation: typeof en = {
+const ENABLE_MISTRAL: boolean = import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
 const translation = {
   translation: {
     signIn: {
@@ -9,7 +10,7 @@ const translation = {
       },
     },
     app: {
-      name: 'Bedrock Claude Chat',
+      name: !ENABLE_MISTRAL ? 'Bedrock Claude Chat' : 'Bedrock Chat',
       inputMessage: '入力してください',
       starredBots: 'スター付きのボット',
       recentlyUsedBots: '最近使用したボット',

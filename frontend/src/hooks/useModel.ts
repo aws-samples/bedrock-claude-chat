@@ -36,7 +36,7 @@ const availableModels: {
     },
     {
       modelId: 'mistral-large',
-      label: 'Mixtral Large',
+      label: 'Mistral Large',
       supportMediaType: [],
     },
   ]
