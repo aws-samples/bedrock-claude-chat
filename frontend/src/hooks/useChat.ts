@@ -346,7 +346,6 @@ const useChat = () => {
       : tmpMessages[tmpMessages.length - 1].id;
 
     const modelToPost = isNewChat ? modelId : getPostedModel();
-
     const imageContents: MessageContent['content'] = (
       base64EncodedImages ?? []
     ).map((encodedImage) => {
@@ -607,9 +606,9 @@ const useChat = () => {
           content: params.content ?? latestMessage.content[0].body,
           bot: params.bot
             ? {
-                botId: params.bot.botId,
-                hasKnowledge: params.bot.hasKnowledge,
-              }
+              botId: params.bot.botId,
+              hasKnowledge: params.bot.hasKnowledge,
+            }
             : undefined,
         });
       } else {

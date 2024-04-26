@@ -48,6 +48,7 @@ from tests.test_usecases.utils.bot_factory import (
 )
 
 MODEL: type_model_name = "claude-instant-v1"
+MISTRAL_MODEL: type_model_name = "mistral-7b-instruct"
 
 
 class TestTraceToRoot(unittest.TestCase):
@@ -173,6 +174,50 @@ class TestStartChat(unittest.TestCase):
             user_id="user1", conversation_id=output.conversation_id
         )
         # Message length will be 2 (system + user input + assistant reply)
+        self.assertEqual(len(conv.message_map), 3)
+        for k, v in conv.message_map.items():
+            if v.parent == "system":
+                first_key = k
+                first_message = v
+            elif v.parent:
+                second_key = k
+                second_message = v
+
+        self.assertEqual(second_message.parent, first_key)
+        self.assertEqual(first_message.children, [second_key])
+        self.assertEqual(conv.last_message_id, second_key)
+        self.assertNotEqual(conv.total_price, 0)
+
+    def test_chat_mistral(self):
+        prompt = "あなたの名前は何ですか?"
+        body = f"<s>[INST]{prompt}[/INST]"
+
+        chat_input = ChatInput(
+            conversation_id="test_conversation_id",
+            message=MessageInput(
+                role="user",
+                content=[
+                    Content(
+                        content_type="text",
+                        body=body,
+                        media_type=None,
+                    )
+                ],
+                model=MISTRAL_MODEL,
+                parent_message_id=None,
+                message_id=None,
+            ),
+            bot_id=None,
+        )
+        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+        self.output = output
+
+        pprint(output.model_dump())
+        self.assertNotEqual(output.conversation_id, "")
+
+        conv = find_conversation_by_id(
+            user_id="user1", conversation_id=output.conversation_id
+        )
         self.assertEqual(len(conv.message_map), 3)
         for k, v in conv.message_map.items():
             if v.parent == "system":
@@ -473,12 +518,20 @@ class TestProposeTitle(unittest.TestCase):
             bot_id=None,
         )
         output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
-
         print(output)
         self.output = output
 
+        chat_input.message.model = MISTRAL_MODEL
+        mistral_output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+        self.mistral_output = mistral_output
+        print(mistral_output)
+
     def test_propose_title(self):
         title = propose_conversation_title("user1", self.output.conversation_id)
+        print(f"[title]: {title}")
+
+    def test_propose_title_mistral(self):
+        title = propose_conversation_title("user1", self.mistral_output.conversation_id)
         print(f"[title]: {title}")
 
     def tearDown(self) -> None:
@@ -541,7 +594,7 @@ class TestChatWithCustomizedBot(unittest.TestCase):
 
         conv = find_conversation_by_id("user1", output.conversation_id)
         self.assertEqual(len(conv.message_map["system"].children), 1)
-        self.assertEqual(conv.message_map["system"].children[0], "instruction")
+        self.assertEqual(conv.message_map["system"].children, ["instruction"])
         self.assertEqual(len(conv.message_map["instruction"].children), 1)
 
         # Second message

@@ -9,6 +9,9 @@ type_model_name = Literal[
     "claude-v3-sonnet",
     "claude-v3-haiku",
     "claude-v3-opus",
+    "mistral-7b-instruct",
+    "mixtral-8x7b-instruct",
+    "mistral-large",
 ]
 
 

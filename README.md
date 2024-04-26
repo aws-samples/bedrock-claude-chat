@@ -200,6 +200,15 @@ BedrockChatStack.FrontendURL = https://xxxxx.cloudfront.net
 ```
 
 ## Others
+### Configure Mistral models support
+Update `enableMistral` to `true` in [cdk.json](./cdk/cdk.json), and run `cdk deploy`.
+```json
+...
+  "enableMistral": true,
+```
+[!NOTE]
+- This project focus on Anthropic Claude models, the Mistral models are limited supported. For example, prompt examples are based on Claude models.
+- This is a Mistral-only option, once you toggled to enable Mistral models, you can only use Mistral models for all the chat features, NOT both Claude and Mistral models.
 
 ### Configure text generation
 

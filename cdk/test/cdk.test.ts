@@ -28,6 +28,7 @@ describe("Fine-grained Assertions Test", () => {
           stop: {},
           start: {},
         },
+        enableMistral: false,
       }
     );
     const hasGoogleProviderTemplate = Template.fromStack(
@@ -80,6 +81,7 @@ describe("Fine-grained Assertions Test", () => {
           stop: {},
           start: {},
         },
+        enableMistral: false,
       }
     );
     const hasOidcProviderTemplate = Template.fromStack(hasOidcProviderStack);
@@ -121,10 +123,17 @@ describe("Fine-grained Assertions Test", () => {
         stop: {},
         start: {},
       },
+      enableMistral: false,
     });
     const template = Template.fromStack(stack);
 
     template.resourceCountIs("AWS::Cognito::UserPoolIdentityProvider", 0);
+    // verify the stack has environment variable VITE_APP_ENABLE_MISTRAL is set to "false"
+    template.hasResourceProperties("Custom::CDKNodejsBuild", {
+      environment: {
+        VITE_APP_ENABLE_MISTRAL: "false",
+      },
+    });
   });
 });
 
@@ -156,6 +165,7 @@ describe("Scheduler Test", () => {
           year: "*",
         },
       },
+      enableMistral: false,
     });
     const template = Template.fromStack(hasScheduleStack);
     template.hasResourceProperties("AWS::Scheduler::Schedule", {
@@ -181,6 +191,7 @@ describe("Scheduler Test", () => {
         stop: {},
         start: {},
       },
+      enableMistral: false,
     });
     const template = Template.fromStack(defaultStack);
     // The stack should have only 1 rule for exporting the data from ddb to s3
