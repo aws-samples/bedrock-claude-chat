@@ -162,7 +162,7 @@ Come classificheresti questa email?`,
           requestLimit:
             "Inserisci il numero totale di richieste che un utente può effettuare nel periodo di tempo selezionato nell'elenco a discesa.",
           allowOrigins:
-            "Origini client consentite per l'accesso. Se l'origine non è consentita, il chiamante riceve una risposta 403 Forbidden e gli viene negato l'accesso all'API.""L'origine deve seguire il formato:(http|https)://nome-host o (http|https)://nome-host:porta e possono essere utilizzati i caratteri jolly(*).",
+            "Origini client consentite per l'accesso. Se l'origine non è consentita, il chiamante riceve una risposta 403 Forbidden e gli viene negato l'accesso all'API. L'origine deve seguire il formato:(http|https)://nome-host o (http|https)://nome-host:porta e possono essere utilizzati i caratteri jolly(*).",
           allowOriginsExample:
             'e.g. https://your-host-name.com, https://*.your-host-name.com, http://localhost:8000',
           apiKeys:
@@ -202,7 +202,7 @@ Come classificheresti questa email?`,
         deleteApiKeyDialog: {
           title: 'Eliminare?',
           content:
-            'Sei sicuro di eliminare <Bold>{{title}}</Bold>?\nAi client che utilizzano questa chiave API verrà negato l'accesso all'API.',
+            "Sei sicuro di eliminare <Bold>{{title}}</Bold>?\nAi client che utilizzano questa chiave API verrà negato l'accesso all'API.",
         },
       },
       button: {
