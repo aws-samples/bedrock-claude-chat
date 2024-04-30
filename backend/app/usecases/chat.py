@@ -1,3 +1,12 @@
+from ulid import ULID
+from app.vector_search import SearchResult, get_source_link, search_related_docs
+from app.utils import (
+    get_bedrock_client,
+    get_anthropic_client,
+    get_current_time,
+    is_running_on_lambda,
+    is_anthropic_model,
+)
 import json
 import logging
 from copy import deepcopy
@@ -5,7 +14,12 @@ from datetime import datetime
 from typing import Literal
 
 from anthropic.types import Message as AnthropicMessage
-from app.bedrock import calculate_price, compose_args_for_anthropic_client, get_model_id
+from app.bedrock import (
+    calculate_price,
+    compose_args,
+    get_bedrock_response,
+    InvocationMetrics,
+)
 from app.config import GENERATION_CONFIG, SEARCH_CONFIG
 from app.repositories.conversation import (
     RecordNotFoundError,
@@ -14,6 +28,7 @@ from app.repositories.conversation import (
 )
 from app.repositories.custom_bot import find_alias_by_id, store_alias
 from app.repositories.models.conversation import (
+    ChunkModel,
     ContentModel,
     ConversationModel,
     MessageModel,
@@ -22,14 +37,21 @@ from app.repositories.models.custom_bot import BotAliasModel, BotModel
 from app.routes.schemas.conversation import (
     ChatInput,
     ChatOutput,
+    Chunk,
     Content,
     Conversation,
+    FeedbackOutput,
     MessageOutput,
     RelatedDocumentsOutput,
 )
 from app.usecases.bot import fetch_bot, modify_bot_last_used_time
 from app.utils import get_anthropic_client, get_current_time, is_running_on_lambda
-from app.vector_search import SearchResult, get_source_link, search_related_docs
+from app.vector_search import (
+    SearchResult,
+    filter_used_results,
+    get_source_link,
+    search_related_docs,
+)
 from ulid import ULID
 
 logger = logging.getLogger(__name__)
@@ -65,7 +87,7 @@ def prepare_conversation(
         )
 
         initial_message_map = {
-            # Dummy system message
+            # Dummy system message, which is used for root node of the message tree.
             "system": MessageModel(
                 role="system",
                 content=[
@@ -79,6 +101,8 @@ def prepare_conversation(
                 children=[],
                 parent=None,
                 create_time=current_time,
+                feedback=None,
+                used_chunks=None,
             )
         }
         parent_id = "system"
@@ -100,6 +124,8 @@ def prepare_conversation(
                 children=[],
                 parent="system",
                 create_time=current_time,
+                feedback=None,
+                used_chunks=None,
             )
             initial_message_map["system"].children.append("instruction")
 
@@ -157,6 +183,8 @@ def prepare_conversation(
         children=[],
         parent=parent_id,
         create_time=current_time,
+        feedback=None,
+        used_chunks=None,
     )
     conversation.message_map[message_id] = new_message
     conversation.message_map[parent_id].children.append(message_id)  # type: ignore
@@ -259,18 +287,19 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     user_msg_id, conversation, bot = prepare_conversation(user_id, chat_input)
 
     message_map = conversation.message_map
+    search_results = []
     if bot and is_running_on_lambda():
         # NOTE: `is_running_on_lambda`is a workaround for local testing due to no postgres mock.
         # Fetch most related documents from vector store
         # NOTE: Currently embedding not support multi-modal. For now, use the last content.
         query = conversation.message_map[user_msg_id].content[-1].body
-        results = search_related_docs(
+        search_results = search_related_docs(
             bot_id=bot.id, limit=SEARCH_CONFIG["max_results"], query=query
         )
-        logger.info(f"Search results from vector store: {results}")
+        logger.info(f"Search results from vector store: {search_results}")
 
         # Insert contexts to instruction
-        conversation_with_context = insert_knowledge(conversation, results)
+        conversation_with_context = insert_knowledge(conversation, search_results)
         message_map = conversation_with_context.message_map
 
     messages = trace_to_root(
@@ -279,7 +308,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     messages.append(chat_input.message)  # type: ignore
 
     # Create payload to invoke Bedrock
-    args = compose_args_for_anthropic_client(
+    args = compose_args(
         messages=messages,
         model=chat_input.message.model,
         instruction=(
@@ -288,8 +317,22 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
             else None
         ),
     )
-    response: AnthropicMessage = client.messages.create(**args)
-    reply_txt = response.content[0].text
+
+    if is_anthropic_model(args["model"]):
+        client = get_anthropic_client()
+        response: AnthropicMessage = client.messages.create(**args)
+        reply_txt = response.content[0].text
+    else:
+        response = get_bedrock_response(args)  # type: ignore
+        reply_txt = response["outputs"][0]["text"]  # type: ignore
+
+    # Used chunks for RAG generation
+    used_chunks = None
+    if bot and is_running_on_lambda():
+        used_chunks = [
+            ChunkModel(content=r.content, source=r.source, rank=r.rank)
+            for r in filter_used_results(reply_txt, search_results)
+        ]
 
     # Issue id for new assistant message
     assistant_msg_id = str(ULID())
@@ -301,6 +344,8 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         children=[],
         parent=user_msg_id,
         create_time=get_current_time(),
+        feedback=None,
+        used_chunks=used_chunks,
     )
     conversation.message_map[assistant_msg_id] = message
 
@@ -308,11 +353,14 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     conversation.message_map[user_msg_id].children.append(assistant_msg_id)
     conversation.last_message_id = assistant_msg_id
 
-    # Update total pricing
-    input_tokens = response.usage.input_tokens
-    output_tokens = response.usage.output_tokens
-
-    logger.debug(f"Input tokens: {input_tokens}, Output tokens: {output_tokens}")
+    if is_anthropic_model(args["model"]):
+        # Update total pricing
+        input_tokens = response.usage.input_tokens
+        output_tokens = response.usage.output_tokens
+    else:
+        metrics: InvocationMetrics = response["amazon-bedrock-invocationMetrics"]  # type: ignore
+        input_tokens = metrics.input_tokens
+        output_tokens = metrics.output_tokens
 
     price = calculate_price(chat_input.message.model, input_tokens, output_tokens)
     conversation.total_price += price
@@ -341,6 +389,19 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
             model=message.model,
             children=message.children,
             parent=message.parent,
+            feedback=None,
+            used_chunks=(
+                [
+                    Chunk(
+                        content=c.content,
+                        source=c.source,
+                        rank=c.rank,
+                    )
+                    for c in message.used_chunks
+                ]
+                if message.used_chunks
+                else None
+            ),
         ),
         bot_id=conversation.bot_id,
     )
@@ -357,6 +418,9 @@ def propose_conversation_title(
         "claude-v3-opus",
         "claude-v3-sonnet",
         "claude-v3-haiku",
+        "mistral-7b-instruct",
+        "mixtral-8x7b-instruct",
+        "mistral-large",
     ] = "claude-v3-haiku",
 ) -> str:
     PROMPT = """Reading the conversation above, what is the appropriate title for the conversation? When answering the title, please follow the rules below:
@@ -389,16 +453,22 @@ def propose_conversation_title(
         children=[],
         parent=conversation.last_message_id,
         create_time=get_current_time(),
+        feedback=None,
+        used_chunks=None,
     )
     messages.append(new_message)
 
     # Invoke Bedrock
-    args = compose_args_for_anthropic_client(
+    args = compose_args(
         messages=messages,
         model=model,
     )
-    response = client.messages.create(**args)
-    reply_txt = response.content[0].text
+    if is_anthropic_model(args["model"]):
+        response = client.messages.create(**args)
+        reply_txt = response.content[0].text
+    else:
+        response: AnthropicMessage = get_bedrock_response(args)["outputs"][0]  # type: ignore[no-redef]
+        reply_txt = response["text"]
     return reply_txt
 
 
@@ -419,6 +489,27 @@ def fetch_conversation(user_id: str, conversation_id: str) -> Conversation:
             model=message.model,
             children=message.children,
             parent=message.parent,
+            feedback=(
+                FeedbackOutput(
+                    thumbs_up=message.feedback.thumbs_up,
+                    category=message.feedback.category,
+                    comment=message.feedback.comment,
+                )
+                if message.feedback
+                else None
+            ),
+            used_chunks=(
+                [
+                    Chunk(
+                        content=c.content,
+                        source=c.source,
+                        rank=c.rank,
+                    )
+                    for c in message.used_chunks
+                ]
+                if message.used_chunks
+                else None
+            ),
         )
         for message_id, message in conversation.message_map.items()
     }

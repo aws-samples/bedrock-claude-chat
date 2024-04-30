@@ -1,7 +1,10 @@
-from typing import Literal
-
+from __future__ import annotations
+from typing import Literal, TYPE_CHECKING
 from app.routes.schemas.base import BaseSchema
 from pydantic import Field
+
+if TYPE_CHECKING:
+    from app.repositories.models.custom_bot import BotModel
 
 # Knowledge sync status type
 # NOTE: `ORIGINAL_NOT_FOUND` is used when the original bot is removed.
@@ -45,6 +48,42 @@ class BotModifyInput(BaseSchema):
     description: str | None
     embedding_params: EmbeddingParams | None
     knowledge: KnowledgeDiffInput | None
+
+    def has_update_files(self) -> bool:
+        return self.knowledge is not None and (
+            len(self.knowledge.added_filenames) > 0
+            or len(self.knowledge.deleted_filenames) > 0
+        )
+
+    def is_embedding_required(self, current_bot_model: BotModel) -> bool:
+        if self.has_update_files():
+            return True
+
+        if self.knowledge is not None and current_bot_model.has_knowledge():
+            if set(self.knowledge.source_urls) == set(
+                current_bot_model.knowledge.source_urls
+            ) and set(self.knowledge.sitemap_urls) == set(
+                current_bot_model.knowledge.sitemap_urls
+            ):
+                pass
+            else:
+                return True
+
+        if (
+            self.embedding_params is not None
+            and current_bot_model.embedding_params is not None
+        ):
+            if (
+                self.embedding_params.chunk_size
+                == current_bot_model.embedding_params.chunk_size
+                and self.embedding_params.chunk_overlap
+                == current_bot_model.embedding_params.chunk_overlap
+            ):
+                pass
+            else:
+                return True
+
+        return False
 
 
 class BotModifyOutput(BaseSchema):

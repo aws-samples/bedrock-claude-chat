@@ -3,9 +3,15 @@ import logging
 import os
 
 from anthropic import AnthropicBedrock
-from app.config import ANTHROPIC_PRICING, DEFAULT_EMBEDDING_CONFIG, GENERATION_CONFIG
+from app.config import (
+    BEDROCK_PRICING,
+    DEFAULT_EMBEDDING_CONFIG,
+    GENERATION_CONFIG,
+    MISTRAL_GENERATION_CONFIG,
+)
 from app.repositories.models.conversation import MessageModel
-from app.utils import get_bedrock_client
+from app.utils import get_bedrock_client, is_anthropic_model
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +20,58 @@ BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
 
 client = get_bedrock_client()
 anthropic_client = AnthropicBedrock()
+
+
+class InvocationMetrics(BaseModel):
+    input_tokens: int
+    output_tokens: int
+
+
+def compose_args(
+    messages: list[MessageModel],
+    model: str,
+    instruction: str | None = None,
+    stream: bool = False,
+) -> dict:
+    # if model is from Anthropic, use AnthropicBedrock
+    # otherwise, use bedrock client
+    model_id = get_model_id(model)
+    if is_anthropic_model(model_id):
+        return compose_args_for_anthropic_client(messages, model, instruction, stream)
+    else:
+        return compose_args_for_other_client(messages, model, instruction, stream)
+
+
+def compose_args_for_other_client(
+    messages: list[MessageModel],
+    model: str,
+    instruction: str | None = None,
+    stream: bool = False,
+) -> dict:
+    arg_messages = []
+    for message in messages:
+        if message.role not in ["system", "instruction"]:
+            content: list[dict] = []
+            for c in message.content:
+                if c.content_type == "text":
+                    content.append(
+                        {
+                            "type": "text",
+                            "text": c.body,
+                        }
+                    )
+            m = {"role": message.role, "content": content}
+            arg_messages.append(m)
+
+    args = {
+        **MISTRAL_GENERATION_CONFIG,
+        "model": get_model_id(model),
+        "messages": arg_messages,
+        "stream": stream,
+    }
+    if instruction:
+        args["system"] = instruction
+    return args
 
 
 def compose_args_for_anthropic_client(
@@ -66,14 +124,14 @@ def calculate_price(
     model: str, input_tokens: int, output_tokens: int, region: str = BEDROCK_REGION
 ) -> float:
     input_price = (
-        ANTHROPIC_PRICING.get(region, {})
+        BEDROCK_PRICING.get(region, {})
         .get(model, {})
-        .get("input", ANTHROPIC_PRICING["default"][model]["input"])
+        .get("input", BEDROCK_PRICING["default"][model]["input"])
     )
     output_price = (
-        ANTHROPIC_PRICING.get(region, {})
+        BEDROCK_PRICING.get(region, {})
         .get(model, {})
-        .get("output", ANTHROPIC_PRICING["default"][model]["output"])
+        .get("output", BEDROCK_PRICING["default"][model]["output"])
     )
 
     return input_price * input_tokens / 1000.0 + output_price * output_tokens / 1000.0
@@ -91,6 +149,12 @@ def get_model_id(model: str) -> str:
         return "anthropic.claude-3-haiku-20240307-v1:0"
     elif model == "claude-v3-opus":
         return "anthropic.claude-3-opus-20240229-v1:0"
+    elif model == "mistral-7b-instruct":
+        return "mistral.mistral-7b-instruct-v0:2"
+    elif model == "mixtral-8x7b-instruct":
+        return "mistral.mixtral-8x7b-instruct-v0:1"
+    elif model == "mistral-large":
+        return "mistral.mistral-large-2402-v1:0"
     else:
         raise NotImplementedError()
 
@@ -141,3 +205,62 @@ def calculate_document_embeddings(documents: list[str]) -> list[list[float]]:
         embeddings += _calculate_document_embeddings(batch)
 
     return embeddings
+
+
+def get_bedrock_response(args: dict) -> dict:
+
+    client = get_bedrock_client()
+    messages = args["messages"]
+
+    prompt = "\n".join(
+        [
+            message["content"][0]["text"]
+            for message in messages
+            if message["content"][0]["type"] == "text"
+        ]
+    )
+
+    model_id = args["model"]
+    is_mistral_model = model_id.startswith("mistral")
+    if is_mistral_model:
+        prompt = f"<s>[INST] {prompt} [/INST]"
+
+    logger.info(f"Final Prompt: {prompt}")
+    body = json.dumps(
+        {
+            "prompt": prompt,
+            "max_tokens": args["max_tokens"],
+            "temperature": args["temperature"],
+            "top_p": args["top_p"],
+            "top_k": args["top_k"],
+        }
+    )
+
+    logger.info(f"The args before invoke bedrock: {args}")
+    if args["stream"]:
+        try:
+            response = client.invoke_model_with_response_stream(
+                modelId=model_id,
+                body=body,
+            )
+            # Ref: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-runtime/client/invoke_model_with_response_stream.html
+            response_body = response
+        except Exception as e:
+            logger.error(e)
+    else:
+        response = client.invoke_model(
+            modelId=model_id,
+            body=body,
+        )
+        # Ref: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/bedrock-runtime/client/invoke_model.html
+        response_body = json.loads(response.get("body").read())
+        invocation_metrics = InvocationMetrics(
+            input_tokens=response["ResponseMetadata"]["HTTPHeaders"][
+                "x-amzn-bedrock-input-token-count"
+            ],
+            output_tokens=response["ResponseMetadata"]["HTTPHeaders"][
+                "x-amzn-bedrock-output-token-count"
+            ],
+        )
+        response_body["amazon-bedrock-invocationMetrics"] = invocation_metrics
+    return response_body

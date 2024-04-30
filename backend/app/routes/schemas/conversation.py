@@ -1,7 +1,7 @@
 from typing import Literal
 
 from app.routes.schemas.base import BaseSchema
-from pydantic import Field
+from pydantic import Field, root_validator, validator
 
 type_model_name = Literal[
     "claude-instant-v1",
@@ -9,6 +9,9 @@ type_model_name = Literal[
     "claude-v3-sonnet",
     "claude-v3-haiku",
     "claude-v3-opus",
+    "mistral-7b-instruct",
+    "mixtral-8x7b-instruct",
+    "mistral-large",
 ]
 
 
@@ -21,6 +24,36 @@ class Content(BaseSchema):
         description="MIME type of the image. Must be specified if `content_type` is `image`.",
     )
     body: str = Field(..., description="Content body. Text or base64 encoded image.")
+
+
+class FeedbackInput(BaseSchema):
+    thumbs_up: bool
+    category: str | None = Field(
+        None, description="Reason category. Required if thumbs_up is False."
+    )
+    comment: str | None = Field(None, description="optional comment")
+
+    @root_validator(pre=True)
+    def check_category(cls, values):
+        thumbs_up = values.get("thumbs_up")
+        category = values.get("category")
+
+        if not thumbs_up and category is None:
+            raise ValueError("category is required if `thumbs_up` is `False`")
+
+        return values
+
+
+class FeedbackOutput(BaseSchema):
+    thumbs_up: bool
+    category: str
+    comment: str
+
+
+class Chunk(BaseSchema):
+    content: str
+    source: str
+    rank: int
 
 
 class MessageInput(BaseSchema):
@@ -38,6 +71,8 @@ class MessageOutput(BaseSchema):
     content: list[Content]
     model: type_model_name
     children: list[str]
+    feedback: FeedbackOutput | None
+    used_chunks: list[Chunk] | None
     parent: str | None
 
 

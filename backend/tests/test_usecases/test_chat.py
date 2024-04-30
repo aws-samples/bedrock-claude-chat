@@ -4,12 +4,6 @@ sys.path.insert(0, ".")
 import unittest
 from pprint import pprint
 
-from tests.test_usecases.utils.bot_factory import (
-    create_test_private_bot,
-    create_test_public_bot,
-    create_test_instruction_template,
-)
-
 from anthropic.types import MessageStopEvent
 from app.bedrock import get_model_id
 from app.config import GENERATION_CONFIG
@@ -30,7 +24,6 @@ from app.repositories.models.conversation import (
     ConversationModel,
     MessageModel,
 )
-
 from app.routes.schemas.conversation import (
     ChatInput,
     ChatOutput,
@@ -48,8 +41,14 @@ from app.usecases.chat import (
 )
 from app.utils import get_anthropic_client
 from app.vector_search import SearchResult
+from tests.test_usecases.utils.bot_factory import (
+    create_test_instruction_template,
+    create_test_private_bot,
+    create_test_public_bot,
+)
 
 MODEL: type_model_name = "claude-instant-v1"
+MISTRAL_MODEL: type_model_name = "mistral-7b-instruct"
 
 
 class TestTraceToRoot(unittest.TestCase):
@@ -64,6 +63,8 @@ class TestTraceToRoot(unittest.TestCase):
                 children=["bot_1"],
                 parent=None,
                 create_time=1627984879.9,
+                feedback=None,
+                used_chunks=None,
             ),
             "bot_1": MessageModel(
                 role="assistant",
@@ -74,6 +75,8 @@ class TestTraceToRoot(unittest.TestCase):
                 children=["user_2"],
                 parent="user_1",
                 create_time=1627984879.9,
+                feedback=None,
+                used_chunks=None,
             ),
             "user_2": MessageModel(
                 role="user",
@@ -84,6 +87,8 @@ class TestTraceToRoot(unittest.TestCase):
                 children=["bot_2"],
                 parent="bot_1",
                 create_time=1627984879.9,
+                feedback=None,
+                used_chunks=None,
             ),
             "bot_2": MessageModel(
                 role="assistant",
@@ -94,6 +99,8 @@ class TestTraceToRoot(unittest.TestCase):
                 children=["user_3a", "user_3b"],
                 parent="user_2",
                 create_time=1627984879.9,
+                feedback=None,
+                used_chunks=None,
             ),
             "user_3a": MessageModel(
                 role="user",
@@ -104,6 +111,8 @@ class TestTraceToRoot(unittest.TestCase):
                 children=[],
                 parent="bot_2",
                 create_time=1627984879.9,
+                feedback=None,
+                used_chunks=None,
             ),
             "user_3b": MessageModel(
                 role="user",
@@ -114,6 +123,8 @@ class TestTraceToRoot(unittest.TestCase):
                 children=[],
                 parent="bot_2",
                 create_time=1627984879.9,
+                feedback=None,
+                used_chunks=None,
             ),
         }
         messages = trace_to_root("user_3a", message_map)
@@ -163,6 +174,50 @@ class TestStartChat(unittest.TestCase):
             user_id="user1", conversation_id=output.conversation_id
         )
         # Message length will be 2 (system + user input + assistant reply)
+        self.assertEqual(len(conv.message_map), 3)
+        for k, v in conv.message_map.items():
+            if v.parent == "system":
+                first_key = k
+                first_message = v
+            elif v.parent:
+                second_key = k
+                second_message = v
+
+        self.assertEqual(second_message.parent, first_key)
+        self.assertEqual(first_message.children, [second_key])
+        self.assertEqual(conv.last_message_id, second_key)
+        self.assertNotEqual(conv.total_price, 0)
+
+    def test_chat_mistral(self):
+        prompt = "あなたの名前は何ですか?"
+        body = f"<s>[INST]{prompt}[/INST]"
+
+        chat_input = ChatInput(
+            conversation_id="test_conversation_id",
+            message=MessageInput(
+                role="user",
+                content=[
+                    Content(
+                        content_type="text",
+                        body=body,
+                        media_type=None,
+                    )
+                ],
+                model=MISTRAL_MODEL,
+                parent_message_id=None,
+                message_id=None,
+            ),
+            bot_id=None,
+        )
+        output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+        self.output = output
+
+        pprint(output.model_dump())
+        self.assertNotEqual(output.conversation_id, "")
+
+        conv = find_conversation_by_id(
+            user_id="user1", conversation_id=output.conversation_id
+        )
         self.assertEqual(len(conv.message_map), 3)
         for k, v in conv.message_map.items():
             if v.parent == "system":
@@ -241,6 +296,8 @@ class TestContinueChat(unittest.TestCase):
                         children=["1-assistant"],
                         parent=None,
                         create_time=1627984879.9,
+                        feedback=None,
+                        used_chunks=None,
                     ),
                     "1-assistant": MessageModel(
                         role="assistant",
@@ -255,6 +312,8 @@ class TestContinueChat(unittest.TestCase):
                         children=[],
                         parent="1-user",
                         create_time=1627984879.9,
+                        feedback=None,
+                        used_chunks=None,
                     ),
                 },
                 bot_id=None,
@@ -325,6 +384,8 @@ class TestRegenerateChat(unittest.TestCase):
                         children=["a-2"],
                         parent=None,
                         create_time=1627984879.9,
+                        feedback=None,
+                        used_chunks=None,
                     ),
                     "a-2": MessageModel(
                         role="assistant",
@@ -339,6 +400,8 @@ class TestRegenerateChat(unittest.TestCase):
                         children=[],
                         parent="a-1",
                         create_time=1627984879.9,
+                        feedback=None,
+                        used_chunks=None,
                     ),
                     "b-1": MessageModel(
                         role="user",
@@ -353,6 +416,8 @@ class TestRegenerateChat(unittest.TestCase):
                         children=["b-2"],
                         parent=None,
                         create_time=1627984879.9,
+                        feedback=None,
+                        used_chunks=None,
                     ),
                     "b-2": MessageModel(
                         role="assistant",
@@ -367,6 +432,8 @@ class TestRegenerateChat(unittest.TestCase):
                         children=[],
                         parent="b-1",
                         create_time=1627984879.9,
+                        feedback=None,
+                        used_chunks=None,
                     ),
                 },
                 bot_id=None,
@@ -451,12 +518,20 @@ class TestProposeTitle(unittest.TestCase):
             bot_id=None,
         )
         output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
-
         print(output)
         self.output = output
 
+        chat_input.message.model = MISTRAL_MODEL
+        mistral_output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
+        self.mistral_output = mistral_output
+        print(mistral_output)
+
     def test_propose_title(self):
         title = propose_conversation_title("user1", self.output.conversation_id)
+        print(f"[title]: {title}")
+
+    def test_propose_title_mistral(self):
+        title = propose_conversation_title("user1", self.mistral_output.conversation_id)
         print(f"[title]: {title}")
 
     def tearDown(self) -> None:
@@ -519,7 +594,7 @@ class TestChatWithCustomizedBot(unittest.TestCase):
 
         conv = find_conversation_by_id("user1", output.conversation_id)
         self.assertEqual(len(conv.message_map["system"].children), 1)
-        self.assertEqual(conv.message_map["system"].children[0], "instruction")
+        self.assertEqual(conv.message_map["system"].children, ["instruction"])
         self.assertEqual(len(conv.message_map["instruction"].children), 1)
 
         # Second message
@@ -687,6 +762,8 @@ class TestInsertKnowledge(unittest.TestCase):
                     children=["1-user"],
                     parent=None,
                     create_time=1627984879.9,
+                    feedback=None,
+                    used_chunks=None,
                 ),
                 "1-user": MessageModel(
                     role="user",
@@ -701,6 +778,8 @@ class TestInsertKnowledge(unittest.TestCase):
                     children=[],
                     parent="instruction",
                     create_time=1627984879.9,
+                    feedback=None,
+                    used_chunks=None,
                 ),
             },
             bot_id="bot1",

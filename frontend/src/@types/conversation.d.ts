@@ -4,7 +4,10 @@ export type Model =
   | 'claude-v2'
   | 'claude-v3-opus'
   | 'claude-v3-sonnet'
-  | 'claude-v3-haiku';
+  | 'claude-v3-haiku'
+  | 'mistral-7b-instruct'
+  | 'mixtral-8x7b-instruct'
+  | 'mistral-large';
 export type Content = {
   contentType: 'text' | 'image';
   mediaType?: string;
@@ -15,6 +18,7 @@ export type MessageContent = {
   role: Role;
   content: Content[];
   model: Model;
+  feedback: null | Feedback;
 };
 
 export type RelatedDocument = {
@@ -73,4 +77,16 @@ export type MessageMap = {
 
 export type Conversation = ConversationMeta & {
   messageMap: MessageMap;
+};
+
+export type PutFeedbackRequest = {
+  thumbsUp: boolean;
+  category: null | string;
+  comment: null | string;
+};
+
+export type Feedback = {
+  thumbsUp: boolean;
+  category: string;
+  comment: string;
 };
