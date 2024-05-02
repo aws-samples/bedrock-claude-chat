@@ -308,6 +308,13 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     messages.append(chat_input.message)  # type: ignore
 
     # Create payload to invoke Bedrock
+    guardrail_identifier = core.Node.of(stack).try_get_context("guardrailIdentifier")
+    
+    if guardrail_identifier:
+        guardrail = bedrock.list_guardrails(guardrailIdentifier=guardrail_identifier)["guardrails"][-1]
+    else:
+        guardrail = None
+
     args = compose_args(
         messages=messages,
         model=chat_input.message.model,
@@ -316,6 +323,9 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
             if "instruction" in message_map
             else None
         ),
+        guardrailIdentifier=guardrail["id"] if guardrail else None,
+        guardrailVersion=guardrail["version"] if guardrail else None,
+        trace="ENABLED" if guardrail else None,
     )
 
     if is_anthropic_model(args["model"]):
