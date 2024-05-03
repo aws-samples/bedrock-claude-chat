@@ -26,6 +26,7 @@ from app.usecases.bot import (
     modify_pin_status,
     remove_bot_by_id,
     remove_uploaded_file,
+    add_shared_bot_to_user,
 )
 from app.user import User
 from fastapi import APIRouter, Request
@@ -62,6 +63,11 @@ def patch_bot_visibility(
     current_user: User = request.state.current_user
     update_bot_visibility(current_user.id, bot_id, visibility_input.to_public)
 
+@router.post("/bot/shared/{bot_id}/{username}/{user_pool_id}", response_model=BotSummaryOutput)
+def add_shared_bot(request: Request, bot_id: str, username: str, user_pool_id: str):
+    """Add a shared bot to a specific user."""
+    summary = add_shared_bot_to_user(username, bot_id, user_pool_id)
+    return summary
 
 @router.get("/bot", response_model=list[BotMetaOutput])
 def get_all_bots(

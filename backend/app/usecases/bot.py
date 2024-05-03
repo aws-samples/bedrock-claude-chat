@@ -21,6 +21,10 @@ from app.repositories.custom_bot import (
     update_bot_last_used_time,
     update_bot_pin_status,
 )
+from app.repositories.user import (
+    find_user_by_username,
+    UserNotFoundException,
+)
 from app.repositories.models.custom_bot import (
     BotAliasModel,
     BotMeta,
@@ -267,7 +271,43 @@ def fetch_bot(user_id: str, bot_id: str) -> tuple[bool, BotModel]:
             f"Bot with ID {bot_id} not found in both private (for user {user_id}) and public items."
         )
 
+def add_shared_bot_to_user(username: str, bot_id: str, user_pool_id: str) -> BotSummaryOutput:
+    """Add a shared bot to a specific user."""
+    try:
+        user_id = find_user_by_username(username, user_pool_id)
+        public_bot = find_public_bot_by_id(bot_id)
 
+        current_time = get_current_time()
+        store_alias(
+            user_id,
+            BotAliasModel(
+                id=public_bot.id,
+                title=public_bot.title,
+                description=public_bot.description,
+                original_bot_id=bot_id,
+                create_time=current_time,
+                last_used_time=current_time,
+                is_pinned=False,
+                sync_status=public_bot.sync_status,
+                has_knowledge=public_bot.has_knowledge(),
+            ),
+        )
+
+        return BotSummaryOutput(
+            id=public_bot.id,
+            title=public_bot.title,
+            description=public_bot.description,
+            create_time=public_bot.create_time,
+            last_used_time=public_bot.last_used_time,
+            is_pinned=False,
+            is_public=True,
+            owned=False,
+            sync_status=public_bot.sync_status,
+            has_knowledge=public_bot.has_knowledge(),
+        )
+    except UserNotFoundException:
+        raise UserNotFoundException(f"User with username {username} not found.")
+        
 def fetch_all_bots_by_user_id(
     user_id: str, limit: int | None = None, only_pinned: bool = False
 ) -> list[BotMeta]:
