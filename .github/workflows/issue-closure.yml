@@ -1,0 +1,30 @@
+name: Expired Issues Closure
+
+on:
+  schedule:
+    - cron: 0 1 * * *
+
+jobs:
+  close-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Close "stale" issues
+        uses: piroor/close-expired-issues-based-on-label@master
+        env:
+          LABEL: "stale"
+          EXCEPTION_LABELS: ""
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EXPIRE_DAYS: 14
+
+      - name: Mark "needs-info" issues as "stale" if not responded
+        uses: piroor/auto-mark-as-stale-issues@main
+        env:
+          LABEL: "stale"
+          EXCEPTION_LABELS: ""
+          CANDIDATE_LABELS: "needs-info"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EXPIRE_DAYS: 30
+          EXTEND_DAYS_BY_COMMENTED: 14
+          COMMENT: This issue has been labeled as "stale" due to no response by the reporter within 1 month (and 14 days after last commented by someone). And it will be closed automatically 14 days later if not responded.

@@ -3,28 +3,30 @@ import json
 import logging
 import os
 
-import boto3
 import pg8000
 import requests
-from app.bedrock import calculate_document_embeddings
-from app.config import EMBEDDING_CONFIG
-from app.repositories.common import _get_table_client
-from app.repositories.custom_bot import compose_bot_id, decompose_bot_id
-from app.route_schema import type_sync_status
+
+from app.config import DEFAULT_EMBEDDING_CONFIG
+from app.repositories.common import _get_table_client, RecordNotFoundError
+from app.repositories.custom_bot import (
+    compose_bot_id,
+    decompose_bot_id,
+    find_private_bot_by_id,
+)
+
+from app.routes.schemas.bot import type_sync_status
 from app.utils import compose_upload_document_s3_path
 from embedding.loaders import UrlLoader
 from embedding.loaders.base import BaseLoader
 from embedding.loaders.s3 import S3FileLoader
 from embedding.wrapper import DocumentSplitter, Embedder
-from llama_index.node_parser import SentenceSplitter
+from llama_index.core.node_parser import SentenceSplitter
 from ulid import ULID
 
 logging.basicConfig(level=logging.INFO)
 
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
-MODEL_ID = EMBEDDING_CONFIG["model_id"]
-CHUNK_SIZE = EMBEDDING_CONFIG["chunk_size"]
-CHUNK_OVERLAP = EMBEDDING_CONFIG["chunk_overlap"]
+
 
 DB_NAME = os.environ.get("DB_NAME", "postgres")
 DB_HOST = os.environ.get("DB_HOST", "")
@@ -106,12 +108,14 @@ def embed(
     contents: list[str],
     sources: list[str],
     embeddings: list[list[float]],
+    chunk_size: int,
+    chunk_overlap: int,
 ):
     splitter = DocumentSplitter(
         splitter=SentenceSplitter(
             paragraph_separator=r"\n\n\n",
-            chunk_size=CHUNK_SIZE,
-            chunk_overlap=CHUNK_OVERLAP,
+            chunk_size=chunk_size,
+            chunk_overlap=chunk_overlap,
             # Use length of text as token count for cohere-multilingual-v3
             tokenizer=lambda text: [0] * len(text),
         )
@@ -133,6 +137,8 @@ def main(
     sitemap_urls: list[str],
     source_urls: list[str],
     filenames: list[str],
+    chunk_size: int,
+    chunk_overlap: int,
 ):
     exec_id = ""
     try:
@@ -163,12 +169,19 @@ def main(
             return
 
         # Calculate embeddings using LangChain
-        contents = []
-        sources = []
-        embeddings = []
+        contents: list[str] = []
+        sources: list[str] = []
+        embeddings: list[list[float]] = []
 
         if len(source_urls) > 0:
-            embed(UrlLoader(source_urls), contents, sources, embeddings)
+            embed(
+                UrlLoader(source_urls),
+                contents,
+                sources,
+                embeddings,
+                chunk_size,
+                chunk_overlap,
+            )
         if len(sitemap_urls) > 0:
             for sitemap_url in sitemap_urls:
                 raise NotImplementedError()
@@ -182,6 +195,8 @@ def main(
                     contents,
                     sources,
                     embeddings,
+                    chunk_size,
+                    chunk_overlap,
                 )
 
         print(f"Number of chunks: {len(contents)}")
@@ -212,25 +227,33 @@ def main(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("new_image", type=str)
+    parser.add_argument("Keys", type=str)
     args = parser.parse_args()
 
-    # `dynamodb.NewImage` from EventBridge Pipes
-    new_image = json.loads(args.new_image)
+    keys = json.loads(args.Keys)
+    sk = keys["SK"]["S"]
 
-    knowledge = new_image["Knowledge"]["M"]
-    sitemap_urls = [x["S"] for x in knowledge["sitemap_urls"]["L"]]
-    source_urls = [x["S"] for x in knowledge["source_urls"]["L"]]
-    filenames = [x["S"] for x in knowledge["filenames"]["L"]]
-
-    sk = new_image["SK"]["S"]
     bot_id = decompose_bot_id(sk)
 
-    pk = new_image["PK"]["S"]
+    pk = keys["PK"]["S"]
     user_id = pk
+
+    new_image = find_private_bot_by_id(user_id, bot_id)
+
+    embedding_params = new_image.embedding_params
+    chunk_size = embedding_params.chunk_size
+    chunk_overlap = embedding_params.chunk_overlap
+    knowledge = new_image.knowledge
+    sitemap_urls = knowledge.sitemap_urls
+    source_urls = knowledge.source_urls
+    filenames = knowledge.filenames
 
     print(f"source_urls to crawl: {source_urls}")
     print(f"sitemap_urls to crawl: {sitemap_urls}")
     print(f"filenames: {filenames}")
+    print(f"chunk_size: {chunk_size}")
+    print(f"chunk_overlap: {chunk_overlap}")
 
-    main(user_id, bot_id, sitemap_urls, source_urls, filenames)
+    main(
+        user_id, bot_id, sitemap_urls, source_urls, filenames, chunk_size, chunk_overlap
+    )

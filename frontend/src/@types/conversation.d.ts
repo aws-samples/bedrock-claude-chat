@@ -1,17 +1,34 @@
 export type Role = 'system' | 'assistant' | 'user';
-export type Model = 'claude-instant-v1' | 'claude-v2';
+export type Model =
+  | 'claude-instant-v1'
+  | 'claude-v2'
+  | 'claude-v3-opus'
+  | 'claude-v3-sonnet'
+  | 'claude-v3-haiku'
+  | 'mistral-7b-instruct'
+  | 'mixtral-8x7b-instruct'
+  | 'mistral-large';
 export type Content = {
-  contentType: 'text';
+  contentType: 'text' | 'image';
+  mediaType?: string;
   body: string;
 };
 
 export type MessageContent = {
   role: Role;
-  content: Content;
+  content: Content[];
   model: Model;
+  feedback: null | Feedback;
 };
 
-export type MessageContentWithChildren = MessageContent & {
+export type RelatedDocument = {
+  chunkBody: string;
+  contentType: 's3' | 'url';
+  sourceLink: string;
+  rank: number;
+};
+
+export type DisplayMessageContent = MessageContent & {
   id: string;
   parent: null | string;
   children: string[];
@@ -20,7 +37,6 @@ export type MessageContentWithChildren = MessageContent & {
 
 export type PostMessageRequest = {
   conversationId?: string;
-  stream: boolean;
   message: MessageContent & {
     parentMessageId: null | string;
   };
@@ -32,6 +48,16 @@ export type PostMessageResponse = {
   createTime: number;
   message: MessageContent;
 };
+
+export type GetRelatedDocumentsRequest = {
+  conversationId: string;
+  message: MessageContent & {
+    parentMessageId: null | string;
+  };
+  botId: string;
+};
+
+export type GetRelatedDocumentsResponse = RelatedDocument[];
 
 export type ConversationMeta = {
   id: string;
@@ -51,4 +77,16 @@ export type MessageMap = {
 
 export type Conversation = ConversationMeta & {
   messageMap: MessageMap;
+};
+
+export type PutFeedbackRequest = {
+  thumbsUp: boolean;
+  category: null | string;
+  comment: null | string;
+};
+
+export type Feedback = {
+  thumbsUp: boolean;
+  category: string;
+  comment: string;
 };

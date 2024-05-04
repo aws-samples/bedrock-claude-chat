@@ -8,6 +8,10 @@ import NotFound from './pages/NotFound.tsx';
 import './i18n';
 import BotExplorePage from './pages/BotExplorePage.tsx';
 import BotEditPage from './pages/BotEditPage.tsx';
+import BotApiSettingsPage from './pages/BotApiSettingsPage.tsx';
+import AdminSharedBotAnalyticsPage from './pages/AdminSharedBotAnalyticsPage.tsx';
+import AdminApiManagementPage from './pages/AdminApiManagementPage.tsx';
+import AdminBotManagementPage from './pages/AdminBotManagementPage.tsx';
 
 const router = createBrowserRouter([
   {
@@ -31,8 +35,24 @@ const router = createBrowserRouter([
         element: <BotEditPage />,
       },
       {
+        path: '/bot/api-settings/:botId',
+        element: <BotApiSettingsPage />,
+      },
+      {
         path: '/bot/:botId',
         element: <ChatPage />,
+      },
+      {
+        path: '/admin/shared-bot-analytics',
+        element: <AdminSharedBotAnalyticsPage />,
+      },
+      {
+        path: '/admin/api-management',
+        element: <AdminApiManagementPage />,
+      },
+      {
+        path: '/admin/bot/:botId',
+        element: <AdminBotManagementPage />,
       },
       {
         path: '/:conversationId',

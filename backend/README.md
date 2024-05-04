@@ -22,6 +22,9 @@ export ACCOUNT=yyyy
 export REGION=ap-northeast-1
 export BEDROCK_REGION=us-east-1
 export DOCUMENT_BUCKET=bedrockchatstack-documentbucketxxxxxxx
+export LARGE_MESSAGE_BUCKET=bedrockchatstack-largemessagebucketxxx
+export USER_POOL_ID=xxxxxxxxx
+export CLIENT_ID=xxxxxxxxx
 ```
 
 ## Launch local server
@@ -36,8 +39,8 @@ uvicorn app.main:app  --reload --host 0.0.0.0 --port 8000
 
 ```sh
 python tests/test_bedrock.py
-python tests/repositories/test_conversation.py
-python tests/repositories/test_custom_bot.py
-python tests/usecases/test_bot.py
-python tests/usecases/test_chat.py
+python tests/test_repositories/test_conversation.py
+python tests/test_repositories/test_custom_bot.py
+python tests/test_usecases/test_bot.py
+python tests/test_usecases/test_chat.py
 ```

@@ -3,6 +3,11 @@
 // const translation: typeof en = {
 const translation = {
   translation: {
+    signIn: {
+      button: {
+        login: 'ログイン',
+      },
+    },
     app: {
       name: 'Bedrock Claude Chat',
       inputMessage: '入力してください',
@@ -10,6 +15,7 @@ const translation = {
       recentlyUsedBots: '最近使用したボット',
       conversationHistory: '会話履歴',
       chatWaitingSymbol: '▍',
+      adminConsoles: '管理者用',
     },
     bot: {
       label: {
@@ -27,7 +33,8 @@ const translation = {
         notAvailable: 'このボットは利用できません。',
         noBots: 'ボットが登録されていません。',
         noBotsRecentlyUsed: '最近利用した公開ボットはありません。',
-        retrivingKnowledge: '[ナレッジを取得中...]',
+        retrievingKnowledge: '[ナレッジを取得中...]',
+        referenceLink: '参考ドキュメント',
         dndFileUpload:
           'ドラッグ＆ドロップでファイルをアップロードできます。\n対応ファイル: {{fileExtensions}}',
         uploadError: 'エラーメッセージ',
@@ -76,8 +83,11 @@ const translation = {
       },
       samples: {
         title: 'インストラクションのサンプル',
-        reference:
-          '引用: https://docs.anthropic.com/claude/docs/how-to-use-system-prompts',
+        anthropicLibrary: {
+          title: 'Anthropicプロンプトライブラリ',
+          sentence: '他のサンプル: ',
+          url: 'https://docs.anthropic.com/claude/prompt-library',
+        },
         pythonCodeAssistant: {
           title: 'Python コーディングアシスタント',
           prompt: `あなたは非常にスキルの高い Python の専門家です。与えられたタスクをこなすための、短くて高品質な Python スクリプトを書いてください。あなたは経験豊富な開発者のためにコードを書いているので、自明でないことについてのみコメントを追加してください。必要なインポートは必ず含めてください。
@@ -111,6 +121,93 @@ const translation = {
         description: '説明文',
         instruction: 'インストラクション',
       },
+      apiSettings: {
+        pageTitle: '共有されたボットのAPI公開設定',
+        label: {
+          endpoint: 'APIエンドポイント',
+          usagePlan: '使用量プラン',
+          allowOrigins: '許可するオリジン',
+          apiKeys: 'APIキー',
+          period: {
+            day: '1日あたり',
+            week: '1週間あたり',
+            month: '1ヶ月あたり',
+          },
+          apiKeyDetail: {
+            creationDate: '作成日',
+            active: 'アクティブ',
+            inactive: '非アクティブ',
+            key: 'APIキー',
+          },
+        },
+        item: {
+          throttling: 'スロットリング',
+          burstLimit: 'バースト',
+          rateLimit: 'レート',
+          quota: 'クォータ',
+          requestLimit: 'リクエスト数',
+          offset: 'オフセット',
+        },
+        help: {
+          overview:
+            'APIを公開することで外部のクライアントがボットを利用することが可能になります。APIを利用することで、外部のアプリケーションとの連携が可能になります。',
+          endpoint:
+            'クライアントは、このAPIエンドポイントを通じてボットを利用できます。',
+          usagePlan:
+            '使用量プランは、APIがクライアントから受け入れられるリクエストの数またはレートを指定します。APIが受け取るリクエストは、この使用量プランに関連付けて追跡されます。',
+          throttling: 'ユーザがAPIを呼び出せるレートを制限します。',
+          rateLimit:
+            'クライアントがAPIを呼び出すことができるレートを1秒あたりのリクエスト数で入力します。',
+          burstLimit:
+            'クライアントがAPIに対して同時に実行できるリクエストの数を入力します。',
+          quota:
+            'ある期間にユーザがAPIに対して実行できるリクエストの数を制限します。',
+          requestLimit:
+            'ドロップダウンリストで選択した期間にユーザが実行できるリクエストの総数を入力します。',
+          allowOrigins:
+            'アクセスを許可するクライアントのオリジンを入力します。許可されていないオリジンからAPIが呼び出された場合は、403 Forbidden エラーのレスポンスが返されて、アクセスが拒否されます。オリジンのフォーマットは、"(http|https)://host-name" または "(http|https)://host-name:port" である必要があります。なお、ワイルドカード(*)も利用可能です。',
+          allowOriginsExample:
+            '入力例) https://your-host-name.com, https://*.your-host-name.com, http://localhost:8000',
+          apiKeys:
+            'APIキーは英数字の文字列で、APIのクライアントを識別します。APIキーが識別できない場合、403 Forbiddenエラーのレスポンスが返され、APIへのアクセスが拒否されます。',
+        },
+        button: {
+          ApiKeyShow: '表示',
+          ApiKeyHide: '隠す',
+        },
+        alert: {
+          botUnshared: {
+            title: 'ボットを共有してください',
+            body: 'ボットが共有されていないため、APIの公開ができません。',
+          },
+          deploying: {
+            title: 'APIをデプロイ中',
+            body: 'デプロイが完了するまで、しばらくお待ちください。',
+          },
+          deployed: {
+            title: 'APIがデプロイされています',
+            body: 'クライアントはAPIエンドポイントとAPIキーを利用して、このAPIにアクセスできます。',
+          },
+          deployError: {
+            title: 'APIのデプロイに失敗しました',
+            body: 'このAPIを削除して、APIを再作成してください。',
+          },
+        },
+        deleteApiDaialog: {
+          title: '削除しますか?',
+          content:
+            'このAPIを本当に削除しますか? このAPIを削除すると、すべてのクライアントはこのAPIに一切アクセスできなくなります。',
+        },
+        addApiKeyDialog: {
+          title: 'APIキーの追加',
+          content: 'APIキーを識別するための名前を入力してください。',
+        },
+        deleteApiKeyDialog: {
+          title: '削除しますか?',
+          content:
+            '本当に <Bold>{{title}}</Bold> を削除しますか?\nこのAPIキーを利用しているクライアントは、APIにアクセスできなくなります。',
+        },
+      },
       button: {
         newBot: 'ボットを新規作成',
         create: '新規作成',
@@ -121,6 +218,7 @@ const translation = {
         copied: 'コピーしました',
         instructionsSamples: 'サンプル',
         chooseFiles: 'ファイルを選択',
+        apiSettings: 'API公開設定',
       },
       deleteDialog: {
         title: '削除しますか？',
@@ -141,6 +239,69 @@ const translation = {
         notSupportedFile: 'このファイル形式はサポートされていません。',
         duplicatedFile:
           '同一ファイル名のファイルが既にアップロードされています。',
+        failDeleteApi: 'APIの削除に失敗しました。',
+      },
+    },
+    admin: {
+      sharedBotAnalytics: {
+        label: {
+          pageTitle: '公開ボット確認',
+          noPublicBotUsages:
+            '指定の集計期間内に公開ボットは利用されていません。',
+          published: 'API公開中',
+          SearchCondition: {
+            title: '集計期間',
+            from: 'From',
+            to: 'To',
+          },
+          sortByCost: '利用料金でソート',
+        },
+        help: {
+          overview:
+            '共有されているボットと公開済みのAPIにおける利用状況を確認できます。',
+          calculationPeriod:
+            '集計期間が未設定の場合は、本日の利用状況が表示されます。',
+        },
+      },
+      apiManagement: {
+        label: {
+          pageTitle: 'API管理',
+          publishedDate: '公開日',
+          noApi: 'APIがありません。',
+        },
+      },
+      botManagement: {
+        label: {
+          pageTitle: 'ボット管理',
+          sharedUrl: 'ボットのURL',
+          apiSettings: 'API公開設定',
+          noKnowledge: 'このボットにはナレッジが設定されていません。',
+          notPublishApi: 'このボットはAPIを公開していません。',
+          deployStatus: 'デプロイステータス',
+          cfnStatus: 'CloudFormation ステータス',
+          codebuildStatus: 'CodeBuild ステータス',
+          codeBuildId: 'CodeBuild ID',
+          usagePlanOn: 'ON',
+          usagePlanOff: 'OFF',
+          rateLimit:
+            'クライアントは、毎秒 <Bold>{{limit}}</Bold> リクエストAPIを呼び出すことができます。',
+          burstLimit:
+            'クライアントは、同時に <Bold> {{ limit }}</Bold> リクエストAPIを呼び出すことができます。',
+          requestsLimit:
+            '<Bold>{{period}}</Bold> <Bold>{{limit}}</Bold> リクエストAPIを呼び出すことができます。',
+        },
+        alert: {
+          noApiKeys: {
+            title: 'APIキーがありません',
+            body: 'すべてのクライアントは、このAPIにアクセスできません。',
+          },
+        },
+        button: {
+          deleteApi: 'API削除',
+        },
+      },
+      validationError: {
+        period: 'FromとToを両方入力してください。',
       },
     },
     deleteDialog: {
@@ -154,9 +315,33 @@ const translation = {
     languageDialog: {
       title: '言語の切替',
     },
+    feedbackDialog: {
+      title: 'フィードバック',
+      content: '詳細を教えてください。',
+      categoryLabel: 'カテゴリ',
+      commentLabel: '自由入力',
+      commentPlaceholder: '（任意）コメントを記入してください',
+      categories: [
+        {
+          value: 'notFactuallyCorrect',
+          label: '事実と異なる',
+        },
+        {
+          value: 'notFullyFollowRequest',
+          label: '要求に応えていない',
+        },
+        {
+          value: 'other',
+          label: 'その他',
+        },
+      ],
+    },
     button: {
       newChat: '新しいチャット',
       botConsole: 'ボットコンソール',
+      sharedBotAnalytics: '公開ボット確認',
+      apiManagement: 'API管理',
+      userUsages: 'ユーザ利用状況',
       SaveAndSubmit: '変更 & 送信',
       resend: '再送信',
       regenerate: '再生成',
@@ -177,6 +362,37 @@ const translation = {
       hint: {
         required: '* 必須',
       },
+      validationError: {
+        required: 'この項目は必須入力です。',
+        invalidOriginFormat: 'オリジンのフォーマットが異なります。',
+      },
+    },
+    embeddingSettings: {
+      title: 'ベクトル埋め込みパラメーター設定',
+      description:
+        'ベクトル埋め込みのパラメーター設定が行えます。パラメーターを変更することで、ドキュメントの検索精度が変わります。',
+      chunkSize: {
+        label: 'チャンクサイズ',
+        hint: '埋め込み時のドキュメントの分割サイズを指定します。',
+      },
+      chunkOverlap: {
+        label: 'チャンクオーバーラップ',
+        hint: '隣接するチャンク同士で重複する文字数を指定します。',
+      },
+      help: {
+        chunkSize:
+          'チャンクサイズが小さすぎると文脈情報が失われ、大きすぎると同一チャンクの中に異なる文脈の情報が存在することになり、検索精度が低下する場合があります。',
+        chunkOverlap:
+          'チャンクオーバーラップを指定することで、チャンク境界付近の文脈情報を保持することができます。チャンクサイズを大きくすることで、検索精度の向上ができる場合があります。しかし、チャンクオーバーラップを大きくすると、計算コストが増大するのでご注意ください。',
+      },
+      alert: {
+        sync: {
+          error: {
+            title: 'チャンキングエラー',
+            body: 'チャンクオーバーラップ値を小さくして再試行してください',
+          },
+        },
+      },
     },
     error: {
       answerResponse: '回答中にエラーが発生しました。',
@@ -186,6 +402,17 @@ const translation = {
       predict: {
         general: '推論中にエラーが発生しました。',
         invalidResponse: '想定外のResponseが返ってきました。',
+      },
+      notSupportedImage: '選択しているモデルは、画像を利用できません。',
+    },
+    validation: {
+      title: 'バリデーションエラー',
+      maxRange: {
+        message: '設定できる最大値は{{size}}です',
+      },
+      chunkOverlapLessThanChunkSize: {
+        message:
+          'チャンクオーバーラップはチャンクサイズより小さく設定する必要があります',
       },
     },
   },

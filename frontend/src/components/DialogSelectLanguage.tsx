@@ -36,7 +36,7 @@ const DialogSelectLanguage: React.FC<Props> = (props) => {
             i18n.changeLanguage(language);
             props.onClose();
           }}
-          className="p-2 text-aws-font-color-white">
+          className="p-2">
           {t('button.ok')}
         </Button>
       </div>

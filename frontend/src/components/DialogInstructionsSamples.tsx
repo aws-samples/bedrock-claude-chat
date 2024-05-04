@@ -13,7 +13,7 @@ const PromptSample: React.FC<PromptSampleProps> = (props) => {
   return (
     <div>
       <div>{props.title}</div>
-      <div className="bg-light-gray rounded p-2 text-aws-font-color">
+      <div className="rounded bg-light-gray p-2 text-aws-font-color">
         {props.prompt.split('\n').map((s, idx) => (
           <div key={idx}>{s}</div>
         ))}
@@ -52,7 +52,17 @@ const DialogInstructionsSamples: React.FC<Props> = (props) => {
           />
         </div>
 
-        <div className="mt-2 text-xs">{t('bot.samples.reference')}</div>
+        <div className="mt-4">
+          {t('bot.samples.anthropicLibrary.sentence')}
+          <a
+            href={t('bot.samples.anthropicLibrary.url')}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-aws-sea-blue underline hover:text-aws-sea-blue-hover">
+            {t('bot.samples.anthropicLibrary.title')}
+          </a>
+        </div>
+
         <div className="mt-1 flex justify-end gap-2">
           <Button onClick={props.onClose} className="p-2" outlined>
             {t('button.close')}

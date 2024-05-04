@@ -3,10 +3,13 @@ import useConversationApi from './useConversationApi';
 import { produce } from 'immer';
 import {
   MessageContent,
-  MessageContentWithChildren,
+  DisplayMessageContent,
   MessageMap,
   Model,
   PostMessageRequest,
+  RelatedDocument,
+  Conversation,
+  PutFeedbackRequest,
 } from '../@types/conversation';
 import useConversation from './useConversation';
 import { create } from 'zustand';
@@ -16,6 +19,8 @@ import { useNavigate } from 'react-router-dom';
 import { ulid } from 'ulid';
 import { convertMessageMapToArray } from '../utils/MessageUtils';
 import { useTranslation } from 'react-i18next';
+import useModel from './useModel';
+import useFeedbackApi from './useFeedbackApi';
 
 type ChatStateType = {
   [id: string]: MessageMap;
@@ -39,6 +44,9 @@ const useChatState = create<{
   postingMessage: boolean;
   setPostingMessage: (b: boolean) => void;
   chats: ChatStateType;
+  relatedDocuments: {
+    [messageId: string]: RelatedDocument[];
+  };
   setMessages: (id: string, messageMap: MessageMap) => void;
   copyMessages: (fromId: string, toId: string) => void;
   pushMessage: (
@@ -52,12 +60,18 @@ const useChatState = create<{
   getMessages: (
     id: string,
     currentMessageId: string
-  ) => MessageContentWithChildren[];
+  ) => DisplayMessageContent[];
+  setRelatedDocuments: (
+    messageId: string,
+    documents: RelatedDocument[]
+  ) => void;
+  moveRelatedDocuments: (fromMessageId: string, toMessageId: string) => void;
   currentMessageId: string;
   setCurrentMessageId: (s: string) => void;
   isGeneratedTitle: boolean;
   setIsGeneratedTitle: (b: boolean) => void;
   getPostedModel: () => Model;
+  shouldUpdateMessages: (currentConversation: Conversation) => boolean;
 }>((set, get) => {
   return {
     conversationId: '',
@@ -75,6 +89,7 @@ const useChatState = create<{
       }));
     },
     chats: {},
+    relatedDocuments: {},
     setMessages: (id: string, messageMap: MessageMap) => {
       set((state) => ({
         chats: produce(state.chats, (draft) => {
@@ -95,8 +110,8 @@ const useChatState = create<{
       currentMessageId: string,
       content: MessageContent
     ) => {
-      set((state) => ({
-        chats: produce(state.chats, (draft) => {
+      set(() => ({
+        chats: produce(get().chats, (draft) => {
           // 追加対象が子ノードの場合は親ノードに参照情報を追加
           if (draft[id] && parentMessageId && parentMessageId !== 'system') {
             draft[id][parentMessageId] = {
@@ -124,9 +139,9 @@ const useChatState = create<{
       }));
     },
     editMessage: (id: string, messageId: string, content: string) => {
-      set((state) => ({
-        chats: produce(state.chats, (draft) => {
-          draft[id][messageId].content.body = content;
+      set(() => ({
+        chats: produce(get().chats, (draft) => {
+          draft[id][messageId].content[0].body = content;
         }),
       }));
     },
@@ -158,6 +173,21 @@ const useChatState = create<{
     getMessages: (id: string, currentMessageId: string) => {
       return convertMessageMapToArray(get().chats[id] ?? {}, currentMessageId);
     },
+    setRelatedDocuments: (messageId, documents) => {
+      set((state) => ({
+        relatedDocuments: produce(state.relatedDocuments, (draft) => {
+          draft[messageId] = documents;
+        }),
+      }));
+    },
+    moveRelatedDocuments: (fromId, toId) => {
+      set(() => ({
+        relatedDocuments: produce(get().relatedDocuments, (draft) => {
+          draft[toId] = get().relatedDocuments[fromId];
+          draft[fromId] = [];
+        }),
+      }));
+    },
     currentMessageId: '',
     setCurrentMessageId: (s: string) => {
       set(() => ({
@@ -175,6 +205,14 @@ const useChatState = create<{
         get().chats[get().conversationId]?.system?.model ??
         // 画面に即時反映するためNEW_MESSAGEを評価
         get().chats['']?.[NEW_MESSAGE_ID.ASSISTANT]?.model
+      );
+    },
+    shouldUpdateMessages: (currentConversation) => {
+      return (
+        !!get().conversationId &&
+        currentConversation.id === get().conversationId &&
+        !get().postingMessage &&
+        get().currentMessageId !== currentConversation.lastMessageId
       );
     },
   };
@@ -199,13 +237,19 @@ const useChat = () => {
     isGeneratedTitle,
     setIsGeneratedTitle,
     getPostedModel,
+    relatedDocuments,
+    setRelatedDocuments,
+    moveRelatedDocuments,
+    shouldUpdateMessages,
   } = useChatState();
   const { open: openSnackbar } = useSnackbar();
   const navigate = useNavigate();
 
   const { post: postStreaming } = usePostMessageStreaming();
+  const { modelId, setModelId } = useModel();
 
   const conversationApi = useConversationApi();
+  const feedbackApi = useFeedbackApi();
   const {
     data,
     mutate,
@@ -224,7 +268,7 @@ const useChat = () => {
     setMessages('', {});
   }, [setConversationId, setMessages]);
 
-  // エラー処理
+  // Error Handling
   useEffect(() => {
     if (error?.response?.status === 404) {
       openSnackbar(t('error.notFoundConversation'));
@@ -235,12 +279,18 @@ const useChat = () => {
     }
   }, [error, navigate, newChat, openSnackbar, t]);
 
+  // when updated messages
   useEffect(() => {
-    if (conversationId && data?.id === conversationId) {
+    if (data && shouldUpdateMessages(data)) {
       setMessages(conversationId, data.messageMap);
       setCurrentMessageId(data.lastMessageId);
+      setModelId(getPostedModel());
+      if ((relatedDocuments[NEW_MESSAGE_ID.ASSISTANT]?.length ?? 0) > 0) {
+        moveRelatedDocuments(NEW_MESSAGE_ID.ASSISTANT, data.lastMessageId);
+      }
     }
-  }, [conversationId, data, setCurrentMessageId, setMessages]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversationId, data]);
 
   useEffect(() => {
     setIsGeneratedTitle(false);
@@ -264,16 +314,24 @@ const useChat = () => {
       NEW_MESSAGE_ID.ASSISTANT,
       {
         role: 'assistant',
-        content: {
-          contentType: 'text',
-          body: '',
-        },
+        content: [
+          {
+            contentType: 'text',
+            body: '',
+          },
+        ],
         model: messageContent.model,
+        feedback: messageContent.feedback,
       }
     );
   };
 
-  const postChat = (content: string, model: Model, bot?: BotInputType) => {
+  const postChat = (params: {
+    content: string;
+    base64EncodedImages?: string[];
+    bot?: BotInputType;
+  }) => {
+    const { content, bot, base64EncodedImages } = params;
     const isNewChat = conversationId ? false : true;
     const newConversationId = ulid();
 
@@ -287,15 +345,32 @@ const useChat = () => {
       ? 'system'
       : tmpMessages[tmpMessages.length - 1].id;
 
-    const modelToPost = isNewChat ? model : getPostedModel();
+    const modelToPost = isNewChat ? modelId : getPostedModel();
+    const imageContents: MessageContent['content'] = (
+      base64EncodedImages ?? []
+    ).map((encodedImage) => {
+      const result =
+        /data:(?<mediaType>image\/.+);base64,(?<encodedImage>.+)/.exec(
+          encodedImage
+        );
 
+      return {
+        body: result!.groups!.encodedImage,
+        contentType: 'image',
+        mediaType: result!.groups!.mediaType,
+      };
+    });
     const messageContent: MessageContent = {
-      content: {
-        body: content,
-        contentType: 'text',
-      },
+      content: [
+        ...imageContents,
+        {
+          body: content,
+          contentType: 'text',
+        },
+      ],
       model: modelToPost,
       role: 'user',
+      feedback: null,
     };
     const input: PostMessageRequest = {
       conversationId: isNewChat ? newConversationId : conversationId,
@@ -303,11 +378,10 @@ const useChat = () => {
         ...messageContent,
         parentMessageId: parentMessageId,
       },
-      stream: true,
       botId: bot?.botId,
     };
     const createNewConversation = () => {
-      // 画面のチラつき防止のために、Stateをコピーする
+      // Copy State to prevent screen flicker
       copyMessages('', newConversationId);
 
       conversationApi
@@ -324,20 +398,21 @@ const useChat = () => {
 
     setPostingMessage(true);
 
-    // 画面に即時反映するために、Stateを更新する
+    // Update State for immediate reflection on screen
     pushNewMessage(parentMessageId, messageContent);
 
-    const postPromise: Promise<void> = new Promise((resolve, reject) => {
+    // post message
+    const postPromise: Promise<string> = new Promise((resolve, reject) => {
       if (USE_STREAMING) {
         postStreaming({
           input,
           hasKnowledge: bot?.hasKnowledge,
           dispatch: (c: string) => {
-            editMessage(conversationId ?? '', NEW_MESSAGE_ID.ASSISTANT, c);
+            editMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT, c);
           },
         })
-          .then(() => {
-            resolve();
+          .then((message) => {
+            resolve(message);
           })
           .catch((e) => {
             reject(e);
@@ -347,11 +422,11 @@ const useChat = () => {
           .postMessage(input)
           .then((res) => {
             editMessage(
-              conversationId ?? '',
+              conversationId,
               NEW_MESSAGE_ID.ASSISTANT,
-              res.data.message.content.body
+              res.data.message.content[0].body
             );
-            resolve();
+            resolve(res.data.message.content[0].body);
           })
           .catch((e) => {
             reject(e);
@@ -361,7 +436,6 @@ const useChat = () => {
 
     postPromise
       .then(() => {
-        // 新規チャットの場合の処理
         if (isNewChat) {
           createNewConversation();
         } else {
@@ -370,11 +444,26 @@ const useChat = () => {
       })
       .catch((e) => {
         console.error(e);
-        removeMessage(conversationId ?? '', NEW_MESSAGE_ID.ASSISTANT);
+        removeMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT);
       })
       .finally(() => {
         setPostingMessage(false);
       });
+
+    // get related document (for RAG)
+    const documents: RelatedDocument[] = [];
+    if (input.botId) {
+      conversationApi
+        .getRelatedDocuments({
+          botId: input.botId,
+          conversationId: input.conversationId!,
+          message: input.message,
+        })
+        .then((res) => {
+          documents.push(...res.data);
+          setRelatedDocuments(NEW_MESSAGE_ID.ASSISTANT, documents);
+        });
+    }
   };
 
   /**
@@ -401,7 +490,7 @@ const useChat = () => {
 
     const parentMessage = produce(messages[index], (draft) => {
       if (props?.content) {
-        draft.content.body = props.content;
+        draft.content[0].body = props.content;
       }
     });
 
@@ -416,7 +505,6 @@ const useChat = () => {
         ...parentMessage,
         parentMessageId: parentMessage.parent,
       },
-      stream: true,
       botId: props?.bot?.botId,
     };
 
@@ -434,11 +522,14 @@ const useChat = () => {
         NEW_MESSAGE_ID.ASSISTANT,
         {
           role: 'assistant',
-          content: {
-            contentType: 'text',
-            body: '',
-          },
+          content: [
+            {
+              contentType: 'text',
+              body: '',
+            },
+          ],
           model: messages[index].model,
+          feedback: messages[index].feedback,
         }
       );
     } else {
@@ -464,6 +555,21 @@ const useChat = () => {
       .finally(() => {
         setPostingMessage(false);
       });
+
+    // get related document (for RAG)
+    const documents: RelatedDocument[] = [];
+    if (input.botId) {
+      conversationApi
+        .getRelatedDocuments({
+          botId: input.botId,
+          conversationId: input.conversationId!,
+          message: input.message,
+        })
+        .then((res) => {
+          documents.push(...res.data);
+          setRelatedDocuments(NEW_MESSAGE_ID.ASSISTANT, documents);
+        });
+    }
   };
 
   const hasError = useMemo(() => {
@@ -496,23 +602,32 @@ const useChat = () => {
         // 通常のメッセージ送信時
         // エラー発生時の最新のメッセージはユーザ入力;
         removeMessage(conversationId, latestMessage.id);
-        postChat(
-          params.content ?? latestMessage.content.body,
-          getPostedModel(),
-          params.bot
+        postChat({
+          content: params.content ?? latestMessage.content[0].body,
+          bot: params.bot
             ? {
-                botId: params.bot.botId,
-                hasKnowledge: params.bot.hasKnowledge,
-              }
-            : undefined
-        );
+              botId: params.bot.botId,
+              hasKnowledge: params.bot.hasKnowledge,
+            }
+            : undefined,
+        });
       } else {
         // 再生成時
         regenerate({
-          content: params.content ?? latestMessage.content.body,
+          content: params.content ?? latestMessage.content[0].body,
           bot: params.bot,
         });
       }
+    },
+    getRelatedDocuments: (messageId: string) => {
+      return relatedDocuments[messageId] ?? [];
+    },
+    giveFeedback: (messageId: string, feedback: PutFeedbackRequest) => {
+      return feedbackApi
+        .putFeedback(conversationId, messageId, feedback)
+        .then(() => {
+          mutate();
+        });
     },
   };
 };
