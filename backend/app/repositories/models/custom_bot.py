@@ -32,6 +32,7 @@ class BotModel(BaseModel):
     published_api_stack_name: str | None
     published_api_datetime: int | None
     published_api_codebuild_id: str | None
+    display_retrieved_chunks: bool
 
     def has_knowledge(self) -> bool:
         return (

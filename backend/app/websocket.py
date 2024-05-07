@@ -6,8 +6,9 @@ from datetime import datetime
 from decimal import Decimal as decimal
 
 import boto3
-from anthropic.types import ContentBlockDeltaEvent, MessageDeltaEvent, MessageStopEvent
+from anthropic.types import ContentBlockDeltaEvent
 from anthropic.types import Message as AnthropicMessage
+from anthropic.types import MessageDeltaEvent, MessageStopEvent
 from app.auth import verify_token
 from app.bedrock import calculate_price, compose_args
 from app.config import GENERATION_CONFIG, SEARCH_CONFIG
@@ -16,10 +17,10 @@ from app.repositories.models.conversation import ChunkModel, ContentModel, Messa
 from app.routes.schemas.conversation import ChatInputWithToken
 from app.usecases.bot import modify_bot_last_used_time
 from app.usecases.chat import (
+    get_bedrock_response,
     insert_knowledge,
     prepare_conversation,
     trace_to_root,
-    get_bedrock_response,
 )
 from app.utils import get_anthropic_client, get_current_time, is_anthropic_model
 from app.vector_search import filter_used_results, search_related_docs
@@ -88,7 +89,9 @@ def process_chat_input(
         logger.info(f"Search results from vector store: {search_results}")
 
         # Insert contexts to instruction
-        conversation_with_context = insert_knowledge(conversation, search_results)
+        conversation_with_context = insert_knowledge(
+            conversation, search_results, display_citation=bot.display_retrieved_chunks
+        )
         message_map = conversation_with_context.message_map
 
     messages = trace_to_root(
@@ -166,7 +169,7 @@ def process_chat_input(
 
                 # Used chunks for RAG generation
                 used_chunks = None
-                if bot:
+                if bot and bot.display_retrieved_chunks:
                     used_chunks = [
                         ChunkModel(content=r.content, source=r.source, rank=r.rank)
                         for r in filter_used_results(concatenated, search_results)
@@ -236,7 +239,7 @@ def process_chat_input(
 
                     concatenated = "".join(completions)
                     # Used chunks for RAG generation
-                    if bot:
+                    if bot and bot.display_retrieved_chunks:
                         used_chunks = [
                             ChunkModel(content=r.content, source=r.source, rank=r.rank)
                             for r in filter_used_results(concatenated, search_results)

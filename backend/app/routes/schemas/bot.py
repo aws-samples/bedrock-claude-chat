@@ -1,5 +1,7 @@
 from __future__ import annotations
-from typing import Literal, TYPE_CHECKING
+
+from typing import TYPE_CHECKING, Literal
+
 from app.routes.schemas.base import BaseSchema
 from pydantic import Field
 
@@ -40,6 +42,7 @@ class BotInput(BaseSchema):
     description: str | None
     embedding_params: EmbeddingParams | None
     knowledge: Knowledge | None
+    display_retrieved_chunks: bool
 
 
 class BotModifyInput(BaseSchema):
@@ -48,6 +51,7 @@ class BotModifyInput(BaseSchema):
     description: str | None
     embedding_params: EmbeddingParams | None
     knowledge: KnowledgeDiffInput | None
+    display_retrieved_chunks: bool
 
     def has_update_files(self) -> bool:
         return self.knowledge is not None and (
@@ -111,6 +115,7 @@ class BotOutput(BaseSchema):
     sync_status: type_sync_status
     sync_status_reason: str
     sync_last_exec_id: str
+    display_retrieved_chunks: bool
 
 
 class BotMetaOutput(BaseSchema):

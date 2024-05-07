@@ -45,11 +45,15 @@ def post_message(request: Request, chat_input: ChatInput):
 
 
 @router.post(
-    "/conversation/related-documents", response_model=list[RelatedDocumentsOutput]
+    "/conversation/related-documents",
+    response_model=list[RelatedDocumentsOutput] | None,
 )
-def get_related_documents(request: Request, chat_input: ChatInput):
+def get_related_documents(
+    request: Request, chat_input: ChatInput
+) -> list[RelatedDocumentsOutput] | None:
     """Get related documents
-    NOTE: POST method is used to avoid query string length limit
+    NOTE: POST method is used to avoid query string length limit.
+    If the bot prohibits displaying related documents, it will return `None`.
     """
     current_user: User = request.state.current_user
     output = fetch_related_documents(user_id=current_user.id, chat_input=chat_input)

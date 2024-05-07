@@ -1,6 +1,7 @@
 import logging
 import os
 
+from app.config import DEFAULT_EMBEDDING_CONFIG
 from app.repositories.common import (
     RecordNotFoundError,
     _get_table_client,
@@ -48,8 +49,6 @@ from app.utils import (
     get_current_time,
     move_file_in_s3,
 )
-
-from app.config import DEFAULT_EMBEDDING_CONFIG
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
 
@@ -140,6 +139,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             published_api_stack_name=None,
             published_api_datetime=None,
             published_api_codebuild_id=None,
+            display_retrieved_chunks=bot_input.display_retrieved_chunks,
         ),
     )
     return BotOutput(
@@ -162,6 +162,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         sync_status=sync_status,
         sync_status_reason="",
         sync_last_exec_id="",
+        display_retrieved_chunks=bot_input.display_retrieved_chunks,
     )
 
 
@@ -230,6 +231,7 @@ def modify_owned_bot(
         ),
         sync_status=sync_status,
         sync_status_reason="",
+        display_retrieved_chunks=modify_input.display_retrieved_chunks,
     )
 
     return BotModifyOutput(

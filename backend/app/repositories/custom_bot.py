@@ -57,6 +57,7 @@ def store_bot(user_id: str, custom_bot: BotModel):
         "ApiPublishmentStackName": custom_bot.published_api_stack_name,
         "ApiPublishedDatetime": custom_bot.published_api_datetime,
         "ApiPublishCodeBuildId": custom_bot.published_api_codebuild_id,
+        "DisplayRetrievedChunks": custom_bot.display_retrieved_chunks,
     }
 
     response = table.put_item(Item=item)
@@ -73,6 +74,7 @@ def update_bot(
     knowledge: KnowledgeModel,
     sync_status: type_sync_status,
     sync_status_reason: str,
+    display_retrieved_chunks: bool,
 ):
     """Update bot title, description, and instruction.
     NOTE: Use `update_bot_visibility` to update visibility.
@@ -83,7 +85,7 @@ def update_bot(
     try:
         response = table.update_item(
             Key={"PK": user_id, "SK": compose_bot_id(user_id, bot_id)},
-            UpdateExpression="SET Title = :title, Description = :description, Instruction = :instruction,EmbeddingParams = :embedding_params, Knowledge = :knowledge, SyncStatus = :sync_status, SyncStatusReason = :sync_status_reason",
+            UpdateExpression="SET Title = :title, Description = :description, Instruction = :instruction,EmbeddingParams = :embedding_params, Knowledge = :knowledge, SyncStatus = :sync_status, SyncStatusReason = :sync_status_reason, DisplayRetrievedChunks = :display_retrieved_chunks",
             ExpressionAttributeValues={
                 ":title": title,
                 ":description": description,
@@ -92,6 +94,7 @@ def update_bot(
                 ":embedding_params": embedding_params.model_dump(),
                 ":sync_status": sync_status,
                 ":sync_status_reason": sync_status_reason,
+                ":display_retrieved_chunks": display_retrieved_chunks,
             },
             ReturnValues="ALL_NEW",
             ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
@@ -332,6 +335,7 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
             if "ApiPublishCodeBuildId" not in item
             else item["ApiPublishCodeBuildId"]
         ),
+        display_retrieved_chunks=item.get("DisplayRetrievedChunks", False),
     )
 
     logger.info(f"Found bot: {bot}")
@@ -391,6 +395,7 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
             if "ApiPublishCodeBuildId" not in item
             else item["ApiPublishCodeBuildId"]
         ),
+        display_retrieved_chunks=item.get("DisplayRetrievedChunks", False),
     )
     logger.info(f"Found public bot: {bot}")
     return bot
