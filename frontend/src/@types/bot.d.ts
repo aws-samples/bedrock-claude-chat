@@ -65,6 +65,7 @@ export type RegisterBotRequest = {
   description?: string;
   embeddingParams?: EmdeddingPrams;
   knowledge?: BotKnowledge;
+  displayRetrievedChunks: boolean;
 };
 
 export type RegisterBotResponse = BotDetails;

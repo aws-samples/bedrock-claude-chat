@@ -276,6 +276,7 @@ const BotEditPage: React.FC = () => {
         sitemapUrls: [],
         filenames: files.map((f) => f.filename),
       },
+      displayRetrievedChunks,
     })
       .then(() => {
         navigate('/bot/explore');
