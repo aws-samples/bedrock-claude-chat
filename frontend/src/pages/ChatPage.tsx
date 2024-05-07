@@ -31,6 +31,7 @@ import useModel from '../hooks/useModel';
 const ChatPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const mistralEnabled: boolean = import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
 
   const {
     postingMessage,
@@ -296,7 +297,7 @@ const ChatPage: React.FC = () => {
               <SwitchBedrockModel className="mt-3 w-min" />
             )}
             <div className="absolute mx-3 my-20 flex items-center justify-center text-4xl font-bold text-gray">
-              {t('app.name')}
+              {!mistralEnabled ? t('app.name'):t('app.nameWithoutClaude')}
             </div>
           </div>
         ) : (

@@ -1,4 +1,3 @@
-const ENABLE_MISTRAL: boolean = import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
 const translation = {
   translation: {
     signIn: {
@@ -7,7 +6,8 @@ const translation = {
       },
     },
     app: {
-      name: !ENABLE_MISTRAL ? 'Bedrock Claude Chat' : 'Bedrock Chat',
+      name: 'Bedrock Claude Chat',
+      nameWithoutClaude: 'Bedrock Chat',
       inputMessage: 'Send a message',
       starredBots: 'Starred Bots',
       recentlyUsedBots: 'Recently Used Bots',

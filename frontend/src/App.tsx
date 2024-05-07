@@ -15,13 +15,14 @@ const customProviderEnabled =
 const socialProviderFromEnv = import.meta.env.VITE_APP_SOCIAL_PROVIDERS?.split(
   ','
 ).filter(validateSocialProvider);
+const mistralEnabled: boolean = import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
 
 const App: React.FC = () => {
   const { t, i18n } = useTranslation();
 
   useEffect(() => {
     // set header title
-    document.title = t('app.name');
+    document.title = !mistralEnabled ? t('app.name'): t('app.nameWithoutClaude');
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

@@ -13,13 +13,14 @@ type Props = BaseProps & {
 const AuthAmplify: React.FC<Props> = ({ socialProviders, children }) => {
   const { t } = useTranslation();
   const { signOut } = useAuthenticator();
+  const mistralEnabled: boolean = import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
   return (
     <Authenticator
       socialProviders={socialProviders}
       components={{
         Header: () => (
           <div className="mb-5 mt-10 flex justify-center text-3xl text-aws-font-color">
-            {t('app.name')}
+            {!mistralEnabled ? t('app.name'):t('app.nameWithoutClaude')}
           </div>
         ),
       }}>

@@ -19,6 +19,7 @@ const AuthCustom: React.FC<Props> = ({ children }) => {
   const [authenticated, setAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const { t } = useTranslation();
+  const mistralEnabled: boolean = import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
 
   useEffect(() => {
     Auth.currentAuthenticatedUser()
@@ -55,7 +56,7 @@ const AuthCustom: React.FC<Props> = ({ children }) => {
       ) : !authenticated ? (
         <div className="flex flex-col items-center gap-4">
           <div className="mb-5 mt-10 text-4xl text-aws-sea-blue">
-            {t('app.name')}
+            {!mistralEnabled ? t('app.name'):t('app.nameWithoutClaude')}
           </div>
           <Button onClick={() => signIn()} className="px-20 text-xl">
             {t('signIn.button.login')}
