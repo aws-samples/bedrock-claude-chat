@@ -173,6 +173,11 @@ export class Auth extends Construct {
       userPoolId: userPool.userPoolId,
     });
 
+    const creatingBotAllowedGroup = new CfnUserPoolGroup(this, "CreatingBotAllowedGroup", {
+      groupName: "CreatingBotAllowed",
+      userPoolId: userPool.userPoolId,
+    });
+
     const publishAllowedGroup = new CfnUserPoolGroup(
       this,
       "PublishAllowedGroup",

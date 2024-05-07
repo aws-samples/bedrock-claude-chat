@@ -29,7 +29,7 @@ import ListItemBot from '../components/ListItemBot';
 const BotExplorePage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { isAllowApiSettings } = useUser();
+  const { isAllowCreatingBot, isAllowApiSettings } = useUser();
 
   const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState(false);
   const [isOpenShareDialog, setIsOpenShareDialog] = useState(false);
@@ -137,6 +137,7 @@ const BotExplorePage: React.FC = () => {
 
               <Button
                 className=" text-sm"
+                disabled={!isAllowCreatingBot}
                 outlined
                 icon={<PiPlus />}
                 onClick={onClickNewBot}>
