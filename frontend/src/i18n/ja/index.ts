@@ -49,6 +49,7 @@ const translation = {
           uploaded: 'アップロード完了',
           error: 'エラー',
         },
+        citeRetrievedContexts: '取得したコンテキストの引用',
       },
       titleSubmenu: {
         edit: 'ボットを編集',
@@ -67,6 +68,8 @@ const translation = {
           sitemap:
             'サイトマップのURLを指定すると、そのサイトマップ内のサイトを自動的にスクレイピングして得られた情報がナレッジとして利用されます。',
           file: 'アップロードしたファイルがナレッジとして利用されます。',
+          citeRetrievedContexts:
+            'ユーザーの質問に答えるために取得したコンテキストを引用するかどうかを設定します。有効にすると、ユーザーは元のソースURLやファイルにアクセスできます。',
         },
       },
       alert: {

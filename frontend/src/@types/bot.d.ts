@@ -44,6 +44,7 @@ export type BotDetails = BotMeta & {
   embeddingParams: EmdeddingPrams;
   knowledge: BotKnowledge;
   syncStatusReason: string;
+  displayRetrievedChunks: boolean;
 };
 
 export type BotSummary = BotMeta & {
@@ -74,6 +75,7 @@ export type UpdateBotRequest = {
   description?: string;
   embeddingParams?: EmdeddingPrams;
   knowledge?: BotKnowledgeDiff;
+  displayRetrievedChunks: boolean;
 };
 
 export type UpdateBotResponse = {
@@ -83,6 +85,7 @@ export type UpdateBotResponse = {
   description: string;
   embeddingParams?: EmdeddingPrams;
   knowledge?: BotKnowledge;
+  displayRetrievedChunks: boolean;
 };
 
 export type UpdateBotPinnedRequest = {

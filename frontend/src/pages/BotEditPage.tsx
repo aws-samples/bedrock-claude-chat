@@ -18,6 +18,7 @@ import { Slider } from '../components/Slider';
 import ExpandableDrawerGroup from '../components/ExpandableDrawerGroup';
 import useErrorMessage from '../hooks/useErrorMessage';
 import Help from '../components/Help';
+import Toggle from '../components/Toggle';
 
 const BotEditPage: React.FC = () => {
   const { t } = useTranslation();
@@ -39,6 +40,7 @@ const BotEditPage: React.FC = () => {
   const [addedFilenames, setAddedFilenames] = useState<string[]>([]);
   const [unchangedFilenames, setUnchangedFilenames] = useState<string[]>([]);
   const [deletedFilenames, setDeletedFilenames] = useState<string[]>([]);
+  const [displayRetrievedChunks, setDisplayRetrievedChunks] = useState(true);
 
   const {
     errorMessages,
@@ -75,6 +77,7 @@ const BotEditPage: React.FC = () => {
           );
           setEmbeddingParams(() => bot.embeddingParams);
           setUnchangedFilenames([...bot.knowledge.filenames]);
+          setDisplayRetrievedChunks(bot.displayRetrievedChunks);
           if (bot.syncStatus === 'FAILED') {
             setErrorMessages(
               isSyncChunkError(bot.syncStatusReason)
@@ -290,6 +293,7 @@ const BotEditPage: React.FC = () => {
     urls,
     files,
     embeddingParams,
+    displayRetrievedChunks,
     navigate,
   ]);
 
@@ -314,6 +318,7 @@ const BotEditPage: React.FC = () => {
           deletedFilenames,
           unchangedFilenames,
         },
+        displayRetrievedChunks,
       })
         .then(() => {
           navigate('/bot/explore');
@@ -335,6 +340,7 @@ const BotEditPage: React.FC = () => {
     deletedFilenames,
     unchangedFilenames,
     embeddingParams,
+    displayRetrievedChunks,
     navigate,
   ]);
 
@@ -467,6 +473,19 @@ const BotEditPage: React.FC = () => {
                       onDelete={onDeleteFiles}
                     />
                   </div>
+                </div>
+
+                <div className="mt-2">
+                  <div className="font-semibold">
+                    {t('bot.label.citeRetrievedContexts')}
+                  </div>
+                  <div className="text-sm text-aws-font-color/50">
+                    {t('bot.help.knowledge.citeRetrievedContexts')}
+                  </div>
+                  <Toggle
+                    value={displayRetrievedChunks}
+                    onChange={setDisplayRetrievedChunks}
+                  />
                 </div>
               </div>
               <ExpandableDrawerGroup
