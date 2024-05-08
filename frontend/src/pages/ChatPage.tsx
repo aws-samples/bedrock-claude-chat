@@ -28,6 +28,8 @@ import Alert from '../components/Alert';
 import useBotSummary from '../hooks/useBotSummary';
 import useModel from '../hooks/useModel';
 
+const MISTRAL_ENABLED: boolean = import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
+
 const ChatPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -296,7 +298,7 @@ const ChatPage: React.FC = () => {
               <SwitchBedrockModel className="mt-3 w-min" />
             )}
             <div className="absolute mx-3 my-20 flex items-center justify-center text-4xl font-bold text-gray">
-              {t('app.name')}
+              {!MISTRAL_ENABLED ? t('app.name') : t('app.nameWithoutClaude')}
             </div>
           </div>
         ) : (
