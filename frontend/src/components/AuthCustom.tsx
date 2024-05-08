@@ -11,6 +11,8 @@ import { Auth } from 'aws-amplify';
 import { useTranslation } from 'react-i18next';
 import { PiCircleNotch } from 'react-icons/pi';
 
+const MISTRAL_ENABLED: boolean = import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
+
 type Props = BaseProps & {
   children: ReactNode;
 };
@@ -55,7 +57,7 @@ const AuthCustom: React.FC<Props> = ({ children }) => {
       ) : !authenticated ? (
         <div className="flex flex-col items-center gap-4">
           <div className="mb-5 mt-10 text-4xl text-aws-sea-blue">
-            {t('app.name')}
+            {!MISTRAL_ENABLED ? t('app.name') : t('app.nameWithoutClaude')}
           </div>
           <Button onClick={() => signIn()} className="px-20 text-xl">
             {t('signIn.button.login')}
