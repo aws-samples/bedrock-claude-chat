@@ -366,9 +366,9 @@ How would you categorize this email?`,
     },
     SearchParams: {
       searchSize: {
-        label: "Search Size",
-        hint: "The number of results to return for each query",
-        help: "Increasing the search size will return more results, but may also increase latency.",
+        label: 'Search Size',
+        hint: 'The number of results to return for each query',
+        help: 'Increasing the search size will return more results, but may also increase latency.',
       },
     },
     embeddingSettings: {

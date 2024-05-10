@@ -19,9 +19,7 @@ import Textarea from './Textarea';
 import Button from './Button';
 import ModalDialog from './ModalDialog';
 import { useTranslation } from 'react-i18next';
-import { Slider } from '../components/Slider';
 import useChat from '../hooks/useChat';
-import { SEARCH_PARAMS_RANGE } from '../constants';
 import DialogFeedback from './DialogFeedback';
 
 type Props = BaseProps & {
