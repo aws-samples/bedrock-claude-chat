@@ -333,13 +333,13 @@ const InputChatContent: React.FC<Props> = (props) => {
             <div className="mb-4 mx-auto w-11/12">
               <Slider
                 value={searchSize}
-                hint={t('searchParams.searchSize.hint')}
+                hint={t('SearchParams.searchSize.hint')}
                 label={
                   <div className="flex items-center gap-1">
-                    {t('searchParams.searchSize.label')}
+                    {t('SearchParams.searchSize.label')}
                     <Help
                       direction="right"
-                      message={t('searchParams.searchSize.help')}
+                      message={t('SearchParams.searchSize.help')}
                     />
                   </div>
                 }
