@@ -80,6 +80,9 @@
     "rdbSchedules": {
       "stop": {},
       "start": {}
-    }
+    },
+    "enable_partition_pdf": false,
+    "embedding_container_vcpu": 2048,
+    "embedding_container_memory": 4096
   }
 }

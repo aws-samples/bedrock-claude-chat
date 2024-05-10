@@ -42,18 +42,24 @@ export class Embedding extends Construct {
   constructor(scope: Construct, id: string, props: EmbeddingProps) {
     super(scope, id);
 
+    // cdk.jsonからENABLE_PARTITION_PDFの値を取得
+    const enablePartitionPdf:string = String(Stack.of(this).node.tryGetContext("enable_partition_pdf") ? Stack.of(this).node.tryGetContext("enable_partition_pdf") : false )
+    const embedding_container_vcpu:number = Stack.of(this).node.tryGetContext("embedding_container_vcpu") ? Stack.of(this).node.tryGetContext("embedding_container_vcpu") : 1024
+    const embedding_container_memory:number = Stack.of(this).node.tryGetContext("embedding_container_memory") ? Stack.of(this).node.tryGetContext("embedding_container_memory") : 2048
+
     /**
      * ECS
      */
     const cluster = new ecs.Cluster(this, "Cluster", {
       vpc: props.vpc,
+      containerInsights: true,
     });
     const taskDefinition = new ecs.FargateTaskDefinition(
       this,
       "TaskDefinition",
       {
-        cpu: 2048,
-        memoryLimitMiB: 4096,
+        cpu: embedding_container_vcpu,
+        memoryLimitMiB: embedding_container_memory,
         runtimePlatform: {
           cpuArchitecture: ecs.CpuArchitecture.X86_64,
           operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,
@@ -102,6 +108,7 @@ export class Embedding extends Construct {
         TABLE_NAME: props.database.tableName,
         TABLE_ACCESS_ROLE_ARN: props.tableAccessRole.roleArn,
         DOCUMENT_BUCKET: props.documentBucket.bucketName,
+        ENABLE_PARTITION_PDF: enablePartitionPdf
       },
     });
     taskLogGroup.grantWrite(container.taskDefinition.executionRole!);

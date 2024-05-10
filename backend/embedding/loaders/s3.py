@@ -1,9 +1,16 @@
 import os
 import tempfile
-
+import logging
 import boto3
+from distutils.util import strtobool
 from embedding.loaders.base import BaseLoader, Document
 from unstructured.partition.auto import partition
+from unstructured.partition.pdf import partition_pdf
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+ENABLE_PARTITION_PDF = strtobool(os.environ.get("ENABLE_PARTITION_PDF", "false"))
 
 
 class S3FileLoader(BaseLoader):
@@ -23,7 +30,20 @@ class S3FileLoader(BaseLoader):
             file_path = f"{temp_dir}/{self.key}"
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
             s3.download_file(self.bucket, self.key, file_path)
-            return partition(filename=file_path)
+            extension = os.path.splitext(file_path)[1]
+
+            logger.info(f"ENABLE_PARTITION_PDF: {ENABLE_PARTITION_PDF}")
+            if extension == ".pdf" and ENABLE_PARTITION_PDF == 1:
+                logger.info(f"partition_pdf: {file_path}")
+                return partition_pdf(
+                    filename=file_path,
+                    strategy="hi_res",
+                    infer_table_structure=True,
+                    extract_images_in_pdf=False,
+                )
+            else:
+                logger.info(f"partition: {file_path}")
+                return partition(filename=file_path)
 
     def _get_metadata(self) -> dict:
         return {"source": f"s3://{self.bucket}/{self.key}"}
