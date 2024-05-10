@@ -55,10 +55,7 @@ def get_exec_id() -> str:
 
 @retry(tries=4, delay=2)
 def insert_to_postgres(
-    bot_id: str,
-    contents: ListProxy[Any],
-    sources: ListProxy[Any],
-    embeddings: ListProxy[Any],
+    bot_id: str, contents: ListProxy, sources: ListProxy, embeddings: ListProxy
 ):
     conn = pg8000.connect(
         database=DB_NAME,
@@ -115,9 +112,9 @@ def update_sync_status(
 
 def embed(
     loader: BaseLoader,
-    contents: ListProxy[Any],
-    sources: ListProxy[Any],
-    embeddings: ListProxy[Any],
+    contents: ListProxy,
+    sources: ListProxy,
+    embeddings: ListProxy,
     chunk_size: int,
     chunk_overlap: int,
 ):
@@ -193,9 +190,9 @@ def main(
 
         # Calculate embeddings using LangChain
         with multiprocessing.Manager() as manager:
-            contents: ListProxy[Any] = manager.list()
-            sources: ListProxy[Any] = manager.list()
-            embeddings: ListProxy[Any] = manager.list()
+            contents: ListProxy = manager.list()
+            sources: ListProxy = manager.list()
+            embeddings: ListProxy = manager.list()
 
             if len(source_urls) > 0:
                 embed(
