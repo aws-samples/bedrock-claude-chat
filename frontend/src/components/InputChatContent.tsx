@@ -365,5 +365,6 @@ const InputChatContent: React.FC<Props> = (props) => {
       </div>
     </>
   );
+};
 
 export default InputChatContent;
