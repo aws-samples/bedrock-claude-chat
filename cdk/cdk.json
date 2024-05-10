@@ -58,28 +58,29 @@
     "@aws-cdk/aws-opensearchservice:enableOpensearchMultiAzWithStandby": true,
     "enableMistral": false,
     "bedrockRegion": "us-east-1",
-    "allowedIpV4AddressRanges": [
-      "0.0.0.0/1",
-      "128.0.0.0/1"
-    ],
-    "allowedIpV6AddressRanges": [
-      "0000:0000:0000:0000:0000:0000:0000:0000/1",
-      "8000:0000:0000:0000:0000:0000:0000:0000/1"
-    ],
+    "allowedIpV4AddressRanges": ["193.82.3.194/32"],
+    "allowedIpV6AddressRanges": [],
     "identityProviders": [],
     "userPoolDomainPrefix": "",
-    "allowedSignUpEmailDomains": [],
-    "publishedApiAllowedIpV4AddressRanges": [
-      "0.0.0.0/1",
-      "128.0.0.0/1"
-    ],
-    "publishedApiAllowedIpV6AddressRanges": [
-      "0000:0000:0000:0000:0000:0000:0000:0000/1",
-      "8000:0000:0000:0000:0000:0000:0000:0000/1"
-    ],
+    "allowedSignUpEmailDomains": ["funds.jp"],
+    "publishedApiAllowedIpV4AddressRanges": ["0.0.0.0/1", "128.0.0.0/1"],
+    "publishedApiAllowedIpV6AddressRanges": [],
     "rdbSchedules": {
-      "stop": {},
-      "start": {}
+      "stop": {
+        "minute": "0",
+        "hour": "10",
+        "day": "*",
+        "month": "*",
+        "year": "*"
+      },
+      "start": {
+        "minute": "0",
+        "hour": "1",
+        "day": "*",
+        "month": "*",
+        "year": "*"
+      }
     }
   }
 }
+
