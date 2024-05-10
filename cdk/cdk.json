@@ -80,7 +80,6 @@
     "rdbSchedules": {
       "stop": {},
       "start": {}
-    },
-    "guardrailIdentifier": "xxxxxxxxxxxxx"
+    }
   }
 }
