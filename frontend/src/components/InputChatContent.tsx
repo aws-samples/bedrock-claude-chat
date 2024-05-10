@@ -240,7 +240,8 @@ const InputChatContent: React.FC<Props> = (props) => {
       {props.dndMode && (
         <div
           className="fixed left-0 top-0 h-full w-full bg-black/40"
-          onDrop={onDrop}></div>
+          onDrop={onDrop}
+        ></div>
       )}
       <div
         ref={inputRef}
@@ -249,7 +250,8 @@ const InputChatContent: React.FC<Props> = (props) => {
         className={twMerge(
           props.className,
           'relative mb-7 flex w-11/12 flex-col rounded-xl border border-black/10 bg-white shadow-[0_0_30px_7px] shadow-light-gray md:w-10/12 lg:w-4/6 xl:w-3/6'
-        )}>
+        )}
+      >
         <div className="flex w-full">
           <Textarea
             className={twMerge(
@@ -269,7 +271,8 @@ const InputChatContent: React.FC<Props> = (props) => {
               disabled={postingMessage}
               icon
               accept={acceptMediaType.join(',')}
-              onChange={onChangeImageFile}>
+              onChange={onChangeImageFile}
+            >
               <TbPhotoPlus />
             </ButtonFileChoose>
           )}
@@ -296,7 +299,8 @@ const InputChatContent: React.FC<Props> = (props) => {
                   className="absolute right-0 top-0 -m-2 border border-aws-sea-blue bg-white p-1 text-xs text-aws-sea-blue"
                   onClick={() => {
                     removeBase64EncodedImage(idx);
-                  }}>
+                  }}
+                >
                   <PiX />
                 </ButtonIcon>
               </div>
@@ -313,7 +317,8 @@ const InputChatContent: React.FC<Props> = (props) => {
               onClose={() => setIsOpenPreviewImage(false)}
               // Set image null after transition end
               onAfterLeave={() => setPreviewImageUrl(null)}
-              widthFromContent={true}>
+              widthFromContent={true}
+            >
               {previewImageUrl && (
                 <img
                   src={previewImageUrl}
@@ -324,39 +329,41 @@ const InputChatContent: React.FC<Props> = (props) => {
           </div>
         )}
         {messages.length > 1 && (
-        <div className="mb-4 mx-auto w-11/12">
-          <Slider
-            value={searchSize}
-            hint={t('searchParams.searchSize.hint')}
-            label={
-              <div className="flex items-center gap-1">
-                {t('searchParams.searchSize.label')}
-                <Help
-                  direction="right"
-                  message={t('searchParams.searchSize.help')}
-                />
-              </div>
-            }
-            range={{
-              min: SEARCH_PARAMS_RANGE.searchSize.MIN,
-              max: SEARCH_PARAMS_RANGE.searchSize.MAX,
-              step: SEARCH_PARAMS_RANGE.searchSize.STEP,
-            }}
-            onChange={(newSearchSize) => setSearchSize(newSearchSize)}
-          />
-        </div>
-          <Button
-            className="absolute -top-14 right-0 bg-aws-paper p-2 text-sm"
-            outlined
-            disabled={disabledRegenerate || props.disabled}
-            onClick={props.onRegenerate}>
-            <PiArrowsCounterClockwise className="mr-2" />
-            {t('button.regenerate')}
-          </Button>
+          <>
+            <div className="mb-4 mx-auto w-11/12">
+              <Slider
+                value={searchSize}
+                hint={t('searchParams.searchSize.hint')}
+                label={
+                  <div className="flex items-center gap-1">
+                    {t('searchParams.searchSize.label')}
+                    <Help
+                      direction="right"
+                      message={t('searchParams.searchSize.help')}
+                    />
+                  </div>
+                }
+                range={{
+                  min: SEARCH_PARAMS_RANGE.searchSize.MIN,
+                  max: SEARCH_PARAMS_RANGE.searchSize.MAX,
+                  step: SEARCH_PARAMS_RANGE.searchSize.STEP,
+                }}
+                onChange={(newSearchSize) => setSearchSize(newSearchSize)}
+              />
+            </div>
+            <Button
+              className="absolute -top-14 right-0 bg-aws-paper p-2 text-sm"
+              outlined
+              disabled={disabledRegenerate || props.disabled}
+              onClick={props.onRegenerate}
+            >
+              <PiArrowsCounterClockwise className="mr-2" />
+              {t('button.regenerate')}
+            </Button>
+          </>
         )}
       </div>
     </>
   );
-};
 
 export default InputChatContent;

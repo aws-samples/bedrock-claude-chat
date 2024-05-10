@@ -85,7 +85,7 @@ const useChatState = create<{
         };
       });
     },
-    searchSize: DEFAULT_SEARCH_CONFIG.searchSize
+    searchSize: DEFAULT_SEARCH_CONFIG.searchSize,
     setSearchSize: (size: number) => {
       set(() => ({
         searchSize: size,
