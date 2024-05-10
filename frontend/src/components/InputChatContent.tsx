@@ -7,7 +7,9 @@ import React, {
 } from 'react';
 import ButtonSend from './ButtonSend';
 import Textarea from './Textarea';
+import { Slider } from '../components/Slider';
 import useChat from '../hooks/useChat';
+import { SEARCH_PARAMS_RANGE } from '../constants';
 import Button from './Button';
 import { PiArrowsCounterClockwise, PiX } from 'react-icons/pi';
 import { TbPhotoPlus } from 'react-icons/tb';
@@ -75,7 +77,7 @@ const useInputChatContentState = create<{
 
 const InputChatContent: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const { postingMessage, hasError, messages } = useChat();
+  const { postingMessage, hasError, messages, searchSize, setSearchSize } = useChat();
   const { disabledImageUpload, model, acceptMediaType } = useModel();
 
   const [content, setContent] = useState('');
@@ -322,6 +324,27 @@ const InputChatContent: React.FC<Props> = (props) => {
           </div>
         )}
         {messages.length > 1 && (
+        <div className="mb-4 mx-auto w-11/12">
+          <Slider
+            value={searchSize}
+            hint={t('searchParams.searchSize.hint')}
+            label={
+              <div className="flex items-center gap-1">
+                {t('searchParams.searchSize.label')}
+                <Help
+                  direction="right"
+                  message={t('searchParams.searchSize.help')}
+                />
+              </div>
+            }
+            range={{
+              min: SEARCH_PARAMS_RANGE.searchSize.MIN,
+              max: SEARCH_PARAMS_RANGE.searchSize.MAX,
+              step: SEARCH_PARAMS_RANGE.searchSize.STEP,
+            }}
+            onChange={(newSearchSize) => setSearchSize(newSearchSize)}
+          />
+        </div>
           <Button
             className="absolute -top-14 right-0 bg-aws-paper p-2 text-sm"
             outlined
