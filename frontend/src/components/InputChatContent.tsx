@@ -22,6 +22,7 @@ import { create } from 'zustand';
 import ButtonFileChoose from './ButtonFileChoose';
 import { BaseProps } from '../@types/common';
 import ModalDialog from './ModalDialog';
+import Help from '../components/Help';
 
 type Props = BaseProps & {
   disabledSend?: boolean;
