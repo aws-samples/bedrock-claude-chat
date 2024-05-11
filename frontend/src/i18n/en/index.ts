@@ -391,6 +391,33 @@ How would you categorize this email?`,
         },
       },
     },
+    generationConfig: {
+      title: 'Generation Config',
+      description: ' You can configure LLM inference parameters to control the response from the models.',
+      maxTokens: {
+        label: 'Maximum generation length/maximum new tokens',
+        hint: 'The maximum number of tokens allowed in the generated response',
+      },
+      temperature: {
+        label: 'Temperature',
+        hint: 'Affects the shape of the probability distribution for the predicted output and influences the likelihood of the model selecting lower-probability outputs',
+        help: 'Choose a lower value to influence the model to select higher-probability outputs; Choose a higher value to influence the model to select lower-probability outputs',
+      },
+      topK: {
+        label: 'Top-k',
+        hint: 'The number of most-likely candidates that the model considers for the next token',
+        help: 'Choose a lower value to decrease the size of the pool and limit the options to more likely outputs; Choose a higher value to increase the size of the pool and allow the model to consider less likely outputs',
+      },
+      topP: {
+        label: 'Top-p',
+        hint: 'The percentage of most-likely candidates that the model considers for the next token',
+        help: 'Choose a lower value to decrease the size of the pool and limit the options to more likely outputs; Choose a higher value to increase the size of the pool and allow the model to consider less likely outputs',
+      },
+      stopSequences: {
+        label: 'End token/end sequence',
+        hint: 'Specify sequences of characters that stop the model from generating further tokens. Use commas to separate multiple words',
+      }
+    },
     error: {
       answerResponse: 'An error occurred while responding.',
       notFoundConversation:
@@ -408,9 +435,13 @@ How would you categorize this email?`,
       maxRange: {
         message: 'The maximum value that can be set is {{size}}',
       },
+      minRange: {
+        message: 'The minimum value that can be set is {{size}}',
+      },
       chunkOverlapLessThanChunkSize: {
         message: 'Chunk overlap must be set to less than Chunk size',
       },
+
     },
   },
 };

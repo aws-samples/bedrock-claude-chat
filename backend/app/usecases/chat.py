@@ -20,7 +20,7 @@ from app.bedrock import (
     get_bedrock_response,
     InvocationMetrics,
 )
-from app.config import GENERATION_CONFIG, SEARCH_CONFIG
+from app.config import SEARCH_CONFIG
 from app.repositories.conversation import (
     RecordNotFoundError,
     find_conversation_by_id,
@@ -316,6 +316,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
             if "instruction" in message_map
             else None
         ),
+        generation_config=bot.generation_config if bot and bot.generation_config else None,
     )
 
     if is_anthropic_model(args["model"]):

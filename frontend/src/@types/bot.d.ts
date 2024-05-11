@@ -39,9 +39,18 @@ export type BotListItem = BotMeta & {
   available: boolean;
 };
 
+export type BotGenerationConfig = {
+  maxTokens: number;
+  topK: number;
+  topP: number;
+  temperature: number;
+  stopSequences: string[];
+}
+
 export type BotDetails = BotMeta & {
   instruction: string;
   embeddingParams: EmdeddingPrams;
+  generationConfig?: BotGenerationConfig;
   knowledge: BotKnowledge;
   syncStatusReason: string;
 };
@@ -63,6 +72,7 @@ export type RegisterBotRequest = {
   instruction: string;
   description?: string;
   embeddingParams?: EmdeddingPrams;
+  generationConfig?: BotGenerationConfig;
   knowledge?: BotKnowledge;
 };
 
@@ -73,6 +83,7 @@ export type UpdateBotRequest = {
   instruction: string;
   description?: string;
   embeddingParams?: EmdeddingPrams;
+  generationConfig?: BotGenerationConfig;
   knowledge?: BotKnowledgeDiff;
 };
 
@@ -82,6 +93,7 @@ export type UpdateBotResponse = {
   instruction: string;
   description: string;
   embeddingParams?: EmdeddingPrams;
+  generationConfig?: BotGenerationConfig;
   knowledge?: BotKnowledge;
 };
 

@@ -17,3 +17,50 @@ export const EDGE_EMBEDDING_PARAMS = {
     STEP: 2,
   },
 };
+
+export const DEFAULT_GENERATION_CONFIG_PARAMS = {
+  maxTokens: {
+    MAX: 4096,
+    MIN: 1,
+    STEP: 1,
+  },
+  temperature: {
+    MAX: 1,
+    MIN: 0,
+    STEP: .05,
+  },
+  topP: {
+    MAX: 1,
+    MIN: 0,
+    STEP: 0.001,
+  },
+  topK: {
+    MAX: 500,
+    MIN: 0,
+    STEP: 1,
+  },
+};
+
+export const MISTRAL_GENERATION_CONFIG_PARAMS = {
+  maxTokens: {
+    MAX: 8192,
+    MIN: 1,
+    STEP: 1,
+  },
+  temperature: {
+    MAX: 1,
+    MIN: 0,
+    STEP: 0.05,
+  },
+  topP: {
+    MAX: 1,
+    MIN: 0,
+    STEP: 0.001,
+  },
+  topK: {
+    MAX: 200,
+    MIN: 0,
+    STEP: 1,
+  },
+};
+

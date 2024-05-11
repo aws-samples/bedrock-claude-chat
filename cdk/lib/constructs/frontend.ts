@@ -1,5 +1,5 @@
 import { Construct } from "constructs";
-import { CfnOutput, RemovalPolicy, Stack } from "aws-cdk-lib";
+import { CfnOutput, IgnoreMode, RemovalPolicy, Stack } from "aws-cdk-lib";
 import {
   BlockPublicAccess,
   Bucket,
@@ -130,8 +130,24 @@ export class Frontend extends Construct {
           exclude: ["node_modules", "dist"],
           commands: ["npm ci"],
         },
+        {
+          path: "../backend",
+          exclude: [
+            "__pycache__",
+            ".venv",
+            "auth",
+            "embedding",
+            "s3_exporter",
+            "tests",
+            "app/repositories",
+            "app/routes",
+            "app/usecases",
+          ],
+        },
       ],
-      buildCommands: ["npm run build"],
+      buildCommands: [
+        "npm run copyConfig",
+        "npm run build"],
       buildEnvironment: buildEnvProps,
       destinationBucket: this.assetBucket,
       distribution: this.cloudFrontWebDistribution,

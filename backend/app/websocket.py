@@ -10,7 +10,7 @@ from anthropic.types import ContentBlockDeltaEvent, MessageDeltaEvent, MessageSt
 from anthropic.types import Message as AnthropicMessage
 from app.auth import verify_token
 from app.bedrock import calculate_price, compose_args
-from app.config import GENERATION_CONFIG, SEARCH_CONFIG
+from app.config import SEARCH_CONFIG
 from app.repositories.conversation import RecordNotFoundError, store_conversation
 from app.repositories.models.conversation import ChunkModel, ContentModel, MessageModel
 from app.routes.schemas.conversation import ChatInputWithToken
@@ -106,10 +106,22 @@ def process_chat_input(
             else None
         ),
         stream=True,
+        generation_config=bot.generation_config if bot and bot.generation_config else None,
     )
 
     is_anthropic = is_anthropic_model(args["model"])
+
+    args_generation_config = {
+        "max_tokens": args["max_tokens"],
+        "top_k": args["top_k"],
+        "top_p": args["top_p"],
+        "temperature": args["temperature"],
+        "stop_sequences": args["stop_sequences"],
+    }
+    
     # logger.debug(f"Invoking bedrock with args: {args}")
+    logger.info(f"Invoking bedrock with Generation Config: {args_generation_config}")
+    
     try:
         if is_anthropic:
             response = client.messages.create(**args)

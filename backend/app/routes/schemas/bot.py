@@ -12,11 +12,16 @@ type_sync_status = Literal[
     "QUEUED", "RUNNING", "SUCCEEDED", "FAILED", "ORIGINAL_NOT_FOUND"
 ]
 
-
 class EmbeddingParams(BaseSchema):
     chunk_size: int
     chunk_overlap: int
 
+class GenerationConfig(BaseSchema):
+    max_tokens: int
+    top_k: int
+    top_p: float
+    temperature: float
+    stop_sequences: list[str]
 
 class Knowledge(BaseSchema):
     source_urls: list[str]
@@ -39,6 +44,7 @@ class BotInput(BaseSchema):
     instruction: str
     description: str | None
     embedding_params: EmbeddingParams | None
+    generation_config: GenerationConfig | None
     knowledge: Knowledge | None
 
 
@@ -47,6 +53,7 @@ class BotModifyInput(BaseSchema):
     instruction: str
     description: str | None
     embedding_params: EmbeddingParams | None
+    generation_config: GenerationConfig | None
     knowledge: KnowledgeDiffInput | None
 
     def has_update_files(self) -> bool:
@@ -92,6 +99,7 @@ class BotModifyOutput(BaseSchema):
     instruction: str
     description: str
     embedding_params: EmbeddingParams
+    generation_config: GenerationConfig | None
     knowledge: Knowledge
 
 
@@ -107,11 +115,11 @@ class BotOutput(BaseSchema):
     # Whether the bot is owned by the user
     owned: bool
     embedding_params: EmbeddingParams
+    generation_config: GenerationConfig | None
     knowledge: Knowledge
     sync_status: type_sync_status
     sync_status_reason: str
     sync_last_exec_id: str
-
 
 class BotMetaOutput(BaseSchema):
     id: str

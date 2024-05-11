@@ -27,6 +27,7 @@ from app.repositories.models.custom_bot import (
     BotModel,
     EmbeddingParamsModel,
     KnowledgeModel,
+    GenerationConfigModel,
 )
 from app.routes.schemas.bot import (
     BotInput,
@@ -49,7 +50,7 @@ from app.utils import (
     move_file_in_s3,
 )
 
-from app.config import DEFAULT_EMBEDDING_CONFIG
+from app.config import DEFAULT_EMBEDDING_CONFIG, GENERATION_CONFIG
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
 
@@ -131,6 +132,17 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
                 chunk_size=chunk_size,
                 chunk_overlap=chunk_overlap,
             ),
+            generation_config=(
+                None
+                if not bot_input.generation_config
+                else GenerationConfigModel(
+                    max_tokens=bot_input.generation_config.max_tokens,
+                    top_k=bot_input.generation_config.top_k,
+                    top_p=bot_input.generation_config.top_p,
+                    temperature=bot_input.generation_config.temperature,
+                    stop_sequences=bot_input.generation_config.stop_sequences,
+                )
+            ),
             knowledge=KnowledgeModel(
                 source_urls=source_urls, sitemap_urls=sitemap_urls, filenames=filenames
             ),
@@ -156,6 +168,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
         ),
+        generation_config=bot_input.generation_config,
         knowledge=Knowledge(
             source_urls=source_urls, sitemap_urls=sitemap_urls, filenames=filenames
         ),
@@ -223,6 +236,17 @@ def modify_owned_bot(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
         ),
+        generation_config=(
+            None
+            if not modify_input.generation_config
+            else GenerationConfigModel(
+                max_tokens=modify_input.generation_config.max_tokens,
+                top_k=modify_input.generation_config.top_k,
+                top_p=modify_input.generation_config.top_p,
+                temperature=modify_input.generation_config.temperature,
+                stop_sequences=modify_input.generation_config.stop_sequences,
+            )
+        ),
         knowledge=KnowledgeModel(
             source_urls=source_urls,
             sitemap_urls=sitemap_urls,
@@ -241,6 +265,7 @@ def modify_owned_bot(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
         ),
+        generation_config=modify_input.generation_config,
         knowledge=Knowledge(
             source_urls=source_urls,
             sitemap_urls=sitemap_urls,

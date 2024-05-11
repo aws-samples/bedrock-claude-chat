@@ -17,6 +17,7 @@ from app.repositories.common import (
     decompose_bot_alias_id,
     decompose_bot_id,
 )
+from app.config import GENERATION_CONFIG
 from app.repositories.models.custom_bot import (
     BotAliasModel,
     BotMeta,
@@ -24,6 +25,7 @@ from app.repositories.models.custom_bot import (
     BotModel,
     EmbeddingParamsModel,
     KnowledgeModel,
+    GenerationConfigModel,
 )
 from app.routes.schemas.bot import type_sync_status
 from app.utils import get_current_time
@@ -57,6 +59,7 @@ def store_bot(user_id: str, custom_bot: BotModel):
         "ApiPublishmentStackName": custom_bot.published_api_stack_name,
         "ApiPublishedDatetime": custom_bot.published_api_datetime,
         "ApiPublishCodeBuildId": custom_bot.published_api_codebuild_id,
+        **_parse_generation_config_to_db_item("GenerationConfig", custom_bot.generation_config),
     }
 
     response = table.put_item(Item=item)
@@ -70,6 +73,7 @@ def update_bot(
     description: str,
     instruction: str,
     embedding_params: EmbeddingParamsModel,
+    generation_config: GenerationConfigModel | None,
     knowledge: KnowledgeModel,
     sync_status: type_sync_status,
     sync_status_reason: str,
@@ -83,7 +87,7 @@ def update_bot(
     try:
         response = table.update_item(
             Key={"PK": user_id, "SK": compose_bot_id(user_id, bot_id)},
-            UpdateExpression="SET Title = :title, Description = :description, Instruction = :instruction,EmbeddingParams = :embedding_params, Knowledge = :knowledge, SyncStatus = :sync_status, SyncStatusReason = :sync_status_reason",
+            UpdateExpression=f"SET Title = :title, Description = :description, Instruction = :instruction,EmbeddingParams = :embedding_params, Knowledge = :knowledge, SyncStatus = :sync_status, SyncStatusReason = :sync_status_reason{', GenerationConfig = :generation_config' if generation_config else ''}",
             ExpressionAttributeValues={
                 ":title": title,
                 ":description": description,
@@ -92,6 +96,7 @@ def update_bot(
                 ":embedding_params": embedding_params.model_dump(),
                 ":sync_status": sync_status,
                 ":sync_status_reason": sync_status_reason,
+                **_parse_generation_config_to_db_item(":generation_config", generation_config),
             },
             ReturnValues="ALL_NEW",
             ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
@@ -315,6 +320,7 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
                 else 200
             ),
         ),
+        generation_config=_parse_generation_config_from_db_item(item),
         knowledge=KnowledgeModel(**item["Knowledge"]),
         sync_status=item["SyncStatus"],
         sync_status_reason=item["SyncStatusReason"],
@@ -374,6 +380,7 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
                 else 200
             ),
         ),
+        generation_config=_parse_generation_config_from_db_item(item),
         knowledge=KnowledgeModel(**item["Knowledge"]),
         sync_status=item["SyncStatus"],
         sync_status_reason=item["SyncStatusReason"],
@@ -631,3 +638,22 @@ def find_all_published_bots(
         ).decode("utf-8")
 
     return bots, next_token
+
+def _parse_generation_config_to_db_item(key: str, generation_config):
+    result = {}
+    if generation_config:
+        result[key] = json.loads(json.dumps(generation_config.model_dump()), parse_float=decimal)
+
+    return result
+ 
+def _parse_generation_config_from_db_item(item):
+    if "GenerationConfig" not in item:
+        return None
+    else: 
+        dict = {
+            **item["GenerationConfig"],
+            "top_p": float(item["GenerationConfig"]["top_p"]),
+            "temperature": float(item["GenerationConfig"]["temperature"]),
+        }
+ 
+        return GenerationConfigModel(**dict)

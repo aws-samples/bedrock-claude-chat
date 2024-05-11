@@ -11,6 +11,7 @@ from app.repositories.models.custom_bot import (
     BotModel,
     EmbeddingParamsModel,
     KnowledgeModel,
+    GenerationConfigModel,
 )
 
 
@@ -31,6 +32,13 @@ def create_test_private_bot(
         embedding_params=EmbeddingParamsModel(
             chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
             chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+        ),
+        generation_config=GenerationConfigModel(
+            max_tokens=2000,
+            top_k=250,
+            top_p=0.999,
+            temperature=0.6,
+            stop_sequences=["Human: ", "Assistant: "]
         ),
         knowledge=KnowledgeModel(
             source_urls=["https://aws.amazon.com/"],
@@ -66,6 +74,13 @@ def create_test_public_bot(
         embedding_params=EmbeddingParamsModel(
             chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
             chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+        ),
+        generation_config=GenerationConfigModel(
+            max_tokens=2000,
+            top_k=250,
+            top_p=0.999,
+            temperature=0.6,
+            stop_sequences=["Human: ", "Assistant: "]
         ),
         knowledge=KnowledgeModel(
             source_urls=["https://aws.amazon.com/"],

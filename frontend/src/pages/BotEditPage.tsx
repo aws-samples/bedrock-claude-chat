@@ -11,6 +11,7 @@ import ButtonIcon from '../components/ButtonIcon';
 import { produce } from 'immer';
 import Alert from '../components/Alert';
 import KnowledgeFileUploader from '../components/KnowledgeFileUploader';
+import GenerationConfig from '../components/GenerationConfig';
 import { BotFile, EmdeddingPrams } from '../@types/bot';
 import { ulid } from 'ulid';
 import { DEFAULT_EMBEDDING_CONFIG, EDGE_EMBEDDING_PARAMS } from '../constants';
@@ -18,6 +19,16 @@ import { Slider } from '../components/Slider';
 import ExpandableDrawerGroup from '../components/ExpandableDrawerGroup';
 import useErrorMessage from '../hooks/useErrorMessage';
 import Help from '../components/Help';
+import DEFAULT_GENERATION_CONFIG from '../constants/defaultGenerationConfig.json';
+import {
+  DEFAULT_GENERATION_CONFIG_PARAMS,
+  MISTRAL_GENERATION_CONFIG_PARAMS
+} from '../constants';
+
+const generationConfigParam =
+  import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true' ?
+    MISTRAL_GENERATION_CONFIG_PARAMS :
+    DEFAULT_GENERATION_CONFIG_PARAMS;
 
 const BotEditPage: React.FC = () => {
   const { t } = useTranslation();
@@ -39,6 +50,12 @@ const BotEditPage: React.FC = () => {
   const [addedFilenames, setAddedFilenames] = useState<string[]>([]);
   const [unchangedFilenames, setUnchangedFilenames] = useState<string[]>([]);
   const [deletedFilenames, setDeletedFilenames] = useState<string[]>([]);
+
+  const [maxTokens, setMaxTokens] = useState<number>(DEFAULT_GENERATION_CONFIG.max_tokens);
+  const [topK, setTopK] = useState<number>(DEFAULT_GENERATION_CONFIG.top_k);
+  const [topP, setTopP] = useState<number>(DEFAULT_GENERATION_CONFIG.top_p);
+  const [temperature, setTemperature] = useState<number>(DEFAULT_GENERATION_CONFIG.temperature);
+  const [stopSequences, setStopSequences] = useState<string>(DEFAULT_GENERATION_CONFIG.stop_sequences?.join(',') || '');
 
   const {
     errorMessages,
@@ -74,6 +91,11 @@ const BotEditPage: React.FC = () => {
             }))
           );
           setEmbeddingParams(() => bot.embeddingParams);
+          setTopK(bot.generationConfig?.topK || DEFAULT_GENERATION_CONFIG.top_k)
+          setTopP(bot.generationConfig?.topP || DEFAULT_GENERATION_CONFIG.top_p)
+          setTemperature(bot.generationConfig?.temperature || DEFAULT_GENERATION_CONFIG.temperature)
+          setMaxTokens(bot.generationConfig?.maxTokens || DEFAULT_GENERATION_CONFIG.max_tokens)
+          setStopSequences((bot.generationConfig?.stopSequences || DEFAULT_GENERATION_CONFIG.stop_sequences).join(","));
           setUnchangedFilenames([...bot.knowledge.filenames]);
           if (bot.syncStatus === 'FAILED') {
             setErrorMessages(
@@ -222,6 +244,29 @@ const BotEditPage: React.FC = () => {
     history.back();
   }, []);
 
+  const isValidGenerationConfigParam = useCallback((value: number, 
+    key: 'maxTokens' | 'topK' | 'topP' | 'temperature') =>{
+    if (value < generationConfigParam[key].MIN) {
+      setErrorMessages(
+        key,
+        t('validation.minRange.message', {
+          size: generationConfigParam[key].MIN,
+        }),
+      );
+      return false;
+    } else if(value > generationConfigParam[key].MAX) {
+      setErrorMessages(
+        key,
+        t('validation.maxRange.message', {
+          size: generationConfigParam[key].MAX,
+        }),
+      );
+      return false;
+    }
+
+    return true;
+  }, [setErrorMessages, t]);
+  
   const isValid = useCallback((): boolean => {
     clearErrorMessages();
     if (embeddingParams.chunkSize > EDGE_EMBEDDING_PARAMS.chunkSize.MAX) {
@@ -252,8 +297,29 @@ const BotEditPage: React.FC = () => {
       return false;
     }
 
-    return true;
-  }, [embeddingParams, clearErrorMessages, setErrorMessages, t]);
+    if(stopSequences.length === 0) {
+      setErrorMessages(
+        'stopSequences',
+        t('input.validationError.required')
+      );
+      return false;
+    }
+
+    return isValidGenerationConfigParam(maxTokens, 'maxTokens') && 
+      isValidGenerationConfigParam(topK, 'topK') && 
+      isValidGenerationConfigParam(topP, 'topP') &&
+      isValidGenerationConfigParam(temperature, 'temperature');
+  }, [
+    embeddingParams,
+    maxTokens,
+    topK,
+    topP,
+    temperature,
+    stopSequences, 
+    clearErrorMessages, 
+    setErrorMessages,
+    isValidGenerationConfigParam, 
+    t]);
 
   const onClickCreate = useCallback(() => {
     if (!isValid()) return;
@@ -266,6 +332,13 @@ const BotEditPage: React.FC = () => {
       embeddingParams: {
         chunkSize: embeddingParams.chunkSize,
         chunkOverlap: embeddingParams.chunkOverlap,
+      },
+      generationConfig: {
+        maxTokens,
+        temperature,
+        topK,
+        topP,
+        stopSequences: stopSequences.split(","),
       },
       knowledge: {
         sourceUrls: urls.filter((s) => s !== ''),
@@ -305,6 +378,13 @@ const BotEditPage: React.FC = () => {
         embeddingParams: {
           chunkSize: embeddingParams?.chunkSize,
           chunkOverlap: embeddingParams?.chunkOverlap,
+        },
+        generationConfig: {
+          maxTokens,
+          temperature,
+          topK,
+          topP,
+          stopSequences: stopSequences.split(","),
         },
         knowledge: {
           sourceUrls: urls.filter((s) => s !== ''),
@@ -469,6 +549,28 @@ const BotEditPage: React.FC = () => {
                   </div>
                 </div>
               </div>
+
+              <ExpandableDrawerGroup
+                isDefaultShow={false}
+                label={t('generationConfig.title')}
+                className="py-2"
+              >
+                <GenerationConfig
+                  topK={topK}
+                  setTopK={setTopK}
+                  topP={topP}
+                  setTopP={setTopP}
+                  temperature={temperature}
+                  setTemperature={setTemperature}
+                  maxTokens={maxTokens}
+                  setMaxTokens={setMaxTokens}
+                  stopSequences={stopSequences}
+                  setStopSequences={setStopSequences}
+                  isLoading={isLoading}
+                  errorMessages={errorMessages}
+                />
+              </ExpandableDrawerGroup>
+
               <ExpandableDrawerGroup
                 isDefaultShow={false}
                 label={t('embeddingSettings.title')}
