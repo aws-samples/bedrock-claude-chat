@@ -211,7 +211,7 @@ Update `enableMistral` to `true` in [cdk.json](./cdk/cdk.json), and run `cdk dep
 > [!Important]
 > This project focus on Anthropic Claude models, the Mistral models are limited supported. For example, prompt examples are based on Claude models. This is a Mistral-only option, once you toggled to enable Mistral models, you can only use Mistral models for all the chat features, NOT both Claude and Mistral models.
 
-### Configure text generation
+### Configure default text generation
 
 Edit [config.py](./backend/app/config.py) and run `cdk deploy`.
 
@@ -225,6 +225,8 @@ GENERATION_CONFIG = {
     "stop_sequences": ["Human: ", "Assistant: "],
 }
 ```
+
+The default text generation configurations are used as default values when the bot is created, users are allowed to customize the value from the UI when creating the bot. Updating the value in the file will not affect the bots that have been created previously.   
 
 ### Remove resources
 
