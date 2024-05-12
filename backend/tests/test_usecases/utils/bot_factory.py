@@ -38,7 +38,7 @@ def create_test_private_bot(
             top_k=250,
             top_p=0.999,
             temperature=0.6,
-            stop_sequences=["Human: ", "Assistant: "]
+            stop_sequences=["Human: ", "Assistant: "],
         ),
         knowledge=KnowledgeModel(
             source_urls=["https://aws.amazon.com/"],
@@ -80,7 +80,7 @@ def create_test_public_bot(
             top_k=250,
             top_p=0.999,
             temperature=0.6,
-            stop_sequences=["Human: ", "Assistant: "]
+            stop_sequences=["Human: ", "Assistant: "],
         ),
         knowledge=KnowledgeModel(
             source_urls=["https://aws.amazon.com/"],

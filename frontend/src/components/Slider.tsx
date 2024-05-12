@@ -32,7 +32,7 @@ export const Slider: FC<Props> = (props) => {
       const newValue = parseNumber(newValStr !== '' ? newValStr : '0');
       props.onChange(newValue); 
     }
-  }, [props.enableDecimal, props.onChange, setValue]);
+  }, [props, setValue]);
 
   return (
     <div className="flex flex-col">

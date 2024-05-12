@@ -39,9 +39,13 @@ def compose_args(
     # otherwise, use bedrock client
     model_id = get_model_id(model)
     if is_anthropic_model(model_id):
-        return compose_args_for_anthropic_client(messages, model, instruction, stream, generation_config)
+        return compose_args_for_anthropic_client(
+            messages, model, instruction, stream, generation_config
+        )
     else:
-        return compose_args_for_other_client(messages, model, instruction, stream, generation_config)
+        return compose_args_for_other_client(
+            messages, model, instruction, stream, generation_config
+        )
 
 
 def compose_args_for_other_client(
@@ -68,13 +72,17 @@ def compose_args_for_other_client(
 
     args = {
         **MISTRAL_GENERATION_CONFIG,
-        **({
-            "max_tokens": generation_config.max_tokens,
-            "top_k": generation_config.top_k,
-            "top_p": generation_config.top_p,
-            "temperature": generation_config.temperature,
-            "stop_sequences": generation_config.stop_sequences,
-        } if generation_config else {}),
+        **(
+            {
+                "max_tokens": generation_config.max_tokens,
+                "top_k": generation_config.top_k,
+                "top_p": generation_config.top_p,
+                "temperature": generation_config.temperature,
+                "stop_sequences": generation_config.stop_sequences,
+            }
+            if generation_config
+            else {}
+        ),
         "model": get_model_id(model),
         "messages": arg_messages,
         "stream": stream,
@@ -122,13 +130,17 @@ def compose_args_for_anthropic_client(
 
     args = {
         **GENERATION_CONFIG,
-        **({
-            "max_tokens": generation_config.max_tokens,
-            "top_k": generation_config.top_k,
-            "top_p": generation_config.top_p,
-            "temperature": generation_config.temperature,
-            "stop_sequences": generation_config.stop_sequences,
-        } if generation_config else {}),
+        **(
+            {
+                "max_tokens": generation_config.max_tokens,
+                "top_k": generation_config.top_k,
+                "top_p": generation_config.top_p,
+                "temperature": generation_config.temperature,
+                "stop_sequences": generation_config.stop_sequences,
+            }
+            if generation_config
+            else {}
+        ),
         "model": get_model_id(model),
         "messages": arg_messages,
         "stream": stream,

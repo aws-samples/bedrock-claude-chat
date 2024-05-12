@@ -373,7 +373,7 @@ class TestConversationBotRepository(unittest.TestCase):
                 top_k=250,
                 top_p=0.999,
                 temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "]
+                stop_sequences=["Human: ", "Assistant: "],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -406,7 +406,7 @@ class TestConversationBotRepository(unittest.TestCase):
                 top_k=250,
                 top_p=0.999,
                 temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "]
+                stop_sequences=["Human: ", "Assistant: "],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],

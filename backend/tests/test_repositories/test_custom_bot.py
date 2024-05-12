@@ -53,7 +53,7 @@ class TestCustomBotRepository(unittest.TestCase):
                 top_k=250,
                 top_p=0.999,
                 temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "]
+                stop_sequences=["Human: ", "Assistant: "],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -135,7 +135,7 @@ class TestCustomBotRepository(unittest.TestCase):
                 top_k=250,
                 top_p=0.999,
                 temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "]
+                stop_sequences=["Human: ", "Assistant: "],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -178,7 +178,7 @@ class TestCustomBotRepository(unittest.TestCase):
                 top_k=250,
                 top_p=0.999,
                 temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "]
+                stop_sequences=["Human: ", "Assistant: "],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/jp"],
@@ -230,7 +230,7 @@ class TestCustomBotRepository(unittest.TestCase):
                 top_k=250,
                 top_p=0.999,
                 temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "]
+                stop_sequences=["Human: ", "Assistant: "],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/jp"],
@@ -260,7 +260,7 @@ class TestCustomBotRepository(unittest.TestCase):
                 top_k=200,
                 top_p=0.99,
                 temperature=0.2,
-                stop_sequences=["Human: ", "Assistant: "]
+                stop_sequences=["Human: ", "Assistant: "],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://updated.com/"],
@@ -314,7 +314,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
                 top_k=250,
                 top_p=0.999,
                 temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "]
+                stop_sequences=["Human: ", "Assistant: "],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -348,7 +348,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
                 top_k=250,
                 top_p=0.999,
                 temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "]
+                stop_sequences=["Human: ", "Assistant: "],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -382,7 +382,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
                 top_k=250,
                 top_p=0.999,
                 temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "]
+                stop_sequences=["Human: ", "Assistant: "],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -416,7 +416,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
                 top_k=250,
                 top_p=0.999,
                 temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "]
+                stop_sequences=["Human: ", "Assistant: "],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -449,7 +449,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
                 top_k=250,
                 top_p=0.999,
                 temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "]
+                stop_sequences=["Human: ", "Assistant: "],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -482,7 +482,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
                 top_k=250,
                 top_p=0.999,
                 temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "]
+                stop_sequences=["Human: ", "Assistant: "],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -587,7 +587,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
                 top_k=250,
                 top_p=0.999,
                 temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "]
+                stop_sequences=["Human: ", "Assistant: "],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -620,7 +620,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
                 top_k=250,
                 top_p=0.999,
                 temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "]
+                stop_sequences=["Human: ", "Assistant: "],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -653,7 +653,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
                 top_k=250,
                 top_p=0.999,
                 temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "]
+                stop_sequences=["Human: ", "Assistant: "],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -707,7 +707,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
                 top_k=250,
                 top_p=0.999,
                 temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "]
+                stop_sequences=["Human: ", "Assistant: "],
             ),
             knowledge=KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[]),
             sync_status="RUNNING",

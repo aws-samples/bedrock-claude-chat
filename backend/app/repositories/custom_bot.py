@@ -59,7 +59,9 @@ def store_bot(user_id: str, custom_bot: BotModel):
         "ApiPublishmentStackName": custom_bot.published_api_stack_name,
         "ApiPublishedDatetime": custom_bot.published_api_datetime,
         "ApiPublishCodeBuildId": custom_bot.published_api_codebuild_id,
-        **_parse_generation_config_to_db_item("GenerationConfig", custom_bot.generation_config),
+        **_parse_generation_config_to_db_item(
+            "GenerationConfig", custom_bot.generation_config
+        ),
     }
 
     response = table.put_item(Item=item)
@@ -96,7 +98,9 @@ def update_bot(
                 ":embedding_params": embedding_params.model_dump(),
                 ":sync_status": sync_status,
                 ":sync_status_reason": sync_status_reason,
-                **_parse_generation_config_to_db_item(":generation_config", generation_config),
+                **_parse_generation_config_to_db_item(
+                    ":generation_config", generation_config
+                ),
             },
             ReturnValues="ALL_NEW",
             ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
@@ -639,21 +643,25 @@ def find_all_published_bots(
 
     return bots, next_token
 
+
 def _parse_generation_config_to_db_item(key: str, generation_config):
     result = {}
     if generation_config:
-        result[key] = json.loads(json.dumps(generation_config.model_dump()), parse_float=decimal)
+        result[key] = json.loads(
+            json.dumps(generation_config.model_dump()), parse_float=decimal
+        )
 
     return result
- 
+
+
 def _parse_generation_config_from_db_item(item):
     if "GenerationConfig" not in item:
         return None
-    else: 
+    else:
         dict = {
             **item["GenerationConfig"],
             "top_p": float(item["GenerationConfig"]["top_p"]),
             "temperature": float(item["GenerationConfig"]["temperature"]),
         }
- 
+
         return GenerationConfigModel(**dict)

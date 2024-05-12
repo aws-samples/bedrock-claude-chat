@@ -106,7 +106,9 @@ def process_chat_input(
             else None
         ),
         stream=True,
-        generation_config=bot.generation_config if bot and bot.generation_config else None,
+        generation_config=(
+            bot.generation_config if bot and bot.generation_config else None
+        ),
     )
 
     is_anthropic = is_anthropic_model(args["model"])
@@ -118,10 +120,10 @@ def process_chat_input(
         "temperature": args["temperature"],
         "stop_sequences": args["stop_sequences"],
     }
-    
+
     # logger.debug(f"Invoking bedrock with args: {args}")
     logger.info(f"Invoking bedrock with Generation Config: {args_generation_config}")
-    
+
     try:
         if is_anthropic:
             response = client.messages.create(**args)

@@ -363,6 +363,11 @@ const BotEditPage: React.FC = () => {
     urls,
     files,
     embeddingParams,
+    maxTokens,
+    temperature,
+    topK,
+    topP,
+    stopSequences,
     navigate,
   ]);
 
@@ -415,6 +420,11 @@ const BotEditPage: React.FC = () => {
     deletedFilenames,
     unchangedFilenames,
     embeddingParams,
+    maxTokens,
+    temperature,
+    topK,
+    topP,
+    stopSequences,
     navigate,
   ]);
 
