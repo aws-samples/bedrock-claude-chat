@@ -1,14 +1,17 @@
 from app.routes.schemas.bot import type_sync_status
 from pydantic import BaseModel
 
+
 class EmbeddingParamsModel(BaseModel):
     chunk_size: int
     chunk_overlap: int
+
 
 class KnowledgeModel(BaseModel):
     source_urls: list[str]
     sitemap_urls: list[str]
     filenames: list[str]
+
 
 class GenerationConfigModel(BaseModel):
     max_tokens: int
@@ -16,6 +19,7 @@ class GenerationConfigModel(BaseModel):
     top_p: float
     temperature: float
     stop_sequences: list[str]
+
 
 class BotModel(BaseModel):
     id: str
@@ -45,6 +49,7 @@ class BotModel(BaseModel):
             or len(self.knowledge.filenames) > 0
         )
 
+
 class BotAliasModel(BaseModel):
     id: str
     title: str
@@ -55,6 +60,7 @@ class BotAliasModel(BaseModel):
     is_pinned: bool
     sync_status: type_sync_status
     has_knowledge: bool
+
 
 class BotMeta(BaseModel):
     id: str
@@ -70,6 +76,7 @@ class BotMeta(BaseModel):
     # This can be `False` if the bot is not owned by the user and original bot is removed.
     available: bool
     sync_status: type_sync_status
+
 
 class BotMetaWithStackInfo(BotMeta):
     owner_user_id: str

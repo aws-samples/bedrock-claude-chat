@@ -316,7 +316,9 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
             if "instruction" in message_map
             else None
         ),
-        generation_config=bot.generation_config if bot and bot.generation_config else None,
+        generation_config=(
+            bot.generation_config if bot and bot.generation_config else None
+        ),
     )
 
     if is_anthropic_model(args["model"]):

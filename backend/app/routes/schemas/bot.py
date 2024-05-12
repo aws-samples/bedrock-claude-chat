@@ -12,9 +12,11 @@ type_sync_status = Literal[
     "QUEUED", "RUNNING", "SUCCEEDED", "FAILED", "ORIGINAL_NOT_FOUND"
 ]
 
+
 class EmbeddingParams(BaseSchema):
     chunk_size: int
     chunk_overlap: int
+
 
 class GenerationConfig(BaseSchema):
     max_tokens: int
@@ -22,6 +24,7 @@ class GenerationConfig(BaseSchema):
     top_p: float
     temperature: float
     stop_sequences: list[str]
+
 
 class Knowledge(BaseSchema):
     source_urls: list[str]
@@ -120,6 +123,7 @@ class BotOutput(BaseSchema):
     sync_status: type_sync_status
     sync_status_reason: str
     sync_last_exec_id: str
+
 
 class BotMetaOutput(BaseSchema):
     id: str
