@@ -1,8 +1,8 @@
 on:
   push:
-    paths:
-      - 'backend/**'
-      - 'frontend/**'
+    # paths:
+    #   - 'backend/**'
+    #   - 'frontend/**'
 name: Static code analysis
 jobs:
   sonarcloud:
