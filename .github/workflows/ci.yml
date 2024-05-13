@@ -24,5 +24,5 @@ jobs:
         args: >
           -Dsonar.organization=kylelee24
           -Dsonar.projectKey=kylelee24_bedrock-claude-chat
-          -Dsonar.log.level=DEBUG
+          -Dsonar.log.level=INFO
           -Dsonar.qualitygate.wait=true
