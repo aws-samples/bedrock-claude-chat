@@ -1,4 +1,4 @@
-const translation = {
+const translation {
   translation: {
     signIn: {
       button: {
