@@ -19,3 +19,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      with:
+        args: >
+          -Dsonar.organization=kylelee24
+          -Dsonar.projectKey=kylelee24_bedrock-claude-chat
+          -Dsonar.python.coverage.reportPaths=coverage.xml
