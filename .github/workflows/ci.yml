@@ -4,6 +4,13 @@ on:
     #   - 'backend/**'
     #   - 'frontend/**'
 name: Static code analysis
+
+env:
+  SONAR_CLOUD_ORGANIZATION: kylelee24
+  SONAR_CLOUD_PROJECT_KEY: kylelee24_bedrock-claude-chat
+  SONAR_CLOUD_LOG_LEVEL: INFO
+  SONAR_CLOUD_QUALITY_GATE_WAIT: true
+
 jobs:
   sonarcloud:
     runs-on: ubuntu-latest
@@ -22,7 +29,7 @@ jobs:
       with:
         # TODO: Add these as top-level env vars or use repository/environment secrets
         args: >
-          -Dsonar.organization=kylelee24
-          -Dsonar.projectKey=kylelee24_bedrock-claude-chat
-          -Dsonar.log.level=INFO
-          -Dsonar.qualitygate.wait=true
+          -Dsonar.organization=${{ env.SONAR_CLOUD_ORGANIZATION }}
+          -Dsonar.projectKey=${{ env.SONAR_CLOUD_PROJECT_KEY }}
+          -Dsonar.log.level=${{ env.SONAR_CLOUD_LOG_LEVEL }}
+          -Dsonar.qualitygate.wait=${{ env.SONAR_CLOUD_QUALITY_GATE_WAIT }
