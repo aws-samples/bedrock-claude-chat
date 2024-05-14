@@ -366,6 +366,14 @@
           hint: '指定阻止模型生成更多标记的字符序列。使用逗号分隔多个单词',
         }
       },
+      searchSettings: {
+        title: '搜索参数',
+        description: '您可以配置搜索参数以从矢量数据库中获取相关文档。',
+        maxResults: {
+          label: '最大返回记录数',
+          hint: '从矢量数据库中获取的最大返回记录数',
+        }
+      },
       error: {
         answerResponse: '在回答时发生了错误。',
         notFoundConversation:

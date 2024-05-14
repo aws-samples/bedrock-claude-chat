@@ -4,14 +4,14 @@ import InputText from './InputText';
 import { Slider } from './Slider';
 import Help from '../components/Help';
 import {
-  DEFAULT_GENERATION_CONFIG_PARAMS,
-  MISTRAL_GENERATION_CONFIG_PARAMS
+  EDGE_GENERATION_PARAMS,
+  EDGE_MISTRAL_GENERATION_PARAMS
 } from '../constants';
 
 const generationConfigParam =
   import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true' ?
-    MISTRAL_GENERATION_CONFIG_PARAMS :
-    DEFAULT_GENERATION_CONFIG_PARAMS;
+    EDGE_MISTRAL_GENERATION_PARAMS :
+    EDGE_GENERATION_PARAMS;
 
 interface GenerationConfigProps {
   topK: number;
@@ -34,7 +34,7 @@ const GenerationConfig: React.FC<GenerationConfigProps> = ({
   ...props
 }) => {
   const { t } = useTranslation();
-  return (<div className="mt-3 flex gap-3 flex-col">
+  return (<div>
     <div className="text-sm text-aws-font-color/50">
       {t('generationConfig.description')}
     </div>

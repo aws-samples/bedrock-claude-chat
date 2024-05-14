@@ -10,7 +10,6 @@ from anthropic.types import ContentBlockDeltaEvent, MessageDeltaEvent, MessageSt
 from anthropic.types import Message as AnthropicMessage
 from app.auth import verify_token
 from app.bedrock import calculate_price, compose_args
-from app.config import SEARCH_CONFIG
 from app.repositories.conversation import RecordNotFoundError, store_conversation
 from app.repositories.models.conversation import ChunkModel, ContentModel, MessageModel
 from app.routes.schemas.conversation import ChatInputWithToken
@@ -27,7 +26,6 @@ from boto3.dynamodb.conditions import Key
 from ulid import ULID
 
 WEBSOCKET_SESSION_TABLE_NAME = os.environ["WEBSOCKET_SESSION_TABLE_NAME"]
-
 
 client = get_anthropic_client()
 dynamodb_client = boto3.resource("dynamodb")
@@ -79,11 +77,12 @@ def process_chat_input(
                 )
             ).encode("utf-8"),
         )
+        
         # Fetch most related documents from vector store
         # NOTE: Currently embedding not support multi-modal. For now, use the last text content.
         query = conversation.message_map[user_msg_id].content[-1].body
         search_results = search_related_docs(
-            bot_id=bot.id, limit=SEARCH_CONFIG["max_results"], query=query
+            bot_id=bot.id, limit=bot.search_params.max_results, query=query
         )
         logger.info(f"Search results from vector store: {search_results}")
 
@@ -106,8 +105,8 @@ def process_chat_input(
             else None
         ),
         stream=True,
-        generation_config=(
-            bot.generation_config if bot and bot.generation_config else None
+        generation_params=(
+            bot.generation_params if bot else None
         ),
     )
 

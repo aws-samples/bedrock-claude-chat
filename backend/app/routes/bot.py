@@ -16,7 +16,8 @@ from app.routes.schemas.bot import (
     BotSwitchVisibilityInput,
     EmbeddingParams,
     Knowledge,
-    GenerationConfig,
+    GenerationParams,
+    SearchParams,
 )
 from app.usecases.bot import (
     create_new_bot,
@@ -134,16 +135,15 @@ def get_private_bot(request: Request, bot_id: str):
             sitemap_urls=bot.knowledge.sitemap_urls,
             filenames=bot.knowledge.filenames,
         ),
-        generation_config=(
-            None
-            if not bot.generation_config
-            else GenerationConfig(
-                max_tokens=bot.generation_config.max_tokens,
-                top_k=bot.generation_config.top_k,
-                top_p=bot.generation_config.top_p,
-                temperature=bot.generation_config.temperature,
-                stop_sequences=bot.generation_config.stop_sequences,
-            )
+        generation_params=GenerationParams(
+            max_tokens=bot.generation_params.max_tokens,
+            top_k=bot.generation_params.top_k,
+            top_p=bot.generation_params.top_p,
+            temperature=bot.generation_params.temperature,
+            stop_sequences=bot.generation_params.stop_sequences,
+        ),
+        search_params=SearchParams(
+            max_results=bot.search_params.max_results,
         ),
         sync_status=bot.sync_status,
         sync_status_reason=bot.sync_status_reason,

@@ -366,6 +366,14 @@
           hint: '指定阻止模型產生更多標記的字元序列。使用逗號分隔多個單字',
         }
       },
+      searchSettings: {
+        title: '搜尋參數',
+        description: '您可以配置搜尋參數以從向量資料庫中取得相關文檔。',
+        maxResults: {
+          label: '最大回傳記錄數',
+          hint: '從向量資料庫取得的最大回傳記錄數',
+        }
+      },
       error: {
         answerResponse: '在回答時發生了錯誤。',
         notFoundConversation:

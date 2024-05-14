@@ -4,7 +4,6 @@
   "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "copyConfig": "python ./scripts/copy_config.py",
     "test": "vitest",
     "dev": "vite",
     "build": "tsc && vite build",

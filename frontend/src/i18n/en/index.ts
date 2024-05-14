@@ -418,6 +418,14 @@ How would you categorize this email?`,
         hint: 'Specify sequences of characters that stop the model from generating further tokens. Use commas to separate multiple words',
       }
     },
+    searchSettings: {
+      title: 'Search Settings',
+      description: 'You can configure search parameters to fetch relevant documents from vector store.',
+      maxResults: {
+        label: 'Max Results',
+        hint: 'The maximum number of records fetched from vector store',
+      }
+    },
     error: {
       answerResponse: 'An error occurred while responding.',
       notFoundConversation:
