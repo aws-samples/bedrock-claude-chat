@@ -5,6 +5,7 @@ from pydantic import BaseModel
 class EmbeddingParamsModel(BaseModel):
     chunk_size: int
     chunk_overlap: int
+    enable_partition_pdf: bool
 
 
 class KnowledgeModel(BaseModel):

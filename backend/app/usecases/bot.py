@@ -115,6 +115,12 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         else DEFAULT_EMBEDDING_CONFIG["chunk_overlap"]
     )
 
+    enable_partition_pdf = (
+        bot_input.embedding_params.enable_partition_pdf
+        if bot_input.embedding_params
+        else DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"]
+    )
+
     store_bot(
         user_id,
         BotModel(
@@ -130,6 +136,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             embedding_params=EmbeddingParamsModel(
                 chunk_size=chunk_size,
                 chunk_overlap=chunk_overlap,
+                enable_partition_pdf=enable_partition_pdf,
             ),
             knowledge=KnowledgeModel(
                 source_urls=source_urls, sitemap_urls=sitemap_urls, filenames=filenames
@@ -155,6 +162,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         embedding_params=EmbeddingParams(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
+            enable_partition_pdf=enable_partition_pdf,
         ),
         knowledge=Knowledge(
             source_urls=source_urls, sitemap_urls=sitemap_urls, filenames=filenames
@@ -207,6 +215,12 @@ def modify_owned_bot(
         else DEFAULT_EMBEDDING_CONFIG["chunk_overlap"]
     )
 
+    enable_partition_pdf = (
+        modify_input.embedding_params.enable_partition_pdf
+        if modify_input.embedding_params
+        else DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"]
+    )
+
     # if knowledge and embedding_params are not updated, skip embeding process.
     # 'sync_status = "QUEUED"' will execute embeding process and update dynamodb record.
     # 'sync_status= "SUCCEEDED"' will update only dynamodb record.
@@ -222,6 +236,7 @@ def modify_owned_bot(
         embedding_params=EmbeddingParamsModel(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
+            enable_partition_pdf=enable_partition_pdf,
         ),
         knowledge=KnowledgeModel(
             source_urls=source_urls,
@@ -240,6 +255,7 @@ def modify_owned_bot(
         embedding_params=EmbeddingParams(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
+            enable_partition_pdf=enable_partition_pdf,
         ),
         knowledge=Knowledge(
             source_urls=source_urls,

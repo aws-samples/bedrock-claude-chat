@@ -366,6 +366,7 @@ class TestConversationBotRepository(unittest.TestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -392,6 +393,7 @@ class TestConversationBotRepository(unittest.TestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],

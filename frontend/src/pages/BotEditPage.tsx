@@ -15,6 +15,7 @@ import { BotFile, EmdeddingPrams } from '../@types/bot';
 import { ulid } from 'ulid';
 import { DEFAULT_EMBEDDING_CONFIG, EDGE_EMBEDDING_PARAMS } from '../constants';
 import { Slider } from '../components/Slider';
+import Toggle from '../components/Toggle';
 import ExpandableDrawerGroup from '../components/ExpandableDrawerGroup';
 import useErrorMessage from '../hooks/useErrorMessage';
 import Help from '../components/Help';
@@ -35,6 +36,7 @@ const BotEditPage: React.FC = () => {
   const [embeddingParams, setEmbeddingParams] = useState<EmdeddingPrams>({
     chunkSize: DEFAULT_EMBEDDING_CONFIG.chunkSize,
     chunkOverlap: DEFAULT_EMBEDDING_CONFIG.chunkOverlap,
+    enablePartitionPdf: DEFAULT_EMBEDDING_CONFIG.enablePartitionPdf,
   });
   const [addedFilenames, setAddedFilenames] = useState<string[]>([]);
   const [unchangedFilenames, setUnchangedFilenames] = useState<string[]>([]);
@@ -266,6 +268,7 @@ const BotEditPage: React.FC = () => {
       embeddingParams: {
         chunkSize: embeddingParams.chunkSize,
         chunkOverlap: embeddingParams.chunkOverlap,
+        enablePartitionPdf: embeddingParams.enablePartitionPdf,
       },
       knowledge: {
         sourceUrls: urls.filter((s) => s !== ''),
@@ -305,6 +308,7 @@ const BotEditPage: React.FC = () => {
         embeddingParams: {
           chunkSize: embeddingParams?.chunkSize,
           chunkOverlap: embeddingParams?.chunkOverlap,
+          enablePartitionPdf: embeddingParams?.enablePartitionPdf,
         },
         knowledge: {
           sourceUrls: urls.filter((s) => s !== ''),
@@ -528,6 +532,19 @@ const BotEditPage: React.FC = () => {
                       }))
                     }
                     errorMessage={errorMessages['chunkOverlap']}
+                  />
+                </div>
+                <div className="mt-2">
+                  <Toggle
+                    value={embeddingParams?.enablePartitionPdf ?? false}
+                    label={t('embeddingSettings.enable_partition_pdf.label')}
+                    hint={t('embeddingSettings.enable_partition_pdf.hint')}
+                    onChange={(enablePartitionPdf) =>
+                      setEmbeddingParams((params) => ({
+                        ...params,
+                        enablePartitionPdf: enablePartitionPdf,
+                      }))
+                    }
                   />
                 </div>
               </ExpandableDrawerGroup>

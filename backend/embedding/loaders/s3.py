@@ -10,18 +10,17 @@ from unstructured.partition.pdf import partition_pdf
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-ENABLE_PARTITION_PDF = strtobool(os.environ.get("ENABLE_PARTITION_PDF", "false"))
-
 
 class S3FileLoader(BaseLoader):
     """Loads a document from a file in S3.
     Reference: `langchain_community.document_loaders.S3FileLoader` class
     """
 
-    def __init__(self, bucket: str, key: str, mode: str = "single"):
+    def __init__(self, bucket: str, key: str, mode: str = "single", enable_partition_pdf: bool = False):
         self.bucket = bucket
         self.key = key
         self.mode = mode
+        self.enable_partition_pdf = enable_partition_pdf
 
     def _get_elements(self) -> list:
         """Get elements."""
@@ -32,8 +31,8 @@ class S3FileLoader(BaseLoader):
             s3.download_file(self.bucket, self.key, file_path)
             extension = os.path.splitext(file_path)[1]
 
-            logger.info(f"ENABLE_PARTITION_PDF: {ENABLE_PARTITION_PDF}")
-            if extension == ".pdf" and ENABLE_PARTITION_PDF == 1:
+            logger.info(f"ENABLE_PARTITION_PDF: {self.enable_partition_pdf}")
+            if extension == ".pdf" and self.enable_partition_pdf == True:
                 logger.info(f"partition_pdf: {file_path}")
                 return partition_pdf(
                     filename=file_path,

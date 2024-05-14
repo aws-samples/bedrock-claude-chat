@@ -146,6 +146,7 @@ def main(
     filenames: list[str],
     chunk_size: int,
     chunk_overlap: int,
+    enable_partition_pdf: bool,
 ):
     exec_id = ""
     try:
@@ -217,12 +218,13 @@ def main(
                                     key=compose_upload_document_s3_path(
                                         user_id, bot_id, filename
                                     ),
+                                    enable_partition_pdf=enable_partition_pdf
                                 ),
                                 contents,
                                 sources,
                                 embeddings,
                                 chunk_size,
-                                chunk_overlap,
+                                chunk_overlap,  
                             ),
                         )
                         for filename in filenames
@@ -287,6 +289,7 @@ if __name__ == "__main__":
     embedding_params = new_image.embedding_params
     chunk_size = embedding_params.chunk_size
     chunk_overlap = embedding_params.chunk_overlap
+    enable_partition_pdf = embedding_params.enable_partition_pdf
     knowledge = new_image.knowledge
     sitemap_urls = knowledge.sitemap_urls
     source_urls = knowledge.source_urls
@@ -297,7 +300,8 @@ if __name__ == "__main__":
     logger.info(f"filenames: {filenames}")
     logger.info(f"chunk_size: {chunk_size}")
     logger.info(f"chunk_overlap: {chunk_overlap}")
+    logger.info(f"enable_partition_pdf: {enable_partition_pdf}")
 
     main(
-        user_id, bot_id, sitemap_urls, source_urls, filenames, chunk_size, chunk_overlap
+        user_id, bot_id, sitemap_urls, source_urls, filenames, chunk_size, chunk_overlap, enable_partition_pdf
     )

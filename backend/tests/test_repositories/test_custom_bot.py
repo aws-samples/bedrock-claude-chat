@@ -46,6 +46,7 @@ class TestCustomBotRepository(unittest.TestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -76,6 +77,10 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(
             bot.embedding_params.chunk_overlap,
             DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+        )
+        self.assertEqual(
+            bot.embedding_params.enable_partition_pdf,
+            DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
         )
         self.assertEqual(bot.knowledge.source_urls, ["https://aws.amazon.com/"])
         self.assertEqual(bot.knowledge.sitemap_urls, ["https://aws.amazon.sitemap.xml"])
@@ -116,6 +121,7 @@ class TestCustomBotRepository(unittest.TestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -152,6 +158,7 @@ class TestCustomBotRepository(unittest.TestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/jp"],
@@ -197,6 +204,7 @@ class TestCustomBotRepository(unittest.TestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/jp"],
@@ -220,6 +228,7 @@ class TestCustomBotRepository(unittest.TestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=500,
                 chunk_overlap=100,
+                enable_partition_pdf=False
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://updated.com/"],
@@ -236,6 +245,7 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(bot.instruction, "Updated Instruction")
         self.assertEqual(bot.embedding_params.chunk_size, 500)
         self.assertEqual(bot.embedding_params.chunk_overlap, 100)
+        self.assertEqual(bot.embedding_params.enable_partition_pdf, False)
         self.assertEqual(bot.knowledge.source_urls, ["https://updated.com/"])
         self.assertEqual(bot.knowledge.sitemap_urls, ["https://updated.xml"])
         self.assertEqual(bot.knowledge.filenames, ["updated.txt"])
@@ -261,6 +271,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -288,6 +299,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -315,6 +327,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -342,6 +355,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -368,6 +382,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -394,6 +409,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -492,6 +508,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -518,6 +535,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -544,6 +562,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -591,6 +610,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             knowledge=KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[]),
             sync_status="RUNNING",

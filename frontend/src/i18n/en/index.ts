@@ -376,11 +376,17 @@ How would you categorize this email?`,
         label: 'chunk overlap',
         hint: 'You can specify the number of overlapping characters between adjacent chunks.',
       },
+      enable_partition_pdf: {
+        label: 'Enable partition pdf',
+        hint: 'Perform detailed structural analysis of PDFs',
+      },
       help: {
         chunkSize:
           "When the chunk size is too small, contextual information can be lost, and when it's too large, different contextual information may exist within the same chunk, potentially reducing search accuracy.",
         chunkOverlap:
           'By specifying chunk overlap, you can preserve contextual information around chunk boundaries. Increasing the chunk size can sometimes improve search accuracy. However, be aware that increasing the chunk overlap can lead to higher computational costs.',
+        enable_partition_pdf:
+          'When enabled, the bot will perform detailed structural analysis of PDFs and extract text from each page.',
       },
       alert: {
         sync: {

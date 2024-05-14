@@ -3,6 +3,7 @@ import { EmdeddingPrams } from '../@types/bot';
 export const DEFAULT_EMBEDDING_CONFIG: EmdeddingPrams = {
   chunkSize: 1000,
   chunkOverlap: 200,
+  enablePartitionPdf: false
 };
 
 export const EDGE_EMBEDDING_PARAMS = {
