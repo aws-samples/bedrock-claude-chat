@@ -77,7 +77,7 @@ def process_chat_input(
                 )
             ).encode("utf-8"),
         )
-        
+
         # Fetch most related documents from vector store
         # NOTE: Currently embedding not support multi-modal. For now, use the last text content.
         query = conversation.message_map[user_msg_id].content[-1].body
@@ -105,9 +105,7 @@ def process_chat_input(
             else None
         ),
         stream=True,
-        generation_params=(
-            bot.generation_params if bot else None
-        ),
+        generation_params=(bot.generation_params if bot else None),
     )
 
     is_anthropic = is_anthropic_model(args["model"])

@@ -40,6 +40,7 @@ from botocore.exceptions import ClientError
 TABLE_NAME = os.environ.get("TABLE_NAME", "")
 ENABLE_MISTRAL = os.environ.get("ENABLE_MISTRAL", "") == "true"
 
+
 logger = logging.getLogger(__name__)
 sts_client = boto3.client("sts")
 
@@ -305,6 +306,12 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
     if "OriginalBotId" in item:
         raise RecordNotFoundError(f"Bot with id {bot_id} is alias")
 
+    default_generation_config = (
+        DEFAULT_MISTRAL_GENERATION_CONFIG
+        if ENABLE_MISTRAL
+        else DEFAULT_GENERATION_CONFIG
+    )
+
     bot = BotModel(
         id=decompose_bot_id(item["SK"]),
         title=item["Title"],
@@ -329,21 +336,11 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
                 else 200
             ),
         ),
-        generation_params=(
-            GenerationParamsModel(
-                **{
-                    **item["GenerationParams"],
-                    "top_p": float(item["GenerationParams"]["top_p"]),
-                    "temperature": float(item["GenerationParams"]["temperature"]),
-                }
-            )
-            if "GenerationParams" in item
-            else GenerationParamsModel(
-                **(
-                    DEFAULT_MISTRAL_GENERATION_CONFIG
-                    if ENABLE_MISTRAL
-                    else DEFAULT_GENERATION_CONFIG
-                )
+        generation_params=GenerationParamsModel(
+            **(
+                item["GenerationParams"]
+                if "GenerationParams" in item
+                else default_generation_config
             )
         ),
         search_params=SearchParamsModel(
@@ -387,6 +384,12 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
     if len(response["Items"]) == 0:
         raise RecordNotFoundError(f"Public bot with id {bot_id} not found")
 
+    default_generation_config = (
+        DEFAULT_MISTRAL_GENERATION_CONFIG
+        if ENABLE_MISTRAL
+        else DEFAULT_GENERATION_CONFIG
+    )
+
     item = response["Items"][0]
     bot = BotModel(
         id=decompose_bot_id(item["SK"]),
@@ -412,21 +415,11 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
                 else 200
             ),
         ),
-        generation_params=(
-            GenerationParamsModel(
-                {
-                    **item["GenerationParams"],
-                    "top_p": float(item["GenerationParams"]["top_p"]),
-                    "temperature": float(item["GenerationParams"]["temperature"]),
-                }
-            )
-            if "GenerationParams" in item
-            else GenerationParamsModel(
-                **(
-                    DEFAULT_MISTRAL_GENERATION_CONFIG
-                    if ENABLE_MISTRAL
-                    else DEFAULT_GENERATION_CONFIG
-                )
+        generation_params=GenerationParamsModel(
+            **(
+                item["GenerationParams"]
+                if "GenerationParams" in item
+                else default_generation_config
             )
         ),
         search_params=SearchParamsModel(

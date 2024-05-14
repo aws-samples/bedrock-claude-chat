@@ -292,7 +292,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         # Fetch most related documents from vector store
         # NOTE: Currently embedding not support multi-modal. For now, use the last content.
         query = conversation.message_map[user_msg_id].content[-1].body
-        
+
         search_results = search_related_docs(
             bot_id=bot.id, limit=bot.search_params.max_results, query=query
         )
@@ -316,9 +316,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
             if "instruction" in message_map
             else None
         ),
-        generation_params=(
-            bot.generation_params if bot else None
-        ),
+        generation_params=(bot.generation_params if bot else None),
     )
 
     if is_anthropic_model(args["model"]):
