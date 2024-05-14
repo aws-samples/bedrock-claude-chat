@@ -218,13 +218,13 @@ def main(
                                     key=compose_upload_document_s3_path(
                                         user_id, bot_id, filename
                                     ),
-                                    enable_partition_pdf=enable_partition_pdf
+                                    enable_partition_pdf=enable_partition_pdf,
                                 ),
                                 contents,
                                 sources,
                                 embeddings,
                                 chunk_size,
-                                chunk_overlap,  
+                                chunk_overlap,
                             ),
                         )
                         for filename in filenames
@@ -303,5 +303,12 @@ if __name__ == "__main__":
     logger.info(f"enable_partition_pdf: {enable_partition_pdf}")
 
     main(
-        user_id, bot_id, sitemap_urls, source_urls, filenames, chunk_size, chunk_overlap, enable_partition_pdf
+        user_id,
+        bot_id,
+        sitemap_urls,
+        source_urls,
+        filenames,
+        chunk_size,
+        chunk_overlap,
+        enable_partition_pdf,
     )

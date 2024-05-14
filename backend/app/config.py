@@ -43,7 +43,7 @@ DEFAULT_EMBEDDING_CONFIG: EmbeddingConfig = {
     # NOTE: consider that cohere allows up to 2048 tokens per request
     "chunk_size": 1000,
     "chunk_overlap": 200,
-    "enable_partition_pdf": False
+    "enable_partition_pdf": False,
 }
 
 # Configure search parameter to fetch relevant documents from vector store.

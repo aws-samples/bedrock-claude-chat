@@ -16,7 +16,13 @@ class S3FileLoader(BaseLoader):
     Reference: `langchain_community.document_loaders.S3FileLoader` class
     """
 
-    def __init__(self, bucket: str, key: str, mode: str = "single", enable_partition_pdf: bool = False):
+    def __init__(
+        self,
+        bucket: str,
+        key: str,
+        mode: str = "single",
+        enable_partition_pdf: bool = False,
+    ):
         self.bucket = bucket
         self.key = key
         self.mode = mode

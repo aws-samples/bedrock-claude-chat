@@ -226,9 +226,7 @@ class TestCustomBotRepository(unittest.TestCase):
             description="Updated Description",
             instruction="Updated Instruction",
             embedding_params=EmbeddingParamsModel(
-                chunk_size=500,
-                chunk_overlap=100,
-                enable_partition_pdf=False
+                chunk_size=500, chunk_overlap=100, enable_partition_pdf=False
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://updated.com/"],
