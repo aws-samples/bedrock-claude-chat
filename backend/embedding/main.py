@@ -33,6 +33,9 @@ logger = logging.getLogger(__name__)
 
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
 
+RETRIES_TO_INSERT_TO_POSTGRES = 4
+RETRY_DELAY_TO_INSERT_TO_POSTGRES = 2
+
 DB_SECRETS_ARN = os.environ.get("DB_SECRETS_ARN", "")
 DOCUMENT_BUCKET = os.environ.get("DOCUMENT_BUCKET", "documents")
 
@@ -48,7 +51,8 @@ def get_exec_id() -> str:
     task_id = task_arn.split("/")[-1]
     return task_id
 
-@retry(tries=4, delay=2)
+
+@retry(tries=RETRIES_TO_INSERT_TO_POSTGRES, delay=RETRY_DELAY_TO_INSERT_TO_POSTGRES)
 def insert_to_postgres(
     bot_id: str, contents: ListProxy, sources: ListProxy, embeddings: ListProxy
 ):
@@ -90,7 +94,7 @@ def insert_to_postgres(
         conn.close()
 
 
-@retry(tries=4, delay=2)
+@retry(tries=RETRIES_TO_INSERT_TO_POSTGRES, delay=RETRY_DELAY_TO_INSERT_TO_POSTGRES)
 def update_sync_status(
     user_id: str,
     bot_id: str,
@@ -152,29 +156,16 @@ def main(
     try:
         exec_id = get_exec_id()
     except Exception as e:
-        logger.info(f"[ERROR] Failed to get exec_id: {e}")
+        logger.error(f"[ERROR] Failed to get exec_id: {e}")
         exec_id = "FAILED_TO_GET_ECS_EXEC_ID"
 
-    try:
-        update_sync_status(
-            user_id,
-            bot_id,
-            "RUNNING",
-            "",
-            exec_id,
-        )
-    except Exception as e:
-        logger.error("[ERROR] Failed to update sync status.")
-        logger.error(e)
-
-        update_sync_status(
-            user_id,
-            bot_id,
-            "FAILED",
-            f"{e}",
-            exec_id,
-        )
-        return
+    update_sync_status(
+        user_id,
+        bot_id,
+        "RUNNING",
+        "",
+        exec_id,
+    )
 
     status_reason = ""
     try:
@@ -236,6 +227,7 @@ def main(
 
             # Insert records into postgres
             insert_to_postgres(bot_id, contents, sources, embeddings)
+            status_reason = "Successfully inserted to vector store."
     except Exception as e:
         logger.error("[ERROR] Failed to embed.")
         logger.error(e)
@@ -248,27 +240,13 @@ def main(
         )
         return
 
-    try:
-        status_reason = "Successfully inserted to vector store."
-        update_sync_status(
-            user_id,
-            bot_id,
-            "SUCCEEDED",
-            status_reason,
-            exec_id,
-        )
-    except Exception as e:
-        logger.error("[ERROR] Failed to update sync status.")
-        logger.error(e)
-
-        update_sync_status(
-            user_id,
-            bot_id,
-            "FAILED",
-            f"{e}",
-            exec_id,
-        )
-        return
+    update_sync_status(
+        user_id,
+        bot_id,
+        "SUCCEEDED",
+        status_reason,
+        exec_id,
+    )
 
 
 if __name__ == "__main__":

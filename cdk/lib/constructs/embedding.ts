@@ -26,6 +26,8 @@ export interface EmbeddingProps {
   readonly bedrockRegion: string;
   readonly tableAccessRole: iam.IRole;
   readonly documentBucket: IBucket;
+  readonly embeddingContainerVcpu: number;
+  readonly embeddingContainerMemory: number;
 }
 
 export class Embedding extends Construct {
@@ -34,9 +36,6 @@ export class Embedding extends Construct {
   readonly removalHandler: IFunction;
   constructor(scope: Construct, id: string, props: EmbeddingProps) {
     super(scope, id);
-
-    const embedding_container_vcpu:number = Stack.of(this).node.tryGetContext("embedding_container_vcpu") ? Stack.of(this).node.tryGetContext("embedding_container_vcpu") : 1024
-    const embedding_container_memory:number = Stack.of(this).node.tryGetContext("embedding_container_memory") ? Stack.of(this).node.tryGetContext("embedding_container_memory") : 2048
 
     /**
      * ECS
@@ -49,8 +48,8 @@ export class Embedding extends Construct {
       this,
       "TaskDefinition",
       {
-        cpu: embedding_container_vcpu,
-        memoryLimitMiB: embedding_container_memory,
+        cpu: props.embeddingContainerVcpu,
+        memoryLimitMiB: props.embeddingContainerMemory,
         runtimePlatform: {
           cpuArchitecture: ecs.CpuArchitecture.X86_64,
           operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,

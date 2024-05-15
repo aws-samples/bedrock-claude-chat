@@ -81,7 +81,7 @@
       "stop": {},
       "start": {}
     },
-    "embedding_container_vcpu": 2048,
-    "embedding_container_memory": 4096
+    "embeddingContainerVcpu": 2048,
+    "embeddingContainerMemory": 4096
   }
 }
