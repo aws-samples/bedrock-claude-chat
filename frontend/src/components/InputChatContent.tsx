@@ -242,32 +242,31 @@ const InputChatContent: React.FC<Props> = (props) => {
           onDrop={onDrop}
         ></div>
       )}
-      <div className="flex items-end justify-between mb-2">
-        <div className="flex flex-col">
-          <label className="mb-1 text-sm font-medium text-gray-700">
+      <div className="flex justify-end items-center mb-2">
+        <div className="flex items-center mr-2">
+          <label htmlFor="search-size" className="mr-2">
             {t('SearchParams.searchSize.label')}
-            <Help direction="right" message={t('SearchParams.searchSize.help')} />
           </label>
           <input
             type="number"
-            className="border rounded px-2 py-1 text-sm"
+            id="search-size"
             value={searchSize}
-            onChange={(e) => setSearchSize(Number(e.target.value))}
             min={1}
             max={100}
+            onChange={(e) => setSearchSize(Number(e.target.value))}
+            className="w-16 p-1 border rounded"
           />
+          <Help direction="right" message={t('SearchParams.searchSize.help')} />
         </div>
-        {messages.length > 1 && (
-          <Button
-            className="ml-4 bg-aws-paper p-2 text-sm"
-            outlined
-            disabled={disabledRegenerate || props.disabled}
-            onClick={props.onRegenerate}
-          >
-            <PiArrowsCounterClockwise className="mr-2" />
-            {t('button.regenerate')}
-          </Button>
-        )}
+        <Button
+          className="bg-aws-paper p-2 text-sm"
+          outlined
+          disabled={disabledRegenerate || props.disabled}
+          onClick={props.onRegenerate}
+        >
+          <PiArrowsCounterClockwise className="mr-2" />
+          {t('button.regenerate')}
+        </Button>
       </div>
       <div
         ref={inputRef}
