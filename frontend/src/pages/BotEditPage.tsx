@@ -537,8 +537,8 @@ const BotEditPage: React.FC = () => {
                 <div className="mt-2">
                   <Toggle
                     value={embeddingParams?.enablePartitionPdf ?? false}
-                    label={t('embeddingSettings.enable_partition_pdf.label')}
-                    hint={t('embeddingSettings.enable_partition_pdf.hint')}
+                    label={t('embeddingSettings.enablePartitionPdf.label')}
+                    hint={t('embeddingSettings.enablePartitionPdf.hint')}
                     onChange={(enablePartitionPdf) =>
                       setEmbeddingParams((params) => ({
                         ...params,

@@ -37,7 +37,7 @@ class S3FileLoader(BaseLoader):
             s3.download_file(self.bucket, self.key, file_path)
             extension = os.path.splitext(file_path)[1]
 
-            logger.info(f"ENABLE_PARTITION_PDF: {self.enable_partition_pdf}")
+            logger.debug(f"Partition pdf enabled: {self.enable_partition_pdf}")
             if extension == ".pdf" and self.enable_partition_pdf == True:
                 logger.info(f"partition_pdf: {file_path}")
                 return partition_pdf(
