@@ -1,4 +1,4 @@
-import { CfnOutput, Duration, Stack } from "aws-cdk-lib";
+import { CfnOutput, Duration, Stack, CustomResource } from "aws-cdk-lib";
 import {
   ProviderAttribute,
   UserPool,
@@ -8,11 +8,13 @@ import {
   CfnUserPoolGroup,
   UserPoolIdentityProviderOidc,
 } from "aws-cdk-lib/aws-cognito";
+import * as iam from "aws-cdk-lib/aws-iam";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
-import { Runtime } from "aws-cdk-lib/aws-lambda";
+import { Runtime, Code, SingletonFunction } from "aws-cdk-lib/aws-lambda";
 import { PythonFunction } from "@aws-cdk/aws-lambda-python-alpha";
 import { Construct } from "constructs";
 import * as path from "path";
+import * as fs from "fs";
 import { Idp, TIdentityProvider } from "../utils/identity-provider";
 
 export interface AuthProps {
@@ -20,6 +22,7 @@ export interface AuthProps {
   readonly userPoolDomainPrefixKey: string;
   readonly idp: Idp;
   readonly allowedSignUpEmailDomains: string[];
+  readonly autoJoinUserGroups: string[];
 }
 
 export class Auth extends Construct {
@@ -186,6 +189,52 @@ export class Auth extends Construct {
         userPoolId: userPool.userPoolId,
       }
     );
+
+    if (props.autoJoinUserGroups.length >= 1) {
+      const addUserToGroupsFunction = new PythonFunction(this, "AddUserToGroups", {
+        runtime: Runtime.PYTHON_3_12,
+        index: "add_user_to_groups.py",
+        entry: path.join(__dirname, "../../../backend/auth/add_user_to_groups"),
+        timeout: Duration.minutes(1),
+        environment: {
+          USER_POOL_ID: userPool.userPoolId,
+          AUTO_JOIN_USER_GROUPS: JSON.stringify(props.autoJoinUserGroups),
+        },
+      });
+      addUserToGroupsFunction.addPermission("CognitoTrigger", {
+        principal: new iam.ServicePrincipal("cognito-idp.amazonaws.com"),
+        sourceArn: userPool.userPoolArn,
+        scope: userPool,
+      })
+      userPool.grant(addUserToGroupsFunction, "cognito-idp:AdminAddUserToGroup")
+
+      const cognitoTriggerRegistrationFunction = new SingletonFunction(this, "CognitoTriggerRegistrationFunction", {
+        uuid: "a84c6122-180e-48fc-afaf-f4d65da2b370",
+        lambdaPurpose: "CognitoTriggerRegistrationFunction",
+        code: Code.fromInline(fs.readFileSync(path.join(__dirname, "../../custom-resources/cognito-trigger/index.py"), "utf8")),
+        handler: "index.handler",
+
+        runtime: Runtime.PYTHON_3_12,
+        environment: {
+          USER_POOL_ID: userPool.userPoolId,
+        },
+
+        timeout: Duration.minutes(1),
+      });
+      userPool.grant(cognitoTriggerRegistrationFunction, "cognito-idp:UpdateUserPool", "cognito-idp:DescribeUserPool")
+
+      const cognitoTrigger = new CustomResource(this, "CognitoTrigger", {
+        serviceToken: cognitoTriggerRegistrationFunction.functionArn,
+        resourceType: "Custom::CognitoTrigger",
+        properties: {
+          Triggers: {
+            PostConfirmation: addUserToGroupsFunction.functionArn,
+            PostAuthentication: addUserToGroupsFunction.functionArn,
+          },
+        },
+      });
+      cognitoTrigger.node.addDependency(addUserToGroupsFunction);
+    }
 
     this.client = client;
     this.userPool = userPool;
