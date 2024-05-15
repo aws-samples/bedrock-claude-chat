@@ -155,7 +155,8 @@ class PlaywrightURLLoader(BaseLoader):
                     response = page.goto(url)
                     if response is None:
                         raise ValueError(f"page.goto() returned None for url {url}")
-
+                    if response.status != 200:
+                        raise ValueError(f"http status error {url}")
                     text = self.evaluator.evaluate(page, browser, response)
                     metadata = {"source": url}
                     docs.append(Document(page_content=text, metadata=metadata))
