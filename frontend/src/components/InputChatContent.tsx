@@ -76,7 +76,7 @@ const useInputChatContentState = create<{
 
 const InputChatContent: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const { postingMessage, hasError, searchSize, setSearchSize } = useChat();
+  const { postingMessage, hasError, messages, searchSize, setSearchSize } = useChat();
   const { disabledImageUpload, model, acceptMediaType } = useModel();
 
   const [content, setContent] = useState('');
@@ -236,7 +236,7 @@ const InputChatContent: React.FC<Props> = (props) => {
 
   return (
     <>
-      <div className="absolute top-0 right-0 flex items-center mt-4 mr-4">
+      <div className="absolute top-0 right-0 mt-4 mr-4 flex items-center">
         <label className="mr-2">{t('SearchParams.searchSize.label')}</label>
         <input
           type="number"
@@ -341,6 +341,17 @@ const InputChatContent: React.FC<Props> = (props) => {
               )}
             </ModalDialog>
           </div>
+        )}
+        {messages.length > 1 && (
+          <Button
+            className="absolute -top-14 right-0 bg-aws-paper p-2 text-sm"
+            outlined
+            disabled={disabledRegenerate || props.disabled}
+            onClick={props.onRegenerate}
+          >
+            <PiArrowsCounterClockwise className="mr-2" />
+            {t('button.regenerate')}
+          </Button>
         )}
       </div>
     </>
