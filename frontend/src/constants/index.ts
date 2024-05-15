@@ -17,3 +17,15 @@ export const EDGE_EMBEDDING_PARAMS = {
     STEP: 2,
   },
 };
+
+export const DEFAULT_SEARCH_CONFIG = {
+  searchSize: 40,
+};
+
+export const SEARCH_PARAMS_RANGE = {
+  searchSize: {
+    MIN: 1,
+    MAX: 100,
+    STEP: 1,
+  },
+};

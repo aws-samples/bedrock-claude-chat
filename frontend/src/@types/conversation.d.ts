@@ -41,6 +41,7 @@ export type PostMessageRequest = {
     parentMessageId: null | string;
   };
   botId?: string;
+  searchSize?: number;
 };
 
 export type PostMessageResponse = {

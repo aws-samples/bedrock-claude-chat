@@ -368,6 +368,13 @@ const translation = {
         invalidOriginFormat: 'オリジンのフォーマットが異なります。',
       },
     },
+    SearchParams: {
+      searchSize: {
+        label: '検索サイズ',
+        hint: 'クエリごとに返す結果の数',
+        help: '検索サイズを増やすと、より多くの結果が返されますが、待ち時間が増える場合もあります。',
+      },
+    },   
     embeddingSettings: {
       title: 'ベクトル埋め込みパラメーター設定',
       description:

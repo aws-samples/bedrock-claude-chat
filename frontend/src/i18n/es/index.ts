@@ -319,6 +319,13 @@ Las categorías de clasificación son:
         invalidOriginFormat: 'Formato de origen inválido.',
       },
     },
+    SearchParams: {
+      searchSize: {
+        label: 'Tamaño de Búsqueda',
+        hint: 'El número de resultados a devolver por cada consulta',
+        help: 'Aumentar el tamaño de búsqueda devolverá más resultados, pero también puede aumentar la latencia.',
+      },
+    },    
     embeddingSettings: {
       title: 'Configuración de Incrustación',
       description: 'Puedes configurar los parámetros para las incrustaciones vectoriales. Al ajustar los parámetros, puedes cambiar la precisión de la recuperación de documentos.',

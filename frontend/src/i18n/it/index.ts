@@ -342,6 +342,13 @@ Come classificheresti questa email?`,
         invalidOriginFormat: 'Formato di origine non valido.',
       },
     },
+    SearchParams: {
+      searchSize: {
+        label: 'Dimensione di Ricerca',
+        hint: 'Il numero di risultati da restituire per ogni query',
+        help: 'Aumentare la dimensione della ricerca restituirà più risultati, ma può anche aumentare la latenza.',
+      },
+    },    
     embeddingSettings: {
       title: 'Impostazione di incorporamento',
       description:

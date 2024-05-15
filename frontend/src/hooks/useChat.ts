@@ -21,6 +21,7 @@ import { convertMessageMapToArray } from '../utils/MessageUtils';
 import { useTranslation } from 'react-i18next';
 import useModel from './useModel';
 import useFeedbackApi from './useFeedbackApi';
+import {DEFAULT_SEARCH_CONFIG} from '../constants/index';
 
 type ChatStateType = {
   [id: string]: MessageMap;
@@ -72,6 +73,8 @@ const useChatState = create<{
   setIsGeneratedTitle: (b: boolean) => void;
   getPostedModel: () => Model;
   shouldUpdateMessages: (currentConversation: Conversation) => boolean;
+  searchSize: number;
+  setSearchSize: (size: number) => void;
 }>((set, get) => {
   return {
     conversationId: '',
@@ -81,6 +84,12 @@ const useChatState = create<{
           conversationId: s,
         };
       });
+    },
+    searchSize: DEFAULT_SEARCH_CONFIG.searchSize,
+    setSearchSize: (size: number) => {
+      set(() => ({
+        searchSize: size,
+      }));
     },
     postingMessage: false,
     setPostingMessage: (b) => {
@@ -241,6 +250,8 @@ const useChat = () => {
     setRelatedDocuments,
     moveRelatedDocuments,
     shouldUpdateMessages,
+    searchSize,
+    setSearchSize,
   } = useChatState();
   const { open: openSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -379,6 +390,7 @@ const useChat = () => {
         parentMessageId: parentMessageId,
       },
       botId: bot?.botId,
+      searchSize,
     };
     const createNewConversation = () => {
       // Copy State to prevent screen flicker
@@ -506,6 +518,7 @@ const useChat = () => {
         parentMessageId: parentMessage.parent,
       },
       botId: props?.bot?.botId,
+      searchSize,
     };
 
     if (input.message.parentMessageId === null) {
@@ -629,6 +642,8 @@ const useChat = () => {
           mutate();
         });
     },
+    setSearchSize,
+    searchSize,
   };
 };
 

@@ -20,6 +20,7 @@ import { create } from 'zustand';
 import ButtonFileChoose from './ButtonFileChoose';
 import { BaseProps } from '../@types/common';
 import ModalDialog from './ModalDialog';
+import Help from '../components/Help';
 
 type Props = BaseProps & {
   disabledSend?: boolean;
@@ -75,7 +76,7 @@ const useInputChatContentState = create<{
 
 const InputChatContent: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const { postingMessage, hasError, messages } = useChat();
+  const { postingMessage, hasError, messages, searchSize, setSearchSize } = useChat();
   const { disabledImageUpload, model, acceptMediaType } = useModel();
 
   const [content, setContent] = useState('');
@@ -235,6 +236,21 @@ const InputChatContent: React.FC<Props> = (props) => {
 
   return (
     <>
+      <div className="absolute top-0 right-0 mt-4 mr-4 flex items-center">
+        <label className="mr-2">{t('SearchParams.searchSize.label')}</label>
+        <input
+          type="number"
+          value={searchSize}
+          onChange={(e) => setSearchSize(Number(e.target.value))}
+          className="border rounded px-2 py-1 w-20"
+          min={1}
+          max={100}
+        />
+        <Help
+          direction="left"
+          message={t('SearchParams.searchSize.help')}
+        />
+      </div>
       {props.dndMode && (
         <div
           className="fixed left-0 top-0 h-full w-full bg-black/40"
