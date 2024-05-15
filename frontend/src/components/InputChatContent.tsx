@@ -329,7 +329,7 @@ const InputChatContent: React.FC<Props> = (props) => {
         )}
         {messages.length > 1 && (
           <>
-            <div className="absolute bottom-0 right-20 flex items-center mb-2">
+            <div className="absolute bottom-0 right-24 flex items-center mb-2">
               <label htmlFor="searchSizeInput" className="mr-2 text-sm font-semibold">{t('SearchParams.searchSize.label')}</label>
               <input
                 id="searchSizeInput"
