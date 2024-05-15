@@ -76,7 +76,7 @@ const useInputChatContentState = create<{
 
 const InputChatContent: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const { postingMessage, hasError, messages, searchSize, setSearchSize } = useChat();
+  const { postingMessage, hasError, searchSize, setSearchSize } = useChat();
   const { disabledImageUpload, model, acceptMediaType } = useModel();
 
   const [content, setContent] = useState('');
@@ -236,38 +236,27 @@ const InputChatContent: React.FC<Props> = (props) => {
 
   return (
     <>
+      <div className="absolute top-0 right-0 flex items-center mt-4 mr-4">
+        <label className="mr-2">{t('SearchParams.searchSize.label')}</label>
+        <input
+          type="number"
+          value={searchSize}
+          onChange={(e) => setSearchSize(Number(e.target.value))}
+          className="border rounded px-2 py-1 w-20"
+          min={1}
+          max={100}
+        />
+        <Help
+          direction="left"
+          message={t('SearchParams.searchSize.help')}
+        />
+      </div>
       {props.dndMode && (
         <div
           className="fixed left-0 top-0 h-full w-full bg-black/40"
           onDrop={onDrop}
         ></div>
       )}
-      <div className="flex justify-end items-center mb-2">
-        <div className="flex items-center mr-2">
-          <label htmlFor="search-size" className="mr-2">
-            {t('SearchParams.searchSize.label')}
-          </label>
-          <input
-            type="number"
-            id="search-size"
-            value={searchSize}
-            min={1}
-            max={100}
-            onChange={(e) => setSearchSize(Number(e.target.value))}
-            className="w-16 p-1 border rounded"
-          />
-          <Help direction="right" message={t('SearchParams.searchSize.help')} />
-        </div>
-        <Button
-          className="bg-aws-paper p-2 text-sm"
-          outlined
-          disabled={disabledRegenerate || props.disabled}
-          onClick={props.onRegenerate}
-        >
-          <PiArrowsCounterClockwise className="mr-2" />
-          {t('button.regenerate')}
-        </Button>
-      </div>
       <div
         ref={inputRef}
         onDragOver={onDragOver}
