@@ -20,7 +20,7 @@ const SearchSizeInput: React.FC = () => {
         max={100}
       />
       <Help
-        direction="right"
+        direction="left"
         message={t('SearchParams.searchSize.help')}
       />
     </div>
