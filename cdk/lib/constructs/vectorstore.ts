@@ -43,6 +43,7 @@ export class VectorStore extends Construct {
         version: rds.AuroraPostgresEngineVersion.VER_15_3,
       }),
       vpc: props.vpc,
+      storageEncrypted: true,
       securityGroups: [sg],
       defaultDatabaseName: DB_NAME,
       enableDataApi: true,
