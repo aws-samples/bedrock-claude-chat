@@ -7,9 +7,7 @@ import React, {
 } from 'react';
 import ButtonSend from './ButtonSend';
 import Textarea from './Textarea';
-import { Slider } from '../components/Slider';
 import useChat from '../hooks/useChat';
-import { SEARCH_PARAMS_RANGE } from '../constants';
 import Button from './Button';
 import { PiArrowsCounterClockwise, PiX } from 'react-icons/pi';
 import { TbPhotoPlus } from 'react-icons/tb';
@@ -237,26 +235,20 @@ const InputChatContent: React.FC<Props> = (props) => {
   );
 
   return (
-    <>
-      {props.dndMode && (
-        <div
-          className="fixed left-0 top-0 h-full w-full bg-black/40"
-          onDrop={onDrop}
-        ></div>
-      )}
+    <div className="flex w-full">
       <div
         ref={inputRef}
         onDragOver={onDragOver}
         onDrop={onDrop}
         className={twMerge(
           props.className,
-          'relative mb-7 flex w-11/12 flex-col rounded-xl border border-black/10 bg-white shadow-[0_0_30px_7px] shadow-light-gray md:w-10/12 lg:w-4/6 xl:w-3/6'
+          'relative mb-7 flex-1 flex flex-col rounded-xl border border-black/10 bg-white shadow-[0_0_30px_7px] shadow-light-gray'
         )}
       >
         <div className="flex w-full">
           <Textarea
             className={twMerge(
-              'm-1  bg-transparent scrollbar-thin scrollbar-thumb-light-gray',
+              'm-1 bg-transparent scrollbar-thin scrollbar-thumb-light-gray',
               disabledImageUpload ? 'pr-6' : 'pr-12'
             )}
             placeholder={props.placeholder ?? t('app.inputMessage')}
@@ -331,27 +323,6 @@ const InputChatContent: React.FC<Props> = (props) => {
         )}
         {messages.length > 1 && (
           <>
-            <div className="mb-4 mx-auto w-11/12">
-              <Slider
-                value={searchSize}
-                hint={t('SearchParams.searchSize.hint')}
-                label={
-                  <div className="flex items-center gap-1">
-                    {t('SearchParams.searchSize.label')}
-                    <Help
-                      direction="right"
-                      message={t('SearchParams.searchSize.help')}
-                    />
-                  </div>
-                }
-                range={{
-                  min: SEARCH_PARAMS_RANGE.searchSize.MIN,
-                  max: SEARCH_PARAMS_RANGE.searchSize.MAX,
-                  step: SEARCH_PARAMS_RANGE.searchSize.STEP,
-                }}
-                onChange={(newSearchSize) => setSearchSize(newSearchSize)}
-              />
-            </div>
             <Button
               className="absolute -top-14 right-0 bg-aws-paper p-2 text-sm"
               outlined
@@ -364,7 +335,23 @@ const InputChatContent: React.FC<Props> = (props) => {
           </>
         )}
       </div>
-    </>
+      <div className="ml-4 mt-7 flex flex-col">
+        <label htmlFor="searchSizeInput" className="mb-1 text-sm font-semibold">{t('SearchParams.searchSize.label')}</label>
+        <input
+          id="searchSizeInput"
+          type="number"
+          value={searchSize}
+          onChange={(e) => setSearchSize(Number(e.target.value))}
+          className="p-2 border rounded-lg text-sm w-20"
+          min={1}
+          max={100}
+        />
+        <Help
+          direction="right"
+          message={t('SearchParams.searchSize.help')}
+        />
+      </div>
+    </div>
   );
 };
 
