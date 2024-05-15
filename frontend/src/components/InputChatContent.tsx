@@ -276,66 +276,88 @@ const InputChatContent: React.FC<Props> = (props) => {
             </ButtonFileChoose>
           )}
           <ButtonSend
-            className="m-1 mr-2"
-            disabled={disabledSend}
+            className="m-2 align-bottom"
+            disabled={disabledSend || props.disabled}
+            loading={postingMessage}
             onClick={sendContent}
           />
         </div>
-        <div className="absolute top-[-40px] right-0 flex items-center justify-between px-2 py-1 space-x-2">
-          <div className="flex items-center space-x-2">
-            <span>Search Size</span>
+        {base64EncodedImages.length > 0 && (
+          <div className="relative m-2 mr-24 flex flex-wrap gap-3">
+            {base64EncodedImages.map((imageFile, idx) => (
+              <div key={idx} className="relative">
+                <img
+                  src={imageFile}
+                  className="h-16 rounded border border-aws-squid-ink"
+                  onClick={() => {
+                    setPreviewImageUrl(imageFile);
+                    setIsOpenPreviewImage(true);
+                  }}
+                />
+                <ButtonIcon
+                  className="absolute right-0 top-0 -m-2 border border-aws-sea-blue bg-white p-1 text-xs text-aws-sea-blue"
+                  onClick={() => {
+                    removeBase64EncodedImage(idx);
+                  }}
+                >
+                  <PiX />
+                </ButtonIcon>
+              </div>
+            ))}
+            {disabledImageUpload && (
+              <div className="absolute -m-2 flex h-[120%] w-[110%] items-center justify-center bg-black/30">
+                <div className="rounded bg-light-red p-3 text-sm text-aws-font-color">
+                  {t('error.notSupportedImage')}
+                </div>
+              </div>
+            )}
+            <ModalDialog
+              isOpen={isOpenPreviewImage}
+              onClose={() => setIsOpenPreviewImage(false)}
+              // Set image null after transition end
+              onAfterLeave={() => setPreviewImageUrl(null)}
+              widthFromContent={true}
+            >
+              {previewImageUrl && (
+                <img
+                  src={previewImageUrl}
+                  className="mx-auto max-h-[80vh] max-w-full rounded-md"
+                />
+              )}
+            </ModalDialog>
+          </div>
+        )}
+        <div className="flex items-center justify-between">
+          <div className="mb-4 mx-2 flex items-center">
+            <label className="mr-2">
+              {t('SearchParams.searchSize.label')}
+            </label>
             <input
               type="number"
-              className="w-16 p-1 border rounded"
-              min="1"
-              max="100"
+              className="w-16 p-1 border border-black/10 rounded"
               value={searchSize}
+              min={1}
+              max={100}
               onChange={(e) => setSearchSize(Number(e.target.value))}
             />
-            <Help>{t('SearchParams.searchSize.help')}</Help>
+            <Help
+              className="ml-1"
+              message={t('SearchParams.searchSize.help')}
+            />
           </div>
-          <Button
-            icon
-            disabled={disabledRegenerate}
-            className="!p-2 mr-2"
-            onClick={props.onRegenerate}
-          >
-            <PiArrowsCounterClockwise />
-          </Button>
-        </div>
-        <div className="flex flex-nowrap items-center overflow-x-auto">
-          {base64EncodedImages.map((base64EncodedImage, index) => (
-            <div
-              key={index}
-              className="relative m-1 flex-none border border-black/10"
+          {messages.length > 1 && (
+            <Button
+              className="absolute -top-14 right-0 bg-aws-paper p-2 text-sm"
+              outlined
+              disabled={disabledRegenerate || props.disabled}
+              onClick={props.onRegenerate}
             >
-              <button
-                className="absolute right-0 top-0 flex h-4 w-4 translate-x-1/3 -translate-y-1/3 items-center justify-center rounded-full bg-white text-black shadow hover:bg-black/10"
-                onClick={() => removeBase64EncodedImage(index)}
-              >
-                <PiX size={10} />
-              </button>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                className="h-20 w-20 object-cover"
-                src={base64EncodedImage}
-                onClick={() => {
-                  setPreviewImageUrl(base64EncodedImage);
-                  setIsOpenPreviewImage(true);
-                }}
-              />
-            </div>
-          ))}
+              <PiArrowsCounterClockwise className="mr-2" />
+              {t('button.regenerate')}
+            </Button>
+          )}
         </div>
       </div>
-      <ModalDialog
-        isOpen={isOpenPreviewImage}
-        setIsOpen={setIsOpenPreviewImage}
-        className="max-w-[90%] max-h-[90%]"
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={previewImageUrl ?? ''} />
-      </ModalDialog>
     </>
   );
 };
