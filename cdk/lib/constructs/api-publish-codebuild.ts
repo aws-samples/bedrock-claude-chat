@@ -6,6 +6,7 @@ import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
 import * as path from "path";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
+import { NagSuppressions } from 'cdk-nag';
 
 export interface ApiPublishCodebuildProps {
   readonly dbSecret: secretsmanager.ISecret;
@@ -104,6 +105,17 @@ export class ApiPublishCodebuild extends Construct {
         resources: ["arn:aws:iam::*:role/cdk-*"],
       })
     );
+
+    NagSuppressions.addResourceSuppressions(project, [
+      {
+        id: 'AwsPrototyping-CodeBuildProjectKMSEncryptedArtifacts',
+        reason: 'default: The AWS-managed CMK for Amazon Simple Storage Service (Amazon S3) is used.',
+      },
+      {
+        id: 'AwsPrototyping-CodeBuildProjectPrivilegedModeDisabled',
+        reason: 'for runnning on the docker daemon on the docker container'
+      }
+    ]);
 
     this.project = project;
   }

@@ -64,7 +64,7 @@ def _get_aws_resource(service_name, user_id=None):
                 region_name=REGION,
             )
         else:
-            return boto3.resource(service_name)
+            return boto3.resource(service_name, region_name=REGION)
 
     policy_document = {
         "Statement": [

@@ -26,18 +26,14 @@ from embedding.loaders.s3 import S3FileLoader
 from embedding.wrapper import DocumentSplitter, Embedder
 from llama_index.core.node_parser import SentenceSplitter
 from ulid import ULID
+from aws_lambda_powertools.utilities import parameters
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
 
-
-DB_NAME = os.environ.get("DB_NAME", "postgres")
-DB_HOST = os.environ.get("DB_HOST", "")
-DB_USER = os.environ.get("DB_USER", "postgres")
-DB_PASSWORD = os.environ.get("DB_PASSWORD", "password")
-DB_PORT = int(os.environ.get("DB_PORT", 5432))
+DB_SECRETS_ARN = os.environ.get("DB_SECRETS_ARN", "")
 DOCUMENT_BUCKET = os.environ.get("DOCUMENT_BUCKET", "documents")
 
 METADATA_URI = os.environ.get("ECS_CONTAINER_METADATA_URI_V4")
@@ -52,17 +48,21 @@ def get_exec_id() -> str:
     task_id = task_arn.split("/")[-1]
     return task_id
 
-
 @retry(tries=4, delay=2)
 def insert_to_postgres(
     bot_id: str, contents: ListProxy, sources: ListProxy, embeddings: ListProxy
 ):
+
+    secrets = parameters.get_secret(DB_SECRETS_ARN)
+    access_info = json.dumps(secrets)
+    print(access_info)
+
     conn = pg8000.connect(
-        database=DB_NAME,
-        host=DB_HOST,
-        port=DB_PORT,
-        user=DB_USER,
-        password=DB_PASSWORD,
+        database=access_info['dbname'],
+        host=access_info['host'],
+        port=access_info['port'],
+        user=access_info['username'],
+        password=access_info['password'],
     )
 
     try:

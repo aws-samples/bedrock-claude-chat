@@ -14,7 +14,7 @@ import { Frontend } from "./constructs/frontend";
 import { WebSocket } from "./constructs/websocket";
 import * as cdk from "aws-cdk-lib";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
-import { DbConfig, Embedding } from "./constructs/embedding";
+import { Embedding } from "./constructs/embedding";
 import { VectorStore } from "./constructs/vectorstore";
 import { UsageAnalysis } from "./constructs/usage-analysis";
 import { TIdentityProvider, identityProvider } from "./utils/identity-provider";
@@ -22,6 +22,7 @@ import { ApiPublishCodebuild } from "./constructs/api-publish-codebuild";
 import { WebAclForPublishedApi } from "./constructs/webacl-for-published-api";
 import { VpcConfig } from "./api-publishment-stack";
 import { CronScheduleProps, createCronSchedule } from "./utils/cron-schedule";
+import { NagSuppressions } from 'cdk-nag';
 
 export interface BedrockChatStackProps extends StackProps {
   readonly bedrockRegion: string;
@@ -44,6 +45,10 @@ export class BedrockChatStack extends cdk.Stack {
     const cronSchedule = createCronSchedule(props.rdsSchedules);
 
     const vpc = new ec2.Vpc(this, "VPC", {});
+    vpc.publicSubnets.forEach((subnet) => {
+      (subnet.node.defaultChild as ec2.CfnSubnet).mapPublicIpOnLaunch = false;
+    })
+
     const vectorStore = new VectorStore(this, "VectorStore", {
       vpc: vpc,
       rdsSchedule: cronSchedule,
@@ -55,23 +60,6 @@ export class BedrockChatStack extends cdk.Stack {
       "ApiPublishCodebuild",
       { dbSecret: vectorStore.secret }
     );
-
-    const dbConfig = {
-      host: vectorStore.cluster.clusterEndpoint.hostname,
-      username: vectorStore.secret
-        .secretValueFromJson("username")
-        .unsafeUnwrap()
-        .toString(),
-      password: vectorStore.secret
-        .secretValueFromJson("password")
-        .unsafeUnwrap()
-        .toString(),
-      port: vectorStore.cluster.clusterEndpoint.port,
-      database: vectorStore.secret
-        .secretValueFromJson("dbname")
-        .unsafeUnwrap()
-        .toString(),
-    };
 
     const accessLogBucket = new Bucket(this, "AccessLogBucket", {
       encryption: BucketEncryption.S3_MANAGED,
@@ -127,7 +115,7 @@ export class BedrockChatStack extends cdk.Stack {
       auth,
       bedrockRegion: props.bedrockRegion,
       tableAccessRole: database.tableAccessRole,
-      dbConfig,
+      dbSecrets: vectorStore.secret,
       documentBucket,
       apiPublishProject: apiPublishCodebuild.project,
       usageAnalysis,
@@ -138,7 +126,7 @@ export class BedrockChatStack extends cdk.Stack {
     // For streaming response
     const websocket = new WebSocket(this, "WebSocket", {
       vpc,
-      dbConfig,
+      dbSecrets: vectorStore.secret,
       database: database.table,
       tableAccessRole: database.tableAccessRole,
       websocketSessionTable: database.websocketSessionTable,
@@ -166,7 +154,7 @@ export class BedrockChatStack extends cdk.Stack {
       vpc,
       bedrockRegion: props.bedrockRegion,
       database: database.table,
-      dbConfig,
+      dbSecrets: vectorStore.secret,
       tableAccessRole: database.tableAccessRole,
       documentBucket,
     });
@@ -255,5 +243,69 @@ export class BedrockChatStack extends cdk.Stack {
       value: largeMessageBucket.bucketName,
       exportName: "BedrockClaudeChatLargeMessageBucketName",
     });
+
+    NagSuppressions.addResourceSuppressionsByPath(this,
+      [
+        '/BedrockChatStack/SociIndexBuild024cf76a10034aa4aa4b12c32c09ca3c',
+        '/BedrockChatStack/SociIndexBuild024cf76a10034aa4aa4b12c32c09ca3c/Role/DefaultPolicy/Resource'
+      ],
+      [
+        {
+          id: 'AwsPrototyping-IAMNoWildcardPermissions',
+          reason: 'SociIndexBuild is dependencies package',
+        },
+        {
+          id: 'AwsPrototyping-CodeBuildProjectKMSEncryptedArtifacts',
+          reason: 'SociIndexBuild is dependencies package',
+        }
+      ],
+      true
+    )
+
+    NagSuppressions.addResourceSuppressions(this, [
+      {
+        id: 'CdkNagValidationFailure',
+        reason: 'This is generally caused by a parameter referencing an intrinsic function.',
+      }
+    ], true)
+
+    NagSuppressions.addResourceSuppressionsByPath(this,
+      [
+        '/BedrockChatStack/Embedding/RemovalHandlerRole/DefaultPolicy/Resource',
+        '/BedrockChatStack/Embedding/PipeRole/DefaultPolicy/Resource',
+        '/BedrockChatStack/Embedding/TaskDefinition/ExecutionRole/DefaultPolicy/Resource',
+        '/BedrockChatStack/Embedding/TaskDefinition/TaskRole/DefaultPolicy/Resource',
+        '/BedrockChatStack/WebSocket/HandlerRole/DefaultPolicy/Resource',
+        '/BedrockChatStack/UsageAnalysis/ExportHandler/ServiceRole/DefaultPolicy/Resource',
+        '/BedrockChatStack/Frontend/ReactBuild/Project/Role/DefaultPolicy/Resource',
+        '/BedrockChatStack/ApiPublishCodebuild/Project/Role/DefaultPolicy/Resource',
+        '/BedrockChatStack/Custom::CDKBucketDeployment8693BB64968944B69AAFB0CC9EB8756C/ServiceRole/DefaultPolicy/Resource'
+      ],
+      [
+        {
+          id: 'AwsPrototyping-IAMNoWildcardPermissions',
+          reason: 'This is Default Policy',
+        },
+        {
+          id: 'AwsPrototyping-IAMPolicyNoStatementsWithFullAccess',
+          reason: 'This is Default Policy',
+        },
+        {
+          id: 'AwsPrototyping-IAMNoWildcardPermissions',
+          reason: 'This is Default Policy',
+          appliesTo: [
+            'Action::s3:List*',
+            'Action::s3:GetObject*',
+            'Action::s3:DeleteObject*',
+            'Action::s3:Abort*',
+            {
+              regex: '/^Resource::arn:aws:apigateway:(.*)::\/*/'
+            },
+
+          ]
+        },
+      ],
+      true
+    )
   }
 }

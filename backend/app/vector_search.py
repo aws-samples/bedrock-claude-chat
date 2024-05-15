@@ -8,14 +8,11 @@ import pg8000
 from app.bedrock import calculate_query_embedding
 from app.utils import generate_presigned_url
 from pydantic import BaseModel
+from aws_lambda_powertools.utilities import parameters
 
 logger = logging.getLogger(__name__)
 
-DB_NAME = os.environ.get("DB_NAME", "postgres")
-DB_HOST = os.environ.get("DB_HOST", "")
-DB_USER = os.environ.get("DB_USER", "postgres")
-DB_PASSWORD = os.environ.get("DB_PASSWORD", "password")
-DB_PORT = int(os.environ.get("DB_PORT", 5432))
+DB_SECRETS_ARN = os.environ.get("DB_SECRETS_ARN", "")
 
 
 class SearchResult(BaseModel):
@@ -82,12 +79,16 @@ def search_related_docs(bot_id: str, limit: int, query: str) -> list[SearchResul
     query_embedding = calculate_query_embedding(query)
     logger.info(f"query_embedding: {query_embedding}")
 
+    secrets = parameters.get_secret(DB_SECRETS_ARN)
+    access_info = json.dumps(secrets)
+    print(access_info)
+
     conn = pg8000.connect(
-        database=DB_NAME,
-        host=DB_HOST,
-        port=DB_PORT,
-        user=DB_USER,
-        password=DB_PASSWORD,
+        database=access_info['dbname'],
+        host=access_info['host'],
+        port=access_info['port'],
+        user=access_info['username'],
+        password=access_info['password'],
     )
 
     try:

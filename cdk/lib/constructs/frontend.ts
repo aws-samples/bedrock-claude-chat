@@ -13,6 +13,7 @@ import {
 import { NodejsBuild } from "deploy-time-build";
 import { Auth } from "./auth";
 import { Idp } from "../utils/identity-provider";
+import { NagSuppressions } from 'cdk-nag';
 
 export interface FrontendProps {
   readonly accessLogBucket: IBucket;
@@ -72,6 +73,14 @@ export class Frontend extends Construct {
       },
       webACLId: props.webAclId,
     });
+
+    NagSuppressions.addResourceSuppressions(distribution, [
+      {
+        id: 'AwsPrototyping-CloudFrontDistributionGeoRestrictions',
+        reason: 'this asset is being used all over the world',
+      },
+    ]);
+
     this.assetBucket = assetBucket;
     this.cloudFrontWebDistribution = distribution;
   }

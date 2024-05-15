@@ -109,20 +109,7 @@ export class ApiPublishmentStack extends Stack {
         BEDROCK_REGION: props.bedrockRegion,
         LARGE_MESSAGE_BUCKET: props.largeMessageBucketName,
         TABLE_ACCESS_ROLE_ARN: props.tableAccessRoleArn,
-        DB_NAME: dbSecret
-          .secretValueFromJson("dbname")
-          .unsafeUnwrap()
-          .toString(),
-        DB_HOST: props.dbConfigHostname,
-        DB_USER: dbSecret
-          .secretValueFromJson("username")
-          .unsafeUnwrap()
-          .toString(),
-        DB_PASSWORD: dbSecret
-          .secretValueFromJson("password")
-          .unsafeUnwrap()
-          .toString(),
-        DB_PORT: cdk.Token.asString(props.dbConfigPort),
+        DB_SECRETS_ARN: props.dbConfigSecretArn,
       },
       role: handlerRole,
     });
@@ -155,20 +142,7 @@ export class ApiPublishmentStack extends Stack {
           REGION: Stack.of(this).region,
           BEDROCK_REGION: props.bedrockRegion,
           TABLE_ACCESS_ROLE_ARN: props.tableAccessRoleArn,
-          DB_NAME: dbSecret
-            .secretValueFromJson("dbname")
-            .unsafeUnwrap()
-            .toString(),
-          DB_HOST: props.dbConfigHostname,
-          DB_USER: dbSecret
-            .secretValueFromJson("username")
-            .unsafeUnwrap()
-            .toString(),
-          DB_PASSWORD: dbSecret
-            .secretValueFromJson("password")
-            .unsafeUnwrap()
-            .toString(),
-          DB_PORT: cdk.Token.asString(props.dbConfigPort),
+          DB_SECRETS_ARN: props.dbConfigSecretArn,
         },
         role: handlerRole,
       }

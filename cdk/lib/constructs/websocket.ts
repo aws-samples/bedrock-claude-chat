@@ -17,14 +17,14 @@ import { SnsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { Auth } from "./auth";
 import { ITable } from "aws-cdk-lib/aws-dynamodb";
 import { CfnRouteResponse } from "aws-cdk-lib/aws-apigatewayv2";
+import { ISecret } from "aws-cdk-lib/aws-secretsmanager"
 import * as ec2 from "aws-cdk-lib/aws-ec2";
-import { DbConfig } from "./embedding";
 import * as s3 from "aws-cdk-lib/aws-s3";
 
 export interface WebSocketProps {
   readonly vpc: ec2.IVpc;
   readonly database: ITable;
-  readonly dbConfig: DbConfig;
+  readonly dbSecrets: ISecret;
   readonly auth: Auth;
   readonly bedrockRegion: string;
   readonly tableAccessRole: iam.IRole;
@@ -103,11 +103,7 @@ export class WebSocket extends Construct {
         TABLE_NAME: database.tableName,
         TABLE_ACCESS_ROLE_ARN: tableAccessRole.roleArn,
         LARGE_MESSAGE_BUCKET: props.largeMessageBucket.bucketName,
-        DB_NAME: props.dbConfig.database,
-        DB_HOST: props.dbConfig.host,
-        DB_USER: props.dbConfig.username,
-        DB_PASSWORD: props.dbConfig.password,
-        DB_PORT: props.dbConfig.port.toString(),
+        DB_SECRETS_ARN: props.dbSecrets.secretArn,
         LARGE_PAYLOAD_SUPPORT_BUCKET: largePayloadSupportBucket.bucketName,
         WEBSOCKET_SESSION_TABLE_NAME: props.websocketSessionTable.tableName,
       },

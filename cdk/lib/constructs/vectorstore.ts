@@ -16,6 +16,8 @@ import {
   Role,
   ServicePrincipal,
 } from "aws-cdk-lib/aws-iam";
+import { LambdaPowertoolsLayer } from 'cdk-aws-lambda-powertools-layer';
+import { NagSuppressions } from 'cdk-nag';
 
 const DB_NAME = "postgres";
 
@@ -49,8 +51,10 @@ export class VectorStore extends Construct {
       serverlessV2MinCapacity: 0.5,
       serverlessV2MaxCapacity: 5.0,
       writer: rds.ClusterInstance.serverlessV2("writer", {
-        autoMinorVersionUpgrade: false,
+        autoMinorVersionUpgrade: true,
+        publiclyAccessible: false,
       }),
+      storageEncrypted: true
       // readers: [
       //   rds.ClusterInstance.serverlessV2("reader", {
       //     autoMinorVersionUpgrade: false,
@@ -106,6 +110,12 @@ export class VectorStore extends Construct {
       });
     }
 
+    const powertoolsLayer = new LambdaPowertoolsLayer(this, 'TestLayer', {
+      version: '2.1.0',
+      includeExtras: true,
+      runtimeFamily: lambda.RuntimeFamily.NODEJS
+    });
+
     const setupHandler = new NodejsFunction(this, "CustomResourceHandler", {
       vpc: props.vpc,
       runtime: lambda.Runtime.NODEJS_18_X,
@@ -116,23 +126,12 @@ export class VectorStore extends Construct {
       handler: "handler",
       timeout: Duration.minutes(5),
       environment: {
-        DB_HOST: cluster.clusterEndpoint.hostname,
-        DB_USER: cluster
-          .secret!.secretValueFromJson("username")
-          .unsafeUnwrap()
-          .toString(),
-        DB_PASSWORD: cluster
-          .secret!.secretValueFromJson("password")
-          .unsafeUnwrap()
-          .toString(),
-        DB_NAME: cluster
-          .secret!.secretValueFromJson("dbname")
-          .unsafeUnwrap()
-          .toString(),
-        DB_PORT: cluster.clusterEndpoint.port.toString(),
         DB_CLUSTER_IDENTIFIER: dbClusterIdentifier,
+        DB_SECRETS_ARN: cluster.secret!.secretFullArn!,
       },
+      layers: [powertoolsLayer],
     });
+    cluster.secret!.grantRead(setupHandler);
 
     sg.connections.allowFrom(
       setupHandler,
@@ -148,6 +147,26 @@ export class VectorStore extends Construct {
       },
     });
     cr.node.addDependency(cluster);
+
+    NagSuppressions.addResourceSuppressions(cr,
+      [
+        {
+          id: 'AwsPrototyping-IAMNoManagedPolicies',
+          reason: 'Default Policy',
+          appliesTo: [
+            {
+              regex: '/^Policy::arn:<AWS::Partition>:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole/'
+            }
+          ]
+
+        },
+        {
+          id: 'AwsPrototyping-CodeBuildProjectKMSEncryptedArtifacts',
+          reason: 'SociIndexBuild is dependencies package',
+        }
+      ],
+      true
+    )
 
     this.securityGroup = sg;
     this.cluster = cluster;

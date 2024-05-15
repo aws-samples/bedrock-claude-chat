@@ -6,12 +6,9 @@ import pg8000
 from app.repositories.apigateway import delete_api_key, find_usage_plan_by_id
 from app.repositories.cloudformation import delete_stack_by_bot_id, find_stack_by_bot_id
 from app.repositories.common import RecordNotFoundError, decompose_bot_id
+from aws_lambda_powertools.utilities import parameters
 
-DB_HOST = os.environ.get("DB_HOST", "")
-DB_USER = os.environ.get("DB_USER", "postgres")
-DB_PASSWORD = os.environ.get("DB_PASSWORD", "password")
-DB_PORT = int(os.environ.get("DB_PORT", 5432))
-DB_NAME = os.environ.get("DB_NAME", "postgres")
+DB_SECRETS_ARN = os.environ.get("DB_SECRETS_ARN", "")
 DOCUMENT_BUCKET = os.environ.get("DOCUMENT_BUCKET", "documents")
 
 s3_client = boto3.client("s3")
@@ -19,12 +16,17 @@ s3_client = boto3.client("s3")
 
 def delete_from_postgres(bot_id: str):
     """Delete data related to `bot_id` from vector store (i.e. PostgreSQL)."""
+
+    secrets = parameters.get_secret(DB_SECRETS_ARN)
+    access_info = json.dumps(secrets)
+    print(access_info)
+
     conn = pg8000.connect(
-        database=DB_NAME,
-        host=DB_HOST,
-        port=DB_PORT,
-        user=DB_USER,
-        password=DB_PASSWORD,
+        database=access_info['dbname'],
+        host=access_info['host'],
+        port=access_info['port'],
+        user=access_info['username'],
+        password=access_info['password'],
     )
 
     try:
