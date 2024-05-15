@@ -80,7 +80,7 @@ class ChatInput(BaseSchema):
     conversation_id: str
     message: MessageInput
     bot_id: str | None = Field(None)
-    #search_size: int | None = Field(default=40, ge=1, le=100)
+    search_size: int | None = Field(default=40, ge=1, le=100)
 
 
 class ChatInputWithToken(ChatInput):

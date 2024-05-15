@@ -40,11 +40,9 @@ logger.setLevel(logging.INFO)
 def process_chat_input(
     chat_input: ChatInputWithToken, gatewayapi, connection_id: str
 ) -> dict:
-    """Process chat input and send the message to the client."""
     logger.info(f"Received chat input: {chat_input}")
 
     try:
-        # Verify JWT token
         decoded = verify_token(chat_input.token)
     except Exception as e:
         logger.error(f"Invalid token: {e}")
@@ -79,15 +77,12 @@ def process_chat_input(
                 )
             ).encode("utf-8"),
         )
-        # Fetch most related documents from vector store
-        # NOTE: Currently embedding not support multi-modal. For now, use the last text content.
         query = conversation.message_map[user_msg_id].content[-1].body
         search_results = search_related_docs(
-            bot_id=bot.id, limit=SEARCH_CONFIG["max_results"], query=query
+            bot_id=bot.id, limit=chat_input.search_size, query=query  # Use chat_input.search_size
         )
         logger.info(f"Search results from vector store: {search_results}")
 
-        # Insert contexts to instruction
         conversation_with_context = insert_knowledge(conversation, search_results)
         message_map = conversation_with_context.message_map
 
@@ -109,12 +104,10 @@ def process_chat_input(
     )
 
     is_anthropic = is_anthropic_model(args["model"])
-    # logger.debug(f"Invoking bedrock with args: {args}")
     try:
         if is_anthropic:
             response = client.messages.create(**args)
         else:
-            # Invoke bedrock streaming api
             response = get_bedrock_response(args)
     except Exception as e:
         logger.error(f"Failed to invoke bedrock: {e}")
@@ -124,19 +117,9 @@ def process_chat_input(
     last_data_to_send: bytes
     if is_anthropic:
         for event in response:
-            # NOTE: following is the example of event sequence:
-            # MessageStartEvent(message=Message(id='compl_01GwmkwncsptaeBopeaR4eWE', content=[], model='claude-instant-1.2', role='assistant', stop_reason=None, stop_sequence=None, type='message', usage=Usage(input_tokens=21, output_tokens=1)), type='message_start')
-            # ContentBlockStartEvent(content_block=ContentBlock(text='', type='text'), index=0, type='content_block_start')
-            # ...
-            # ContentBlockDeltaEvent(delta=TextDelta(text='です', type='text_delta'), index=0, type='content_block_delta')
-            # ContentBlockStopEvent(index=0, type='content_block_stop')
-            # MessageDeltaEvent(delta=Delta(stop_reason='end_turn', stop_sequence=None), type='message_delta', usage=MessageDeltaUsage(output_tokens=26))
-            # MessageStopEvent(type='message_stop', amazon-bedrock-invocationMetrics={'inputTokenCount': 21, 'outputTokenCount': 25, 'invocationLatency': 621, 'firstByteLatency': 279})
-
             if isinstance(event, ContentBlockDeltaEvent):
                 completions.append(event.delta.text)
                 try:
-                    # Send completion
                     data_to_send = json.dumps(
                         dict(
                             status="STREAMING",
@@ -161,10 +144,8 @@ def process_chat_input(
                     )
                 ).encode("utf-8")
             elif isinstance(event, MessageStopEvent):
-                # Persist conversation before finish streaming so that front-end can avoid 404 issue
                 concatenated = "".join(completions)
 
-                # Used chunks for RAG generation
                 used_chunks = None
                 if bot:
                     used_chunks = [
@@ -172,7 +153,6 @@ def process_chat_input(
                         for r in filter_used_results(concatenated, search_results)
                     ]
 
-                # Append entire completion as the last message
                 assistant_msg_id = str(ULID())
                 message = MessageModel(
                     role="assistant",
@@ -189,18 +169,12 @@ def process_chat_input(
                     used_chunks=used_chunks,
                 )
                 conversation.message_map[assistant_msg_id] = message
-                # Append children to parent
                 conversation.message_map[user_msg_id].children.append(assistant_msg_id)
                 conversation.last_message_id = assistant_msg_id
 
-                # Update total pricing
                 metrics = event.model_dump()["amazon-bedrock-invocationMetrics"]
                 input_token_count = metrics.get("inputTokenCount")
                 output_token_count = metrics.get("outputTokenCount")
-
-                logger.debug(
-                    f"Input token count: {input_token_count}, output token count: {output_token_count}"
-                )
 
                 price = calculate_price(
                     chat_input.message.model, input_token_count, output_token_count
@@ -235,7 +209,6 @@ def process_chat_input(
                     ).encode("utf-8")
 
                     concatenated = "".join(completions)
-                    # Used chunks for RAG generation
                     if bot:
                         used_chunks = [
                             ChunkModel(content=r.content, source=r.source, rank=r.rank)
@@ -257,20 +230,14 @@ def process_chat_input(
                         used_chunks=used_chunks,
                     )
                     conversation.message_map[assistant_msg_id] = message
-                    # Append children to parent
                     conversation.message_map[user_msg_id].children.append(
                         assistant_msg_id
                     )
                     conversation.last_message_id = assistant_msg_id
 
-                    # Update total pricing
                     metrics = msg_chunk["amazon-bedrock-invocationMetrics"]
                     input_token_count = metrics.get("inputTokenCount")
                     output_token_count = metrics.get("outputTokenCount")
-
-                    logger.debug(
-                        f"Input token count: {input_token_count}, output token count: {output_token_count}"
-                    )
 
                     price = calculate_price(
                         chat_input.message.model, input_token_count, output_token_count
@@ -279,7 +246,6 @@ def process_chat_input(
 
                     store_conversation(user_id, conversation)
 
-    # Send last completion after saving conversation
     try:
         logger.debug(f"Sending last completion: {last_data_to_send.decode('utf-8')}")
         gatewayapi.post_to_connection(
@@ -292,12 +258,12 @@ def process_chat_input(
             "body": "Failed to send message to connection.",
         }
 
-    # Update bot last used time
     if chat_input.bot_id:
         logger.info("Bot id is provided. Updating bot last used time.")
         modify_bot_last_used_time(user_id, chat_input.bot_id)
 
     return {"statusCode": 200, "body": "Message sent."}
+
 
 
 def handler(event, context):
