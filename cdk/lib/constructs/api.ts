@@ -198,6 +198,7 @@ export class Api extends Construct {
       },
       role: handlerRole,
     });
+    props.dbSecrets.grantRead(handler)
 
     const api = new HttpApi(this, "Default", {
       corsPreflight: {

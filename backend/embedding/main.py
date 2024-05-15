@@ -58,7 +58,7 @@ def insert_to_postgres(
 ):
 
     secrets = parameters.get_secret(DB_SECRETS_ARN)
-    access_info = json.dumps(secrets)
+    access_info = json.loads(secrets)
     print(access_info)
 
     conn = pg8000.connect(

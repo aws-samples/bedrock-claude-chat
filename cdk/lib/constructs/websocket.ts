@@ -109,6 +109,7 @@ export class WebSocket extends Construct {
       },
       role: handlerRole,
     });
+    props.dbSecrets.grantRead(handler)
 
     const webSocketApi = new apigwv2.WebSocketApi(this, "WebSocketApi", {
       connectRouteOptions: {
