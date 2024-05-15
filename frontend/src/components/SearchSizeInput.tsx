@@ -1,37 +1,28 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import Help from './Help';
+import useChat from '../hooks/useChat';
 
-type Props = {
-  value: number;
-  onChange: (value: number) => void;
-};
-
-const SearchSizeInput: React.FC<Props> = ({ value, onChange }) => {
+const SearchSizeInput: React.FC = () => {
   const { t } = useTranslation();
-
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = parseInt(event.target.value, 10);
-    if (!isNaN(newValue)) {
-      onChange(newValue);
-    }
-  };
+  const { searchSize, setSearchSize } = useChat();
 
   return (
-    <div className="search-size-input">
-      <label className="block text-sm font-medium text-gray-700">
-        {t('SearchParams.searchSize.label')}
-      </label>
+    <div className="absolute top-0 right-0 mt-4 mr-4 flex items-center">
+      <label htmlFor="searchSizeInput" className="mr-2 text-sm font-semibold">{t('SearchParams.searchSize.label')}</label>
       <input
+        id="searchSizeInput"
         type="number"
-        value={value}
-        onChange={handleChange}
-        min="1"
-        max="100"
-        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+        value={searchSize}
+        onChange={(e) => setSearchSize(Number(e.target.value))}
+        className="p-1 border rounded-lg text-sm w-16"
+        min={1}
+        max={100}
       />
-      <p className="mt-2 text-sm text-gray-500">
-        {t('SearchParams.searchSize.hint')}
-      </p>
+      <Help
+        direction="right"
+        message={t('SearchParams.searchSize.help')}
+      />
     </div>
   );
 };
