@@ -7,7 +7,9 @@ import React, {
 } from 'react';
 import ButtonSend from './ButtonSend';
 import Textarea from './Textarea';
+import { Slider } from '../components/Slider';
 import useChat from '../hooks/useChat';
+import { SEARCH_PARAMS_RANGE } from '../constants';
 import Button from './Button';
 import { PiArrowsCounterClockwise, PiX } from 'react-icons/pi';
 import { TbPhotoPlus } from 'react-icons/tb';
@@ -242,6 +244,36 @@ const InputChatContent: React.FC<Props> = (props) => {
           onDrop={onDrop}
         ></div>
       )}
+      <div className="flex items-center justify-between mb-4">
+        <div className="mx-2 flex items-center">
+          <label className="mr-2">
+            {t('SearchParams.searchSize.label')}
+          </label>
+          <input
+            type="number"
+            className="w-16 p-1 border border-black/10 rounded"
+            value={searchSize}
+            min={1}
+            max={100}
+            onChange={(e) => setSearchSize(Number(e.target.value))}
+          />
+          <Help
+            className="ml-1"
+            message={t('SearchParams.searchSize.help')}
+          />
+        </div>
+        {messages.length > 1 && (
+          <Button
+            className="bg-aws-paper p-2 text-sm"
+            outlined
+            disabled={disabledRegenerate || props.disabled}
+            onClick={props.onRegenerate}
+          >
+            <PiArrowsCounterClockwise className="mr-2" />
+            {t('button.regenerate')}
+          </Button>
+        )}
+      </div>
       <div
         ref={inputRef}
         onDragOver={onDragOver}
@@ -327,36 +359,6 @@ const InputChatContent: React.FC<Props> = (props) => {
             </ModalDialog>
           </div>
         )}
-        <div className="flex items-center justify-between">
-          <div className="mb-4 mx-2 flex items-center">
-            <label className="mr-2">
-              {t('SearchParams.searchSize.label')}
-            </label>
-            <input
-              type="number"
-              className="w-16 p-1 border border-black/10 rounded"
-              value={searchSize}
-              min={1}
-              max={100}
-              onChange={(e) => setSearchSize(Number(e.target.value))}
-            />
-            <Help
-              className="ml-1"
-              message={t('SearchParams.searchSize.help')}
-            />
-          </div>
-          {messages.length > 1 && (
-            <Button
-              className="absolute -top-14 right-0 bg-aws-paper p-2 text-sm"
-              outlined
-              disabled={disabledRegenerate || props.disabled}
-              onClick={props.onRegenerate}
-            >
-              <PiArrowsCounterClockwise className="mr-2" />
-              {t('button.regenerate')}
-            </Button>
-          )}
-        </div>
       </div>
     </>
   );
