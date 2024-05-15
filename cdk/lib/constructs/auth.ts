@@ -13,7 +13,12 @@ import { Runtime } from "aws-cdk-lib/aws-lambda";
 import { PythonFunction } from "@aws-cdk/aws-lambda-python-alpha";
 import { Construct } from "constructs";
 import * as path from "path";
-import { Idp, TIdentityProvider } from "../utils/identity-provider";
+import {
+  Idp,
+  ProviderService,
+  TIdentityProvider,
+} from "../utils/identity-provider";
+import { Effect, Match } from "effect";
 
 export interface AuthProps {
   readonly origin: string;
@@ -81,14 +86,11 @@ export class Auth extends Construct {
         .unsafeUnwrap()
         .toString();
       const clientSecret = secret.secretValueFromJson("clientSecret");
-
-      switch (provider.service) {
-        // Currently only Google and custom OIDC are supported
-        case "google": {
-          const googleProvider = new UserPoolIdentityProviderGoogle(
-            this,
-            "GoogleProvider",
-            {
+      const match = Match.type<ProviderService>().pipe(
+        Match.when(
+          "google",
+          () =>
+            new UserPoolIdentityProviderGoogle(this, "GoogleProvider", {
               userPool,
               clientId,
               clientSecretValue: clientSecret,
@@ -96,38 +98,34 @@ export class Auth extends Construct {
               attributeMapping: {
                 email: ProviderAttribute.GOOGLE_EMAIL,
               },
-            }
-          );
-          client.node.addDependency(googleProvider);
-          break;
-        }
-        case "oidc": {
+            })
+        ),
+        Match.when("oidc", () => {
           const issuerUrl = secret
             .secretValueFromJson("issuerUrl")
             .unsafeUnwrap()
             .toString();
 
-          const oidcProvider = new UserPoolIdentityProviderOidc(
-            this,
-            "OidcProvider",
-            {
-              name: provider.serviceName,
-              userPool,
-              clientId,
-              clientSecret: clientSecret.unsafeUnwrap().toString(),
-              issuerUrl,
-              attributeMapping: {
-                // This is an example of mapping the email attribute.
-                // Replace this with the actual idp attribute key.
-                email: ProviderAttribute.other("EMAIL"),
-              },
-              scopes: ["openid", "email"],
-            }
-          );
-          client.node.addDependency(oidcProvider);
-          break;
-        }
-      }
+          return new UserPoolIdentityProviderOidc(this, "OidcProvider", {
+            name: provider.serviceName,
+            userPool,
+            clientId,
+            clientSecret: clientSecret.unsafeUnwrap().toString(),
+            issuerUrl,
+            attributeMapping: {
+              // This is an example of mapping the email attribute.
+              // Replace this with the actual idp attribute key.
+              email: ProviderAttribute.other("EMAIL"),
+            },
+            scopes: ["openid", "email"],
+          });
+        }),
+        Match.orElse(() => {
+          throw new Error("invalid");
+        })
+      );
+      const switchProvider = match(provider.service);
+      client.node.addDependency(switchProvider);
     };
 
     if (props.idp.isExist()) {

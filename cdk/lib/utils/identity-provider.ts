@@ -1,13 +1,21 @@
-import { Effect, pipe } from "effect";
+import { Effect, Match, pipe } from "effect";
 import { aws_cognito } from "aws-cdk-lib";
 
 export type Idp = ReturnType<typeof identityProvider>;
+
+export type ProviderService =
+  | "google"
+  | "facebook"
+  | "amazon"
+  | "apple"
+  | "cognito"
+  | "oidc";
 
 export type TIdentityProvider = {
   /**
    * Service name for social providers.
    */
-  service: string;
+  service: ProviderService;
   /**
    * Service name for OIDC. Required when service is "oidc"
    */
@@ -53,24 +61,37 @@ export const identityProvider = (identityProviders: TIdentityProvider[]) => {
       ...getProviders(),
       { service: "cognito", secretName: "" } as TIdentityProvider,
     ].map((provider) => {
-      switch (provider.service) {
-        case "google":
-          return aws_cognito.UserPoolClientIdentityProvider.GOOGLE;
-        case "facebook":
-          return aws_cognito.UserPoolClientIdentityProvider.FACEBOOK;
-        case "amazon":
-          return aws_cognito.UserPoolClientIdentityProvider.AMAZON;
-        case "apple":
-          return aws_cognito.UserPoolClientIdentityProvider.APPLE;
-        case "cognito":
-          return aws_cognito.UserPoolClientIdentityProvider.COGNITO;
-        case "oidc":
-          return aws_cognito.UserPoolClientIdentityProvider.custom(
+      const match = Match.type<ProviderService>().pipe(
+        Match.when(
+          "google",
+          () => aws_cognito.UserPoolClientIdentityProvider.GOOGLE
+        ),
+        Match.when(
+          "facebook",
+          () => aws_cognito.UserPoolClientIdentityProvider.FACEBOOK
+        ),
+        Match.when(
+          "amazon",
+          () => aws_cognito.UserPoolClientIdentityProvider.AMAZON
+        ),
+        Match.when(
+          "apple",
+          () => aws_cognito.UserPoolClientIdentityProvider.APPLE
+        ),
+        Match.when(
+          "cognito",
+          () => aws_cognito.UserPoolClientIdentityProvider.COGNITO
+        ),
+        Match.when("oidc", () =>
+          aws_cognito.UserPoolClientIdentityProvider.custom(
             provider.serviceName! // already validated
-          );
-        default:
+          )
+        ),
+        Match.orElse(() => {
           throw new Error(`Invalid identity provider: ${provider.service}`);
-      }
+        })
+      );
+      return match(provider.service);
     });
   };
 
