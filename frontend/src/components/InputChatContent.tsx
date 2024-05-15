@@ -235,20 +235,26 @@ const InputChatContent: React.FC<Props> = (props) => {
   );
 
   return (
-    <div className="flex w-full">
+    <>
+      {props.dndMode && (
+        <div
+          className="fixed left-0 top-0 h-full w-full bg-black/40"
+          onDrop={onDrop}
+        ></div>
+      )}
       <div
         ref={inputRef}
         onDragOver={onDragOver}
         onDrop={onDrop}
         className={twMerge(
           props.className,
-          'relative mb-7 flex-1 flex flex-col rounded-xl border border-black/10 bg-white shadow-[0_0_30px_7px] shadow-light-gray'
+          'relative mb-7 flex w-11/12 flex-col rounded-xl border border-black/10 bg-white shadow-[0_0_30px_7px] shadow-light-gray md:w-10/12 lg:w-4/6 xl:w-3/6'
         )}
       >
         <div className="flex w-full">
           <Textarea
             className={twMerge(
-              'm-1 bg-transparent scrollbar-thin scrollbar-thumb-light-gray',
+              'm-1  bg-transparent scrollbar-thin scrollbar-thumb-light-gray',
               disabledImageUpload ? 'pr-6' : 'pr-12'
             )}
             placeholder={props.placeholder ?? t('app.inputMessage')}
@@ -323,8 +329,24 @@ const InputChatContent: React.FC<Props> = (props) => {
         )}
         {messages.length > 1 && (
           <>
+            <div className="absolute bottom-0 right-20 flex items-center mb-2">
+              <label htmlFor="searchSizeInput" className="mr-2 text-sm font-semibold">{t('SearchParams.searchSize.label')}</label>
+              <input
+                id="searchSizeInput"
+                type="number"
+                value={searchSize}
+                onChange={(e) => setSearchSize(Number(e.target.value))}
+                className="p-1 border rounded-lg text-sm w-16"
+                min={1}
+                max={100}
+              />
+              <Help
+                direction="right"
+                message={t('SearchParams.searchSize.help')}
+              />
+            </div>
             <Button
-              className="absolute -top-14 right-0 bg-aws-paper p-2 text-sm"
+              className="absolute bottom-0 right-0 mb-2 bg-aws-paper p-2 text-sm"
               outlined
               disabled={disabledRegenerate || props.disabled}
               onClick={props.onRegenerate}
@@ -335,23 +357,7 @@ const InputChatContent: React.FC<Props> = (props) => {
           </>
         )}
       </div>
-      <div className="ml-4 mt-7 flex flex-col">
-        <label htmlFor="searchSizeInput" className="mb-1 text-sm font-semibold">{t('SearchParams.searchSize.label')}</label>
-        <input
-          id="searchSizeInput"
-          type="number"
-          value={searchSize}
-          onChange={(e) => setSearchSize(Number(e.target.value))}
-          className="p-2 border rounded-lg text-sm w-20"
-          min={1}
-          max={100}
-        />
-        <Help
-          direction="right"
-          message={t('SearchParams.searchSize.help')}
-        />
-      </div>
-    </div>
+    </>
   );
 };
 
