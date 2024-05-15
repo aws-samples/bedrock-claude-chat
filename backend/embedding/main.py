@@ -232,10 +232,10 @@ def main(
                     for future in futures:
                         future.get()
 
-                logger.info(f"Number of chunks: {len(contents)}")
+            logger.info(f"Number of chunks: {len(contents)}")
 
-                # Insert records into postgres
-                insert_to_postgres(bot_id, contents, sources, embeddings)
+            # Insert records into postgres
+            insert_to_postgres(bot_id, contents, sources, embeddings)
     except Exception as e:
         logger.error("[ERROR] Failed to embed.")
         logger.error(e)
