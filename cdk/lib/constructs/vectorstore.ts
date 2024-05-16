@@ -39,6 +39,7 @@ export class VectorStore extends Construct {
 
     const sg = new ec2.SecurityGroup(this, "ClusterSecurityGroup", {
       vpc: props.vpc,
+      description: "RDSClusterSecurityGroup"
     });
     const cluster = new rds.DatabaseCluster(this, "Cluster", {
       engine: rds.DatabaseClusterEngine.auroraPostgres({
@@ -56,7 +57,7 @@ export class VectorStore extends Construct {
       }),
       // It is preferable to set storage encryption to true, but if this is enabled, the existing DB will be destroyed and re-created, so consider when to enable it
       // It needs a migration guide.
-      // storageEncrypted: true
+      storageEncrypted: false
       // readers: [
       //   rds.ClusterInstance.serverlessV2("reader", {
       //     autoMinorVersionUpgrade: false,
