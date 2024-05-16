@@ -5,12 +5,9 @@ from typing import Any, Iterator, Optional
 
 from anthropic import AnthropicBedrock
 from anthropic.types import ContentBlockDeltaEvent, MessageDeltaEvent, MessageStopEvent
-from app.config import (
-    BEDROCK_PRICING,
-    DEFAULT_EMBEDDING_CONFIG,
-    DEFAULT_GENERATION_CONFIG,
-    DEFAULT_MISTRAL_GENERATION_CONFIG,
-)
+from app.config import BEDROCK_PRICING, DEFAULT_EMBEDDING_CONFIG
+from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
+from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG
 from app.repositories.models.conversation import ContentModel, MessageModel
 from app.repositories.models.custom_bot import GenerationParamsModel
 from app.routes.schemas.conversation import type_model_name
@@ -24,7 +21,12 @@ from pydantic import BaseModel
 logger = logging.getLogger(__name__)
 
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
-
+ENABLE_MISTRAL = os.environ.get("ENABLE_MISTRAL", "") == "true"
+DEFAULT_GENERATION_CONFIG = (
+    DEFAULT_MISTRAL_GENERATION_CONFIG
+    if ENABLE_MISTRAL
+    else DEFAULT_CLAUDE_GENERATION_CONFIG
+)
 
 client = get_bedrock_client()
 anthropic_client = AnthropicBedrock()
@@ -307,6 +309,15 @@ class BedrockLLM(LLM):
     """A wrapper class for the LangChain's interface."""
 
     model: type_model_name
+    generation_params: GenerationParamsModel
+
+    @classmethod
+    def from_model(
+        cls,
+        model: type_model_name,
+    ):
+        generation_params = GenerationParamsModel(**DEFAULT_GENERATION_CONFIG)
+        return cls(model=model, generation_params=generation_params)
 
     def __prepare_args_from_prompt(self, prompt: str, stream: bool) -> dict:
         """Prepare arguments from the given prompt."""
@@ -326,7 +337,13 @@ class BedrockLLM(LLM):
             feedback=None,
             used_chunks=None,
         )
-        args = compose_args([message], self.model, instruction=None, stream=stream)
+        args = compose_args(
+            [message],
+            self.model,
+            instruction=None,
+            stream=stream,
+            generation_params=self.generation_params,
+        )
         return args
 
     def _call(
@@ -360,8 +377,8 @@ class BedrockLLM(LLM):
             response = client.messages.create(**args)
         else:
             response = get_bedrock_response(args)  # type: ignore
-
         if self.is_anthropic_model:
+            stop_reason = ""
             for event in response:
                 if isinstance(event, ContentBlockDeltaEvent):
                     chunk = GenerationChunk(text=event.delta.text)
@@ -370,6 +387,7 @@ class BedrockLLM(LLM):
                     yield chunk
                 elif isinstance(event, MessageDeltaEvent):
                     logger.debug(f"Received message delta event: {event.delta}")
+                    stop_reason = event.delta.stop_reason
                     continue
                 elif isinstance(event, MessageStopEvent):
                     # Update total pricing
@@ -383,6 +401,15 @@ class BedrockLLM(LLM):
 
                     price = calculate_price(
                         self.model, input_token_count, output_token_count
+                    )
+                    yield GenerationChunk(
+                        text="",
+                        generation_info={
+                            "stop_reason": stop_reason,
+                            "input_token_count": input_token_count,
+                            "output_token_count": output_token_count,
+                            "price": price,
+                        },
                     )
                 else:
                     continue
@@ -412,6 +439,15 @@ class BedrockLLM(LLM):
 
                         price = calculate_price(
                             self.model, input_token_count, output_token_count
+                        )
+                        yield GenerationChunk(
+                            text="",
+                            generation_info={
+                                "stop_reason": is_stop,
+                                "input_token_count": input_token_count,
+                                "output_token_count": output_token_count,
+                                "price": price,
+                            },
                         )
 
     @property

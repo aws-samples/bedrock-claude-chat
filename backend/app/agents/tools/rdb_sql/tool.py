@@ -1,7 +1,10 @@
 """Tools for interacting with a SQL database."""
 
+import json
+import logging
 from typing import Any, Dict, Iterable, Optional, Sequence, Type, Union
 
+from app.agents.tools.base import BaseTool
 from app.agents.tools.rdb_sql.prompt import QUERY_CHECKER
 from app.utils import query_postgres
 from langchain_core.callbacks import (
@@ -12,10 +15,12 @@ from langchain_core.language_models import BaseLanguageModel
 from langchain_core.prompts import PromptTemplate
 from langchain_core.pydantic_v1 import BaseModel, Field, root_validator
 from langchain_core.runnables import Runnable
-from langchain_core.tools import BaseTool
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
-def get_tools(self) -> list[BaseTool]:
+def get_tools(llm: BaseLanguageModel) -> list[BaseTool]:
     """Get the tools in the toolkit."""
     db = SQLDatabase()
     list_sql_database_tool = ListSQLDatabaseTool(db=db)
@@ -46,7 +51,7 @@ def get_tools(self) -> list[BaseTool]:
         f"{query_sql_database_tool.name}!"
     )
     query_sql_checker_tool = QuerySQLCheckerTool(
-        db=db, llm=self.llm, description=query_sql_checker_tool_description
+        db=db, llm=llm, description=query_sql_checker_tool_description
     )
     return [
         query_sql_database_tool,
@@ -96,11 +101,14 @@ WHERE table_schema = %s AND table_type IN ('BASE TABLE', 'VIEW')
             QUERY_TO_LIST = """SELECT table_name FROM information_schema.tables
 WHERE table_schema = %s AND table_type = 'BASE TABLE'
             """
+        logger.debug(f"QUERY_TO_LIST: {QUERY_TO_LIST}")
 
         res = query_postgres(
             QUERY_TO_LIST, include_columns=False, params=(self._schema or "public",)
         )
+        logger.debug(f"Query result: {res}")
         table_names = [row[0] for row in res]
+        logger.debug(f"Table names: {table_names}")
 
         if self._ignore_tables:
             table_names = [
@@ -178,7 +186,17 @@ WHERE table_name = %s
         If the statement returns rows, a string of the results is returned.
         If the statement returns no rows, an empty string is returned.
         """
+        try:
+            # Parse the JSON query
+            query_params = json.loads(query)
+            query = query_params.get("query")
+        except json.JSONDecodeError:
+            pass
+
+        logger.debug(f"Running query: {query}")
+
         results = query_postgres(query, include_columns=include_columns)
+        logger.debug(f"Results: {results}")
         if results:
             return str(results)
         return ""
@@ -209,7 +227,18 @@ class BaseSQLDatabaseTool(BaseModel):
 
 
 class _QuerySQLDataBaseToolInput(BaseModel):
-    query: str = Field(..., description="A detailed and correct SQL query.")
+    query: str = Field(
+        ...,
+        # description="A detailed and correct SQL query.",
+        description="""A detailed and correct SQL query. Column names should ALWAYS be enclosed in double quote like "COLUMN".
+<GOOD-example>
+SELECT "column" FROM "manufacturing_specs" WHERE "condition" = 'value';
+</GOOD-example>
+<BAD-example>
+SELECT column FROM manufacturing_specs WHERE condition = 'value';
+</BAD-example>
+""",
+    )
 
 
 class QuerySQLDataBaseTool(BaseSQLDatabaseTool, BaseTool):
@@ -309,10 +338,6 @@ class QuerySQLCheckerTool(BaseSQLDatabaseTool, BaseTool):
             llm = values.get("llm")
             values["llm_chain"] = prompt | llm  # type: ignore
 
-        if values["llm_chain"].prompt.input_variables != ["dialect", "query"]:
-            raise ValueError(
-                "LLM chain for QueryCheckerTool must have input variables ['query', 'dialect']"
-            )
         return values
 
     def _run(

@@ -6,87 +6,83 @@ from langchain_core.agents import AgentAction, AgentFinish
 from langchain_core.exceptions import OutputParserException
 from langchain_core.output_parsers import BaseOutputParser
 
-FINAL_ANSWER_ACTION = "Final Answer:"
-MISSING_ACTION_AFTER_THOUGHT_ERROR_MESSAGE = (
-    "Invalid Format: Missing 'Action:' after 'Thought:"
+FINAL_ANSWER_TAG = "final-answer"
+MISSING_THOUGHT_TAG_ERROR_MESSAGE = "Invalid Format: Missing '<thought>' tag"
+MISSING_ACTION_TAG_ERROR_MESSAGE = (
+    "Invalid Format: Missing '<action>' tag after '<thought>'"
 )
-MISSING_ACTION_INPUT_AFTER_ACTION_ERROR_MESSAGE = (
-    "Invalid Format: Missing 'Action Input:' after 'Action:'"
-)
-FINAL_ANSWER_AND_PARSABLE_ACTION_ERROR_MESSAGE = (
-    "Parsing LLM output produced both a final answer and a parse-able action:"
+MISSING_ACTION_INPUT_TAG_ERROR_MESSAGE = (
+    "Invalid Format: Missing '<action-input>' tag after '<action>'"
 )
 
 
 class ReActSingleInputOutputParser(BaseOutputParser):
-    """Parses ReAct-style LLM calls that have a single tool input.
-    Reference: https://github.com/langchain-ai/langchain/blob/master/libs/langchain/langchain/agents/output_parsers/react_single_input.py
+    """Parses ReAct-style LLM calls that have a single tool input."""
 
-    Expects output to be in one of two formats.
-
-    If the output signals that an action should be taken,
-    should be in the below format. This will result in an AgentAction
-    being returned.
-
-    ```
-    Thought: agent thought here
-    Action: search
-    Action Input: what is the temperature in SF?
-    ```
-
-    If the output signals that a final answer should be given,
-    should be in the below format. This will result in an AgentFinish
-    being returned.
-
-    ```
-    Thought: agent thought here
-    Final Answer: The temperature is 100 degrees
-    ```
-
-    """
-
-    def get_format_instructions(self) -> str:
-        return FORMAT_INSTRUCTIONS
+    # def get_format_instructions(self) -> str:
+    #     return FORMAT_INSTRUCTIONS
 
     def parse(self, text: str) -> Union[AgentAction, AgentFinish]:
-        includes_answer = FINAL_ANSWER_ACTION in text
-        regex = (
-            r"Action\s*\d*\s*:[\s]*(.*?)[\s]*Action\s*\d*\s*Input\s*\d*\s*:[\s]*(.*)"
+        includes_answer = f"<{FINAL_ANSWER_TAG}>" in text
+        thought_match = re.search(r"<thought>(.*?)</thought>", text, re.DOTALL)
+        action_match = re.search(r"<action>(.*?)</action>", text, re.DOTALL)
+        action_input_match = re.search(
+            r"<action-input>(.*?)</action-input>", text, re.DOTALL
         )
-        action_match = re.search(regex, text, re.DOTALL)
-        if action_match:
-            if includes_answer:
-                # raise OutputParserException(
-                #     f"{FINAL_ANSWER_AND_PARSABLE_ACTION_ERROR_MESSAGE}: {text}"
-                # )
-                return AgentFinish(
-                    {"output": text.split(FINAL_ANSWER_ACTION)[-1].strip()}, text
-                )
-            action = action_match.group(1).strip()
-            action_input = action_match.group(2)
-            tool_input = action_input.strip(" ")
-            tool_input = tool_input.strip('"')
 
-            return AgentAction(action, tool_input, text)
+        if thought_match and action_match and action_input_match:
+            thought = thought_match.group(1).strip()
+            action = action_match.group(1).strip()
+            action_input = action_input_match.group(1).strip()
+
+            if includes_answer:
+                return AgentFinish(
+                    {
+                        "output": re.search(
+                            f"<{FINAL_ANSWER_TAG}>(.*?)</{FINAL_ANSWER_TAG}>",
+                            text,
+                            re.DOTALL,
+                        )
+                        .group(1)
+                        .strip()
+                    },
+                    text,
+                )
+            else:
+                return AgentAction(action, action_input, text)
 
         elif includes_answer:
             return AgentFinish(
-                {"output": text.split(FINAL_ANSWER_ACTION)[-1].strip()}, text
+                {
+                    "output": re.search(
+                        f"<{FINAL_ANSWER_TAG}>(.*?)</{FINAL_ANSWER_TAG}>",
+                        text,
+                        re.DOTALL,
+                    )
+                    .group(1)
+                    .strip()
+                },
+                text,
             )
 
-        if not re.search(r"Action\s*\d*\s*:[\s]*(.*?)", text, re.DOTALL):
+        if not thought_match:
             raise OutputParserException(
                 f"Could not parse LLM output: `{text}`",
-                observation=MISSING_ACTION_AFTER_THOUGHT_ERROR_MESSAGE,
+                observation=MISSING_THOUGHT_TAG_ERROR_MESSAGE,
                 llm_output=text,
                 send_to_llm=True,
             )
-        elif not re.search(
-            r"[\s]*Action\s*\d*\s*Input\s*\d*\s*:[\s]*(.*)", text, re.DOTALL
-        ):
+        elif not action_match:
             raise OutputParserException(
                 f"Could not parse LLM output: `{text}`",
-                observation=MISSING_ACTION_INPUT_AFTER_ACTION_ERROR_MESSAGE,
+                observation=MISSING_ACTION_TAG_ERROR_MESSAGE,
+                llm_output=text,
+                send_to_llm=True,
+            )
+        elif not action_input_match:
+            raise OutputParserException(
+                f"Could not parse LLM output: `{text}`",
+                observation=MISSING_ACTION_INPUT_TAG_ERROR_MESSAGE,
                 llm_output=text,
                 send_to_llm=True,
             )

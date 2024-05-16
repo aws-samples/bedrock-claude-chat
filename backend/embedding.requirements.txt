@@ -15,3 +15,5 @@ unstructured[docx]==0.12.6
 unstructured[xlsx]==0.12.6
 unstructured[pptx]==0.12.6
 unstructured[md]==0.12.6
+langchain-core==0.1.52
+langdetect==1.0.9

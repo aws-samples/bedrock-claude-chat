@@ -15,8 +15,10 @@ const usePostMessageStreaming = create<{
 }>(() => {
   return {
     post: async ({ input, dispatch, hasKnowledge }) => {
+      let isStreamingStarted = false;
       if (hasKnowledge) {
-        dispatch(i18next.t('bot.label.retrievingKnowledge'));
+        // dispatch(i18next.t('bot.label.retrievingKnowledge'));
+        dispatch(i18next.t('bot.label.agentThinking'));
       } else {
         dispatch(i18next.t('app.chatWaitingSymbol'));
       }
@@ -75,20 +77,46 @@ const usePostMessageStreaming = create<{
 
             const data = JSON.parse(message.data);
 
-            if (data.completion || data.completion === '') {
-              if (completion.endsWith(i18next.t('app.chatWaitingSymbol'))) {
-                completion = completion.slice(0, -1);
+            if (data.status) {
+              switch (data.status) {
+                case 'FETCHING_KNOWLEDGE':
+                  dispatch(i18next.t('bot.label.retrievingKnowledge'));
+                  break;
+                case 'THINKING':
+                  completion += data.body;
+                  // completion =
+                  //   i18next.t('bot.label.agentThinking') + '\n\n' + data.body;
+                  dispatch(completion);
+                  break;
+                case 'STREAMING':
+                  if (!isStreamingStarted) {
+                    // completion = '';
+                  }
+                  isStreamingStarted = true;
+                  if (data.completion || data.completion === '') {
+                    if (
+                      completion.endsWith(i18next.t('app.chatWaitingSymbol'))
+                    ) {
+                      completion = completion.slice(0, -1);
+                    }
+                    completion +=
+                      data.completion +
+                      (data.stop_reason
+                        ? ''
+                        : i18next.t('app.chatWaitingSymbol'));
+                    dispatch(completion);
+                    if (data.stop_reason) {
+                      ws.close();
+                    }
+                  }
+                  break;
+                case 'ERROR':
+                  ws.close();
+                  console.error(data);
+                  throw new Error(i18next.t('error.predict.invalidResponse'));
+                default:
+                  dispatch(i18next.t('app.chatWaitingSymbol'));
               }
-
-              completion +=
-                data.completion +
-                (data.stop_reason ? '' : i18next.t('app.chatWaitingSymbol'));
-              dispatch(completion);
-              if (data.stop_reason) {
-                ws.close();
-              }
-            } else if (data.status) {
-              dispatch(i18next.t('app.chatWaitingSymbol'));
             } else {
               ws.close();
               console.error(data);

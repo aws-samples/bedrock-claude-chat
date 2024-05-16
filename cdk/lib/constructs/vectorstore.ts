@@ -48,6 +48,7 @@ export class VectorStore extends Construct {
       enableDataApi: true,
       serverlessV2MinCapacity: 0.5,
       serverlessV2MaxCapacity: 5.0,
+      storageEncrypted: true,
       writer: rds.ClusterInstance.serverlessV2("writer", {
         autoMinorVersionUpgrade: false,
       }),

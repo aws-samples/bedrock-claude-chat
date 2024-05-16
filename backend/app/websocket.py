@@ -6,19 +6,31 @@ from datetime import datetime
 from decimal import Decimal as decimal
 
 import boto3
-from anthropic.types import ContentBlockDeltaEvent, MessageDeltaEvent, MessageStopEvent
+from anthropic.types import ContentBlockDeltaEvent
 from anthropic.types import Message as AnthropicMessage
+from anthropic.types import MessageDeltaEvent, MessageStopEvent
+from app.agents.agent import AgentExecutor, create_react_agent
+from app.agents.handlers.apigw_websocket import ApigwWebsocketCallbackHandler
+from app.agents.handlers.token_count import TokenCountCallbackHandler
+from app.agents.tools.examples.bmi import bmi_tool
+from app.agents.tools.examples.weather import today_weather_tool
+from app.agents.tools.lang_detect import CheckInputLanguageTool, TranslateToEnglishTool
+from app.agents.tools.rdb_sql.tool import get_tools
+from app.agents.tools.vector.tool import (
+    AnswerWithKnowledgeTool,
+    get_answer_with_knowledge_tool,
+)
 from app.auth import verify_token
-from app.bedrock import calculate_price, compose_args
+from app.bedrock import BedrockLLM, calculate_price, compose_args
 from app.repositories.conversation import RecordNotFoundError, store_conversation
 from app.repositories.models.conversation import ChunkModel, ContentModel, MessageModel
 from app.routes.schemas.conversation import ChatInputWithToken
 from app.usecases.bot import modify_bot_last_used_time
 from app.usecases.chat import (
+    get_bedrock_response,
     insert_knowledge,
     prepare_conversation,
     trace_to_root,
-    get_bedrock_response,
 )
 from app.utils import get_anthropic_client, get_current_time, is_anthropic_model
 from app.vector_search import filter_used_results, search_related_docs
@@ -66,29 +78,89 @@ def process_chat_input(
         else:
             return {"statusCode": 400, "body": "Invalid request."}
 
-    message_map = conversation.message_map
-    search_results = []
+    # message_map = conversation.message_map
+    # search_results = []
+    # if bot and bot.has_knowledge():
+    #     gatewayapi.post_to_connection(
+    #         ConnectionId=connection_id,
+    #         Data=json.dumps(
+    #             dict(
+    #                 status="FETCHING_KNOWLEDGE",
+    #             )
+    #         ).encode("utf-8"),
+    #     )
+
+    #     # Fetch most related documents from vector store
+    #     # NOTE: Currently embedding not support multi-modal. For now, use the last text content.
+    #     query = conversation.message_map[user_msg_id].content[-1].body
+    #     search_results = search_related_docs(
+    #         bot_id=bot.id, limit=bot.search_params.max_results, query=query
+    #     )
+    #     logger.info(f"Search results from vector store: {search_results}")
+
+    #     # Insert contexts to instruction
+    #     conversation_with_context = insert_knowledge(conversation, search_results)
+    #     message_map = conversation_with_context.message_map
+
+    # TODO
+    llm = BedrockLLM.from_model(model=chat_input.message.model)
+    # tools = [
+    #     today_weather_tool,
+    #     CheckInputLanguageTool(),
+    #     TranslateToEnglishTool(llm=llm),
+    # ]
+
+    # tools = []
+    tools = get_tools(llm)  # RDB Query Tool
     if bot and bot.has_knowledge():
-        gatewayapi.post_to_connection(
-            ConnectionId=connection_id,
-            Data=json.dumps(
-                dict(
-                    status="FETCHING_KNOWLEDGE",
-                )
-            ).encode("utf-8"),
+        logger.info("Bot has knowledge. Adding answer with knowledge tool.")
+        # answer_with_knowledge_tool = get_answer_with_knowledge_tool(
+        #     bot=bot, limit=bot.search_params.max_results
+        # )
+        answer_with_knowledge_tool = AnswerWithKnowledgeTool.from_bot(
+            bot=bot,
+            llm=llm,
         )
+        logger.info(f"Answer with knowledge tool: {answer_with_knowledge_tool}")
+        tools.append(answer_with_knowledge_tool)
 
-        # Fetch most related documents from vector store
-        # NOTE: Currently embedding not support multi-modal. For now, use the last text content.
-        query = conversation.message_map[user_msg_id].content[-1].body
-        search_results = search_related_docs(
-            bot_id=bot.id, limit=bot.search_params.max_results, query=query
-        )
-        logger.info(f"Search results from vector store: {search_results}")
+    tools.append(today_weather_tool)
+    tools.append(bmi_tool)
+    logger.info(f"Tools: {tools}")
+    agent = create_react_agent(model=chat_input.message.model, tools=tools)
+    executor = AgentExecutor(
+        name="Database Query Executor",
+        agent=agent,
+        tools=tools,
+        callbacks=[],
+        verbose=False,
+        max_iterations=15,
+        max_execution_time=None,
+        early_stopping_method="force",
+        handle_parsing_errors=True,
+    )
 
-        # Insert contexts to instruction
-        conversation_with_context = insert_knowledge(conversation, search_results)
-        message_map = conversation_with_context.message_map
+    token_count_callback = TokenCountCallbackHandler()
+    response = executor.invoke(
+        {
+            "input": chat_input.message.content[0].body,
+        },
+        config={
+            "callbacks": [
+                ApigwWebsocketCallbackHandler(gatewayapi, connection_id),
+                token_count_callback,
+            ],
+        },
+    )
+    logger.info(
+        f"Total Input Token Count: {token_count_callback.total_input_token_count}"
+    )
+    logger.info(
+        f"Total Output Token Count: {token_count_callback.total_output_token_count}"
+    )
+    logger.info(f"Total Cost (USD): ${token_count_callback.total_cost}")
+
+    return {"statusCode": 200, "body": "Message sent."}
 
     messages = trace_to_root(
         node_id=chat_input.message.parent_message_id,
