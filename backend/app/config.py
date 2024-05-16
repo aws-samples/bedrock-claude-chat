@@ -1,7 +1,7 @@
 from typing import TypedDict
 
 
-class GenerationConfig(TypedDict):
+class GenerationParams(TypedDict):
     max_tokens: int
     top_k: int
     top_p: float
@@ -19,7 +19,7 @@ class EmbeddingConfig(TypedDict):
 # Configure generation parameter for Claude chat response.
 # Adjust the values according to your application.
 # See: https://docs.anthropic.com/claude/reference/complete_post
-GENERATION_CONFIG: GenerationConfig = {
+DEFAULT_GENERATION_CONFIG: GenerationParams = {
     "max_tokens": 2000,
     "top_k": 250,
     "top_p": 0.999,
@@ -28,7 +28,7 @@ GENERATION_CONFIG: GenerationConfig = {
 }
 
 # Ref: https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-mistral.html#model-parameters-mistral-request-response
-MISTRAL_GENERATION_CONFIG: GenerationConfig = {
+DEFAULT_MISTRAL_GENERATION_CONFIG: GenerationParams = {
     "max_tokens": 4096,
     "top_k": 50,
     "top_p": 0.9,
@@ -47,7 +47,7 @@ DEFAULT_EMBEDDING_CONFIG: EmbeddingConfig = {
 }
 
 # Configure search parameter to fetch relevant documents from vector store.
-SEARCH_CONFIG = {
+DEFAULT_SEARCH_CONFIG = {
     "max_results": 20,
 }
 

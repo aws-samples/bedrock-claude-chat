@@ -27,6 +27,8 @@ from app.repositories.models.custom_bot import (
     BotModel,
     EmbeddingParamsModel,
     KnowledgeModel,
+    GenerationParamsModel,
+    SearchParamsModel,
 )
 from app.routes.schemas.bot import (
     BotInput,
@@ -35,6 +37,8 @@ from app.routes.schemas.bot import (
     BotOutput,
     BotSummaryOutput,
     EmbeddingParams,
+    GenerationParams,
+    SearchParams,
     Knowledge,
     type_sync_status,
 )
@@ -49,13 +53,25 @@ from app.utils import (
     move_file_in_s3,
 )
 
-from app.config import DEFAULT_EMBEDDING_CONFIG
+from app.config import (
+    DEFAULT_EMBEDDING_CONFIG,
+    DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG,
+    DEFAULT_MISTRAL_GENERATION_CONFIG,
+    DEFAULT_SEARCH_CONFIG,
+)
 from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
 
 logger = logging.getLogger(__name__)
 
 DOCUMENT_BUCKET = os.environ.get("DOCUMENT_BUCKET", "bedrock-documents")
+ENABLE_MISTRAL = os.environ.get("ENABLE_MISTRAL", "") == "true"
+
+DEFAULT_GENERATION_CONFIG = (
+    DEFAULT_MISTRAL_GENERATION_CONFIG
+    if ENABLE_MISTRAL
+    else DEFAULT_CLAUDE_GENERATION_CONFIG
+)
 
 
 def _update_s3_documents_by_diff(
@@ -119,6 +135,17 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         bot_input.embedding_params.enable_partition_pdf
         if bot_input.embedding_params
         else DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"]
+
+      generation_params = (
+        bot_input.generation_params.model_dump()
+        if bot_input.generation_params
+        else DEFAULT_GENERATION_CONFIG
+    )
+
+    search_params = (
+        bot_input.search_params.model_dump()
+        if bot_input.search_params
+        else DEFAULT_SEARCH_CONFIG
     )
 
     store_bot(
@@ -138,6 +165,8 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
                 chunk_overlap=chunk_overlap,
                 enable_partition_pdf=enable_partition_pdf,
             ),
+            generation_params=GenerationParamsModel(**generation_params),
+            search_params=SearchParamsModel(**search_params),
             knowledge=KnowledgeModel(
                 source_urls=source_urls, sitemap_urls=sitemap_urls, filenames=filenames
             ),
@@ -164,6 +193,8 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             chunk_overlap=chunk_overlap,
             enable_partition_pdf=enable_partition_pdf,
         ),
+        generation_params=GenerationParams(**generation_params),
+        search_params=SearchParams(**search_params),
         knowledge=Knowledge(
             source_urls=source_urls, sitemap_urls=sitemap_urls, filenames=filenames
         ),
@@ -219,6 +250,17 @@ def modify_owned_bot(
         modify_input.embedding_params.enable_partition_pdf
         if modify_input.embedding_params
         else DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"]
+
+    generation_params = (
+        modify_input.generation_params.model_dump()
+        if modify_input.generation_params
+        else DEFAULT_GENERATION_CONFIG
+    )
+
+    search_params = (
+        modify_input.search_params.model_dump()
+        if modify_input.search_params
+        else DEFAULT_SEARCH_CONFIG
     )
 
     # if knowledge and embedding_params are not updated, skip embeding process.
@@ -238,6 +280,8 @@ def modify_owned_bot(
             chunk_overlap=chunk_overlap,
             enable_partition_pdf=enable_partition_pdf,
         ),
+        generation_params=GenerationParamsModel(**generation_params),
+        search_params=SearchParamsModel(**search_params),
         knowledge=KnowledgeModel(
             source_urls=source_urls,
             sitemap_urls=sitemap_urls,
@@ -257,6 +301,8 @@ def modify_owned_bot(
             chunk_overlap=chunk_overlap,
             enable_partition_pdf=enable_partition_pdf,
         ),
+        generation_params=GenerationParams(**generation_params),
+        search_params=SearchParams(**search_params),
         knowledge=Knowledge(
             source_urls=source_urls,
             sitemap_urls=sitemap_urls,

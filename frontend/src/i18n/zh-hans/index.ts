@@ -339,6 +339,41 @@
           invalidOriginFormat: 'Origin 格式无效。',
         },
       },
+      generationConfig: {
+        title: '推论参数',
+        description: '您可以配置 LLM 推论参数来控制模型的响应',
+        maxTokens: {
+          label: '生成长度上限/新记号数上限',
+          hint: '生成的回复中允许的最大记号数',
+        },
+        temperature: {
+          label: '温度',
+          hint: '影响预测输出的概率分布形状并影响模型选择较低概率输出的可能性',
+          help: '选择较低的值来影响模型选择较高概率的输出；选择较高的值来影响模型选择较低概率的输出',
+        },
+        topK: {
+          label: 'Top-k',
+          hint: '模型考虑的最有可能的下一个记号的候选者数量',
+          help: '选择较低的值以减小候选池的大小并将选项限制为更可能的选项；选择较高的值以增加候选池的大小并允许模型考虑不太可能的选项',
+        },
+        topP: {
+          label: 'Top-p',
+          hint: '模型考虑的最有可能的下一个记号的候选者百份比',
+          help: '选择较低的值以减小候选池的大小并将选项限制为更可能的选项；选择较高的值以增加候选池的大小并允许模型考虑不太可能的选项',
+        },
+        stopSequences: {
+          label: '结束记号/结束序列',
+          hint: '指定阻止模型生成更多标记的字符序列。使用逗号分隔多个单词',
+        }
+      },
+      searchSettings: {
+        title: '搜索参数',
+        description: '您可以配置搜索参数以从矢量数据库中获取相关文档。',
+        maxResults: {
+          label: '最大返回记录数',
+          hint: '从矢量数据库中获取的最大返回记录数',
+        }
+      },
       error: {
         answerResponse: '在回答时发生了错误。',
         notFoundConversation:

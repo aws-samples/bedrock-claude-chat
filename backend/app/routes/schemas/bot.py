@@ -19,6 +19,18 @@ class EmbeddingParams(BaseSchema):
     enable_partition_pdf: bool
 
 
+class GenerationParams(BaseSchema):
+    max_tokens: int
+    top_k: int
+    top_p: float
+    temperature: float
+    stop_sequences: list[str]
+
+
+class SearchParams(BaseSchema):
+    max_results: int
+
+
 class Knowledge(BaseSchema):
     source_urls: list[str]
     sitemap_urls: list[str]
@@ -40,6 +52,8 @@ class BotInput(BaseSchema):
     instruction: str
     description: str | None
     embedding_params: EmbeddingParams | None
+    generation_params: GenerationParams | None
+    search_params: SearchParams | None
     knowledge: Knowledge | None
 
 
@@ -48,6 +62,8 @@ class BotModifyInput(BaseSchema):
     instruction: str
     description: str | None
     embedding_params: EmbeddingParams | None
+    generation_params: GenerationParams | None
+    search_params: SearchParams | None
     knowledge: KnowledgeDiffInput | None
 
     def has_update_files(self) -> bool:
@@ -95,6 +111,8 @@ class BotModifyOutput(BaseSchema):
     instruction: str
     description: str
     embedding_params: EmbeddingParams
+    generation_params: GenerationParams
+    search_params: SearchParams
     knowledge: Knowledge
 
 
@@ -110,6 +128,8 @@ class BotOutput(BaseSchema):
     # Whether the bot is owned by the user
     owned: bool
     embedding_params: EmbeddingParams
+    generation_params: GenerationParams
+    search_params: SearchParams
     knowledge: Knowledge
     sync_status: type_sync_status
     sync_status_reason: str
