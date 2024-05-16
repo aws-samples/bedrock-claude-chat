@@ -79,7 +79,6 @@ exports.handler = async (event, context) => {
     database: access_info['dbname'],
     port: access_info['port'],
   };
-  console.log(`Received dbConfig: ${JSON.stringify(dbConfig, null, 2)}`);
 
   const dbClusterIdentifier = process.env.DB_CLUSTER_IDENTIFIER;
 
