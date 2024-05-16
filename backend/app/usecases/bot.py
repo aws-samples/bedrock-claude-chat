@@ -251,6 +251,7 @@ def modify_owned_bot(
         modify_input.embedding_params.enable_partition_pdf
         if modify_input.embedding_params
         else DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"]
+    )
 
     generation_params = (
         modify_input.generation_params.model_dump()
