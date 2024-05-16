@@ -339,6 +339,41 @@
           invalidOriginFormat: 'Origin 格式無效。',
         },
       },
+      generationConfig: {
+        title: '推論參數',
+        description: '您可以配置 LLM 推論參數來控制模型的反應',
+        maxTokens: {
+          label: '產生長度上限/新記號數上限',
+          hint: '產生的回覆中允許的最大記號數',
+        },
+        temperature: {
+          label: '溫度',
+          hint: '影響預測輸出的機率分佈形狀並影響模型選擇較低機率輸出的可能性',
+          help: '選擇較低的值來影響模型選擇較高機率的輸出；選擇較高的值來影響模型選擇較低機率的輸出',
+        },
+        topK: {
+          label: 'Top-k',
+          hint: '模型考慮的最有可能的下一個記號的候選者數量',
+          help: '選擇較低的值以減少候選池的大小並將選項限制為更可能的選項；選擇較高的值以增加候選池的大小並允許模型考慮不太可能的選項',
+        },
+        topP: {
+          label: 'Top-p',
+          hint: '模型考慮的最有可能的下一個記號的候選者百份比',
+          help: '選擇較低的值以減少候選池的大小並將選項限制為更可能的選項；選擇較高的值以增加候選池的大小並允許模型考慮不太可能的選項',
+        },
+        stopSequences: {
+          label: '結束記號/結束序列',
+          hint: '指定阻止模型產生更多標記的字元序列。使用逗號分隔多個單字',
+        }
+      },
+      searchSettings: {
+        title: '搜尋參數',
+        description: '您可以配置搜尋參數以從向量資料庫中取得相關文檔。',
+        maxResults: {
+          label: '最大回傳記錄數',
+          hint: '從向量資料庫取得的最大回傳記錄數',
+        }
+      },
       error: {
         answerResponse: '在回答時發生了錯誤。',
         notFoundConversation:
