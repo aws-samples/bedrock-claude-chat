@@ -377,8 +377,8 @@ How would you categorize this email?`,
         hint: 'You can specify the number of overlapping characters between adjacent chunks.',
       },
       enablePartitionPdf: {
-        label: 'Enable partition pdf',
-        hint: 'When enabled, the bot takes time to analyze PDFs in detail. It is effective when you want to improve search accuracy.',
+        label: 'Enable detailed PDF analysis. If enabled, the PDF will be analyzed in detail over time.',
+        hint: 'It is effective when you want to improve search accuracy. Computation costs increase because computation takes more time.',
       },
       help: {
         chunkSize:
