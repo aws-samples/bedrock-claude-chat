@@ -18,7 +18,7 @@ from app.repositories.common import (
     decompose_bot_id,
 )
 from app.config import (
-    DEFAULT_GENERATION_CONFIG,
+    DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG,
     DEFAULT_MISTRAL_GENERATION_CONFIG,
     DEFAULT_SEARCH_CONFIG,
 )
@@ -40,6 +40,11 @@ from botocore.exceptions import ClientError
 TABLE_NAME = os.environ.get("TABLE_NAME", "")
 ENABLE_MISTRAL = os.environ.get("ENABLE_MISTRAL", "") == "true"
 
+DEFAULT_GENERATION_CONFIG = (
+    DEFAULT_MISTRAL_GENERATION_CONFIG
+    if ENABLE_MISTRAL
+    else DEFAULT_CLAUDE_GENERATION_CONFIG
+)
 
 logger = logging.getLogger(__name__)
 sts_client = boto3.client("sts")
@@ -306,12 +311,6 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
     if "OriginalBotId" in item:
         raise RecordNotFoundError(f"Bot with id {bot_id} is alias")
 
-    default_generation_config = (
-        DEFAULT_MISTRAL_GENERATION_CONFIG
-        if ENABLE_MISTRAL
-        else DEFAULT_GENERATION_CONFIG
-    )
-
     bot = BotModel(
         id=decompose_bot_id(item["SK"]),
         title=item["Title"],
@@ -340,7 +339,7 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
             **(
                 item["GenerationParams"]
                 if "GenerationParams" in item
-                else default_generation_config
+                else DEFAULT_GENERATION_CONFIG
             )
         ),
         search_params=SearchParamsModel(
@@ -384,12 +383,6 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
     if len(response["Items"]) == 0:
         raise RecordNotFoundError(f"Public bot with id {bot_id} not found")
 
-    default_generation_config = (
-        DEFAULT_MISTRAL_GENERATION_CONFIG
-        if ENABLE_MISTRAL
-        else DEFAULT_GENERATION_CONFIG
-    )
-
     item = response["Items"][0]
     bot = BotModel(
         id=decompose_bot_id(item["SK"]),
@@ -419,7 +412,7 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
             **(
                 item["GenerationParams"]
                 if "GenerationParams" in item
-                else default_generation_config
+                else DEFAULT_GENERATION_CONFIG
             )
         ),
         search_params=SearchParamsModel(

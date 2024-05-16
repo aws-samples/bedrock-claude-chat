@@ -51,8 +51,8 @@ class BotInput(BaseSchema):
     instruction: str
     description: str | None
     embedding_params: EmbeddingParams | None
-    generation_params: GenerationParams
-    search_params: SearchParams
+    generation_params: GenerationParams | None
+    search_params: SearchParams | None
     knowledge: Knowledge | None
 
 
@@ -61,8 +61,8 @@ class BotModifyInput(BaseSchema):
     instruction: str
     description: str | None
     embedding_params: EmbeddingParams | None
-    generation_params: GenerationParams
-    search_params: SearchParams
+    generation_params: GenerationParams | None
+    search_params: SearchParams | None
     knowledge: KnowledgeDiffInput | None
 
     def has_update_files(self) -> bool:

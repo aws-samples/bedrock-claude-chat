@@ -77,8 +77,8 @@ export type RegisterBotRequest = {
   instruction: string;
   description?: string;
   embeddingParams?: EmdeddingParams;
-  generationParams: GenerationParams;
-  searchParams: SearchParams;
+  generationParams?: GenerationParams;
+  searchParams?: SearchParams;
   knowledge?: BotKnowledge;
 };
 
@@ -89,8 +89,8 @@ export type UpdateBotRequest = {
   instruction: string;
   description?: string;
   embeddingParams?: EmdeddingParams;
-  generationParams: BotGenerationConfig;
-  searchParams: SearchParams;
+  generationParams?: BotGenerationConfig;
+  searchParams?: SearchParams;
   knowledge?: BotKnowledgeDiff;
 };
 

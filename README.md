@@ -213,23 +213,7 @@ Update `enableMistral` to `true` in [cdk.json](./cdk/cdk.json), and run `cdk dep
 
 ### Configure default text generation
 
-*See*: https://docs.anthropic.com/claude/reference/complete_post
-
-* Edit [index.ts](./frontend/src/constants/index.ts) for UI Bot Create/Edit pages
-
-The values are used as default values when the bot is created, users are allowed to customize the value for each bot. Updating the values in this file will not affect the bots that have been created previously. 
-
-```javascript
-export const DEFAULT_GENERATION_CONFIG: GenerationParams = {
-  maxTokens: 2000,
-  topK: 250,
-  topP: 0.999,
-  temperature: 0.6,
-  stopSequences: ["Human: ", "Assistant: "],
-}
-```
-
-* Edit [config.py](./backend/app/config.py) for parameters used for basic conversations
+Users can adjust the [text generation parameters](https://docs.anthropic.com/claude/reference/complete_post) from the custom bot creation screen. If the bot is not used, the default parameters set in [config.py](./backend/app/config.py) will be used.
 
 ```py
 DEFAULT_GENERATION_CONFIG = {
