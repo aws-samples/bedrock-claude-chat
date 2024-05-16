@@ -20,7 +20,6 @@ from app.bedrock import (
     get_bedrock_response,
     InvocationMetrics,
 )
-from app.config import GENERATION_CONFIG, SEARCH_CONFIG
 from app.repositories.conversation import (
     RecordNotFoundError,
     find_conversation_by_id,
@@ -293,8 +292,9 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         # Fetch most related documents from vector store
         # NOTE: Currently embedding not support multi-modal. For now, use the last content.
         query = conversation.message_map[user_msg_id].content[-1].body
+
         search_results = search_related_docs(
-            bot_id=bot.id, limit=SEARCH_CONFIG["max_results"], query=query
+            bot_id=bot.id, limit=bot.search_params.max_results, query=query
         )
         logger.info(f"Search results from vector store: {search_results}")
 
@@ -316,6 +316,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
             if "instruction" in message_map
             else None
         ),
+        generation_params=(bot.generation_params if bot else None),
     )
 
     if is_anthropic_model(args["model"]):
@@ -542,7 +543,7 @@ def fetch_related_documents(
 
     chunks = search_related_docs(
         bot_id=bot.id,
-        limit=SEARCH_CONFIG["max_results"],
+        limit=bot.search_params.max_results,
         query=chat_input.message.content[-1].body,
     )
 

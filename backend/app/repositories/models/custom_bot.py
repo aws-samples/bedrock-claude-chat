@@ -1,5 +1,6 @@
 from app.routes.schemas.bot import type_sync_status
 from pydantic import BaseModel
+from app.repositories.models.common import Float
 
 
 class EmbeddingParamsModel(BaseModel):
@@ -14,6 +15,18 @@ class KnowledgeModel(BaseModel):
     filenames: list[str]
 
 
+class GenerationParamsModel(BaseModel):
+    max_tokens: int
+    top_k: int
+    top_p: Float
+    temperature: Float
+    stop_sequences: list[str]
+
+
+class SearchParamsModel(BaseModel):
+    max_results: int
+
+
 class BotModel(BaseModel):
     id: str
     title: str
@@ -26,6 +39,8 @@ class BotModel(BaseModel):
     owner_user_id: str
     is_pinned: bool
     embedding_params: EmbeddingParamsModel
+    generation_params: GenerationParamsModel
+    search_params: SearchParamsModel
     knowledge: KnowledgeModel
     sync_status: type_sync_status
     sync_status_reason: str

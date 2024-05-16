@@ -140,7 +140,8 @@ export class Frontend extends Construct {
           commands: ["npm ci"],
         },
       ],
-      buildCommands: ["npm run build"],
+      buildCommands: [
+        "npm run build"],
       buildEnvironment: buildEnvProps,
       destinationBucket: this.assetBucket,
       distribution: this.cloudFrontWebDistribution,

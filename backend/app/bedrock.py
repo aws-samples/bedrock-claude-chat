@@ -6,10 +6,11 @@ from anthropic import AnthropicBedrock
 from app.config import (
     BEDROCK_PRICING,
     DEFAULT_EMBEDDING_CONFIG,
-    GENERATION_CONFIG,
-    MISTRAL_GENERATION_CONFIG,
+    DEFAULT_GENERATION_CONFIG,
+    DEFAULT_MISTRAL_GENERATION_CONFIG,
 )
 from app.repositories.models.conversation import MessageModel
+from app.repositories.models.custom_bot import GenerationParamsModel
 from app.utils import get_bedrock_client, is_anthropic_model
 from pydantic import BaseModel
 
@@ -32,14 +33,19 @@ def compose_args(
     model: str,
     instruction: str | None = None,
     stream: bool = False,
+    generation_params: GenerationParamsModel | None = None,
 ) -> dict:
     # if model is from Anthropic, use AnthropicBedrock
     # otherwise, use bedrock client
     model_id = get_model_id(model)
     if is_anthropic_model(model_id):
-        return compose_args_for_anthropic_client(messages, model, instruction, stream)
+        return compose_args_for_anthropic_client(
+            messages, model, instruction, stream, generation_params
+        )
     else:
-        return compose_args_for_other_client(messages, model, instruction, stream)
+        return compose_args_for_other_client(
+            messages, model, instruction, stream, generation_params
+        )
 
 
 def compose_args_for_other_client(
@@ -47,6 +53,7 @@ def compose_args_for_other_client(
     model: str,
     instruction: str | None = None,
     stream: bool = False,
+    generation_params: GenerationParamsModel | None = None,
 ) -> dict:
     arg_messages = []
     for message in messages:
@@ -64,7 +71,18 @@ def compose_args_for_other_client(
             arg_messages.append(m)
 
     args = {
-        **MISTRAL_GENERATION_CONFIG,
+        **DEFAULT_MISTRAL_GENERATION_CONFIG,
+        **(
+            {
+                "max_tokens": generation_params.max_tokens,
+                "top_k": generation_params.top_k,
+                "top_p": generation_params.top_p,
+                "temperature": generation_params.temperature,
+                "stop_sequences": generation_params.stop_sequences,
+            }
+            if generation_params
+            else {}
+        ),
         "model": get_model_id(model),
         "messages": arg_messages,
         "stream": stream,
@@ -79,6 +97,7 @@ def compose_args_for_anthropic_client(
     model: str,
     instruction: str | None = None,
     stream: bool = False,
+    generation_params: GenerationParamsModel | None = None,
 ) -> dict:
     """Compose arguments for Anthropic client.
     Ref: https://docs.anthropic.com/claude/reference/messages_post
@@ -110,7 +129,18 @@ def compose_args_for_anthropic_client(
             arg_messages.append(m)
 
     args = {
-        **GENERATION_CONFIG,
+        **DEFAULT_GENERATION_CONFIG,
+        **(
+            {
+                "max_tokens": generation_params.max_tokens,
+                "top_k": generation_params.top_k,
+                "top_p": generation_params.top_p,
+                "temperature": generation_params.temperature,
+                "stop_sequences": generation_params.stop_sequences,
+            }
+            if generation_params
+            else {}
+        ),
         "model": get_model_id(model),
         "messages": arg_messages,
         "stream": stream,

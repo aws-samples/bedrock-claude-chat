@@ -16,6 +16,8 @@ from app.routes.schemas.bot import (
     BotSwitchVisibilityInput,
     EmbeddingParams,
     Knowledge,
+    GenerationParams,
+    SearchParams,
 )
 from app.usecases.bot import (
     create_new_bot,
@@ -133,6 +135,16 @@ def get_private_bot(request: Request, bot_id: str):
             source_urls=bot.knowledge.source_urls,
             sitemap_urls=bot.knowledge.sitemap_urls,
             filenames=bot.knowledge.filenames,
+        ),
+        generation_params=GenerationParams(
+            max_tokens=bot.generation_params.max_tokens,
+            top_k=bot.generation_params.top_k,
+            top_p=bot.generation_params.top_p,
+            temperature=bot.generation_params.temperature,
+            stop_sequences=bot.generation_params.stop_sequences,
+        ),
+        search_params=SearchParams(
+            max_results=bot.search_params.max_results,
         ),
         sync_status=bot.sync_status,
         sync_status_reason=bot.sync_status_reason,

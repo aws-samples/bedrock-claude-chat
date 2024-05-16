@@ -122,6 +122,7 @@ export class BedrockChatStack extends cdk.Stack {
       apiPublishProject: apiPublishCodebuild.project,
       usageAnalysis,
       largeMessageBucket,
+      enableMistral: props.enableMistral,
     });
     documentBucket.grantReadWrite(backendApi.handler);
 
