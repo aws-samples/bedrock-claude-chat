@@ -37,9 +37,8 @@ class S3FileLoader(BaseLoader):
             s3.download_file(self.bucket, self.key, file_path)
             extension = os.path.splitext(file_path)[1]
 
-            logger.debug(f"Partition pdf enabled: {self.enable_partition_pdf}")
             if extension == ".pdf" and self.enable_partition_pdf == True:
-                logger.info(f"partition_pdf: {file_path}")
+                logger.info(f"Start partitioning using hi-resolution mode: {file_path}")
                 return partition_pdf(
                     filename=file_path,
                     strategy="hi_res",
@@ -47,7 +46,7 @@ class S3FileLoader(BaseLoader):
                     extract_images_in_pdf=False,
                 )
             else:
-                logger.info(f"partition: {file_path}")
+                logger.info(f"Start partitioning using auto mode: {file_path}")
                 return partition(filename=file_path)
 
     def _get_metadata(self) -> dict:
