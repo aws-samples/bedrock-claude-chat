@@ -11,3 +11,4 @@ pg8000==1.30.3
 argparse==1.4.0
 anthropic==0.18.1
 anthropic[bedrock]==0.18.1
+langchain-core==0.1.52

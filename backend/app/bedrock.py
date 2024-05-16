@@ -1,16 +1,23 @@
 import json
 import logging
 import os
+from typing import Any, Iterator, Optional
 
 from anthropic import AnthropicBedrock
+from anthropic.types import ContentBlockDeltaEvent, MessageDeltaEvent, MessageStopEvent
 from app.config import (
     BEDROCK_PRICING,
     DEFAULT_EMBEDDING_CONFIG,
     GENERATION_CONFIG,
     MISTRAL_GENERATION_CONFIG,
 )
-from app.repositories.models.conversation import MessageModel
-from app.utils import get_bedrock_client, is_anthropic_model
+from app.repositories.models.conversation import ContentModel, MessageModel
+from app.routes.schemas.conversation import type_model_name
+from app.utils import get_anthropic_client, get_bedrock_client, is_anthropic_model
+from langchain_core.callbacks.manager import CallbackManagerForLLMRun
+from langchain_core.language_models import LLM
+from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.outputs import GenerationChunk
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
@@ -264,3 +271,135 @@ def get_bedrock_response(args: dict) -> dict:
         )
         response_body["amazon-bedrock-invocationMetrics"] = invocation_metrics
     return response_body
+
+
+class BedrockLLM(LLM):
+    """A wrapper class for the LangChain's interface."""
+
+    model: type_model_name
+
+    def __prepare_args_from_prompt(self, prompt: str, stream: bool) -> dict:
+        """Prepare arguments from the given prompt."""
+        message = MessageModel(
+            role="user",
+            content=[
+                ContentModel(
+                    content_type="text",
+                    media_type=None,
+                    body=prompt,
+                )
+            ],
+            model=self.model,
+            children=[],
+            parent=None,
+            create_time=0,
+            feedback=None,
+            used_chunks=None,
+        )
+        args = compose_args([message], self.model, instruction=None, stream=stream)
+        return args
+
+    def _call(
+        self,
+        prompt: str,
+        stop: Optional[list[str]] = None,
+        run_manager: Optional[CallbackManagerForLLMRun] = None,
+        **kwargs: Any,
+    ) -> str:
+        args = self.__prepare_args_from_prompt(prompt, stream=False)
+        if self.is_anthropic_model:
+            client = get_anthropic_client()
+            response = client.messages.create(**args)
+            reply_txt = response.content[0].text
+        else:
+            response = get_bedrock_response(args)  # type: ignore
+            reply_txt = response["outputs"][0]["text"]  # type: ignore
+        return reply_txt
+
+    def _stream(
+        self,
+        prompt: str,
+        stop: Optional[list[str]] = None,
+        run_manager: Optional[CallbackManagerForLLMRun] = None,
+        **kwargs: Any,
+    ) -> Iterator[GenerationChunk]:
+        args = self.__prepare_args_from_prompt(prompt, stream=True)
+
+        if self.is_anthropic_model:
+            client = get_anthropic_client()
+            response = client.messages.create(**args)
+        else:
+            response = get_bedrock_response(args)  # type: ignore
+
+        if self.is_anthropic_model:
+            for event in response:
+                if isinstance(event, ContentBlockDeltaEvent):
+                    chunk = GenerationChunk(text=event.delta.text)
+                    if run_manager:
+                        run_manager.on_llm_new_token(chunk.text, chunk=chunk)
+                    yield chunk
+                elif isinstance(event, MessageDeltaEvent):
+                    logger.debug(f"Received message delta event: {event.delta}")
+                    continue
+                elif isinstance(event, MessageStopEvent):
+                    # Update total pricing
+                    metrics = event.model_dump()["amazon-bedrock-invocationMetrics"]
+                    input_token_count = metrics.get("inputTokenCount")
+                    output_token_count = metrics.get("outputTokenCount")
+
+                    logger.debug(
+                        f"Input token count: {input_token_count}, output token count: {output_token_count}"
+                    )
+
+                    price = calculate_price(
+                        self.model, input_token_count, output_token_count
+                    )
+                else:
+                    continue
+        else:  # Mistral
+            for event in response.get("body"):  # type: ignore
+                chunk = event.get("chunk")
+                if chunk:
+                    msg_chunk = json.loads(chunk.get("bytes").decode())
+                    is_stop = msg_chunk["outputs"][0]["stop_reason"]
+                    if not is_stop:
+                        msg = msg_chunk["outputs"][0]["text"]
+                        generation_chunk = GenerationChunk(text=msg)
+                        if run_manager:
+                            run_manager.on_llm_new_token(
+                                generation_chunk.text, generation_chunk=chunk
+                            )
+                        yield generation_chunk
+                    else:
+                        # Update total pricing
+                        metrics = msg_chunk["amazon-bedrock-invocationMetrics"]
+                        input_token_count = metrics.get("inputTokenCount")
+                        output_token_count = metrics.get("outputTokenCount")
+
+                        logger.debug(
+                            f"Input token count: {input_token_count}, output token count: {output_token_count}"
+                        )
+
+                        price = calculate_price(
+                            self.model, input_token_count, output_token_count
+                        )
+
+    @property
+    def is_anthropic_model(self) -> bool:
+        return is_anthropic_model(get_model_id(self.model))
+
+    @property
+    def _identifying_params(self) -> dict[str, any]:
+        """Return a dictionary of identifying parameters."""
+        return {
+            # The model name allows users to specify custom token counting
+            # rules in LLM monitoring applications (e.g., in LangSmith users
+            # can provide per token pricing for their model and monitor
+            # costs for the given LLM.)
+            "model_name": "BedrockClaudeChatModel",
+        }
+
+    @property
+    def _llm_type(self) -> str:
+        """Get the type of language model used by this chat model. Used for logging purposes only."""
+        return "bedrock-claude-chat"
