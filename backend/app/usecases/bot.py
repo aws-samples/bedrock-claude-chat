@@ -135,8 +135,9 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         bot_input.embedding_params.enable_partition_pdf
         if bot_input.embedding_params
         else DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"]
+    )
 
-      generation_params = (
+    generation_params = (
         bot_input.generation_params.model_dump()
         if bot_input.generation_params
         else DEFAULT_GENERATION_CONFIG
