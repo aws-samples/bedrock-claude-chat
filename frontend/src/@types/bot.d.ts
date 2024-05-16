@@ -19,7 +19,7 @@ export type BotKnowledge = {
   filenames: string[];
 };
 
-export type EmdeddingPrams = {
+export type EmdeddingParams = {
   chunkSize: number;
   chunkOverlap: number;
 };
@@ -39,9 +39,23 @@ export type BotListItem = BotMeta & {
   available: boolean;
 };
 
+export type GenerationParams = {
+  maxTokens: number;
+  topK: number;
+  topP: number;
+  temperature: number;
+  stopSequences: string[];
+}
+
+export type SearchParams = {
+  maxResults: number;
+}
+
 export type BotDetails = BotMeta & {
   instruction: string;
-  embeddingParams: EmdeddingPrams;
+  embeddingParams: EmdeddingParams;
+  generationParams: GenerationParams;
+  searchParams: SearchParams;
   knowledge: BotKnowledge;
   syncStatusReason: string;
 };
@@ -62,7 +76,9 @@ export type RegisterBotRequest = {
   title: string;
   instruction: string;
   description?: string;
-  embeddingParams?: EmdeddingPrams;
+  embeddingParams?: EmdeddingParams;
+  generationParams?: GenerationParams;
+  searchParams?: SearchParams;
   knowledge?: BotKnowledge;
 };
 
@@ -72,7 +88,9 @@ export type UpdateBotRequest = {
   title: string;
   instruction: string;
   description?: string;
-  embeddingParams?: EmdeddingPrams;
+  embeddingParams?: EmdeddingParams;
+  generationParams?: BotGenerationConfig;
+  searchParams?: SearchParams;
   knowledge?: BotKnowledgeDiff;
 };
 
@@ -81,7 +99,9 @@ export type UpdateBotResponse = {
   title: string;
   instruction: string;
   description: string;
-  embeddingParams?: EmdeddingPrams;
+  embeddingParams: EmdeddingParams;
+  generationParams: GenerationParams;
+  searchParams: SearchParams;
   knowledge?: BotKnowledge;
 };
 

@@ -1,4 +1,4 @@
-"""Custom tool to get today's weather forecast for a given location.
+"""Custom tool sample to get today's weather forecast for a given location.
 Reference: https://python.langchain.com/v0.1/docs/modules/tools/custom_tools/
 """
 
@@ -14,10 +14,16 @@ class WeatherInput(BaseModel):
 
 
 def get_weather(location: str) -> str:
+    print("Getting weather...")
+    # import time
+
+    # time.sleep(5)
+
     # Get latitude and longitude from location
     url = f"https://geocoding-api.open-meteo.com/v1/search?name={location}"
     response = requests.get(url)
     data = response.json()
+    print(data)
     latitude = data["results"][0]["latitude"]
     longitude = data["results"][0]["longitude"]
 

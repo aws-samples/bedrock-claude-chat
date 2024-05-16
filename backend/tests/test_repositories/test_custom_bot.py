@@ -27,6 +27,8 @@ from app.repositories.models.custom_bot import (
     BotModel,
     EmbeddingParamsModel,
     KnowledgeModel,
+    GenerationParamsModel,
+    SearchParamsModel,
 )
 from app.usecases.bot import fetch_all_bots_by_user_id
 
@@ -46,6 +48,16 @@ class TestCustomBotRepository(unittest.TestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+            ),
+            generation_params=GenerationParamsModel(
+                max_tokens=2000,
+                top_k=250,
+                top_p=0.999,
+                temperature=0.6,
+                stop_sequences=["Human: ", "Assistant: "],
+            ),
+            search_params=SearchParamsModel(
+                max_results=20,
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -77,6 +89,11 @@ class TestCustomBotRepository(unittest.TestCase):
             bot.embedding_params.chunk_overlap,
             DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
         )
+        self.assertEqual(bot.generation_params.max_tokens, 2000)
+        self.assertEqual(bot.generation_params.top_k, 250)
+        self.assertEqual(bot.generation_params.top_p, 0.999)
+        self.assertEqual(bot.generation_params.temperature, 0.6)
+
         self.assertEqual(bot.knowledge.source_urls, ["https://aws.amazon.com/"])
         self.assertEqual(bot.knowledge.sitemap_urls, ["https://aws.amazon.sitemap.xml"])
         self.assertEqual(bot.knowledge.filenames, ["test.txt"])
@@ -117,6 +134,16 @@ class TestCustomBotRepository(unittest.TestCase):
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
             ),
+            generation_params=GenerationParamsModel(
+                max_tokens=2000,
+                top_k=250,
+                top_p=0.999,
+                temperature=0.6,
+                stop_sequences=["Human: ", "Assistant: "],
+            ),
+            search_params=SearchParamsModel(
+                max_results=20,
+            ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -152,6 +179,16 @@ class TestCustomBotRepository(unittest.TestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+            ),
+            generation_params=GenerationParamsModel(
+                max_tokens=2000,
+                top_k=250,
+                top_p=0.999,
+                temperature=0.6,
+                stop_sequences=["Human: ", "Assistant: "],
+            ),
+            search_params=SearchParamsModel(
+                max_results=20,
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/jp"],
@@ -198,6 +235,16 @@ class TestCustomBotRepository(unittest.TestCase):
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
             ),
+            generation_params=GenerationParamsModel(
+                max_tokens=2000,
+                top_k=250,
+                top_p=0.999,
+                temperature=0.6,
+                stop_sequences=["Human: ", "Assistant: "],
+            ),
+            search_params=SearchParamsModel(
+                max_results=20,
+            ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/jp"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml/jp"],
@@ -221,6 +268,16 @@ class TestCustomBotRepository(unittest.TestCase):
                 chunk_size=500,
                 chunk_overlap=100,
             ),
+            generation_params=GenerationParamsModel(
+                max_tokens=2500,
+                top_k=200,
+                top_p=0.99,
+                temperature=0.2,
+                stop_sequences=["Human: ", "Assistant: "],
+            ),
+            search_params=SearchParamsModel(
+                max_results=20,
+            ),
             knowledge=KnowledgeModel(
                 source_urls=["https://updated.com/"],
                 sitemap_urls=["https://updated.xml"],
@@ -236,6 +293,12 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(bot.instruction, "Updated Instruction")
         self.assertEqual(bot.embedding_params.chunk_size, 500)
         self.assertEqual(bot.embedding_params.chunk_overlap, 100)
+
+        self.assertEqual(bot.generation_params.max_tokens, 2500)
+        self.assertEqual(bot.generation_params.top_k, 200)
+        self.assertEqual(bot.generation_params.top_p, 0.99)
+        self.assertEqual(bot.generation_params.temperature, 0.2)
+
         self.assertEqual(bot.knowledge.source_urls, ["https://updated.com/"])
         self.assertEqual(bot.knowledge.sitemap_urls, ["https://updated.xml"])
         self.assertEqual(bot.knowledge.filenames, ["updated.txt"])
@@ -261,6 +324,16 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+            ),
+            generation_params=GenerationParamsModel(
+                max_tokens=2000,
+                top_k=250,
+                top_p=0.999,
+                temperature=0.6,
+                stop_sequences=["Human: ", "Assistant: "],
+            ),
+            search_params=SearchParamsModel(
+                max_results=20,
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -289,6 +362,16 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
             ),
+            generation_params=GenerationParamsModel(
+                max_tokens=2000,
+                top_k=250,
+                top_p=0.999,
+                temperature=0.6,
+                stop_sequences=["Human: ", "Assistant: "],
+            ),
+            search_params=SearchParamsModel(
+                max_results=20,
+            ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -315,6 +398,16 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+            ),
+            generation_params=GenerationParamsModel(
+                max_tokens=2000,
+                top_k=250,
+                top_p=0.999,
+                temperature=0.6,
+                stop_sequences=["Human: ", "Assistant: "],
+            ),
+            search_params=SearchParamsModel(
+                max_results=20,
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -343,6 +436,16 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
             ),
+            generation_params=GenerationParamsModel(
+                max_tokens=2000,
+                top_k=250,
+                top_p=0.999,
+                temperature=0.6,
+                stop_sequences=["Human: ", "Assistant: "],
+            ),
+            search_params=SearchParamsModel(
+                max_results=20,
+            ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -369,6 +472,16 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
             ),
+            generation_params=GenerationParamsModel(
+                max_tokens=2000,
+                top_k=250,
+                top_p=0.999,
+                temperature=0.6,
+                stop_sequences=["Human: ", "Assistant: "],
+            ),
+            search_params=SearchParamsModel(
+                max_results=20,
+            ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -394,6 +507,16 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+            ),
+            generation_params=GenerationParamsModel(
+                max_tokens=2000,
+                top_k=250,
+                top_p=0.999,
+                temperature=0.6,
+                stop_sequences=["Human: ", "Assistant: "],
+            ),
+            search_params=SearchParamsModel(
+                max_results=20,
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -493,6 +616,16 @@ class TestUpdateBotVisibility(unittest.TestCase):
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
             ),
+            generation_params=GenerationParamsModel(
+                max_tokens=2000,
+                top_k=250,
+                top_p=0.999,
+                temperature=0.6,
+                stop_sequences=["Human: ", "Assistant: "],
+            ),
+            search_params=SearchParamsModel(
+                max_results=20,
+            ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -519,6 +652,16 @@ class TestUpdateBotVisibility(unittest.TestCase):
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
             ),
+            generation_params=GenerationParamsModel(
+                max_tokens=2000,
+                top_k=250,
+                top_p=0.999,
+                temperature=0.6,
+                stop_sequences=["Human: ", "Assistant: "],
+            ),
+            search_params=SearchParamsModel(
+                max_results=20,
+            ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -544,6 +687,16 @@ class TestUpdateBotVisibility(unittest.TestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+            ),
+            generation_params=GenerationParamsModel(
+                max_tokens=2000,
+                top_k=250,
+                top_p=0.999,
+                temperature=0.6,
+                stop_sequences=["Human: ", "Assistant: "],
+            ),
+            search_params=SearchParamsModel(
+                max_results=20,
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
@@ -591,6 +744,16 @@ class TestUpdateBotVisibility(unittest.TestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+            ),
+            generation_params=GenerationParamsModel(
+                max_tokens=2000,
+                top_k=250,
+                top_p=0.999,
+                temperature=0.6,
+                stop_sequences=["Human: ", "Assistant: "],
+            ),
+            search_params=SearchParamsModel(
+                max_results=20,
             ),
             knowledge=KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[]),
             sync_status="RUNNING",

@@ -889,6 +889,7 @@ class AgentExecutor(Chain):
             **kwargs,
         )
         for step in iterator:
+            print(f"step: {step}")
             yield step
 
     async def astream(
