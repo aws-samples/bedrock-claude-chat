@@ -22,11 +22,11 @@ def delete_from_postgres(bot_id: str):
     print(access_info)
 
     conn = pg8000.connect(
-        database=access_info['dbname'],
-        host=access_info['host'],
-        port=access_info['port'],
-        user=access_info['username'],
-        password=access_info['password'],
+        database=access_info["dbname"],
+        host=access_info["host"],
+        port=access_info["port"],
+        user=access_info["username"],
+        password=access_info["password"],
     )
 
     try:

@@ -62,11 +62,11 @@ def insert_to_postgres(
     print(access_info)
 
     conn = pg8000.connect(
-        database=access_info['dbname'],
-        host=access_info['host'],
-        port=access_info['port'],
-        user=access_info['username'],
-        password=access_info['password'],
+        database=access_info["dbname"],
+        host=access_info["host"],
+        port=access_info["port"],
+        user=access_info["username"],
+        password=access_info["password"],
     )
 
     try:
