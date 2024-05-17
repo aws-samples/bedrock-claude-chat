@@ -33,6 +33,8 @@ logger = logging.getLogger(__name__)
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
 RETRIES_TO_INSERT_TO_POSTGRES = 4
 RETRY_DELAY_TO_INSERT_TO_POSTGRES = 2
+RETRIES_TO_UPDATE_SYNC_STATUS = 4
+RETRY_DELAY_TO_UPDATE_SYNC_STATUS = 2
 
 DB_NAME = os.environ.get("DB_NAME", "postgres")
 DB_HOST = os.environ.get("DB_HOST", "")
@@ -91,7 +93,7 @@ def insert_to_postgres(
         conn.close()
 
 
-@retry(tries=RETRIES_TO_INSERT_TO_POSTGRES, delay=RETRY_DELAY_TO_INSERT_TO_POSTGRES)
+@retry(tries=RETRIES_TO_UPDATE_SYNC_STATUS, delay=RETRY_DELAY_TO_UPDATE_SYNC_STATUS)
 def update_sync_status(
     user_id: str,
     bot_id: str,

@@ -34,8 +34,8 @@ const RDS_SCHEDULES: CronScheduleProps = app.node.tryGetContext("rdbSchedules");
 const ENABLE_MISTRAL: boolean = app.node.tryGetContext("enableMistral");
 
 // container size of embedding ecs tasks
-const EMBEDDING_CONTAINER_VCPU:number = app.node.tryGetContext("embeddingContainerVcpu") ? app.node.tryGetContext("embeddingContainerVcpu") : 1024
-const EMBEDDING_CONTAINER_MEMORY:number = app.node.tryGetContext("embeddingContainerMemory") ? app.node.tryGetContext("embeddingContainerMemory") : 2048
+const EMBEDDING_CONTAINER_VCPU:number = app.node.tryGetContext("embeddingContainerVcpu")
+const EMBEDDING_CONTAINER_MEMORY:number = app.node.tryGetContext("embeddingContainerMemory")
 
 // WAF for frontend
 // 2023/9: Currently, the WAF for CloudFront needs to be created in the North America region (us-east-1), so the stacks are separated
