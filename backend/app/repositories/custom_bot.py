@@ -334,6 +334,12 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
                 and "chunk_overlap" in item["EmbeddingParams"]
                 else 200
             ),
+            enable_partition_pdf=(
+                item["EmbeddingParams"]["enable_partition_pdf"]
+                if "EmbeddingParams" in item
+                and "enable_partition_pdf" in item["EmbeddingParams"]
+                else False
+            ),
         ),
         generation_params=GenerationParamsModel(
             **(
@@ -406,6 +412,12 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
                 if "EmbeddingParams" in item
                 and "chunk_overlap" in item["EmbeddingParams"]
                 else 200
+            ),
+            enable_partition_pdf=(
+                item["EmbeddingParams"]["enable_partition_pdf"]
+                if "EmbeddingParams" in item
+                and "enable_partition_pdf" in item["EmbeddingParams"]
+                else False
             ),
         ),
         generation_params=GenerationParamsModel(

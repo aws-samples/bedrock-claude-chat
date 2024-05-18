@@ -80,6 +80,8 @@
     "rdbSchedules": {
       "stop": {},
       "start": {}
-    }
+    },
+    "embeddingContainerVcpu": 2048,
+    "embeddingContainerMemory": 4096
   }
 }

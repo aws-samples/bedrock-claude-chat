@@ -1,10 +1,14 @@
 import argparse
 import json
 import logging
+import multiprocessing
+from multiprocessing.managers import ListProxy
 import os
+from typing import Any
 
 import pg8000
 import requests
+from retry import retry
 
 from app.config import DEFAULT_EMBEDDING_CONFIG
 from app.repositories.common import _get_table_client, RecordNotFoundError
@@ -24,9 +28,13 @@ from llama_index.core.node_parser import SentenceSplitter
 from ulid import ULID
 
 logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
-
+RETRIES_TO_INSERT_TO_POSTGRES = 4
+RETRY_DELAY_TO_INSERT_TO_POSTGRES = 2
+RETRIES_TO_UPDATE_SYNC_STATUS = 4
+RETRY_DELAY_TO_UPDATE_SYNC_STATUS = 2
 
 DB_NAME = os.environ.get("DB_NAME", "postgres")
 DB_HOST = os.environ.get("DB_HOST", "")
@@ -48,8 +56,9 @@ def get_exec_id() -> str:
     return task_id
 
 
+@retry(tries=RETRIES_TO_INSERT_TO_POSTGRES, delay=RETRY_DELAY_TO_INSERT_TO_POSTGRES)
 def insert_to_postgres(
-    bot_id: str, contents: list[str], sources: list[str], embeddings: list[list[float]]
+    bot_id: str, contents: ListProxy, sources: ListProxy, embeddings: ListProxy
 ):
     conn = pg8000.connect(
         database=DB_NAME,
@@ -70,13 +79,13 @@ def insert_to_postgres(
                 zip(sources, contents, embeddings)
             ):
                 id_ = str(ULID())
-                print(f"Preview of content {i}: {content[:200]}")
+                logger.info(f"Preview of content {i}: {content[:200]}")
                 values_to_insert.append(
                     (id_, bot_id, content, source, json.dumps(embedding))
                 )
             cursor.executemany(insert_query, values_to_insert)
         conn.commit()
-        print(f"Successfully inserted {len(values_to_insert)} records.")
+        logger.info(f"Successfully inserted {len(values_to_insert)} records.")
     except Exception as e:
         conn.rollback()
         raise e
@@ -84,6 +93,7 @@ def insert_to_postgres(
         conn.close()
 
 
+@retry(tries=RETRIES_TO_UPDATE_SYNC_STATUS, delay=RETRY_DELAY_TO_UPDATE_SYNC_STATUS)
 def update_sync_status(
     user_id: str,
     bot_id: str,
@@ -105,9 +115,9 @@ def update_sync_status(
 
 def embed(
     loader: BaseLoader,
-    contents: list[str],
-    sources: list[str],
-    embeddings: list[list[float]],
+    contents: ListProxy,
+    sources: ListProxy,
+    embeddings: ListProxy,
     chunk_size: int,
     chunk_overlap: int,
 ):
@@ -139,12 +149,13 @@ def main(
     filenames: list[str],
     chunk_size: int,
     chunk_overlap: int,
+    enable_partition_pdf: bool,
 ):
     exec_id = ""
     try:
         exec_id = get_exec_id()
     except Exception as e:
-        print(f"[ERROR] Failed to get exec_id: {e}")
+        logger.error(f"[ERROR] Failed to get exec_id: {e}")
         exec_id = "FAILED_TO_GET_ECS_EXEC_ID"
 
     update_sync_status(
@@ -169,44 +180,56 @@ def main(
             return
 
         # Calculate embeddings using LangChain
-        contents: list[str] = []
-        sources: list[str] = []
-        embeddings: list[list[float]] = []
+        with multiprocessing.Manager() as manager:
+            contents: ListProxy = manager.list()
+            sources: ListProxy = manager.list()
+            embeddings: ListProxy = manager.list()
 
-        if len(source_urls) > 0:
-            embed(
-                UrlLoader(source_urls),
-                contents,
-                sources,
-                embeddings,
-                chunk_size,
-                chunk_overlap,
-            )
-        if len(sitemap_urls) > 0:
-            for sitemap_url in sitemap_urls:
-                raise NotImplementedError()
-        if len(filenames) > 0:
-            for filename in filenames:
+            if len(source_urls) > 0:
                 embed(
-                    S3FileLoader(
-                        bucket=DOCUMENT_BUCKET,
-                        key=compose_upload_document_s3_path(user_id, bot_id, filename),
-                    ),
+                    UrlLoader(source_urls),
                     contents,
                     sources,
                     embeddings,
                     chunk_size,
                     chunk_overlap,
                 )
+            if len(sitemap_urls) > 0:
+                for sitemap_url in sitemap_urls:
+                    raise NotImplementedError()
+            if len(filenames) > 0:
+                with multiprocessing.Pool(processes=None) as pool:
+                    futures = [
+                        pool.apply_async(
+                            embed,
+                            args=(
+                                S3FileLoader(
+                                    bucket=DOCUMENT_BUCKET,
+                                    key=compose_upload_document_s3_path(
+                                        user_id, bot_id, filename
+                                    ),
+                                    enable_partition_pdf=enable_partition_pdf,
+                                ),
+                                contents,
+                                sources,
+                                embeddings,
+                                chunk_size,
+                                chunk_overlap,
+                            ),
+                        )
+                        for filename in filenames
+                    ]
+                    for future in futures:
+                        future.get()
 
-        print(f"Number of chunks: {len(contents)}")
+            logger.info(f"Number of chunks: {len(contents)}")
 
-        # Insert records into postgres
-        insert_to_postgres(bot_id, contents, sources, embeddings)
-        status_reason = "Successfully inserted to vector store."
+            # Insert records into postgres
+            insert_to_postgres(bot_id, contents, sources, embeddings)
+            status_reason = "Successfully inserted to vector store."
     except Exception as e:
-        print("[ERROR] Failed to embed.")
-        print(e)
+        logger.error("[ERROR] Failed to embed.")
+        logger.error(e)
         update_sync_status(
             user_id,
             bot_id,
@@ -243,17 +266,26 @@ if __name__ == "__main__":
     embedding_params = new_image.embedding_params
     chunk_size = embedding_params.chunk_size
     chunk_overlap = embedding_params.chunk_overlap
+    enable_partition_pdf = embedding_params.enable_partition_pdf
     knowledge = new_image.knowledge
     sitemap_urls = knowledge.sitemap_urls
     source_urls = knowledge.source_urls
     filenames = knowledge.filenames
 
-    print(f"source_urls to crawl: {source_urls}")
-    print(f"sitemap_urls to crawl: {sitemap_urls}")
-    print(f"filenames: {filenames}")
-    print(f"chunk_size: {chunk_size}")
-    print(f"chunk_overlap: {chunk_overlap}")
+    logger.info(f"source_urls to crawl: {source_urls}")
+    logger.info(f"sitemap_urls to crawl: {sitemap_urls}")
+    logger.info(f"filenames: {filenames}")
+    logger.info(f"chunk_size: {chunk_size}")
+    logger.info(f"chunk_overlap: {chunk_overlap}")
+    logger.info(f"enable_partition_pdf: {enable_partition_pdf}")
 
     main(
-        user_id, bot_id, sitemap_urls, source_urls, filenames, chunk_size, chunk_overlap
+        user_id,
+        bot_id,
+        sitemap_urls,
+        source_urls,
+        filenames,
+        chunk_size,
+        chunk_overlap,
+        enable_partition_pdf,
     )

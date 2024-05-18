@@ -129,6 +129,7 @@ def get_private_bot(request: Request, bot_id: str):
         embedding_params=EmbeddingParams(
             chunk_size=bot.embedding_params.chunk_size,
             chunk_overlap=bot.embedding_params.chunk_overlap,
+            enable_partition_pdf=bot.embedding_params.enable_partition_pdf,
         ),
         knowledge=Knowledge(
             source_urls=bot.knowledge.source_urls,

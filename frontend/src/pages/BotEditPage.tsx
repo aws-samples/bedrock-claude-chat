@@ -25,6 +25,7 @@ import {
   EDGE_SEARCH_PARAMS,
 } from '../constants';
 import { Slider } from '../components/Slider';
+import Toggle from '../components/Toggle';
 import ExpandableDrawerGroup from '../components/ExpandableDrawerGroup';
 import useErrorMessage from '../hooks/useErrorMessage';
 import Help from '../components/Help';
@@ -56,6 +57,7 @@ const BotEditPage: React.FC = () => {
   const [embeddingParams, setEmbeddingParams] = useState<EmdeddingParams>({
     chunkSize: DEFAULT_EMBEDDING_CONFIG.chunkSize,
     chunkOverlap: DEFAULT_EMBEDDING_CONFIG.chunkOverlap,
+    enablePartitionPdf: DEFAULT_EMBEDDING_CONFIG.enablePartitionPdf,
   });
   const [addedFilenames, setAddedFilenames] = useState<string[]>([]);
   const [unchangedFilenames, setUnchangedFilenames] = useState<string[]>([]);
@@ -364,6 +366,7 @@ const BotEditPage: React.FC = () => {
       embeddingParams: {
         chunkSize: embeddingParams.chunkSize,
         chunkOverlap: embeddingParams.chunkOverlap,
+        enablePartitionPdf: embeddingParams.enablePartitionPdf,
       },
       generationParams: {
         maxTokens,
@@ -417,6 +420,7 @@ const BotEditPage: React.FC = () => {
         embeddingParams: {
           chunkSize: embeddingParams?.chunkSize,
           chunkOverlap: embeddingParams?.chunkOverlap,
+          enablePartitionPdf: embeddingParams?.enablePartitionPdf,
         },
         generationParams: {
           maxTokens,
@@ -676,6 +680,19 @@ const BotEditPage: React.FC = () => {
                       }))
                     }
                     errorMessage={errorMessages['chunkOverlap']}
+                  />
+                </div>
+                <div className="mt-2">
+                  <Toggle
+                    value={embeddingParams?.enablePartitionPdf ?? false}
+                    label={t('embeddingSettings.enablePartitionPdf.label')}
+                    hint={t('embeddingSettings.enablePartitionPdf.hint')}
+                    onChange={(enablePartitionPdf) =>
+                      setEmbeddingParams((params) => ({
+                        ...params,
+                        enablePartitionPdf: enablePartitionPdf,
+                      }))
+                    }
                   />
                 </div>
               </ExpandableDrawerGroup>
