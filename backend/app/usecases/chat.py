@@ -412,7 +412,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
 def propose_conversation_title(
     user_id: str,
     conversation_id: str,
-    language: str = "english",
+    language: str = "en",
     model: Literal[
         "claude-instant-v1",
         "claude-v2",
@@ -429,7 +429,7 @@ def propose_conversation_title(
 - Title length must be from 15 to 20 characters.
 - Prefer more specific title than general. Your title should always be distinct from others.
 - Return the conversation title only. DO NOT include any strings other than the title.
-- Title must be in the {language} language.
+- Title must be in {language}.
 </rules>
 """
     # Fetch existing conversation
