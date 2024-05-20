@@ -57,13 +57,14 @@ export class VectorStore extends Construct {
       }),
       // It is preferable to set storage encryption to true, but if this is enabled, the existing DB will be destroyed and re-created, so consider when to enable it
       // It needs a migration guide.
-      storageEncrypted: false
+      storageEncrypted: false,
       // readers: [
       //   rds.ClusterInstance.serverlessV2("reader", {
       //     autoMinorVersionUpgrade: false,
       //   }),
       // ],
     });
+    cluster.addRotationSingleUser()
 
     const dbClusterIdentifier = cluster
       .secret!.secretValueFromJson("dbClusterIdentifier")
