@@ -90,6 +90,7 @@ class TestCustomBotRepository(unittest.TestCase):
             bot.embedding_params.chunk_overlap,
             DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
         )
+
         self.assertEqual(
             bot.embedding_params.enable_partition_pdf,
             DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
@@ -300,6 +301,7 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(bot.instruction, "Updated Instruction")
         self.assertEqual(bot.embedding_params.chunk_size, 500)
         self.assertEqual(bot.embedding_params.chunk_overlap, 100)
+
         self.assertEqual(bot.embedding_params.enable_partition_pdf, False)
 
         self.assertEqual(bot.generation_params.max_tokens, 2500)

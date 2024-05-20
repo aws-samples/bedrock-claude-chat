@@ -3,11 +3,15 @@ import json
 import logging
 import multiprocessing
 from multiprocessing.managers import ListProxy
+import multiprocessing
+from multiprocessing.managers import ListProxy
 import os
+from typing import Any
 from typing import Any
 
 import pg8000
 import requests
+from retry import retry
 from retry import retry
 
 from app.config import DEFAULT_EMBEDDING_CONFIG
@@ -30,13 +34,19 @@ from aws_lambda_powertools.utilities import parameters
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
-
 RETRIES_TO_INSERT_TO_POSTGRES = 4
 RETRY_DELAY_TO_INSERT_TO_POSTGRES = 2
+RETRIES_TO_UPDATE_SYNC_STATUS = 4
+RETRY_DELAY_TO_UPDATE_SYNC_STATUS = 2
 
-DB_SECRETS_ARN = os.environ.get("DB_SECRETS_ARN", "")
+DB_NAME = os.environ.get("DB_NAME", "postgres")
+DB_HOST = os.environ.get("DB_HOST", "")
+DB_USER = os.environ.get("DB_USER", "postgres")
+DB_PASSWORD = os.environ.get("DB_PASSWORD", "password")
+DB_PORT = int(os.environ.get("DB_PORT", 5432))
 DOCUMENT_BUCKET = os.environ.get("DOCUMENT_BUCKET", "documents")
 
 METADATA_URI = os.environ.get("ECS_CONTAINER_METADATA_URI_V4")
@@ -94,7 +104,7 @@ def insert_to_postgres(
         conn.close()
 
 
-@retry(tries=RETRIES_TO_INSERT_TO_POSTGRES, delay=RETRY_DELAY_TO_INSERT_TO_POSTGRES)
+@retry(tries=RETRIES_TO_UPDATE_SYNC_STATUS, delay=RETRY_DELAY_TO_UPDATE_SYNC_STATUS)
 def update_sync_status(
     user_id: str,
     bot_id: str,
