@@ -55,9 +55,7 @@ export class VectorStore extends Construct {
         autoMinorVersionUpgrade: true,
         publiclyAccessible: false,
       }),
-      // It is preferable to set storage encryption to true, but if this is enabled, the existing DB will be destroyed and re-created, so consider when to enable it
-      // It needs a migration guide.
-      storageEncrypted: false,
+      storageEncrypted: true,
       // readers: [
       //   rds.ClusterInstance.serverlessV2("reader", {
       //     autoMinorVersionUpgrade: false,
