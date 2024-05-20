@@ -104,6 +104,7 @@ export class BedrockChatStack extends cdk.Stack {
       userPoolDomainPrefixKey: props.userPoolDomainPrefix,
       idp,
       allowedSignUpEmailDomains: props.allowedSignUpEmailDomains,
+      selfSignUpEnabled: props.enableSelfSignUp,
     });
     const largeMessageBucket = new Bucket(this, "LargeMessageBucket", {
       encryption: BucketEncryption.S3_MANAGED,
