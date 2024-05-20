@@ -3,15 +3,12 @@ import json
 import logging
 import multiprocessing
 from multiprocessing.managers import ListProxy
-import multiprocessing
-from multiprocessing.managers import ListProxy
+
 import os
-from typing import Any
 from typing import Any
 
 import pg8000
 import requests
-from retry import retry
 from retry import retry
 
 from app.config import DEFAULT_EMBEDDING_CONFIG
@@ -33,7 +30,6 @@ from ulid import ULID
 from aws_lambda_powertools.utilities import parameters
 
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 logger = logging.getLogger(__name__)
 
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
