@@ -4,7 +4,7 @@ Description: A template to deploy the Bedrock-Claude Chat application with custo
 Parameters:
   AllowSelfRegister:
     Type: String
-    Default: "true"
+    Default: "false"
   Ipv4Ranges:
     Type: String
     Default: '["0.0.0.0/1","128.0.0.0/1"]'  # Set default values based on current config
@@ -133,7 +133,7 @@ Resources:
                   "echo 'Build phase...'",
                   "git clone https://github.com/aws-samples/bedrock-claude-chat.git",
                   "cd bedrock-claude-chat",
-                  "if [ \"$ALLOW_SELF_REGISTER\" = \"false\" ]; then sed -i 's/selfSignUpEnabled: !props.idp.isExist()/selfSignUpEnabled: false/' cdk/lib/constructs/auth.ts; fi",
+                  "if [ \"$ALLOW_SELF_REGISTER\" = \"true\" ]; then sed -i 's/\"selfSignUpEnabled\": false,/\"selfSignUpEnabled\": true,/' cdk/cdk.json; fi",
                   "if [ ! -z \"$IPV4_RANGES\" ]; then jq --arg ipv4 \"$IPV4_RANGES\" '.context.allowedIpV4AddressRanges = ($ipv4 | split(\",\"))' cdk/cdk.json > temp.json && mv temp.json cdk/cdk.json; fi",
                   "if [ ! -z \"$IPV6_RANGES\" ]; then jq --arg ipv6 \"$IPV6_RANGES\" '.context.allowedIpV6AddressRanges = ($ipv6 | split(\",\"))' cdk/cdk.json > temp.json && mv temp.json cdk/cdk.json; fi",
                   "if [ ! -z \"$ALLOWED_SIGN_UP_EMAIL_DOMAINS\" ]; then jq --arg domains \"$ALLOWED_SIGN_UP_EMAIL_DOMAINS\" '.context.allowedSignUpEmailDomains = ($domains | split(\",\"))' cdk/cdk.json > temp.json && mv temp.json cdk/cdk.json; fi",

@@ -69,6 +69,7 @@
     "identityProviders": [],
     "userPoolDomainPrefix": "",
     "allowedSignUpEmailDomains": [],
+    "selfSignUpEnabled": false,
     "publishedApiAllowedIpV4AddressRanges": [
       "0.0.0.0/1",
       "128.0.0.0/1"
