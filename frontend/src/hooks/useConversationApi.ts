@@ -60,11 +60,13 @@ const useConversationApi = () => {
       return http.delete('conversations');
     },
     updateTitle,
-    updateTitleWithGeneratedTitle: async (conversationId: string, currentLanguage: string = "en") => {
-    
+    updateTitleWithGeneratedTitle: async (conversationId: string, language: string = "en") => {
+      
+      language = currentLanguage.toLowerCase();
+
       const res = await http.getOnce<{
         title: string;
-      }>(`conversation/${conversationId}/proposed-title/${currentLanguage}`);
+      }>(`conversation/${conversationId}/proposed-title/${language}`);
       return updateTitle(conversationId, res.data.title);
     },
     mutateConversations: (
