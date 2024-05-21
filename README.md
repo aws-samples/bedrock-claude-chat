@@ -24,6 +24,9 @@ Add your own instruction and give external knowledge as URL or files (a.k.a [RAG
 ![](./docs/imgs/bot_chat.png)
 ![](./docs/imgs/bot_api_publish_screenshot3.png)
 
+> [!Important]
+> For governance reasons, only allowed users are able to create customized bots. To allow the creation of customized bots, the user must be a member of group called `CreatingBotAllowed`, which can be set up via the management console > Amazon Cognito User pools or aws cli. Note that the user pool id can be referred by accessing CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
+
 ### Administrator dashboard
 
 Analyze usage for each user / bot on administrator dashboard. [detail](./docs/ADMINISTRATOR.md)
@@ -292,6 +295,22 @@ By default, this sample does not restrict the domains for sign-up email addresse
 ### External Identity Provider
 
 This sample supports external identity provider. Currently we support [Google](./docs/idp/SET_UP_GOOGLE.md) and [custom OIDC provider](./docs/idp/SET_UP_CUSTOM_OIDC.md).
+
+### Add new users to groups automatically
+
+This sample has the following groups to give permissions to users:
+
+- [`Admin`](./docs/ADMINISTRATOR.md)
+- [`CreatingBotAllowed`](#bot-personalization)
+- [`PublishAllowed`](./docs/PUBLISH_API.md)
+
+If you want newly created users to automatically join groups, you can specify them in [cdk.json](./cdk/cdk.json).
+
+```json
+"autoJoinUserGroups": ["CreatingBotAllowed"],
+```
+
+By default, newly created users do not belong to any groups.
 
 ### Local Development
 
