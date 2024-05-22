@@ -48,6 +48,7 @@ class TestCustomBotRepository(unittest.TestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             generation_params=GenerationParamsModel(
                 max_tokens=2000,
@@ -88,6 +89,11 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(
             bot.embedding_params.chunk_overlap,
             DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+        )
+
+        self.assertEqual(
+            bot.embedding_params.enable_partition_pdf,
+            DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
         )
         self.assertEqual(bot.generation_params.max_tokens, 2000)
         self.assertEqual(bot.generation_params.top_k, 250)
@@ -133,6 +139,7 @@ class TestCustomBotRepository(unittest.TestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             generation_params=GenerationParamsModel(
                 max_tokens=2000,
@@ -179,6 +186,7 @@ class TestCustomBotRepository(unittest.TestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             generation_params=GenerationParamsModel(
                 max_tokens=2000,
@@ -234,6 +242,7 @@ class TestCustomBotRepository(unittest.TestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             generation_params=GenerationParamsModel(
                 max_tokens=2000,
@@ -265,8 +274,7 @@ class TestCustomBotRepository(unittest.TestCase):
             description="Updated Description",
             instruction="Updated Instruction",
             embedding_params=EmbeddingParamsModel(
-                chunk_size=500,
-                chunk_overlap=100,
+                chunk_size=500, chunk_overlap=100, enable_partition_pdf=False
             ),
             generation_params=GenerationParamsModel(
                 max_tokens=2500,
@@ -293,6 +301,8 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(bot.instruction, "Updated Instruction")
         self.assertEqual(bot.embedding_params.chunk_size, 500)
         self.assertEqual(bot.embedding_params.chunk_overlap, 100)
+
+        self.assertEqual(bot.embedding_params.enable_partition_pdf, False)
 
         self.assertEqual(bot.generation_params.max_tokens, 2500)
         self.assertEqual(bot.generation_params.top_k, 200)
@@ -324,6 +334,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             generation_params=GenerationParamsModel(
                 max_tokens=2000,
@@ -361,6 +372,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             generation_params=GenerationParamsModel(
                 max_tokens=2000,
@@ -398,6 +410,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             generation_params=GenerationParamsModel(
                 max_tokens=2000,
@@ -435,6 +448,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             generation_params=GenerationParamsModel(
                 max_tokens=2000,
@@ -471,6 +485,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             generation_params=GenerationParamsModel(
                 max_tokens=2000,
@@ -507,6 +522,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             generation_params=GenerationParamsModel(
                 max_tokens=2000,
@@ -615,6 +631,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             generation_params=GenerationParamsModel(
                 max_tokens=2000,
@@ -651,6 +668,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             generation_params=GenerationParamsModel(
                 max_tokens=2000,
@@ -687,6 +705,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             generation_params=GenerationParamsModel(
                 max_tokens=2000,
@@ -744,6 +763,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
             ),
             generation_params=GenerationParamsModel(
                 max_tokens=2000,

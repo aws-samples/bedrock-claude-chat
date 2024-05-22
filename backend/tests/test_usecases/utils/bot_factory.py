@@ -33,6 +33,7 @@ def create_test_private_bot(
         embedding_params=EmbeddingParamsModel(
             chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
             chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+            enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
         ),
         generation_params=GenerationParamsModel(
             max_tokens=2000,
@@ -78,6 +79,7 @@ def create_test_public_bot(
         embedding_params=EmbeddingParamsModel(
             chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
             chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+            enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
         ),
         generation_params=GenerationParamsModel(
             max_tokens=2000,

@@ -33,6 +33,8 @@ export interface EmbeddingProps {
   readonly bedrockRegion: string;
   readonly tableAccessRole: iam.IRole;
   readonly documentBucket: IBucket;
+  readonly embeddingContainerVcpu: number;
+  readonly embeddingContainerMemory: number;
 }
 
 export class Embedding extends Construct {
@@ -47,13 +49,14 @@ export class Embedding extends Construct {
      */
     const cluster = new ecs.Cluster(this, "Cluster", {
       vpc: props.vpc,
+      containerInsights: true,
     });
     const taskDefinition = new ecs.FargateTaskDefinition(
       this,
       "TaskDefinition",
       {
-        cpu: 2048,
-        memoryLimitMiB: 4096,
+        cpu: props.embeddingContainerVcpu,
+        memoryLimitMiB: props.embeddingContainerMemory,
         runtimePlatform: {
           cpuArchitecture: ecs.CpuArchitecture.X86_64,
           operatingSystemFamily: ecs.OperatingSystemFamily.LINUX,

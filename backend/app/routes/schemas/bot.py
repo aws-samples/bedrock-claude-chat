@@ -16,6 +16,7 @@ type_sync_status = Literal[
 class EmbeddingParams(BaseSchema):
     chunk_size: int
     chunk_overlap: int
+    enable_partition_pdf: bool
 
 
 class GenerationParams(BaseSchema):
@@ -94,6 +95,8 @@ class BotModifyInput(BaseSchema):
                 == current_bot_model.embedding_params.chunk_size
                 and self.embedding_params.chunk_overlap
                 == current_bot_model.embedding_params.chunk_overlap
+                and self.embedding_params.enable_partition_pdf
+                == current_bot_model.embedding_params.enable_partition_pdf
             ):
                 pass
             else:

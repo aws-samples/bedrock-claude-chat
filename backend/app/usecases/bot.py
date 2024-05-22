@@ -131,6 +131,12 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         else DEFAULT_EMBEDDING_CONFIG["chunk_overlap"]
     )
 
+    enable_partition_pdf = (
+        bot_input.embedding_params.enable_partition_pdf
+        if bot_input.embedding_params
+        else DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"]
+    )
+
     generation_params = (
         bot_input.generation_params.model_dump()
         if bot_input.generation_params
@@ -158,6 +164,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             embedding_params=EmbeddingParamsModel(
                 chunk_size=chunk_size,
                 chunk_overlap=chunk_overlap,
+                enable_partition_pdf=enable_partition_pdf,
             ),
             generation_params=GenerationParamsModel(**generation_params),
             search_params=SearchParamsModel(**search_params),
@@ -185,6 +192,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         embedding_params=EmbeddingParams(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
+            enable_partition_pdf=enable_partition_pdf,
         ),
         generation_params=GenerationParams(**generation_params),
         search_params=SearchParams(**search_params),
@@ -239,6 +247,12 @@ def modify_owned_bot(
         else DEFAULT_EMBEDDING_CONFIG["chunk_overlap"]
     )
 
+    enable_partition_pdf = (
+        modify_input.embedding_params.enable_partition_pdf
+        if modify_input.embedding_params
+        else DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"]
+    )
+
     generation_params = (
         modify_input.generation_params.model_dump()
         if modify_input.generation_params
@@ -266,6 +280,7 @@ def modify_owned_bot(
         embedding_params=EmbeddingParamsModel(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
+            enable_partition_pdf=enable_partition_pdf,
         ),
         generation_params=GenerationParamsModel(**generation_params),
         search_params=SearchParamsModel(**search_params),
@@ -286,6 +301,7 @@ def modify_owned_bot(
         embedding_params=EmbeddingParams(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
+            enable_partition_pdf=enable_partition_pdf,
         ),
         generation_params=GenerationParams(**generation_params),
         search_params=SearchParams(**search_params),

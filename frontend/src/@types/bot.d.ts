@@ -22,6 +22,7 @@ export type BotKnowledge = {
 export type EmdeddingParams = {
   chunkSize: number;
   chunkOverlap: number;
+  enablePartitionPdf: boolean;
 };
 
 export type BotKnowledgeDiff = {
