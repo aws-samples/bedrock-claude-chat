@@ -52,3 +52,16 @@ jobs:
           timeout 10s uvicorn app.main:app --host 0.0.0.0 --port 8000 &
           sleep 5
           curl http://localhost:8000/health
+
+  container-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build backend/Dockerfile
+        run: |
+          cd backend
+          docker build -t backend .
+      - name: Build backend/embedding.Dockerfile
+        run: |
+          cd backend
+          docker build -t embedding -f embedding.Dockerfile .
