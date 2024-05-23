@@ -8,15 +8,8 @@ from pprint import pprint
 from app.agents.agent import AgentExecutor, create_react_agent
 from app.agents.handlers.apigw_websocket import ApigwWebsocketCallbackHandler
 from app.agents.handlers.final_std import FinalStreamingStdOutCallbackHandler
-from app.agents.handlers.token_count import (
-    TokenCountCallbackHandler,
-    get_token_count_callback,
-)
-from app.agents.tools.knowledge import (
-    AnswerWithKnowledgeInput,
-    AnswerWithKnowledgeTool,
-    get_answer_with_knowledge_tool,
-)
+from app.agents.handlers.token_count import get_token_count_callback
+from app.agents.tools.knowledge import AnswerWithKnowledgeTool
 from app.agents.tools.rdb_sql.tool import get_tools
 from app.agents.tools.weather import today_weather_tool
 from app.bedrock import BedrockLLM
@@ -33,8 +26,6 @@ from langchain_core.callbacks.stdout import StdOutCallbackHandler
 from langchain_core.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain_core.prompts import PromptTemplate
 
-from examples.agents.tools.bmi import bmi_tool
-
 
 class TestBaseTool(unittest.TestCase):
     def test_extract_params_and_descriptions(self):
@@ -48,17 +39,18 @@ class TestSimpleInvoke(unittest.TestCase):
 
     def test_invoke(self):
         llm = BedrockLLM.from_model(model=self.MODEL)
-        prompt = PromptTemplate.from_template("")
-        llm.invoke(
+        # prompt = PromptTemplate.from_template("")
+        res = llm.invoke(
+            input="hello!",
             config={
                 "callbacks": [
                     ApigwWebsocketCallbackHandler(
                         gatewayapi="dummy", connection_id="dummy", debug=True
                     ),
-                    cb,
                 ],
             },
         )
+        print(res)
 
 
 class TestReactAgent(unittest.TestCase):

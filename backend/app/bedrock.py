@@ -15,7 +15,11 @@ from app.utils import get_anthropic_client, get_bedrock_client, is_anthropic_mod
 from langchain_core.callbacks.manager import CallbackManagerForLLMRun
 from langchain_core.language_models import LLM
 from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.messages import BaseMessage
 from langchain_core.outputs import GenerationChunk
+from langchain_core.prompt_values import PromptValue
+from langchain_core.prompts import BasePromptTemplate
+from langchain_core.prompts import ChatPromptTemplate as LangChainChatPromptTemplate
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
@@ -305,6 +309,43 @@ def get_bedrock_response(args: dict) -> dict:
     return response_body
 
 
+class MyChatPromptTemplate(BasePromptTemplate):
+    """A template for generating prompts for the LangChain's interface."""
+
+    # messages: list[MessageModel]
+    message_map: dict[str, MessageModel]
+    parent_message_id: str | None
+
+    def format(self) -> str:
+        import pdb
+
+        pdb.set_trace()
+        return ""
+
+    def format_prompt(self, **kwargs: Any) -> str:
+
+        # return json.dumps([m.model_dump_json() for m in messages])
+
+        tmp = {"parent_message_id": self.parent_message_id, "message_map": {}}
+        for k, v in self.message_map.items():
+            tmp["message_map"][k] = v.model_dump_json()
+        return json.dumps(tmp)
+
+    # @classmethod
+    # def from_messages(cls, messages: list[MessageModel]) -> "MyChatPromptTemplate":
+    #     return cls(input_variables=[], messages=messages)
+
+    @classmethod
+    def from_message_map(
+        cls, message_map: dict[str, MessageModel], parent_message_id: str | None = None
+    ) -> "MyChatPromptTemplate":
+        return cls(
+            input_variables=[],
+            message_map=message_map,
+            parent_message_id=parent_message_id,
+        )
+
+
 class BedrockLLM(LLM):
     """A wrapper class for the LangChain's interface."""
 
@@ -346,6 +387,10 @@ class BedrockLLM(LLM):
         )
         return args
 
+    def __reconstruct_message_map(self, prompt: str) -> dict[str, MessageModel]:
+        parsed = json.loads(prompt)
+        return {k: MessageModel(**json.loads(v)) for k, v in parsed.items()}
+
     def _call(
         self,
         prompt: str,
@@ -353,7 +398,30 @@ class BedrockLLM(LLM):
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> str:
-        args = self.__prepare_args_from_prompt(prompt, stream=False)
+        parsed = json.loads(prompt)
+        parent_message_id = parsed["parent_message_id"]
+        message_map_json = parsed["message_map"]
+        message_map = {
+            k: MessageModel(**json.loads(v)) for k, v in message_map_json.items()
+        }
+        import pdb
+
+        pdb.set_trace()
+        from app.usecases.chat import trace_to_root
+
+        messages = trace_to_root(node_id=parent_message_id, message_map=message_map)
+
+        args = compose_args(
+            messages,
+            self.model,
+            instruction=(
+                message_map["instruction"].content[0].body
+                if "instruction" in message_map
+                else None
+            ),
+            stream=False,
+            generation_params=self.generation_params,
+        )
         if self.is_anthropic_model:
             client = get_anthropic_client()
             response = client.messages.create(**args)
@@ -370,7 +438,15 @@ class BedrockLLM(LLM):
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
     ) -> Iterator[GenerationChunk]:
-        args = self.__prepare_args_from_prompt(prompt, stream=True)
+        # args = self.__prepare_args_from_prompt(prompt, stream=True)
+        messages = self.__reconstruct_messages(prompt)
+        args = compose_args(
+            messages,
+            self.model,
+            instruction=None,
+            stream=True,
+            generation_params=self.generation_params,
+        )
 
         if self.is_anthropic_model:
             client = get_anthropic_client()
