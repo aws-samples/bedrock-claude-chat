@@ -1,7 +1,6 @@
 import re
 from typing import Union
 
-from app.agents.prompt import FORMAT_INSTRUCTIONS
 from langchain_core.agents import AgentAction, AgentFinish
 from langchain_core.exceptions import OutputParserException
 from langchain_core.output_parsers import BaseOutputParser
@@ -18,9 +17,6 @@ MISSING_ACTION_INPUT_TAG_ERROR_MESSAGE = (
 
 class ReActSingleInputOutputParser(BaseOutputParser):
     """Parses ReAct-style LLM calls that have a single tool input."""
-
-    # def get_format_instructions(self) -> str:
-    #     return FORMAT_INSTRUCTIONS
 
     def parse(self, text: str) -> Union[AgentAction, AgentFinish]:
         includes_answer = f"<{FINAL_ANSWER_TAG}>" in text
@@ -43,7 +39,7 @@ class ReActSingleInputOutputParser(BaseOutputParser):
                             text,
                             re.DOTALL,
                         )
-                        .group(1)
+                        .group(1)  # type: ignore
                         .strip()
                     },
                     text,
@@ -59,7 +55,7 @@ class ReActSingleInputOutputParser(BaseOutputParser):
                         text,
                         re.DOTALL,
                     )
-                    .group(1)
+                    .group(1)  # type: ignore
                     .strip()
                 },
                 text,

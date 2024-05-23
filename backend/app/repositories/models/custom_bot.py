@@ -42,6 +42,15 @@ class SearchParamsModel(BaseModel):
     max_results: int
 
 
+class AgentToolModel(BaseModel):
+    name: str
+    description: str
+
+
+class AgentModel(BaseModel):
+    tools: list[AgentToolModel]
+
+
 class BotModel(BaseModel):
     id: str
     title: str
@@ -56,6 +65,7 @@ class BotModel(BaseModel):
     embedding_params: EmbeddingParamsModel
     generation_params: GenerationParamsModel
     search_params: SearchParamsModel
+    agent: AgentModel
     knowledge: KnowledgeModel
     sync_status: type_sync_status
     sync_status_reason: str
@@ -70,6 +80,9 @@ class BotModel(BaseModel):
             or len(self.knowledge.sitemap_urls) > 0
             or len(self.knowledge.filenames) > 0
         )
+
+    def is_agent_enabled(self) -> bool:
+        return len(self.agent.tools) > 0
 
 
 class BotAliasModel(BaseModel):

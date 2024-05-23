@@ -12,14 +12,14 @@ from app.agents.handlers.token_count import (
     TokenCountCallbackHandler,
     get_token_count_callback,
 )
-from app.agents.tools.examples.weather import today_weather_tool
-from app.agents.tools.lang_detect import CheckInputLanguageTool, TranslateToEnglishTool
-from app.agents.tools.rdb_sql.tool import get_tools
-from app.agents.tools.vector.tool import (
+from app.agents.tools.knowledge import (
     AnswerWithKnowledgeInput,
     AnswerWithKnowledgeTool,
     get_answer_with_knowledge_tool,
 )
+from app.agents.tools.lang_detect import CheckInputLanguageTool, TranslateToEnglishTool
+from app.agents.tools.rdb_sql.tool import get_tools
+from app.agents.tools.weather import today_weather_tool
 from app.bedrock import BedrockLLM
 from app.config import DEFAULT_EMBEDDING_CONFIG
 from app.repositories.models.custom_bot import (

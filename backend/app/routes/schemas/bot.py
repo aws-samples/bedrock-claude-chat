@@ -1,5 +1,7 @@
 from __future__ import annotations
-from typing import Literal, TYPE_CHECKING
+
+from typing import TYPE_CHECKING, Literal
+
 from app.routes.schemas.base import BaseSchema
 from pydantic import Field
 
@@ -31,6 +33,15 @@ class SearchParams(BaseSchema):
     max_results: int
 
 
+class AgentTool(BaseSchema):
+    name: str
+    description: str
+
+
+class Agent(BaseSchema):
+    tools: list[AgentTool]
+
+
 class Knowledge(BaseSchema):
     source_urls: list[str]
     sitemap_urls: list[str]
@@ -54,6 +65,7 @@ class BotInput(BaseSchema):
     embedding_params: EmbeddingParams | None
     generation_params: GenerationParams | None
     search_params: SearchParams | None
+    agent: Agent | None
     knowledge: Knowledge | None
 
 
@@ -64,6 +76,7 @@ class BotModifyInput(BaseSchema):
     embedding_params: EmbeddingParams | None
     generation_params: GenerationParams | None
     search_params: SearchParams | None
+    agent: Agent | None
     knowledge: KnowledgeDiffInput | None
 
     def has_update_files(self) -> bool:
@@ -113,6 +126,7 @@ class BotModifyOutput(BaseSchema):
     embedding_params: EmbeddingParams
     generation_params: GenerationParams
     search_params: SearchParams
+    agent: Agent
     knowledge: Knowledge
 
 
@@ -130,6 +144,7 @@ class BotOutput(BaseSchema):
     embedding_params: EmbeddingParams
     generation_params: GenerationParams
     search_params: SearchParams
+    agent: Agent
     knowledge: Knowledge
     sync_status: type_sync_status
     sync_status_reason: str

@@ -3,7 +3,7 @@ import sys
 sys.path.append(".")
 import unittest
 
-from app.agents.tools.examples.weather import today_weather_tool
+from app.agents.tools.weather import today_weather_tool
 
 
 class TestWeatherTool(unittest.TestCase):

@@ -18,7 +18,6 @@ class WeatherInput(BaseModel):
 def get_weather(location: str) -> str:
     if location.find("\n") != -1:
         location = location.replace("\n", "")
-    # print(f"{location=}")  # debug
 
     # Get latitude and longitude from location
     url = f"https://geocoding-api.open-meteo.com/v1/search?name={location}"
@@ -64,7 +63,6 @@ def get_weather(location: str) -> str:
         weather = "Unknown"
 
     res = f"Today's weather in {location} is {weather}. The forecast is a high of {max_temp} degrees and a low of {min_temp} degrees."
-    # print(f"{res=}")  # debug
     return res
 
 
