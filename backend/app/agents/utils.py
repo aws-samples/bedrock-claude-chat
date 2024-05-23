@@ -12,3 +12,10 @@ def get_available_tools() -> list[BaseTool]:
     tools.extend(get_rdb_sql_tools(llm=llm))
 
     return tools
+
+
+def get_tool_by_name(name: str) -> BaseTool:
+    for tool in get_available_tools():
+        if tool.name == name:
+            return tool
+    raise ValueError(f"Tool with name {name} not found")

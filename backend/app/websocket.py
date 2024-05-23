@@ -12,11 +12,7 @@ from anthropic.types import MessageDeltaEvent, MessageStopEvent
 from app.agents.agent import AgentExecutor, create_react_agent
 from app.agents.handlers.apigw_websocket import ApigwWebsocketCallbackHandler
 from app.agents.handlers.token_count import TokenCountCallbackHandler
-from app.agents.tools.knowledge import (
-    AnswerWithKnowledgeTool,
-    get_answer_with_knowledge_tool,
-)
-from app.agents.tools.lang_detect import CheckInputLanguageTool, TranslateToEnglishTool
+from app.agents.tools.knowledge import AnswerWithKnowledgeTool
 from app.agents.tools.rdb_sql.tool import get_tools
 from app.agents.tools.weather import today_weather_tool
 from app.auth import verify_token

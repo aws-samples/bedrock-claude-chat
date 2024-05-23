@@ -17,12 +17,12 @@ from app.agents.tools.knowledge import (
     AnswerWithKnowledgeTool,
     get_answer_with_knowledge_tool,
 )
-from app.agents.tools.lang_detect import CheckInputLanguageTool, TranslateToEnglishTool
 from app.agents.tools.rdb_sql.tool import get_tools
 from app.agents.tools.weather import today_weather_tool
 from app.bedrock import BedrockLLM
 from app.config import DEFAULT_EMBEDDING_CONFIG
 from app.repositories.models.custom_bot import (
+    AgentModel,
     BotModel,
     EmbeddingParamsModel,
     GenerationParamsModel,
@@ -31,6 +31,7 @@ from app.repositories.models.custom_bot import (
 )
 from langchain_core.callbacks.stdout import StdOutCallbackHandler
 from langchain_core.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+from langchain_core.prompts import PromptTemplate
 
 from examples.agents.tools.bmi import bmi_tool
 
@@ -40,6 +41,24 @@ class TestBaseTool(unittest.TestCase):
 
         args = today_weather_tool.extract_params_and_descriptions()
         pprint(args)
+
+
+class TestSimpleInvoke(unittest.TestCase):
+    MODEL = "claude-v3-haiku"
+
+    def test_invoke(self):
+        llm = BedrockLLM.from_model(model=self.MODEL)
+        prompt = PromptTemplate.from_template("")
+        llm.invoke(
+            config={
+                "callbacks": [
+                    ApigwWebsocketCallbackHandler(
+                        gatewayapi="dummy", connection_id="dummy", debug=True
+                    ),
+                    cb,
+                ],
+            },
+        )
 
 
 class TestReactAgent(unittest.TestCase):
@@ -61,6 +80,7 @@ class TestReactAgent(unittest.TestCase):
             embedding_params=EmbeddingParamsModel(
                 chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
                 chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
+                enable_partition_pdf=False,
             ),
             generation_params=GenerationParamsModel(
                 max_tokens=2000,
@@ -72,6 +92,7 @@ class TestReactAgent(unittest.TestCase):
             search_params=SearchParamsModel(
                 max_results=20,
             ),
+            agent=AgentModel(tools=[]),
             knowledge=KnowledgeModel(
                 source_urls=[""],
                 sitemap_urls=[""],
