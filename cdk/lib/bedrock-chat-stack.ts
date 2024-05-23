@@ -35,6 +35,7 @@ export interface BedrockChatStackProps extends StackProps {
   readonly enableMistral: boolean;
   readonly embeddingContainerVcpu: number;
   readonly embeddingContainerMemory: number;
+  readonly enableSelfSignUp: boolean;
 }
 
 export class BedrockChatStack extends cdk.Stack {

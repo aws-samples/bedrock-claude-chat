@@ -65,7 +65,7 @@ chmod +x bin.sh
 
 You can now specify the following parameters during deployment to enhance security and customization:
 
-- **--enable-self-register**: Enable self-registration (default: disabled). By default you will need to create all users on cognito and it will not allow users to self register their accounts.
+- **--disable-self-register**: Disable self-registration (default: enabled). If this flag is set, you will need to create all users on cognito and it will not allow users to self register their accounts.
 - **--ipv4-ranges**: Comma-separated list of allowed IPv4 ranges. (default: allow all ipv4 addresses)
 - **--ipv6-ranges**: Comma-separated list of allowed IPv6 ranges. (default: allow all ipv6 addresses)
 - **--allowed-signup-email-domains**: Comma-separated list of allowed email domains for sign-up. (default: no domain restriction)
@@ -73,7 +73,7 @@ You can now specify the following parameters during deployment to enhance securi
 #### Example command with parameters:
 
 ```sh
-./bin.sh --enable-self-register --ipv4-ranges "192.0.2.0/25,192.0.2.128/25" --ipv6-ranges "2001:db8:1:2::/64,2001:db8:1:3::/64" --allowed-signup-email-domains "example.com,anotherexample.com"
+./bin.sh --disable-self-register --ipv4-ranges "192.0.2.0/25,192.0.2.128/25" --ipv6-ranges "2001:db8:1:2::/64,2001:db8:1:3::/64" --allowed-signup-email-domains "example.com,anotherexample.com"
 ```
 
 - After about 30 minutes, you will get the following output, which you can access from your browser
@@ -87,8 +87,7 @@ Frontend URL: https://xxxxxxxxx.cloudfront.net
 The sign-up screen will appear as shown above, where you can register your email and log in.
 
 > [!Important]
-> This deployment method allows anyone with the URL to reach the public endpoint. For production use, we strongly recommend adding IP address restrictions (Defining the allowed-signup-email-domains to allow only your emails from your comapny domain to be able to sing-up to restrict the users). For ip address restriction use both ipv4-ranges and ipv6-ranges when executing ./bin
-> By default self registration is disabled for security purposes and you will need to create all users on cognito and it will not allow users to self register their accounts.i this can be changed by using the --enable-self-register parameter.
+> This deployment method allows anyone with the URL to sign up if optional parameters are not configured. For production use, we strongly recommend adding IP address restrictions and disabling self-signup to mitigate security risks (Defining the allowed-signup-email-domains to allow only your emails from your comapny domain to be able to sing-up to restrict the users). For ip address restriction use both ipv4-ranges and ipv6-ranges and to disable self-signup use disable-self-register when executing ./bin
 
 ## Architecture
 

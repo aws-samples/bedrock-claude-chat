@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Default parameters
-ALLOW_SELF_REGISTER="false"
+ALLOW_SELF_REGISTER="true"
 IPV4_RANGES=""
 IPV6_RANGES=""
 ALLOWED_SIGN_UP_EMAIL_DOMAINS=""
@@ -9,7 +9,7 @@ ALLOWED_SIGN_UP_EMAIL_DOMAINS=""
 # Parse command-line arguments for customization
 while [[ "$#" -gt 0 ]]; do
     case $1 in
-        --enable-self-register) ALLOW_SELF_REGISTER="true" ;;
+        --disable-self-register) ALLOW_SELF_REGISTER="false" ;;
         --ipv4-ranges) IPV4_RANGES="$2"; shift ;;
         --ipv6-ranges) IPV6_RANGES="$2"; shift ;;
         --allowed-signup-email-domains) ALLOWED_SIGN_UP_EMAIL_DOMAINS="$2"; shift ;;
