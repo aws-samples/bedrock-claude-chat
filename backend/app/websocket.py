@@ -12,7 +12,6 @@ from anthropic.types import MessageDeltaEvent, MessageStopEvent
 from app.agents.agent import AgentExecutor, create_react_agent
 from app.agents.handlers.apigw_websocket import ApigwWebsocketCallbackHandler
 from app.agents.handlers.token_count import TokenCountCallbackHandler
-from app.agents.tools.examples.bmi import bmi_tool
 from app.agents.tools.examples.weather import today_weather_tool
 from app.agents.tools.lang_detect import CheckInputLanguageTool, TranslateToEnglishTool
 from app.agents.tools.rdb_sql.tool import get_tools
@@ -36,6 +35,8 @@ from app.utils import get_anthropic_client, get_current_time, is_anthropic_model
 from app.vector_search import filter_used_results, search_related_docs
 from boto3.dynamodb.conditions import Key
 from ulid import ULID
+
+from examples.agents.tools.bmi import bmi_tool
 
 WEBSOCKET_SESSION_TABLE_NAME = os.environ["WEBSOCKET_SESSION_TABLE_NAME"]
 

@@ -12,7 +12,6 @@ from app.agents.handlers.token_count import (
     TokenCountCallbackHandler,
     get_token_count_callback,
 )
-from app.agents.tools.examples.bmi import bmi_tool
 from app.agents.tools.examples.weather import today_weather_tool
 from app.agents.tools.lang_detect import CheckInputLanguageTool, TranslateToEnglishTool
 from app.agents.tools.rdb_sql.tool import get_tools
@@ -32,6 +31,8 @@ from app.repositories.models.custom_bot import (
 )
 from langchain_core.callbacks.stdout import StdOutCallbackHandler
 from langchain_core.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+
+from examples.agents.tools.bmi import bmi_tool
 
 
 class TestBaseTool(unittest.TestCase):
