@@ -342,24 +342,11 @@ def handler(event, context):
         # 5. Client sends `END` message to the WebSocket API.
         # 6. This handler receives the `END` message, concatenates the parts and sends the message to Bedrock.
         if body == "START":
-            try:
-                # Verify JWT token
-                decoded = verify_token(chat_input.token)
-            except Exception as e:
-                logger.error(f"Invalid token: {e}")
-                return {"statusCode": 403, "body": "Invalid token."}
             return {"statusCode": 200, "body": "Session started."}
         elif body == "END":
             # Concatenate the message parts
             message_parts = []
             last_evaluated_key = None
-
-            try:
-                # Verify JWT token
-                decoded = verify_token(chat_input.token)
-            except Exception as e:
-                logger.error(f"Invalid token: {e}")
-                return {"statusCode": 403, "body": "Invalid token."}
 
             while True:
                 if last_evaluated_key:
@@ -390,13 +377,6 @@ def handler(event, context):
             message_json = json.loads(body)
             part_index = message_json["index"]
             message_part = message_json["part"]
-
-            try:
-                # Verify JWT token
-                decoded = verify_token(chat_input.token)
-            except Exception as e:
-                logger.error(f"Invalid token: {e}")
-                return {"statusCode": 403, "body": "Invalid token."}
 
             # Store the message part with its index
             table.put_item(
