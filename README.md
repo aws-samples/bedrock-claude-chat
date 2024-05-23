@@ -320,6 +320,11 @@ See [here](./docs/RAG.md).
 
 - [Takehiro Suzuki](https://github.com/statefb)
 - [Yusuke Wada](https://github.com/wadabee)
+- [Yukinobu Mine](https://github.com/Yukinobu-Mine)
+
+## Contributors
+
+[![bedrock claude chat contributors](https://contrib.rocks/image?repo=aws-samples/bedrock-claude-chat&max=1000)](https://github.com/aws-samples/bedrock-claude-chat/graphs/contributors)
 
 ## License
 
