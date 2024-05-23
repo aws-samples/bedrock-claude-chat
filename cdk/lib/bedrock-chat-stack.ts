@@ -20,7 +20,6 @@ import { UsageAnalysis } from "./constructs/usage-analysis";
 import { TIdentityProvider, identityProvider } from "./utils/identity-provider";
 import { ApiPublishCodebuild } from "./constructs/api-publish-codebuild";
 import { WebAclForPublishedApi } from "./constructs/webacl-for-published-api";
-import { VpcConfig } from "./api-publishment-stack";
 import { CronScheduleProps, createCronSchedule } from "./utils/cron-schedule";
 import { NagSuppressions } from 'cdk-nag';
 
@@ -56,12 +55,6 @@ export class BedrockChatStack extends cdk.Stack {
       rdsSchedule: cronSchedule,
     });
     const idp = identityProvider(props.identityProviders);
-    // CodeBuild is used for api publication
-    const apiPublishCodebuild = new ApiPublishCodebuild(
-      this,
-      "ApiPublishCodebuild",
-      { dbSecret: vectorStore.secret }
-    );
 
     const accessLogBucket = new Bucket(this, "AccessLogBucket", {
       encryption: BucketEncryption.S3_MANAGED,
@@ -79,6 +72,14 @@ export class BedrockChatStack extends cdk.Stack {
       removalPolicy: RemovalPolicy.DESTROY,
       objectOwnership: ObjectOwnership.OBJECT_WRITER,
       autoDeleteObjects: true,
+      serverAccessLogsBucket: accessLogBucket,
+      serverAccessLogsPrefix: "DocumentBucket"
+    });
+
+    // CodeBuild is used for api publication
+    const apiPublishCodebuild = new ApiPublishCodebuild(this, "ApiPublishCodebuild",{ 
+      accessLogBucket,
+      dbSecret: vectorStore.secret 
     });
 
     const frontend = new Frontend(this, "Frontend", {
@@ -100,6 +101,8 @@ export class BedrockChatStack extends cdk.Stack {
       removalPolicy: RemovalPolicy.DESTROY,
       objectOwnership: ObjectOwnership.OBJECT_WRITER,
       autoDeleteObjects: true,
+      serverAccessLogsBucket: accessLogBucket,
+      serverAccessLogsPrefix: "LargeMessageBucket"
     });
 
     const database = new Database(this, "Database", {
@@ -108,6 +111,7 @@ export class BedrockChatStack extends cdk.Stack {
     });
 
     const usageAnalysis = new UsageAnalysis(this, "UsageAnalysis", {
+      accessLogBucket,
       sourceDatabase: database,
     });
 
@@ -128,6 +132,7 @@ export class BedrockChatStack extends cdk.Stack {
 
     // For streaming response
     const websocket = new WebSocket(this, "WebSocket", {
+      accessLogBucket,
       vpc,
       dbSecrets: vectorStore.secret,
       database: database.table,

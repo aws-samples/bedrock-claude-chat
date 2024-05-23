@@ -9,6 +9,7 @@ import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import { NagSuppressions } from 'cdk-nag';
 
 export interface ApiPublishCodebuildProps {
+  readonly accessLogBucket: s3.Bucket;
   readonly dbSecret: secretsmanager.ISecret;
 }
 
@@ -24,6 +25,8 @@ export class ApiPublishCodebuild extends Construct {
       removalPolicy: RemovalPolicy.DESTROY,
       objectOwnership: s3.ObjectOwnership.OBJECT_WRITER,
       autoDeleteObjects: true,
+      serverAccessLogsBucket: props.accessLogBucket,
+        serverAccessLogsPrefix: "ApiPublishCodebuildBucket"
     });
 
     new s3deploy.BucketDeployment(this, "PublishApiSourceDeploy", {

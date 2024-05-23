@@ -33,6 +33,8 @@ export class Frontend extends Construct {
       enforceSSL: true,
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
+      serverAccessLogsBucket: props.accessLogBucket,
+      serverAccessLogsPrefix: "AssetBucket"
     });
 
     const originAccessIdentity = new OriginAccessIdentity(

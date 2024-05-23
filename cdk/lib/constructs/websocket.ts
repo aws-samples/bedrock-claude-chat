@@ -1,19 +1,15 @@
 import { Construct } from "constructs";
 import * as apigwv2 from "aws-cdk-lib/aws-apigatewayv2";
 import { WebSocketLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
-import * as python from "@aws-cdk/aws-lambda-python-alpha";
 import {
   DockerImageCode,
   DockerImageFunction,
   IFunction,
 } from "aws-cdk-lib/aws-lambda";
 import * as path from "path";
-import { Runtime } from "aws-cdk-lib/aws-lambda";
 import * as iam from "aws-cdk-lib/aws-iam";
 import { CfnOutput, Duration, RemovalPolicy, Stack } from "aws-cdk-lib";
 import { Platform } from "aws-cdk-lib/aws-ecr-assets";
-import * as sns from "aws-cdk-lib/aws-sns";
-import { SnsEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { Auth } from "./auth";
 import { ITable } from "aws-cdk-lib/aws-dynamodb";
 import { CfnRouteResponse } from "aws-cdk-lib/aws-apigatewayv2";
@@ -22,6 +18,7 @@ import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as s3 from "aws-cdk-lib/aws-s3";
 
 export interface WebSocketProps {
+  readonly accessLogBucket: s3.Bucket;
   readonly vpc: ec2.IVpc;
   readonly database: ITable;
   readonly dbSecrets: ISecret;
@@ -54,6 +51,8 @@ export class WebSocket extends Construct {
         removalPolicy: RemovalPolicy.DESTROY,
         objectOwnership: s3.ObjectOwnership.OBJECT_WRITER,
         autoDeleteObjects: true,
+        serverAccessLogsBucket: props.accessLogBucket,
+        serverAccessLogsPrefix: "LargePayloadSupportBucket"
       }
     );
 
