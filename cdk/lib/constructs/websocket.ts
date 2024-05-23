@@ -1,11 +1,15 @@
 import { Construct } from "constructs";
 import * as apigwv2 from "aws-cdk-lib/aws-apigatewayv2";
 import { WebSocketLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
+import * as agwa from "aws-cdk-lib/aws-apigatewayv2-authorizers";
+
 import {
   DockerImageCode,
   DockerImageFunction,
   IFunction,
+  Runtime,
 } from "aws-cdk-lib/aws-lambda";
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import * as path from "path";
 import * as iam from "aws-cdk-lib/aws-iam";
 import { CfnOutput, Duration, RemovalPolicy, Stack } from "aws-cdk-lib";
@@ -27,6 +31,7 @@ export interface WebSocketProps {
   readonly tableAccessRole: iam.IRole;
   readonly websocketSessionTable: ITable;
   readonly largeMessageBucket: s3.IBucket;
+  readonly querystringKeyForIdToken?: string;
 }
 
 export class WebSocket extends Construct {
@@ -110,8 +115,23 @@ export class WebSocket extends Construct {
     });
     props.dbSecrets.grantRead(handler)
 
+    const authHandler = new NodejsFunction(this, "AuthHandler", {
+      runtime: Runtime.NODEJS_18_X,
+      entry: "./authorizer/index.ts",
+      handler: "handler",
+      environment: {
+        USER_POOL_ID: props.auth.userPool.userPoolId,
+        APP_CLIENT_ID: props.auth.client.userPoolClientId,
+      }
+    });
+
+    const authorizer = new agwa.WebSocketLambdaAuthorizer("Authorizer", authHandler, {
+      identitySource: [`route.request.querystring.${props.querystringKeyForIdToken ?? "idToken"}`],
+    });
+
     const webSocketApi = new apigwv2.WebSocketApi(this, "WebSocketApi", {
       connectRouteOptions: {
+        authorizer: authorizer,
         integration: new WebSocketLambdaIntegration(
           "ConnectIntegration",
           handler

@@ -1,0 +1,7 @@
+{
+  "name": "authorizer",
+  "dependencies": {
+    "@types/aws-lambda": "^8.10.72",
+    "aws-jwt-verify": "^4.0.0"
+  }
+}
