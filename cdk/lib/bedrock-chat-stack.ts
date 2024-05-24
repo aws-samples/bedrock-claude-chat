@@ -31,7 +31,7 @@ export interface BedrockChatStackProps extends StackProps {
   readonly publishedApiAllowedIpV4AddressRanges: string[];
   readonly publishedApiAllowedIpV6AddressRanges: string[];
   readonly allowedSignUpEmailDomains: string[];
-  readonly autoJoinUserGroups?: string[];
+  readonly autoJoinUserGroups: string[];
   readonly rdsSchedules: CronScheduleProps;
   readonly enableMistral: boolean;
 }
@@ -103,7 +103,7 @@ export class BedrockChatStack extends cdk.Stack {
       userPoolDomainPrefixKey: props.userPoolDomainPrefix,
       idp,
       allowedSignUpEmailDomains: props.allowedSignUpEmailDomains,
-      autoJoinUserGroups: props.autoJoinUserGroups ?? [],
+      autoJoinUserGroups: props.autoJoinUserGroups,
     });
     const largeMessageBucket = new Bucket(this, "LargeMessageBucket", {
       encryption: BucketEncryption.S3_MANAGED,

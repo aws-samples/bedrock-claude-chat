@@ -191,6 +191,14 @@ export class Auth extends Construct {
     );
 
     if (props.autoJoinUserGroups.length >= 1) {
+      /**
+       * Create a Cognito trigger to add a new user to the group specified with `autoJoinUserGroups`.
+       * 
+       * Registering a Lambda function that uses a user pool as a trigger of the user pool itself
+       * results circular reference, so CloudFormation cannot do this when creating a user pool.
+       * Additionally, CloudFormation does not provide the functionality to add triggers to existing user pools.
+       * Therefore, use a custom resource implementing that functionality.
+       */
       const addUserToGroupsFunction = new PythonFunction(this, "AddUserToGroups", {
         runtime: Runtime.PYTHON_3_12,
         index: "add_user_to_groups.py",

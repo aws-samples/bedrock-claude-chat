@@ -9,6 +9,9 @@ cognito = boto3.client('cognito-idp')
 
 
 def handler(event, context):
+    """Custom resource to implement the functionality to add triggers to existing Cognito user pools.
+    Because CloudFormation does not provide that functionality.
+    """
     request_type = event['RequestType']
     physical_resource_id = event.get('PhysicalResourceId') or f'{USER_POOL_ID}-triggers'
 
