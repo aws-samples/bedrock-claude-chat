@@ -1,10 +1,13 @@
 import * as cdk from "aws-cdk-lib";
 import { BedrockChatStack } from "../lib/bedrock-chat-stack";
 import { Template } from "aws-cdk-lib/assertions";
+import { AwsPrototypingChecks } from '@aws-prototyping-sdk/pdk-nag'
 
 describe("Fine-grained Assertions Test", () => {
   test("Identity Provider Generation", () => {
     const app = new cdk.App();
+    cdk.Aspects.of(app).add(new AwsPrototypingChecks())
+
     const domainPrefix = "test-domain";
 
     const hasGoogleProviderStack = new BedrockChatStack(
@@ -146,6 +149,8 @@ describe("Fine-grained Assertions Test", () => {
 describe("Scheduler Test", () => {
   test("has schedules", () => {
     const app = new cdk.App();
+    cdk.Aspects.of(app).add(new AwsPrototypingChecks())
+
     const hasScheduleStack = new BedrockChatStack(app, "HasSchedulesStack", {
       bedrockRegion: "us-east-1",
       crossRegionReferences: true,

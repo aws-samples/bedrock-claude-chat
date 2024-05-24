@@ -5,11 +5,8 @@ import { BedrockChatStack } from "../lib/bedrock-chat-stack";
 import { FrontendWafStack } from "../lib/frontend-waf-stack";
 import { TIdentityProvider } from "../lib/utils/identity-provider";
 import { CronScheduleProps } from "../lib/utils/cron-schedule";
-import { AwsPrototypingChecks } from '@aws-prototyping-sdk/pdk-nag'
 
 const app = new cdk.App();
-cdk.Aspects.of(app).add(new AwsPrototypingChecks())
-
 
 const BEDROCK_REGION = app.node.tryGetContext("bedrockRegion");
 
