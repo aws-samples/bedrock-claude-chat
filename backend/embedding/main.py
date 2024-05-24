@@ -38,11 +38,7 @@ RETRY_DELAY_TO_INSERT_TO_POSTGRES = 2
 RETRIES_TO_UPDATE_SYNC_STATUS = 4
 RETRY_DELAY_TO_UPDATE_SYNC_STATUS = 2
 
-DB_NAME = os.environ.get("DB_NAME", "postgres")
-DB_HOST = os.environ.get("DB_HOST", "")
-DB_USER = os.environ.get("DB_USER", "postgres")
-DB_PASSWORD = os.environ.get("DB_PASSWORD", "password")
-DB_PORT = int(os.environ.get("DB_PORT", 5432))
+DB_SECRETS_ARN = os.environ.get("DB_SECRETS_ARN", "")
 DOCUMENT_BUCKET = os.environ.get("DOCUMENT_BUCKET", "documents")
 
 METADATA_URI = os.environ.get("ECS_CONTAINER_METADATA_URI_V4")
