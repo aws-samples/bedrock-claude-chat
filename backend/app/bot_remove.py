@@ -19,7 +19,6 @@ def delete_from_postgres(bot_id: str):
 
     secrets = parameters.get_secret(DB_SECRETS_ARN)
     access_info = json.loads(secrets)
-    print(access_info)
 
     conn = pg8000.connect(
         database=access_info["dbname"],

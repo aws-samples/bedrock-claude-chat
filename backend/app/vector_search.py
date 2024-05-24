@@ -81,7 +81,6 @@ def search_related_docs(bot_id: str, limit: int, query: str) -> list[SearchResul
 
     secrets = parameters.get_secret(DB_SECRETS_ARN)
     access_info = json.loads(secrets)
-    print(access_info)
 
     conn = pg8000.connect(
         database=access_info["dbname"],
