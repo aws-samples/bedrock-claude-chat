@@ -1,7 +1,7 @@
 import logging
 import os
 
-from app.agents.utils import get_available_tools
+from app.agents.utils import get_available_tools, get_tool_by_name
 from app.config import DEFAULT_EMBEDDING_CONFIG
 from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
 from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG, DEFAULT_SEARCH_CONFIG
@@ -27,6 +27,7 @@ from app.repositories.custom_bot import (
 )
 from app.repositories.models.custom_bot import (
     AgentModel,
+    AgentToolModel,
     BotAliasModel,
     BotMeta,
     BotModel,
@@ -150,7 +151,14 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
     )
 
     agent = (
-        AgentModel(**bot_input.agent.model_dump())
+        AgentModel(
+            tools=[
+                AgentToolModel(name=t.name, description=t.description)
+                for t in [
+                    get_tool_by_name(tool_name) for tool_name in bot_input.agent.tools
+                ]
+            ]
+        )
         if bot_input.agent
         else AgentModel(tools=[])
     )
@@ -279,7 +287,15 @@ def modify_owned_bot(
     )
 
     agent = (
-        AgentModel(**modify_input.agent.model_dump())
+        AgentModel(
+            tools=[
+                AgentToolModel(name=t.name, description=t.description)
+                for t in [
+                    get_tool_by_name(tool_name)
+                    for tool_name in modify_input.agent.tools
+                ]
+            ]
+        )
         if modify_input.agent
         else AgentModel(tools=[])
     )

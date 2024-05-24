@@ -42,6 +42,10 @@ class Agent(BaseSchema):
     tools: list[AgentTool]
 
 
+class AgentInput(BaseSchema):
+    tools: list[str] = Field(..., description="List of tool names")
+
+
 class Knowledge(BaseSchema):
     source_urls: list[str]
     sitemap_urls: list[str]
@@ -65,7 +69,7 @@ class BotInput(BaseSchema):
     embedding_params: EmbeddingParams | None
     generation_params: GenerationParams | None
     search_params: SearchParams | None
-    agent: Agent | None
+    agent: AgentInput | None
     knowledge: Knowledge | None
 
 
@@ -76,7 +80,7 @@ class BotModifyInput(BaseSchema):
     embedding_params: EmbeddingParams | None
     generation_params: GenerationParams | None
     search_params: SearchParams | None
-    agent: Agent | None
+    agent: AgentInput | None
     knowledge: KnowledgeDiffInput | None
 
     def has_update_files(self) -> bool:

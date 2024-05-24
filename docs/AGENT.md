@@ -38,9 +38,9 @@ To develop your own custom tools for the Agent, follow these guidelines:
 
 - Refer to the sample implementation of a [BMI calculation tool](../examples/agents/tools/bmi.py). This example demonstrates how to create a tool that calculates the Body Mass Index (BMI) based on user input.
 
-- Once you have implemented your custom tool, it's recommended to verify its functionality using test script ([example](../examples/agents/tools/test_script.py)). This script will help you ensure that your tool is working as expected.
+- Once you have implemented your custom tool, it's recommended to verify its functionality using test script ([example](../backend/tests/test_agent/test_tools/test_weather.py)). This script will help you ensure that your tool is working as expected.
 
-- After completing the development and testing of your custom tool, move the implementation file to the [backend/app/agents/tools/](../backend/app/agents/tools/) directory.
+- After completing the development and testing of your custom tool, move the implementation file to the [backend/app/agents/tools/](../backend/app/agents/tools/) directory. Then open [backend/app/agents/utils.py](../backend/app/agents/utils.py) and edit `get_available_tools` so that the user can select the tool developed.
 
 - Run `cdk deploy` to deploy your changes. This will make your custom tool available in the custom bot screen.
 
