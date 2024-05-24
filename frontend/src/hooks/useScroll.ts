@@ -34,7 +34,7 @@ const useScroll = () => {
       if (!disabled) {
         document.getElementById('main')?.scrollTo({
           top: document.getElementById('main')?.scrollHeight,
-          behavior: 'smooth',
+          behavior: 'instant',
         });
       }
     },
