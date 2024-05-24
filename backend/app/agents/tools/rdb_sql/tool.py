@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
-def get_tools(llm: BaseLanguageModel) -> list[BaseTool]:
+def get_sql_tools(llm: BaseLanguageModel) -> list[BaseTool]:
     """Get the tools in the toolkit."""
     db = SQLDatabase()
     list_sql_database_tool = ListSQLDatabaseTool(db=db)

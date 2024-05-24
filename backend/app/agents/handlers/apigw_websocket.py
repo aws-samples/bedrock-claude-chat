@@ -196,6 +196,9 @@ class ApigwWebsocketCallbackHandler(BaseCallbackHandler):
         )
 
     def on_llm_new_token(self, token: str, **kwargs: Any) -> None:
+        # TODO: switchable by agent_true
+        self._send("STREAMING", token)
+
         self.current_chunk += token
         if not self.final_answer_reached:
             if (
@@ -208,6 +211,17 @@ class ApigwWebsocketCallbackHandler(BaseCallbackHandler):
                 )
                 end_index = self.current_chunk.index(f"</{FINAL_ANSWER_TAG}>")
                 self._send("STREAMING", self.current_chunk[start_index:end_index])
+
+    def on_llm_end(self, response: LLMResult, **kwargs: Any) -> Any:
+        """一連のchainの終わりを検知してws閉じるための信号を送る"""
+        # TODO: エージェントモードでは実行しない？？
+        generation_info = response.generations[0][0].generation_info
+        if generation_info is None:
+            return
+        stop_reason = generation_info.get(
+            "stop_reason", generation_info.get("stop_reason", "")
+        )
+        self._send("STREAMING_END", stop_reason)
 
     def on_tool_end(
         self,
