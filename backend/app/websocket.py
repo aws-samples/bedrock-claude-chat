@@ -9,6 +9,7 @@ import boto3
 from app.agents.agent import AgentExecutor, create_react_agent
 from app.agents.handlers.apigw_websocket import ApigwWebsocketCallbackHandler
 from app.agents.handlers.token_count import TokenCountCallbackHandler
+from app.agents.langchain import BedrockLLM
 from app.agents.tools.knowledge import AnswerWithKnowledgeTool
 from app.agents.tools.rdb_sql.tool import get_sql_tools
 from app.agents.tools.weather import today_weather_tool
@@ -85,7 +86,7 @@ def process_chat_input(
         logger.info(f"Tools: {tools}")
         agent = create_react_agent(model=chat_input.message.model, tools=tools)
         executor = AgentExecutor(
-            name="Database Query Executor",
+            name="Agent Executor",
             agent=agent,
             tools=tools,
             callbacks=[],
@@ -115,6 +116,9 @@ def process_chat_input(
             f"Total Output Token Count: {token_count_callback.total_output_token_count}"
         )
         logger.info(f"Total Cost (USD): ${token_count_callback.total_cost}")
+
+        # TODO
+        # Store conversation
 
         return {"statusCode": 200, "body": "Message sent."}
 
@@ -212,7 +216,9 @@ def process_chat_input(
         on_stop=on_stop,
     )
     try:
-        stream_handler.run(args, as_generator=False)
+        for _ in stream_handler.run(args):
+            # `StreamHandler.run` is a generator, so need to iterate
+            ...
     except Exception as e:
         logger.error(f"Failed to run stream handler: {e}")
         return {

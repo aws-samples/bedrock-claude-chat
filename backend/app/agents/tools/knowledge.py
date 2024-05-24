@@ -66,14 +66,8 @@ first answer [^1].
 Question: {query}
 """
 
-dummy_search_results = [
-    {
-        "chunkBody": "hogehoge...",
-        "contentType": "s3",
-        "sourceLink": "",
-        "rank": 0,
-    },
-]
+
+# For testing purpose
 dummy_search_results = [
     SearchResult(
         bot_id="dummy",
@@ -81,7 +75,38 @@ dummy_search_results = [
         source=r["sourceLink"],
         rank=r["rank"],
     )
-    for r in dummy_search_results
+    for r in [
+        {
+            "chunkBody": "Sushi is one of the most representative dishes of Japan, consisting of vinegared rice topped with raw fish, vegetables, or other ingredients. Originating in the Edo period, it is now enjoyed worldwide.",
+            "contentType": "s3",
+            "sourceLink": "",
+            "rank": 0,
+        },
+        {
+            "chunkBody": "Ramen is a popular Japanese noodle dish that originated in China. There are various types of broth, such as pork bone, soy sauce, miso, and salt, each with regional characteristics.",
+            "contentType": "s3",
+            "sourceLink": "",
+            "rank": 1,
+        },
+        {
+            "chunkBody": "Curry rice is a dish that combines Indian curry with Japanese rice and is considered one of Japan's national dishes. There are many variations in the roux and toppings used.",
+            "contentType": "s3",
+            "sourceLink": "",
+            "rank": 2,
+        },
+        {
+            "chunkBody": "Tempura is a Japanese dish consisting of battered and deep-fried ingredients such as shrimp, vegetables, and fish. It is characterized by its crispy texture and the flavor of the batter.",
+            "contentType": "s3",
+            "sourceLink": "",
+            "rank": 3,
+        },
+        {
+            "chunkBody": "Okonomiyaki is a popular Japanese savory pancake made with a batter of wheat flour and water, mixed with ingredients such as cabbage, meat, and seafood, and cooked on a griddle. The Kansai and Hiroshima styles are famous.",
+            "contentType": "s3",
+            "sourceLink": "",
+            "rank": 4,
+        },
+    ]
 ]
 
 
@@ -113,9 +138,14 @@ class AnswerWithKnowledgeTool(BaseTool):
     ) -> str:
         logger.info(f"Running AnswerWithKnowledgeTool with query: {query}")
         if self.bot.id == "dummy":
+            # For testing purpose
             search_results = dummy_search_results
         else:
-            search_results = dummy_search_results
+            search_results = search_related_docs(
+                self.bot.id,
+                limit=self.bot.search_params.max_results,
+                query=query,
+            )
 
         context_prompt = self._format_search_results(search_results)
         return self.llm_chain.invoke({"context": context_prompt, "query": query})

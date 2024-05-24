@@ -1,13 +1,12 @@
 import json
 import logging
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Generator, Optional
 
 from anthropic.types import ContentBlockDeltaEvent, MessageDeltaEvent, MessageStopEvent
 from app.bedrock import calculate_price, get_bedrock_response, get_model_id
-from app.repositories.models.conversation import ChunkModel, ConversationModel
 from app.routes.schemas.conversation import type_model_name
 from app.utils import get_anthropic_client, is_anthropic_model
-from app.vector_search import filter_used_results
+from langchain_core.outputs import GenerationChunk
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
@@ -33,25 +32,19 @@ class BaseStreamHandler:
     def __init__(
         self,
         model: type_model_name,
-        on_stream: Callable[[str], Any],
-        on_stop: Callable[[OnStopInput], Any],
+        on_stream: Callable[[str], GenerationChunk | None],
+        on_stop: Callable[[OnStopInput], GenerationChunk | None],
     ):
         """Base class for stream handlers.
         :param model: Model name.
         :param on_stream: Callback function for streaming.
-                          It takes two arguments:
-                          - data (str): The streamed chunk token.
-                          - kwargs (Optional[dict]): Additional keyword arguments. Defaults to None.
         :param on_stop: Callback function for stopping the stream.
-                        It takes two arguments:
-                        - input (OnStopInput): The input for the on_stop callback.
-                        - kwargs (Optional[dict]): Additional keyword arguments. Defaults to None.
         """
         self.model = model
         self.on_stream = on_stream
         self.on_stop = on_stop
 
-    def run(self, args: dict, as_generator: bool = False):
+    def run(self, args: dict):
         raise NotImplementedError()
 
     @classmethod
@@ -71,7 +64,7 @@ class BaseStreamHandler:
 class AnthropicStreamHandler(BaseStreamHandler):
     """Stream handler for Anthropic models."""
 
-    def run(self, args: dict, as_generator: bool = False):
+    def run(self, args: dict):
         client = get_anthropic_client()
         response = client.messages.create(**args)
         completions = []
@@ -88,8 +81,7 @@ class AnthropicStreamHandler(BaseStreamHandler):
             if isinstance(event, ContentBlockDeltaEvent):
                 completions.append(event.delta.text)
                 response = self.on_stream(event.delta.text)
-                if as_generator:
-                    yield response
+                yield response
             elif isinstance(event, MessageDeltaEvent):
                 logger.debug(f"Received message delta event: {event.delta}")
                 stop_reason = str(event.delta.stop_reason)
@@ -110,10 +102,7 @@ class AnthropicStreamHandler(BaseStreamHandler):
                         price=price,
                     )
                 )
-                if as_generator:
-                    yield response
-                else:
-                    return response
+                yield response
             else:
                 continue
 
@@ -121,7 +110,7 @@ class AnthropicStreamHandler(BaseStreamHandler):
 class BedrockStreamHandler(BaseStreamHandler):
     """Stream handler for Bedrock models (e.g. Mistral)."""
 
-    def run(self, args: dict, as_generator: bool = False):
+    def run(self, args: dict):
         response = get_bedrock_response(args)
         completions = []
         stop_reason = ""
@@ -134,8 +123,7 @@ class BedrockStreamHandler(BaseStreamHandler):
                     msg = msg_chunk["outputs"][0]["text"]
                     completions.append(msg)
                     response = self.on_stream(msg)
-                    if as_generator:
-                        yield response
+                    yield response
                 else:
                     concatenated = "".join(completions)
                     metrics = msg_chunk["amazon-bedrock-invocationMetrics"]
@@ -153,7 +141,4 @@ class BedrockStreamHandler(BaseStreamHandler):
                             price=price,
                         )
                     )
-                    if as_generator:
-                        yield response
-                    else:
-                        return response
+                    yield response

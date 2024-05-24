@@ -15,6 +15,7 @@ class KnowledgeModel(BaseModel):
     filenames: list[str]
 
     def __str_in_claude_format__(self) -> str:
+        """Description of the knowledge in Claude format."""
         _source_urls = "<source_urls>"
         for url in self.source_urls:
             _source_urls += f"<url>{url}</url>"
