@@ -19,7 +19,7 @@ def handler(event, context):
     triggers = resource_properties['Triggers']
 
     try:
-        if request_type == 'Create' or request_type == 'Update':
+        if request_type == 'Create':
             response = cognito.describe_user_pool(UserPoolId=USER_POOL_ID)
             attr = response['UserPool']
             lambda_config = attr.get('LambdaConfig', {})
@@ -28,6 +28,21 @@ def handler(event, context):
                 **lambda_config,
                 **triggers,
             })
+            physical_resource_id = f'{USER_POOL_ID}-triggers'
+            cfnresponse.send(event, context, cfnresponse.SUCCESS, resource_properties, physical_resource_id)
+
+        elif request_type == 'Update':
+            response = cognito.describe_user_pool(UserPoolId=USER_POOL_ID)
+            attr = response['UserPool']
+            lambda_config = attr.get('LambdaConfig', {})
+
+            old_resource_properties = event['OldResourceProperties']
+            old_triggers = old_resource_properties['Triggers']
+            update_user_pool_lambda_config(USER_POOL_ID, attr, lambda_config={
+                **{ k: v for k, v in lambda_config.items() if k not in old_triggers.keys() },
+                **triggers,
+            })
+
             physical_resource_id = f'{USER_POOL_ID}-triggers'
             cfnresponse.send(event, context, cfnresponse.SUCCESS, resource_properties, physical_resource_id)
 
