@@ -76,7 +76,7 @@ You can now specify the following parameters during deployment to enhance securi
 ./bin.sh --disable-self-register --ipv4-ranges "192.0.2.0/25,192.0.2.128/25" --ipv6-ranges "2001:db8:1:2::/64,2001:db8:1:3::/64" --allowed-signup-email-domains "example.com,anotherexample.com"
 ```
 
-- After about 30 minutes, you will get the following output, which you can access from your browser
+- After about 40 minutes, you will get the following output, which you can access from your browser
 
 ```
 Frontend URL: https://xxxxxxxxx.cloudfront.net
