@@ -18,7 +18,7 @@ s3_client = boto3.client("s3")
 def delete_from_postgres(bot_id: str):
     """Delete data related to `bot_id` from vector store (i.e. PostgreSQL)."""
 
-    secrets: Any = parameters.get_secret(DB_SECRETS_ARN) # type: ignore
+    secrets: Any = parameters.get_secret(DB_SECRETS_ARN)  # type: ignore
     access_info = json.loads(secrets)
 
     conn = pg8000.connect(
