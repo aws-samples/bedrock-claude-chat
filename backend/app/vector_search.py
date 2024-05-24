@@ -3,6 +3,7 @@ import logging
 import os
 import re
 from typing import Literal
+from typing import Any
 
 import pg8000
 from app.bedrock import calculate_query_embedding
@@ -79,7 +80,7 @@ def search_related_docs(bot_id: str, limit: int, query: str) -> list[SearchResul
     query_embedding = calculate_query_embedding(query)
     logger.info(f"query_embedding: {query_embedding}")
 
-    secrets:str = parameters.get_secret(DB_SECRETS_ARN)
+    secrets: Any = parameters.get_secret(DB_SECRETS_ARN) # type: ignore
     access_info = json.loads(secrets)
 
     conn = pg8000.connect(

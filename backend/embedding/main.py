@@ -59,7 +59,7 @@ def insert_to_postgres(
     bot_id: str, contents: ListProxy, sources: ListProxy, embeddings: ListProxy
 ):
 
-    secrets:str = parameters.get_secret(DB_SECRETS_ARN)
+    secrets: Any = parameters.get_secret(DB_SECRETS_ARN) # type: ignore
     access_info = json.loads(secrets)
 
     conn = pg8000.connect(
