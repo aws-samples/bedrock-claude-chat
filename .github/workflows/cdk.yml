@@ -20,9 +20,6 @@ jobs:
           cd custom-resources/setup-pgvector
           npm ci
           cd ../..
-          cd authorizer
-          npm ci
-          cd ..
           npm ci
           npx cdk synth
   cdk-test:
@@ -38,8 +35,5 @@ jobs:
           cd custom-resources/setup-pgvector
           npm ci
           cd ../..
-          cd authorizer
-          npm ci
-          cd ..
           npm ci
           npm run test
