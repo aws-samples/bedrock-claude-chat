@@ -24,10 +24,12 @@ from app.repositories.custom_bot import (
 )
 from app.repositories.models.conversation import FeedbackModel
 from app.repositories.models.custom_bot import (
+    AgentModel,
+    AgentToolModel,
     BotModel,
     EmbeddingParamsModel,
-    KnowledgeModel,
     GenerationParamsModel,
+    KnowledgeModel,
     SearchParamsModel,
 )
 from boto3.dynamodb.conditions import Key
@@ -380,6 +382,12 @@ class TestConversationBotRepository(unittest.TestCase):
             search_params=SearchParamsModel(
                 max_results=20,
             ),
+            agent=AgentModel(
+                tools=[
+                    AgentToolModel(name="tool1", description="tool1 description"),
+                    AgentToolModel(name="tool2", description="tool2 description"),
+                ]
+            ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -416,6 +424,12 @@ class TestConversationBotRepository(unittest.TestCase):
             ),
             search_params=SearchParamsModel(
                 max_results=20,
+            ),
+            agent=AgentModel(
+                tools=[
+                    AgentToolModel(name="tool1", description="tool1 description"),
+                    AgentToolModel(name="tool2", description="tool2 description"),
+                ]
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],

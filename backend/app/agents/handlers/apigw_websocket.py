@@ -45,14 +45,15 @@ class ApigwWebsocketCallbackHandler(BaseCallbackHandler):
             print(body)
             return
 
-        if status == "STREAMING_END":
-            self.gatewayapi.post_to_connection(
-                ConnectionId=self.connection_id,
-                Data=json.dumps(
-                    {"status": "STREAMING", "completion": "", "stop_reason": body}
-                ).encode("utf-8"),
-            )
-            return
+        # TODO: remove?
+        # if status == "STREAMING_END":
+        #     self.gatewayapi.post_to_connection(
+        #         ConnectionId=self.connection_id,
+        #         Data=json.dumps(
+        #             {"status": "STREAMING", "completion": "", "stop_reason": body}
+        #         ).encode("utf-8"),
+        #     )
+        #     return
 
         key = "body"
         if status == "ERROR":

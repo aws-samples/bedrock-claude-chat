@@ -112,6 +112,9 @@ class TestReactAgent(unittest.TestCase):
             print(f"Total Output Token Count: {cb.total_output_token_count}")
             print(f"Total Cost (USD): ${cb.total_cost}")
 
+        print(f"type of res: {type(res)}")
+        pprint(res)
+
 
 if __name__ == "__main__":
     unittest.main()

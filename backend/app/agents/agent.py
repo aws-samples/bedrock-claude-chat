@@ -134,7 +134,8 @@ class BaseSingleActionAgent:
         if early_stopping_method == "force":
             # `force` just returns a constant string
             return AgentFinish(
-                {"output": "Agent stopped due to iteration limit or time limit."}, ""
+                {"output": "Agent stopped due to iteration limit or time limit."},
+                "",
             )
         else:
             raise ValueError(
@@ -215,10 +216,7 @@ class RunnableAgent(BaseSingleActionAgent):
         intermediate_steps: list[tuple[AgentAction, str]],
         callbacks: Callbacks = None,
         **kwargs: Any,
-    ) -> Union[
-        AgentAction,
-        AgentFinish,
-    ]:
+    ) -> Union[AgentAction, AgentFinish,]:
         """Based on past history and current inputs, decide what to do.
 
         Args:
@@ -254,7 +252,9 @@ class RunnableAgent(BaseSingleActionAgent):
 
 
 def create_react_agent(
-    model: type_model_name, tools: list[BaseTool]
+    model: type_model_name,
+    tools: list[BaseTool],
+    generation_config: GenerationParamsModel | None = None,
 ) -> BaseSingleActionAgent:
     TOOLS_PROMPT = "\n".join(
         [
@@ -270,18 +270,21 @@ def create_react_agent(
     prompt = PromptTemplate.from_template(AGENT_PROMPT_FOR_CLAUDE)
 
     stop = ["<observation>"]
-
-    llm = BedrockLLM.from_model(
-        model=model,
-        generation_params=GenerationParamsModel(
-            **{**DEFAULT_GENERATION_CONFIG, "stop_sequences": stop}
-        ),
+    generation_params = generation_config or GenerationParamsModel(
+        max_tokens=DEFAULT_GENERATION_CONFIG["max_tokens"],
+        top_k=DEFAULT_GENERATION_CONFIG["top_k"],
+        top_p=DEFAULT_GENERATION_CONFIG["top_p"],
+        temperature=DEFAULT_GENERATION_CONFIG["temperature"],
+        stop_sequences=DEFAULT_GENERATION_CONFIG["stop_sequences"],
     )
+    # Overwrite the default generation config with the stop sequences
+    generation_params.stop_sequences = stop
+
+    llm = BedrockLLM.from_model(model=model, generation_params=generation_params)
 
     output_parser = ReActSingleInputOutputParser()
 
-    # Bedrock's prompt
-    prompt = prompt.partial(
+    prompt_partial = prompt.partial(
         tools=TOOLS_PROMPT, tool_names=", ".join([t.name for t in tools])
     )
 
@@ -289,7 +292,7 @@ def create_react_agent(
         RunnablePassthrough.assign(
             agent_scratchpad=lambda x: format_log_to_str(x["intermediate_steps"]),
         )
-        | prompt
+        | prompt_partial
         | llm
         | output_parser
     )
@@ -326,9 +329,9 @@ class AgentExecutor(Chain):
     `"generate"` calls the agent's LLM Chain one final time to generate
         a final answer based on the previous steps.
     """
-    handle_parsing_errors: Union[bool, str, Callable[[OutputParserException], str]] = (
-        False
-    )
+    handle_parsing_errors: Union[
+        bool, str, Callable[[OutputParserException], str]
+    ] = False
     """How to handle errors raised by the agent's output parser.
     Defaults to `False`, which raises the error.
     If `true`, the error will be sent back to the LLM as an observation.
@@ -338,7 +341,8 @@ class AgentExecutor(Chain):
       as an observation.
     """
     trim_intermediate_steps: Union[
-        int, Callable[[list[tuple[AgentAction, str]]], list[tuple[AgentAction, str]]]
+        int,
+        Callable[[list[tuple[AgentAction, str]]], list[tuple[AgentAction, str]]],
     ] = -1
 
     @root_validator(pre=True)
@@ -661,7 +665,9 @@ class AgentExecutor(Chain):
             )
             if isinstance(next_step_output, AgentFinish):
                 return self._return(
-                    next_step_output, intermediate_steps, run_manager=run_manager
+                    next_step_output,
+                    intermediate_steps,
+                    run_manager=run_manager,
                 )
 
             intermediate_steps.extend(next_step_output)
@@ -741,24 +747,11 @@ class AgentExecutor(Chain):
         for step in iterator:
             yield step
 
-    async def astream(
-        self,
-        input: Union[dict[str, Any], Any],
-        config: Optional[RunnableConfig] = None,
-        **kwargs: Any,
-    ) -> AsyncIterator[AddableDict]:
-        """Enables streaming over steps taken to reach final output."""
-        config = ensure_config(config)
-        iterator = AgentExecutorIterator(
-            self,
-            input,
-            config.get("callbacks"),
-            tags=config.get("tags"),
-            metadata=config.get("metadata"),
-            run_name=config.get("run_name"),
-            run_id=config.get("run_id"),
-            yield_actions=True,
-            **kwargs,
-        )
-        async for step in iterator:
-            yield step
+    # async def astream(
+    #     self,
+    #     input: Union[dict[str, Any], Any],
+    #     config: Optional[RunnableConfig] = None,
+    #     **kwargs: Any,
+    # ) -> AsyncIterator[AddableDict]:
+    #     """Enables streaming over steps taken to reach final output."""
+    #     raise NotImplementedError()

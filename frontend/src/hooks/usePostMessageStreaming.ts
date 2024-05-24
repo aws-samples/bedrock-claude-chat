@@ -15,10 +15,8 @@ const usePostMessageStreaming = create<{
 }>(() => {
   return {
     post: async ({ input, dispatch, hasKnowledge }) => {
-      let isStreamingStarted = false;
       if (hasKnowledge) {
-        // dispatch(i18next.t('bot.label.retrievingKnowledge'));
-        dispatch(i18next.t('bot.label.agentThinking'));
+        dispatch(i18next.t('bot.label.retrievingKnowledge'));
       } else {
         dispatch(i18next.t('app.chatWaitingSymbol'));
       }
@@ -89,10 +87,6 @@ const usePostMessageStreaming = create<{
                   dispatch(completion);
                   break;
                 case 'STREAMING':
-                  if (!isStreamingStarted) {
-                    // completion = '';
-                  }
-                  isStreamingStarted = true;
                   if (data.completion || data.completion === '') {
                     if (
                       completion.endsWith(i18next.t('app.chatWaitingSymbol'))
@@ -100,15 +94,19 @@ const usePostMessageStreaming = create<{
                       completion = completion.slice(0, -1);
                     }
                     completion +=
-                      data.completion +
-                      (data.stop_reason
-                        ? ''
-                        : i18next.t('app.chatWaitingSymbol'));
+                      data.completion + i18next.t('app.chatWaitingSymbol');
                     dispatch(completion);
-                    if (data.stop_reason) {
-                      ws.close();
-                    }
                   }
+                  break;
+                case 'STREAMING_END':
+                  if (data.stop_reason) {
+                    // console.log('Stop reason:', data.stop_reason);
+                  }
+                  if (completion.endsWith(i18next.t('app.chatWaitingSymbol'))) {
+                    completion = completion.slice(0, -1);
+                    dispatch(completion);
+                  }
+                  ws.close();
                   break;
                 case 'ERROR':
                   ws.close();

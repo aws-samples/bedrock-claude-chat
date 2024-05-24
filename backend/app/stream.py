@@ -120,10 +120,10 @@ class BedrockStreamHandler(BaseStreamHandler):
                 msg_chunk = json.loads(chunk.get("bytes").decode())
                 stop_reason = msg_chunk["outputs"][0]["stop_reason"]
                 if not stop_reason:
-                    msg = msg_chunk["outputs"][0]["text"]
+                    msg: str = msg_chunk["outputs"][0]["text"]
                     completions.append(msg)
-                    response = self.on_stream(msg)
-                    yield response
+                    res = self.on_stream(msg)
+                    yield res
                 else:
                     concatenated = "".join(completions)
                     metrics = msg_chunk["amazon-bedrock-invocationMetrics"]
@@ -132,7 +132,7 @@ class BedrockStreamHandler(BaseStreamHandler):
                     price = calculate_price(
                         self.model, input_token_count, output_token_count
                     )
-                    response = self.on_stop(
+                    res = self.on_stop(
                         OnStopInput(
                             full_token=concatenated,
                             stop_reason=stop_reason,
@@ -141,4 +141,4 @@ class BedrockStreamHandler(BaseStreamHandler):
                             price=price,
                         )
                     )
-                    yield response
+                    yield res

@@ -8,7 +8,6 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Type, Union, cast
 
-import yaml
 from langchain_core.callbacks import (
     AsyncCallbackManager,
     AsyncCallbackManagerForChainRun,
@@ -156,7 +155,6 @@ class Chain(RunnableSerializable[Dict[str, Any], Dict[str, Any]], ABC):
         run_manager.on_chain_end(outputs)
 
         if include_run_info:
-            # final_outputs[RUN_KEY] = RunInfo(run_id=run_manager.run_id)
             raise NotImplementedError()
         return final_outputs
 
@@ -207,8 +205,6 @@ class Chain(RunnableSerializable[Dict[str, Any], Dict[str, Any]], ABC):
             raise e
         await run_manager.on_chain_end(outputs)
 
-        if include_run_info:
-            final_outputs[RUN_KEY] = RunInfo(run_id=run_manager.run_id)
         return final_outputs
 
     @property
@@ -454,43 +450,3 @@ class Chain(RunnableSerializable[Dict[str, Any], Dict[str, Any]], ABC):
         except NotImplementedError:
             pass
         return _dict
-
-    def save(self, file_path: Union[Path, str]) -> None:
-        """Save the chain.
-
-        Expects `Chain._chain_type` property to be implemented and for memory to be
-            null.
-
-        Args:
-            file_path: Path to file to save the chain to.
-
-        Example:
-            .. code-block:: python
-
-                chain.save(file_path="path/chain.yaml")
-        """
-        if self.memory is not None:
-            raise ValueError("Saving of memory is not yet supported.")
-
-        # Fetch dictionary to save
-        chain_dict = self.dict()
-        if "_type" not in chain_dict:
-            raise NotImplementedError(f"Chain {self} does not support saving.")
-
-        # Convert file to Path object.
-        if isinstance(file_path, str):
-            save_path = Path(file_path)
-        else:
-            save_path = file_path
-
-        directory_path = save_path.parent
-        directory_path.mkdir(parents=True, exist_ok=True)
-
-        if save_path.suffix == ".json":
-            with open(file_path, "w") as f:
-                json.dump(chain_dict, f, indent=4)
-        elif save_path.suffix.endswith((".yaml", ".yml")):
-            with open(file_path, "w") as f:
-                yaml.dump(chain_dict, f, default_flow_style=False)
-        else:
-            raise ValueError(f"{save_path} must be json or yaml")

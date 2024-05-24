@@ -297,9 +297,8 @@ class ListSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     """Tool for getting tables names."""
 
     name: str = "sql_db_list_tables"
-    description: str = (
-        "Input is an empty string, output is a comma-separated list of tables in the database."
-    )
+    description: str = "Input is an empty string, output is a comma-separated list of tables in the database."
+
     args_schema: Type[BaseModel] = _ListSQLDataBaseToolInput
 
     def _run(

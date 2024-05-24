@@ -5,12 +5,13 @@ from app.agents.tools.weather import today_weather_tool
 
 
 def get_available_tools() -> list[BaseTool]:
-    tools = []
+    tools: list[BaseTool] = []
     tools.append(today_weather_tool)
     # TODO
 
     llm = BedrockLLM.from_model(model="claude-v3-haiku")
-    tools.extend(get_sql_tools(llm=llm))
+    sql_tools = get_sql_tools(llm=llm)
+    tools.extend(sql_tools)
 
     return tools
 

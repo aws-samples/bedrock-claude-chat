@@ -171,7 +171,7 @@ class AgentExecutorIterator:
                 # yielding action and observation as they are generated
                 next_step_seq: NextStepOutput = []
                 for chunk in self.agent_executor._iter_next_step(
-                    self.name_to_tool_map,
+                    self.name_to_tool_map,  # type: ignore
                     self.color_mapping,
                     self.inputs,
                     self.intermediate_steps,

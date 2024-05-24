@@ -8,7 +8,10 @@ from decimal import Decimal as decimal
 import boto3
 from app.agents.agent import AgentExecutor, create_react_agent
 from app.agents.handlers.apigw_websocket import ApigwWebsocketCallbackHandler
-from app.agents.handlers.token_count import TokenCountCallbackHandler
+from app.agents.handlers.token_count import (
+    TokenCountCallbackHandler,
+    get_token_count_callback,
+)
 from app.agents.langchain import BedrockLLM
 from app.agents.tools.knowledge import AnswerWithKnowledgeTool
 from app.agents.tools.rdb_sql.tool import get_sql_tools
@@ -84,7 +87,11 @@ def process_chat_input(
             tools.append(answer_with_knowledge_tool)
 
         logger.info(f"Tools: {tools}")
-        agent = create_react_agent(model=chat_input.message.model, tools=tools)
+        agent = create_react_agent(
+            model=chat_input.message.model,
+            tools=tools,
+            generation_config=bot.generation_params,
+        )
         executor = AgentExecutor(
             name="Agent Executor",
             agent=agent,
@@ -97,28 +104,62 @@ def process_chat_input(
             handle_parsing_errors=True,
         )
 
-        token_count_callback = TokenCountCallbackHandler()
-        response = executor.invoke(
-            {
-                "input": chat_input.message.content[0].body,
-            },
-            config={
-                "callbacks": [
-                    ApigwWebsocketCallbackHandler(gatewayapi, connection_id),
-                    token_count_callback,
-                ],
-            },
-        )
-        logger.info(
-            f"Total Input Token Count: {token_count_callback.total_input_token_count}"
-        )
-        logger.info(
-            f"Total Output Token Count: {token_count_callback.total_output_token_count}"
-        )
-        logger.info(f"Total Cost (USD): ${token_count_callback.total_cost}")
+        price = 0.0
+        with get_token_count_callback() as cb:
+            response = executor.invoke(
+                {
+                    "input": chat_input.message.content[0].body,
+                },
+                config={
+                    "callbacks": [
+                        ApigwWebsocketCallbackHandler(gatewayapi, connection_id),
+                        cb,
+                    ],
+                },
+            )
+            price = cb.total_cost
 
+        used_chunks = None
         # TODO
-        # Store conversation
+        # if bot:
+        #     used_chunks = [
+        #         ChunkModel(content=r.content, source=r.source, rank=r.rank)
+        #         for r in filter_used_results(arg.full_token, search_results)
+        #     ]
+
+        # Append entire completion as the last message
+        assistant_msg_id = str(ULID())
+        message = MessageModel(
+            role="assistant",
+            content=[
+                ContentModel(
+                    content_type="text", body=response["output"], media_type=None
+                )
+            ],
+            model=chat_input.message.model,
+            children=[],
+            parent=user_msg_id,
+            create_time=get_current_time(),
+            feedback=None,
+            used_chunks=used_chunks,
+        )
+        conversation.message_map[assistant_msg_id] = message
+        # Append children to parent
+        conversation.message_map[user_msg_id].children.append(assistant_msg_id)
+        conversation.last_message_id = assistant_msg_id
+
+        conversation.total_price += price
+
+        # Store conversation before finish streaming so that front-end can avoid 404 issue
+        store_conversation(user_id, conversation)
+
+        # Send signal so that frontend can close the connection
+        last_data_to_send = json.dumps(
+            dict(status="STREAMING_END", completion="", stop_reason="agent_finish")
+        ).encode("utf-8")
+        gatewayapi.post_to_connection(
+            ConnectionId=connection_id, Data=last_data_to_send
+        )
 
         return {"statusCode": 200, "body": "Message sent."}
 
@@ -204,7 +245,7 @@ def process_chat_input(
         store_conversation(user_id, conversation)
 
         last_data_to_send = json.dumps(
-            dict(completion="", stop_reason=arg.stop_reason)
+            dict(status="STREAMING_END", completion="", stop_reason=arg.stop_reason)
         ).encode("utf-8")
         gatewayapi.post_to_connection(
             ConnectionId=connection_id, Data=last_data_to_send
@@ -217,7 +258,7 @@ def process_chat_input(
     )
     try:
         for _ in stream_handler.run(args):
-            # `StreamHandler.run` is a generator, so need to iterate
+            # `StreamHandler.run` returns a generator, so need to iterate
             ...
     except Exception as e:
         logger.error(f"Failed to run stream handler: {e}")

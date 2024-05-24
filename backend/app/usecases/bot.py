@@ -37,6 +37,7 @@ from app.repositories.models.custom_bot import (
 )
 from app.routes.schemas.bot import (
     Agent,
+    AgentTool,
     BotInput,
     BotModifyInput,
     BotModifyOutput,
@@ -148,7 +149,11 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         else DEFAULT_SEARCH_CONFIG
     )
 
-    agent = bot_input.agent if bot_input.agent else Agent(tools=[])
+    agent = (
+        AgentModel(**bot_input.agent.model_dump())
+        if bot_input.agent
+        else AgentModel(tools=[])
+    )
 
     store_bot(
         user_id,
@@ -198,7 +203,12 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         ),
         generation_params=GenerationParams(**generation_params),
         search_params=SearchParams(**search_params),
-        agent=bot_input.agent,
+        agent=Agent(
+            tools=[
+                AgentTool(name=tool.name, description=tool.description)
+                for tool in agent.tools
+            ]
+        ),
         knowledge=Knowledge(
             source_urls=source_urls, sitemap_urls=sitemap_urls, filenames=filenames
         ),
@@ -315,7 +325,12 @@ def modify_owned_bot(
         ),
         generation_params=GenerationParams(**generation_params),
         search_params=SearchParams(**search_params),
-        agent=agent,
+        agent=Agent(
+            tools=[
+                AgentTool(name=tool.name, description=tool.description)
+                for tool in agent.tools
+            ]
+        ),
         knowledge=Knowledge(
             source_urls=source_urls,
             sitemap_urls=sitemap_urls,

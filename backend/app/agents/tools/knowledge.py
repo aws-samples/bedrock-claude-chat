@@ -71,9 +71,9 @@ Question: {query}
 dummy_search_results = [
     SearchResult(
         bot_id="dummy",
-        content=r["chunkBody"],
-        source=r["sourceLink"],
-        rank=r["rank"],
+        content=r["chunkBody"],  # type: ignore
+        source=r["sourceLink"],  # type: ignore
+        rank=r["rank"],  # type: ignore
     )
     for r in [
         {

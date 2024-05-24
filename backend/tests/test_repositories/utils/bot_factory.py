@@ -14,6 +14,7 @@ from app.repositories.models.custom_bot import (
     KnowledgeModel,
     SearchParamsModel,
 )
+from app.routes.schemas.bot import type_sync_status
 
 
 def create_test_private_bot(
@@ -21,7 +22,7 @@ def create_test_private_bot(
     is_pinned: bool,
     owner_user_id: str,
     instruction: str = "Test Bot Prompt",
-    sync_status: str = "RUNNING",
+    sync_status: type_sync_status = "RUNNING",
     published_api_stack_name: str | None = None,
     published_api_datetime: int | None = None,
 ):
