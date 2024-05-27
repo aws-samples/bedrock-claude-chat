@@ -29,7 +29,7 @@ describe("Fine-grained Assertions Test", () => {
           start: {},
         },
         enableMistral: false,
-	      selfSignUpEnabled: true,
+	selfSignUpEnabled: true,
         embeddingContainerVcpu: 1024,
         embeddingContainerMemory: 2048,
       }
@@ -85,7 +85,7 @@ describe("Fine-grained Assertions Test", () => {
           start: {},
         },
         enableMistral: false,
-	      selfSignUpEnabled: true,
+	selfSignUpEnabled: true,
         embeddingContainerVcpu: 1024,
         embeddingContainerMemory: 2048,
       }
@@ -130,6 +130,7 @@ describe("Fine-grained Assertions Test", () => {
         start: {},
       },
       enableMistral: false,
+      selfSignUpEnabled: true,
       embeddingContainerVcpu: 1024,
       embeddingContainerMemory: 2048,
     });
