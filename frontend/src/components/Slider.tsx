@@ -1,4 +1,4 @@
-import { FC, Dispatch, ReactNode } from 'react';
+import { FC, Dispatch, ReactNode, useEffect, useState, useCallback } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 interface Props {
@@ -12,15 +12,27 @@ interface Props {
   };
   onChange: Dispatch<number>;
   errorMessage?: string;
+  enableDecimal?: boolean;
 }
 
 export const Slider: FC<Props> = (props) => {
-  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = parseInt(
-      event.target.value !== '' ? event.target.value : '0'
-    );
-    props.onChange(newValue);
-  };
+  const [value, setValue] = useState<string>(String(props.value));
+
+  useEffect(() => {
+    setValue(prev => prev === String(props.value) ? prev : String(props.value));
+  }, [props.value]);
+
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const validateReg = props.enableDecimal ? /^\d*\.?\d*$/ : /^\d*$/;
+    const newValStr = e.target.value;
+
+    if (newValStr === '' || validateReg.test(newValStr)) {
+      setValue(newValStr);
+      const parseNumber = props.enableDecimal ? parseFloat : parseInt;   
+      const newValue = parseNumber(newValStr !== '' ? newValStr : '0');
+      props.onChange(newValue); 
+    }
+  }, [props, setValue]);
 
   return (
     <div className="flex flex-col">
@@ -48,8 +60,9 @@ export const Slider: FC<Props> = (props) => {
               ? 'border-2 border-red'
               : 'border-aws-font-color/50 '
           )}
-          value={props.value}
+          value={value}
           max={props.range.max}
+          min={props.range.min}
           onChange={handleChange}
         />
       </div>

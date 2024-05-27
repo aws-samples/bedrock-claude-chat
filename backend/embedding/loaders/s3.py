@@ -1,9 +1,14 @@
 import os
 import tempfile
-
+import logging
 import boto3
+from distutils.util import strtobool
 from embedding.loaders.base import BaseLoader, Document
 from unstructured.partition.auto import partition
+from unstructured.partition.pdf import partition_pdf
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class S3FileLoader(BaseLoader):
@@ -11,10 +16,17 @@ class S3FileLoader(BaseLoader):
     Reference: `langchain_community.document_loaders.S3FileLoader` class
     """
 
-    def __init__(self, bucket: str, key: str, mode: str = "single"):
+    def __init__(
+        self,
+        bucket: str,
+        key: str,
+        mode: str = "single",
+        enable_partition_pdf: bool = False,
+    ):
         self.bucket = bucket
         self.key = key
         self.mode = mode
+        self.enable_partition_pdf = enable_partition_pdf
 
     def _get_elements(self) -> list:
         """Get elements."""
@@ -23,7 +35,19 @@ class S3FileLoader(BaseLoader):
             file_path = f"{temp_dir}/{self.key}"
             os.makedirs(os.path.dirname(file_path), exist_ok=True)
             s3.download_file(self.bucket, self.key, file_path)
-            return partition(filename=file_path)
+            extension = os.path.splitext(file_path)[1]
+
+            if extension == ".pdf" and self.enable_partition_pdf == True:
+                logger.info(f"Start partitioning using hi-resolution mode: {file_path}")
+                return partition_pdf(
+                    filename=file_path,
+                    strategy="hi_res",
+                    infer_table_structure=True,
+                    extract_images_in_pdf=False,
+                )
+            else:
+                logger.info(f"Start partitioning using auto mode: {file_path}")
+                return partition(filename=file_path)
 
     def _get_metadata(self) -> dict:
         return {"source": f"s3://{self.bucket}/{self.key}"}

@@ -2,6 +2,8 @@ import logging
 import os
 
 from app.config import DEFAULT_EMBEDDING_CONFIG
+from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
+from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG, DEFAULT_SEARCH_CONFIG
 from app.repositories.common import (
     RecordNotFoundError,
     _get_table_client,
@@ -27,7 +29,9 @@ from app.repositories.models.custom_bot import (
     BotMeta,
     BotModel,
     EmbeddingParamsModel,
+    GenerationParamsModel,
     KnowledgeModel,
+    SearchParamsModel,
 )
 from app.routes.schemas.bot import (
     BotInput,
@@ -36,7 +40,9 @@ from app.routes.schemas.bot import (
     BotOutput,
     BotSummaryOutput,
     EmbeddingParams,
+    GenerationParams,
     Knowledge,
+    SearchParams,
     type_sync_status,
 )
 from app.utils import (
@@ -55,6 +61,13 @@ from botocore.exceptions import ClientError
 logger = logging.getLogger(__name__)
 
 DOCUMENT_BUCKET = os.environ.get("DOCUMENT_BUCKET", "bedrock-documents")
+ENABLE_MISTRAL = os.environ.get("ENABLE_MISTRAL", "") == "true"
+
+DEFAULT_GENERATION_CONFIG = (
+    DEFAULT_MISTRAL_GENERATION_CONFIG
+    if ENABLE_MISTRAL
+    else DEFAULT_CLAUDE_GENERATION_CONFIG
+)
 
 
 def _update_s3_documents_by_diff(
@@ -114,6 +127,24 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         else DEFAULT_EMBEDDING_CONFIG["chunk_overlap"]
     )
 
+    enable_partition_pdf = (
+        bot_input.embedding_params.enable_partition_pdf
+        if bot_input.embedding_params
+        else DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"]
+    )
+
+    generation_params = (
+        bot_input.generation_params.model_dump()
+        if bot_input.generation_params
+        else DEFAULT_GENERATION_CONFIG
+    )
+
+    search_params = (
+        bot_input.search_params.model_dump()
+        if bot_input.search_params
+        else DEFAULT_SEARCH_CONFIG
+    )
+
     store_bot(
         user_id,
         BotModel(
@@ -129,7 +160,10 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             embedding_params=EmbeddingParamsModel(
                 chunk_size=chunk_size,
                 chunk_overlap=chunk_overlap,
+                enable_partition_pdf=enable_partition_pdf,
             ),
+            generation_params=GenerationParamsModel(**generation_params),
+            search_params=SearchParamsModel(**search_params),
             knowledge=KnowledgeModel(
                 source_urls=source_urls, sitemap_urls=sitemap_urls, filenames=filenames
             ),
@@ -155,7 +189,10 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         embedding_params=EmbeddingParams(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
+            enable_partition_pdf=enable_partition_pdf,
         ),
+        generation_params=GenerationParams(**generation_params),
+        search_params=SearchParams(**search_params),
         knowledge=Knowledge(
             source_urls=source_urls, sitemap_urls=sitemap_urls, filenames=filenames
         ),
@@ -208,6 +245,24 @@ def modify_owned_bot(
         else DEFAULT_EMBEDDING_CONFIG["chunk_overlap"]
     )
 
+    enable_partition_pdf = (
+        modify_input.embedding_params.enable_partition_pdf
+        if modify_input.embedding_params
+        else DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"]
+    )
+
+    generation_params = (
+        modify_input.generation_params.model_dump()
+        if modify_input.generation_params
+        else DEFAULT_GENERATION_CONFIG
+    )
+
+    search_params = (
+        modify_input.search_params.model_dump()
+        if modify_input.search_params
+        else DEFAULT_SEARCH_CONFIG
+    )
+
     # if knowledge and embedding_params are not updated, skip embeding process.
     # 'sync_status = "QUEUED"' will execute embeding process and update dynamodb record.
     # 'sync_status= "SUCCEEDED"' will update only dynamodb record.
@@ -223,7 +278,10 @@ def modify_owned_bot(
         embedding_params=EmbeddingParamsModel(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
+            enable_partition_pdf=enable_partition_pdf,
         ),
+        generation_params=GenerationParamsModel(**generation_params),
+        search_params=SearchParamsModel(**search_params),
         knowledge=KnowledgeModel(
             source_urls=source_urls,
             sitemap_urls=sitemap_urls,
@@ -242,7 +300,10 @@ def modify_owned_bot(
         embedding_params=EmbeddingParams(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
+            enable_partition_pdf=enable_partition_pdf,
         ),
+        generation_params=GenerationParams(**generation_params),
+        search_params=SearchParams(**search_params),
         knowledge=Knowledge(
             source_urls=source_urls,
             sitemap_urls=sitemap_urls,

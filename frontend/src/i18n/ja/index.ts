@@ -10,6 +10,7 @@ const translation = {
     },
     app: {
       name: 'Bedrock Claude Chat',
+      nameWithoutClaude: 'Bedrock Chat',
       inputMessage: '入力してください',
       starredBots: 'スター付きのボット',
       recentlyUsedBots: '最近使用したボット',
@@ -381,6 +382,10 @@ const translation = {
       chunkOverlap: {
         label: 'チャンクオーバーラップ',
         hint: '隣接するチャンク同士で重複する文字数を指定します。',
+      },
+      enablePartitionPdf: {
+        label: 'PDFの詳細解析の有効化。有効にすると時間をかけてPDFを詳細に分析します。',
+        hint: '検索精度を高めたい場合に有効です。計算により多くの時間がかかるため計算コストが増加します。',
       },
       help: {
         chunkSize:

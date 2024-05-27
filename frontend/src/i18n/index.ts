@@ -9,6 +9,7 @@ import zhhans from './zh-hans';
 import zhhant from './zh-hant';
 import fr from './fr';
 import de from './de';
+import it from './it';
 
 export const LANGUAGES: {
   value: string;
@@ -46,6 +47,10 @@ export const LANGUAGES: {
     value: 'zhhant',
     label: '中文 (繁體)',
   },
+  {
+    value: 'it',
+    label: 'Italian',
+  },
 ];
 
 const resources = {
@@ -55,6 +60,7 @@ const resources = {
   es,
   ja,
   ko,
+  it,
   zhhans,
   zhhant,
 };

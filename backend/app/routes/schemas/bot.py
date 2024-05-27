@@ -18,6 +18,19 @@ type_sync_status = Literal[
 class EmbeddingParams(BaseSchema):
     chunk_size: int
     chunk_overlap: int
+    enable_partition_pdf: bool
+
+
+class GenerationParams(BaseSchema):
+    max_tokens: int
+    top_k: int
+    top_p: float
+    temperature: float
+    stop_sequences: list[str]
+
+
+class SearchParams(BaseSchema):
+    max_results: int
 
 
 class Knowledge(BaseSchema):
@@ -41,6 +54,8 @@ class BotInput(BaseSchema):
     instruction: str
     description: str | None
     embedding_params: EmbeddingParams | None
+    generation_params: GenerationParams | None
+    search_params: SearchParams | None
     knowledge: Knowledge | None
     display_retrieved_chunks: bool
 
@@ -50,6 +65,8 @@ class BotModifyInput(BaseSchema):
     instruction: str
     description: str | None
     embedding_params: EmbeddingParams | None
+    generation_params: GenerationParams | None
+    search_params: SearchParams | None
     knowledge: KnowledgeDiffInput | None
     display_retrieved_chunks: bool
 
@@ -82,6 +99,8 @@ class BotModifyInput(BaseSchema):
                 == current_bot_model.embedding_params.chunk_size
                 and self.embedding_params.chunk_overlap
                 == current_bot_model.embedding_params.chunk_overlap
+                and self.embedding_params.enable_partition_pdf
+                == current_bot_model.embedding_params.enable_partition_pdf
             ):
                 pass
             else:
@@ -96,6 +115,8 @@ class BotModifyOutput(BaseSchema):
     instruction: str
     description: str
     embedding_params: EmbeddingParams
+    generation_params: GenerationParams
+    search_params: SearchParams
     knowledge: Knowledge
 
 
@@ -111,6 +132,8 @@ class BotOutput(BaseSchema):
     # Whether the bot is owned by the user
     owned: bool
     embedding_params: EmbeddingParams
+    generation_params: GenerationParams
+    search_params: SearchParams
     knowledge: Knowledge
     sync_status: type_sync_status
     sync_status_reason: str

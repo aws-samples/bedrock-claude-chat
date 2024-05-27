@@ -8,6 +8,8 @@ from decimal import Decimal as decimal
 from functools import partial
 
 import boto3
+from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
+from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG, DEFAULT_SEARCH_CONFIG
 from app.repositories.common import (
     RecordNotFoundError,
     _get_table_client,
@@ -23,7 +25,9 @@ from app.repositories.models.custom_bot import (
     BotMetaWithStackInfo,
     BotModel,
     EmbeddingParamsModel,
+    GenerationParamsModel,
     KnowledgeModel,
+    SearchParamsModel,
 )
 from app.routes.schemas.bot import type_sync_status
 from app.utils import get_current_time
@@ -31,6 +35,13 @@ from boto3.dynamodb.conditions import Attr, Key
 from botocore.exceptions import ClientError
 
 TABLE_NAME = os.environ.get("TABLE_NAME", "")
+ENABLE_MISTRAL = os.environ.get("ENABLE_MISTRAL", "") == "true"
+
+DEFAULT_GENERATION_CONFIG = (
+    DEFAULT_MISTRAL_GENERATION_CONFIG
+    if ENABLE_MISTRAL
+    else DEFAULT_CLAUDE_GENERATION_CONFIG
+)
 
 logger = logging.getLogger(__name__)
 sts_client = boto3.client("sts")
@@ -50,6 +61,8 @@ def store_bot(user_id: str, custom_bot: BotModel):
         "LastBotUsed": decimal(custom_bot.last_used_time),
         "IsPinned": custom_bot.is_pinned,
         "EmbeddingParams": custom_bot.embedding_params.model_dump(),
+        "GenerationParams": custom_bot.generation_params.model_dump(),
+        "SearchParams": custom_bot.search_params.model_dump(),
         "Knowledge": custom_bot.knowledge.model_dump(),
         "SyncStatus": custom_bot.sync_status,
         "SyncStatusReason": custom_bot.sync_status_reason,
@@ -71,6 +84,8 @@ def update_bot(
     description: str,
     instruction: str,
     embedding_params: EmbeddingParamsModel,
+    generation_params: GenerationParamsModel,
+    search_params: SearchParamsModel,
     knowledge: KnowledgeModel,
     sync_status: type_sync_status,
     sync_status_reason: str,
@@ -85,7 +100,7 @@ def update_bot(
     try:
         response = table.update_item(
             Key={"PK": user_id, "SK": compose_bot_id(user_id, bot_id)},
-            UpdateExpression="SET Title = :title, Description = :description, Instruction = :instruction,EmbeddingParams = :embedding_params, Knowledge = :knowledge, SyncStatus = :sync_status, SyncStatusReason = :sync_status_reason, DisplayRetrievedChunks = :display_retrieved_chunks",
+            UpdateExpression="SET Title = :title, Description = :description, Instruction = :instruction,EmbeddingParams = :embedding_params, Knowledge = :knowledge, SyncStatus = :sync_status, SyncStatusReason = :sync_status_reason, GenerationParams = :generation_params, SearchParams = :search_params, DisplayRetrievedChunks = :display_retrieved_chunks",
             ExpressionAttributeValues={
                 ":title": title,
                 ":description": description,
@@ -95,6 +110,8 @@ def update_bot(
                 ":sync_status": sync_status,
                 ":sync_status_reason": sync_status_reason,
                 ":display_retrieved_chunks": display_retrieved_chunks,
+                ":generation_params": generation_params.model_dump(),
+                ":search_params": search_params.model_dump(),
             },
             ReturnValues="ALL_NEW",
             ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
@@ -205,9 +222,7 @@ def update_alias_pin_status(user_id: str, alias_id: str, pinned: bool):
     return response
 
 
-def find_private_bots_by_user_id(
-    user_id: str, limit: int | None = None
-) -> list[BotMeta]:
+def find_private_bots_by_user_id(user_id: str, limit: int | None = None) -> list[BotMeta]:
     """Find all private bots owned by user.
     This does not include public bots.
     The order is descending by `last_used_time`.
@@ -317,6 +332,26 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
                 and "chunk_overlap" in item["EmbeddingParams"]
                 else 200
             ),
+            enable_partition_pdf=(
+                item["EmbeddingParams"]["enable_partition_pdf"]
+                if "EmbeddingParams" in item
+                and "enable_partition_pdf" in item["EmbeddingParams"]
+                else False
+            ),
+        ),
+        generation_params=GenerationParamsModel(
+            **(
+                item["GenerationParams"]
+                if "GenerationParams" in item
+                else DEFAULT_GENERATION_CONFIG
+            )
+        ),
+        search_params=SearchParamsModel(
+            max_results=(
+                item["SearchParams"]["max_results"]
+                if "SearchParams" in item
+                else DEFAULT_SEARCH_CONFIG["max_results"]
+            )
         ),
         knowledge=KnowledgeModel(**item["Knowledge"]),
         sync_status=item["SyncStatus"],
@@ -331,9 +366,7 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
             None if "ApiPublishedDatetime" not in item else item["ApiPublishedDatetime"]
         ),
         published_api_codebuild_id=(
-            None
-            if "ApiPublishCodeBuildId" not in item
-            else item["ApiPublishCodeBuildId"]
+            None if "ApiPublishCodeBuildId" not in item else item["ApiPublishCodeBuildId"]
         ),
         display_retrieved_chunks=item.get("DisplayRetrievedChunks", False),
     )
@@ -377,6 +410,26 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
                 and "chunk_overlap" in item["EmbeddingParams"]
                 else 200
             ),
+            enable_partition_pdf=(
+                item["EmbeddingParams"]["enable_partition_pdf"]
+                if "EmbeddingParams" in item
+                and "enable_partition_pdf" in item["EmbeddingParams"]
+                else False
+            ),
+        ),
+        generation_params=GenerationParamsModel(
+            **(
+                item["GenerationParams"]
+                if "GenerationParams" in item
+                else DEFAULT_GENERATION_CONFIG
+            )
+        ),
+        search_params=SearchParamsModel(
+            max_results=(
+                item["SearchParams"]["max_results"]
+                if "SearchParams" in item
+                else DEFAULT_SEARCH_CONFIG["max_results"]
+            )
         ),
         knowledge=KnowledgeModel(**item["Knowledge"]),
         sync_status=item["SyncStatus"],
@@ -391,9 +444,7 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
             None if "ApiPublishedDatetime" not in item else item["ApiPublishedDatetime"]
         ),
         published_api_codebuild_id=(
-            None
-            if "ApiPublishCodeBuildId" not in item
-            else item["ApiPublishCodeBuildId"]
+            None if "ApiPublishCodeBuildId" not in item else item["ApiPublishCodeBuildId"]
         ),
         display_retrieved_chunks=item.get("DisplayRetrievedChunks", False),
     )

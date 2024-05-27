@@ -29,6 +29,8 @@ describe("Fine-grained Assertions Test", () => {
           start: {},
         },
         enableMistral: false,
+        embeddingContainerVcpu: 1024,
+        embeddingContainerMemory: 2048,
       }
     );
     const hasGoogleProviderTemplate = Template.fromStack(
@@ -82,6 +84,8 @@ describe("Fine-grained Assertions Test", () => {
           start: {},
         },
         enableMistral: false,
+        embeddingContainerVcpu: 1024,
+        embeddingContainerMemory: 2048,
       }
     );
     const hasOidcProviderTemplate = Template.fromStack(hasOidcProviderStack);
@@ -124,6 +128,8 @@ describe("Fine-grained Assertions Test", () => {
         start: {},
       },
       enableMistral: false,
+      embeddingContainerVcpu: 1024,
+      embeddingContainerMemory: 2048,
     });
     const template = Template.fromStack(stack);
 
@@ -166,6 +172,8 @@ describe("Scheduler Test", () => {
         },
       },
       enableMistral: false,
+      embeddingContainerVcpu: 1024,
+      embeddingContainerMemory: 2048,
     });
     const template = Template.fromStack(hasScheduleStack);
     template.hasResourceProperties("AWS::Scheduler::Schedule", {
@@ -192,6 +200,8 @@ describe("Scheduler Test", () => {
         start: {},
       },
       enableMistral: false,
+      embeddingContainerVcpu: 1024,
+      embeddingContainerMemory: 2048,
     });
     const template = Template.fromStack(defaultStack);
     // The stack should have only 1 rule for exporting the data from ddb to s3
