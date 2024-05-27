@@ -238,7 +238,6 @@ def calculate_document_embeddings(documents: list[str]) -> list[list[float]]:
 
 
 def get_bedrock_response(args: dict) -> dict:
-
     client = get_bedrock_client()
     messages = args["messages"]
 

@@ -8,6 +8,8 @@ from decimal import Decimal as decimal
 from functools import partial
 
 import boto3
+from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
+from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG, DEFAULT_SEARCH_CONFIG
 from app.repositories.common import (
     RecordNotFoundError,
     _get_table_client,
@@ -17,19 +19,14 @@ from app.repositories.common import (
     decompose_bot_alias_id,
     decompose_bot_id,
 )
-from app.config import (
-    DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG,
-    DEFAULT_MISTRAL_GENERATION_CONFIG,
-    DEFAULT_SEARCH_CONFIG,
-)
 from app.repositories.models.custom_bot import (
     BotAliasModel,
     BotMeta,
     BotMetaWithStackInfo,
     BotModel,
     EmbeddingParamsModel,
-    KnowledgeModel,
     GenerationParamsModel,
+    KnowledgeModel,
     SearchParamsModel,
 )
 from app.routes.schemas.bot import type_sync_status
@@ -73,6 +70,7 @@ def store_bot(user_id: str, custom_bot: BotModel):
         "ApiPublishmentStackName": custom_bot.published_api_stack_name,
         "ApiPublishedDatetime": custom_bot.published_api_datetime,
         "ApiPublishCodeBuildId": custom_bot.published_api_codebuild_id,
+        "DisplayRetrievedChunks": custom_bot.display_retrieved_chunks,
     }
 
     response = table.put_item(Item=item)
@@ -91,6 +89,7 @@ def update_bot(
     knowledge: KnowledgeModel,
     sync_status: type_sync_status,
     sync_status_reason: str,
+    display_retrieved_chunks: bool,
 ):
     """Update bot title, description, and instruction.
     NOTE: Use `update_bot_visibility` to update visibility.
@@ -101,7 +100,7 @@ def update_bot(
     try:
         response = table.update_item(
             Key={"PK": user_id, "SK": compose_bot_id(user_id, bot_id)},
-            UpdateExpression="SET Title = :title, Description = :description, Instruction = :instruction,EmbeddingParams = :embedding_params, Knowledge = :knowledge, SyncStatus = :sync_status, SyncStatusReason = :sync_status_reason, GenerationParams = :generation_params, SearchParams = :search_params",
+            UpdateExpression="SET Title = :title, Description = :description, Instruction = :instruction,EmbeddingParams = :embedding_params, Knowledge = :knowledge, SyncStatus = :sync_status, SyncStatusReason = :sync_status_reason, GenerationParams = :generation_params, SearchParams = :search_params, DisplayRetrievedChunks = :display_retrieved_chunks",
             ExpressionAttributeValues={
                 ":title": title,
                 ":description": description,
@@ -110,6 +109,7 @@ def update_bot(
                 ":embedding_params": embedding_params.model_dump(),
                 ":sync_status": sync_status,
                 ":sync_status_reason": sync_status_reason,
+                ":display_retrieved_chunks": display_retrieved_chunks,
                 ":generation_params": generation_params.model_dump(),
                 ":search_params": search_params.model_dump(),
             },
@@ -372,6 +372,7 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
             if "ApiPublishCodeBuildId" not in item
             else item["ApiPublishCodeBuildId"]
         ),
+        display_retrieved_chunks=item.get("DisplayRetrievedChunks", False),
     )
 
     logger.info(f"Found bot: {bot}")
@@ -451,6 +452,7 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
             if "ApiPublishCodeBuildId" not in item
             else item["ApiPublishCodeBuildId"]
         ),
+        display_retrieved_chunks=item.get("DisplayRetrievedChunks", False),
     )
     logger.info(f"Found public bot: {bot}")
     return bot

@@ -546,7 +546,6 @@ class TestChatWithCustomizedBot(unittest.TestCase):
     first_public_bot_id = "public1"
 
     def setUp(self) -> None:
-
         private_bot = create_test_private_bot(
             self.first_private_bot_id,
             True,
@@ -785,7 +784,9 @@ class TestInsertKnowledge(unittest.TestCase):
             bot_id="bot1",
             last_message_id="1-user",
         )
-        conversation_with_context = insert_knowledge(conversation, results)
+        conversation_with_context = insert_knowledge(
+            conversation, results, display_citation=True
+        )
         print(conversation_with_context.message_map["instruction"])
 
 

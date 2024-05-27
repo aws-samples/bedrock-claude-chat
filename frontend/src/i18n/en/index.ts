@@ -47,6 +47,7 @@ const translation = {
           uploaded: 'Uploaded',
           error: 'ERROR',
         },
+        citeRetrievedContexts: 'Retrieved Context Citation',
       },
       titleSubmenu: {
         edit: 'Edit',
@@ -65,6 +66,8 @@ const translation = {
           sitemap:
             'By specifying the URL of the sitemap, the information obtained through automatically scraping websites within it will be used as Knowledge.',
           file: 'The uploaded files will be used as Knowledge.',
+          citeRetrievedContexts:
+            'Configure whether to display context retrieved to answer user queries as citation information.\nIf enabled, users can access the original source URLs or files.',
         },
       },
       alert: {

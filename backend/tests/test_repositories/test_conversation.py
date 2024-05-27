@@ -391,6 +391,7 @@ class TestConversationBotRepository(unittest.TestCase):
             published_api_codebuild_id="",
             published_api_datetime=0,
             published_api_stack_name="",
+            display_retrieved_chunks=True,
         )
         bot2 = BotModel(
             id="2",
@@ -428,6 +429,7 @@ class TestConversationBotRepository(unittest.TestCase):
             published_api_codebuild_id="",
             published_api_datetime=0,
             published_api_stack_name="",
+            display_retrieved_chunks=True,
         )
 
         store_conversation("user", conversation1)
