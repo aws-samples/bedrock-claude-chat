@@ -480,7 +480,7 @@ const BotEditPage: React.FC = () => {
                   <div className="font-semibold">
                     {t('bot.label.citeRetrievedContexts')}
                   </div>
-                  <div className="text-sm text-aws-font-color/50">
+                  <div className="whitespace-pre-wrap text-sm text-aws-font-color/50">
                     {t('bot.help.knowledge.citeRetrievedContexts')}
                   </div>
                   <Toggle

@@ -460,8 +460,10 @@ const useChat = () => {
           message: input.message,
         })
         .then((res) => {
-          documents.push(...res.data);
-          setRelatedDocuments(NEW_MESSAGE_ID.ASSISTANT, documents);
+          if (res.data) {
+            documents.push(...res.data);
+            setRelatedDocuments(NEW_MESSAGE_ID.ASSISTANT, documents);
+          }
         });
     }
   };
@@ -566,8 +568,10 @@ const useChat = () => {
           message: input.message,
         })
         .then((res) => {
-          documents.push(...res.data);
-          setRelatedDocuments(NEW_MESSAGE_ID.ASSISTANT, documents);
+          if (res.data) {
+            documents.push(...res.data);
+            setRelatedDocuments(NEW_MESSAGE_ID.ASSISTANT, documents);
+          }
         });
     }
   };
@@ -606,9 +610,9 @@ const useChat = () => {
           content: params.content ?? latestMessage.content[0].body,
           bot: params.bot
             ? {
-              botId: params.bot.botId,
-              hasKnowledge: params.bot.hasKnowledge,
-            }
+                botId: params.bot.botId,
+                hasKnowledge: params.bot.hasKnowledge,
+              }
             : undefined,
         });
       } else {

@@ -57,7 +57,7 @@ export type GetRelatedDocumentsRequest = {
   botId: string;
 };
 
-export type GetRelatedDocumentsResponse = RelatedDocument[];
+export type GetRelatedDocumentsResponse = RelatedDocument[] | null;
 
 export type ConversationMeta = {
   id: string;
