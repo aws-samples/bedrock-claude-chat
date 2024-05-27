@@ -14,6 +14,7 @@ from app.agents.prompts import AGENT_PROMPT_FOR_CLAUDE
 from app.agents.tools.base import BaseTool
 from app.agents.tools.common.exception import ExceptionTool
 from app.agents.tools.common.invalid import InvalidTool
+from app.agents.tools.knowledge import AnswerWithKnowledgeTool
 from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
 from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG
 from app.repositories.models.custom_bot import GenerationParamsModel
@@ -216,7 +217,10 @@ class RunnableAgent(BaseSingleActionAgent):
         intermediate_steps: list[tuple[AgentAction, str]],
         callbacks: Callbacks = None,
         **kwargs: Any,
-    ) -> Union[AgentAction, AgentFinish,]:
+    ) -> Union[
+        AgentAction,
+        AgentFinish,
+    ]:
         """Based on past history and current inputs, decide what to do.
 
         Args:
@@ -329,9 +333,9 @@ class AgentExecutor(Chain):
     `"generate"` calls the agent's LLM Chain one final time to generate
         a final answer based on the previous steps.
     """
-    handle_parsing_errors: Union[
-        bool, str, Callable[[OutputParserException], str]
-    ] = False
+    handle_parsing_errors: Union[bool, str, Callable[[OutputParserException], str]] = (
+        False
+    )
     """How to handle errors raised by the agent's output parser.
     Defaults to `False`, which raises the error.
     If `true`, the error will be sent back to the LLM as an observation.
@@ -438,9 +442,7 @@ class AgentExecutor(Chain):
         run_manager: Optional[AsyncCallbackManagerForChainRun] = None,
     ) -> dict[str, Any]:
         if run_manager:
-            await run_manager.on_agent_finish(
-                output, color="green", verbose=self.verbose
-            )
+            await run_manager.on_agent_finish(output, color="green", verbose=self.verbose)
         final_output = output.return_values
         if self.return_intermediate_steps:
             final_output["intermediate_steps"] = intermediate_steps
@@ -453,9 +455,7 @@ class AgentExecutor(Chain):
             assert len(values) == 1
             return values[-1]
         else:
-            return [
-                (a.action, a.observation) for a in values if isinstance(a, AgentStep)
-            ]
+            return [(a.action, a.observation) for a in values if isinstance(a, AgentStep)]
 
     def _take_next_step(
         self,
@@ -590,6 +590,9 @@ class AgentExecutor(Chain):
                 callbacks=run_manager.get_child() if run_manager else None,
                 **tool_run_kwargs,
             )
+            if isinstance(tool, AnswerWithKnowledgeTool):
+                # If the tool is AnswerWithKnowledgeTool, we need to extract the output
+                observation = observation["output"]
         else:
             tool_run_kwargs = self.agent.tool_run_logging_kwargs()
             observation = InvalidTool().run(

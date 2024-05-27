@@ -1,18 +1,10 @@
-import json
 import logging
-from functools import partial
 from typing import Any, Dict, List, Optional, Type
 
-from app.agents.tools.base import BaseTool, StructuredTool
-from app.bedrock import compose_args, get_bedrock_response
-from app.repositories.models.conversation import ContentModel, MessageModel
+from app.agents.tools.base import BaseTool
 from app.repositories.models.custom_bot import BotModel
-from app.utils import get_anthropic_client, get_current_time, is_anthropic_model
 from app.vector_search import SearchResult, search_related_docs
-from langchain_core.callbacks import (
-    AsyncCallbackManagerForToolRun,
-    CallbackManagerForToolRun,
-)
+from langchain_core.callbacks import CallbackManagerForToolRun
 from langchain_core.language_models import BaseLanguageModel
 from langchain_core.prompts import PromptTemplate
 from langchain_core.pydantic_v1 import BaseModel, Field, root_validator
@@ -135,7 +127,7 @@ class AnswerWithKnowledgeTool(BaseTool):
 
     def _run(
         self, query: str, run_manager: Optional[CallbackManagerForToolRun] = None
-    ) -> str:
+    ) -> dict:
         logger.info(f"Running AnswerWithKnowledgeTool with query: {query}")
         if self.bot.id == "dummy":
             # For testing purpose
@@ -148,7 +140,11 @@ class AnswerWithKnowledgeTool(BaseTool):
             )
 
         context_prompt = self._format_search_results(search_results)
-        return self.llm_chain.invoke({"context": context_prompt, "query": query})
+        output = self.llm_chain.invoke({"context": context_prompt, "query": query})
+        return {
+            "search_results": search_results,
+            "output": output,
+        }
 
     def _format_search_results(self, search_results: List[SearchResult]):
         context = ""

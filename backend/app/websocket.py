@@ -6,12 +6,10 @@ from datetime import datetime
 from decimal import Decimal as decimal
 
 import boto3
-from app.agents.agent import AgentExecutor, create_react_agent
+from app.agents.agent import AgentExecutor, create_react_agent, format_log_to_str
 from app.agents.handlers.apigw_websocket import ApigwWebsocketCallbackHandler
-from app.agents.handlers.token_count import (
-    TokenCountCallbackHandler,
-    get_token_count_callback,
-)
+from app.agents.handlers.token_count import get_token_count_callback
+from app.agents.handlers.used_chunk import get_used_chunk_callback
 from app.agents.langchain import BedrockLLM
 from app.agents.tools.knowledge import AnswerWithKnowledgeTool
 from app.agents.tools.rdb_sql.tool import get_sql_tools
@@ -96,6 +94,7 @@ def process_chat_input(
             name="Agent Executor",
             agent=agent,
             tools=tools,
+            return_intermediate_steps=True,
             callbacks=[],
             verbose=False,
             max_iterations=15,
@@ -105,7 +104,9 @@ def process_chat_input(
         )
 
         price = 0.0
-        with get_token_count_callback() as cb:
+        used_chunks = None
+        thinking_log = None
+        with get_token_count_callback() as token_cb, get_used_chunk_callback() as chunk_cb:
             response = executor.invoke(
                 {
                     "input": chat_input.message.content[0].body,
@@ -113,19 +114,14 @@ def process_chat_input(
                 config={
                     "callbacks": [
                         ApigwWebsocketCallbackHandler(gatewayapi, connection_id),
-                        cb,
+                        token_cb,
+                        chunk_cb,
                     ],
                 },
             )
-            price = cb.total_cost
-
-        used_chunks = None
-        # TODO
-        # if bot:
-        #     used_chunks = [
-        #         ChunkModel(content=r.content, source=r.source, rank=r.rank)
-        #         for r in filter_used_results(arg.full_token, search_results)
-        #     ]
+            price = token_cb.total_cost
+            used_chunks = chunk_cb.used_chunks
+            thinking_log = format_log_to_str(response.get("intermediate_steps", []))
 
         # Append entire completion as the last message
         assistant_msg_id = str(ULID())
@@ -157,9 +153,7 @@ def process_chat_input(
         last_data_to_send = json.dumps(
             dict(status="STREAMING_END", completion="", stop_reason="agent_finish")
         ).encode("utf-8")
-        gatewayapi.post_to_connection(
-            ConnectionId=connection_id, Data=last_data_to_send
-        )
+        gatewayapi.post_to_connection(ConnectionId=connection_id, Data=last_data_to_send)
 
         return {"statusCode": 200, "body": "Message sent."}
 
@@ -247,9 +241,7 @@ def process_chat_input(
         last_data_to_send = json.dumps(
             dict(status="STREAMING_END", completion="", stop_reason=arg.stop_reason)
         ).encode("utf-8")
-        gatewayapi.post_to_connection(
-            ConnectionId=connection_id, Data=last_data_to_send
-        )
+        gatewayapi.post_to_connection(ConnectionId=connection_id, Data=last_data_to_send)
 
     stream_handler = get_stream_handler_type(chat_input.message.model)(
         model=chat_input.message.model,

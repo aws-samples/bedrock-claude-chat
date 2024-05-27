@@ -2,13 +2,10 @@
 """
 
 import json
-from queue import Queue
 from typing import Any, Literal, Optional
-from uuid import UUID
 
 from langchain_core.agents import AgentAction, AgentFinish
 from langchain_core.callbacks.base import BaseCallbackHandler
-from langchain_core.outputs import ChatGenerationChunk, GenerationChunk, LLMResult
 
 DEFAULT_ANSWER_PREFIX_TOKENS = ["Final", "Answer", ":"]
 FINAL_ANSWER_TAG = "final-answer"
@@ -44,16 +41,6 @@ class ApigwWebsocketCallbackHandler(BaseCallbackHandler):
         if self.debug:
             print(body)
             return
-
-        # TODO: remove?
-        # if status == "STREAMING_END":
-        #     self.gatewayapi.post_to_connection(
-        #         ConnectionId=self.connection_id,
-        #         Data=json.dumps(
-        #             {"status": "STREAMING", "completion": "", "stop_reason": body}
-        #         ).encode("utf-8"),
-        #     )
-        #     return
 
         key = "body"
         if status == "ERROR":
@@ -104,7 +91,6 @@ class ApigwWebsocketCallbackHandler(BaseCallbackHandler):
         **kwargs: Any,
     ) -> Any:
         """Callback when agent finishes."""
-        # It seems that I can't get the stop_reason, so I'll send own signal.
         print(f"finish: {finish}")
         self._send("STREAMING_END", "agent_finish")
         return finish

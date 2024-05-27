@@ -5,9 +5,10 @@ sys.path.append(".")
 import unittest
 from pprint import pprint
 
-from app.agents.agent import AgentExecutor, create_react_agent
+from app.agents.agent import AgentExecutor, create_react_agent, format_log_to_str
 from app.agents.handlers.apigw_websocket import ApigwWebsocketCallbackHandler
 from app.agents.handlers.token_count import get_token_count_callback
+from app.agents.handlers.used_chunk import get_used_chunk_callback
 from app.agents.langchain import BedrockLLM
 from app.agents.tools.knowledge import AnswerWithKnowledgeTool
 from app.agents.tools.rdb_sql.tool import get_sql_tools
@@ -77,12 +78,13 @@ class TestReactAgent(unittest.TestCase):
         )
         tools = []
         tools.append(today_weather_tool)  # Weather Tool
-        tools.append(answer_with_knowledge_tool)
+        tools.append(answer_with_knowledge_tool)  # RAG Tool
 
         agent = create_react_agent(model=self.MODEL, tools=tools)
         executor = AgentExecutor(
             name="Agent Executor",
             agent=agent,
+            return_intermediate_steps=True,
             tools=tools,
             callbacks=[],
             verbose=False,
@@ -92,7 +94,7 @@ class TestReactAgent(unittest.TestCase):
             handle_parsing_errors=True,
         )
 
-        with get_token_count_callback() as cb:
+        with get_token_count_callback() as token_cb, get_used_chunk_callback() as chunk_cb:
             res = executor.invoke(
                 {
                     # "input": "Tell me the today's weather with temperature on Seattle and Tokyo. Output must be in a table format."
@@ -104,16 +106,19 @@ class TestReactAgent(unittest.TestCase):
                         ApigwWebsocketCallbackHandler(
                             gatewayapi="dummy", connection_id="dummy", debug=True
                         ),
-                        cb,
+                        token_cb,
+                        chunk_cb,
                     ],
                 },
             )
-            print(f"Total Input Token Count: {cb.total_input_token_count}")
-            print(f"Total Output Token Count: {cb.total_output_token_count}")
-            print(f"Total Cost (USD): ${cb.total_cost}")
+            print(f"Total Input Token Count: {token_cb.total_input_token_count}")
+            print(f"Total Output Token Count: {token_cb.total_output_token_count}")
+            print(f"Total Cost (USD): ${token_cb.total_cost}")
+            print(f"Used Chunks: {chunk_cb.used_chunks}")
 
         print(f"type of res: {type(res)}")
-        pprint(res)
+        # pprint(res)
+        print(f"type of intermediate_steps: {type(res.get('intermediate_steps'))}")
 
 
 if __name__ == "__main__":
