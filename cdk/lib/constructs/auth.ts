@@ -36,7 +36,7 @@ export class Auth extends Construct {
         minLength: 8,
       },
       // Disable id selfSignUpEnabled is given as false or if selfSignUpEnabled is true and idp is provided
-      this.selfSignUpEnabled: props.selfSignUpEnabled && !props.idp.isExist(),
+      selfSignUpEnabled: props.selfSignUpEnabled && !props.idp.isExist(),
       signInAliases: {
         username: false,
         email: true,
