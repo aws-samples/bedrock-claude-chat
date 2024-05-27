@@ -618,13 +618,15 @@ const BotEditPage: React.FC = () => {
                   <div className="font-semibold">
                     {t('bot.label.citeRetrievedContexts')}
                   </div>
-                  <div className="whitespace-pre-wrap text-sm text-aws-font-color/50">
-                    {t('bot.help.knowledge.citeRetrievedContexts')}
+                  <div className="flex">
+                    <Toggle
+                      value={displayRetrievedChunks}
+                      onChange={setDisplayRetrievedChunks}
+                    />
+                    <div className="whitespace-pre-wrap text-sm text-aws-font-color/50">
+                      {t('bot.help.knowledge.citeRetrievedContexts')}
+                    </div>
                   </div>
-                  <Toggle
-                    value={displayRetrievedChunks}
-                    onChange={setDisplayRetrievedChunks}
-                  />
                 </div>
               </div>
 
