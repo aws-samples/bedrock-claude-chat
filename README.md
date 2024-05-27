@@ -310,7 +310,7 @@ If you want newly created users to automatically join groups, you can specify th
 "autoJoinUserGroups": ["CreatingBotAllowed"],
 ```
 
-By default, newly created users do not belong to any groups.
+By default, newly created users will be joined to the `CreatingBotAllowed` group.
 
 ### Local Development
 

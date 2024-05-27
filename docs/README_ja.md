@@ -296,7 +296,7 @@ const userPool = new UserPool(this, "UserPool", {
 "autoJoinUserGroups": ["CreatingBotAllowed"],
 ```
 
-デフォルトでは、新規作成ユーザーはどのグループにも所属しません。
+デフォルトでは、新規作成ユーザーは `CreatingBotAllowed` グループに参加します。
 
 ### ローカルでの開発について
 
