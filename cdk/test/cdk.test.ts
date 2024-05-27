@@ -29,7 +29,7 @@ describe("Fine-grained Assertions Test", () => {
           start: {},
         },
         enableMistral: false,
-	enableSelfSignUp: true,
+	      selfSignUpEnabled: true,
         embeddingContainerVcpu: 1024,
         embeddingContainerMemory: 2048,
       }
@@ -85,7 +85,7 @@ describe("Fine-grained Assertions Test", () => {
           start: {},
         },
         enableMistral: false,
-	enableSelfSignUp: true,
+	      selfSignUpEnabled: true,
         embeddingContainerVcpu: 1024,
         embeddingContainerMemory: 2048,
       }
@@ -174,7 +174,7 @@ describe("Scheduler Test", () => {
         },
       },
       enableMistral: false,
-      enableSelfSignUp: true,
+      selfSignUpEnabled: true,
       embeddingContainerVcpu: 1024,
       embeddingContainerMemory: 2048,
     });
@@ -203,7 +203,7 @@ describe("Scheduler Test", () => {
         start: {},
       },
       enableMistral: false,
-      enableSelfSignUp: true,
+      selfSignUpEnabled: true,
       embeddingContainerVcpu: 1024,
       embeddingContainerMemory: 2048,
     });
