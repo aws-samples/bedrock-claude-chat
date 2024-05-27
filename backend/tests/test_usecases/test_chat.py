@@ -546,7 +546,6 @@ class TestChatWithCustomizedBot(unittest.TestCase):
     first_public_bot_id = "public1"
 
     def setUp(self) -> None:
-
         private_bot = create_test_private_bot(
             self.first_private_bot_id,
             True,

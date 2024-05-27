@@ -30,16 +30,15 @@ import useErrorMessage from '../hooks/useErrorMessage';
 import Help from '../components/Help';
 import Toggle from '../components/Toggle';
 
-
 const edgeGenerationParams =
-  import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true' ?
-    EDGE_MISTRAL_GENERATION_PARAMS :
-    EDGE_GENERATION_PARAMS;
+  import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true'
+    ? EDGE_MISTRAL_GENERATION_PARAMS
+    : EDGE_GENERATION_PARAMS;
 
 const defaultGenerationConfig =
-  import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true' ?
-    DEFAULT_MISTRAL_GENERATION_CONFIG :
-    DEFAULT_GENERATION_CONFIG;
+  import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true'
+    ? DEFAULT_MISTRAL_GENERATION_CONFIG
+    : DEFAULT_GENERATION_CONFIG;
 
 const BotEditPage: React.FC = () => {
   const { t } = useTranslation();
@@ -64,13 +63,21 @@ const BotEditPage: React.FC = () => {
   const [deletedFilenames, setDeletedFilenames] = useState<string[]>([]);
   const [displayRetrievedChunks, setDisplayRetrievedChunks] = useState(true);
 
-  const [maxTokens, setMaxTokens] = useState<number>(defaultGenerationConfig.maxTokens);
+  const [maxTokens, setMaxTokens] = useState<number>(
+    defaultGenerationConfig.maxTokens
+  );
   const [topK, setTopK] = useState<number>(defaultGenerationConfig.topK);
   const [topP, setTopP] = useState<number>(defaultGenerationConfig.topP);
-  const [temperature, setTemperature] = useState<number>(defaultGenerationConfig.temperature);
-  const [stopSequences, setStopSequences] = useState<string>(defaultGenerationConfig.stopSequences?.join(',') || '');
+  const [temperature, setTemperature] = useState<number>(
+    defaultGenerationConfig.temperature
+  );
+  const [stopSequences, setStopSequences] = useState<string>(
+    defaultGenerationConfig.stopSequences?.join(',') || ''
+  );
 
-  const [searchParams, setSearchParams] = useState<SearchParams>(DEFAULT_SEARCH_CONFIG);
+  const [searchParams, setSearchParams] = useState<SearchParams>(
+    DEFAULT_SEARCH_CONFIG
+  );
 
   const {
     errorMessages,
@@ -106,12 +113,12 @@ const BotEditPage: React.FC = () => {
             }))
           );
           setEmbeddingParams(bot.embeddingParams);
-          setSearchParams(bot.searchParams)
-          setTopK(bot.generationParams.topK)
-          setTopP(bot.generationParams.topP)
-          setTemperature(bot.generationParams.temperature)
-          setMaxTokens(bot.generationParams.maxTokens)
-          setStopSequences(bot.generationParams.stopSequences.join(","));
+          setSearchParams(bot.searchParams);
+          setTopK(bot.generationParams.topK);
+          setTopP(bot.generationParams.topP);
+          setTemperature(bot.generationParams.temperature);
+          setMaxTokens(bot.generationParams.maxTokens);
+          setStopSequences(bot.generationParams.stopSequences.join(','));
           setUnchangedFilenames([...bot.knowledge.filenames]);
           setDisplayRetrievedChunks(bot.displayRetrievedChunks);
           if (bot.syncStatus === 'FAILED') {
@@ -261,28 +268,30 @@ const BotEditPage: React.FC = () => {
     history.back();
   }, []);
 
-  const isValidGenerationConfigParam = useCallback((value: number,
-    key: 'maxTokens' | 'topK' | 'topP' | 'temperature') => {
-    if (value < edgeGenerationParams[key].MIN) {
-      setErrorMessages(
-        key,
-        t('validation.minRange.message', {
-          size: edgeGenerationParams[key].MIN,
-        }),
-      );
-      return false;
-    } else if (value > edgeGenerationParams[key].MAX) {
-      setErrorMessages(
-        key,
-        t('validation.maxRange.message', {
-          size: edgeGenerationParams[key].MAX,
-        }),
-      );
-      return false;
-    }
+  const isValidGenerationConfigParam = useCallback(
+    (value: number, key: 'maxTokens' | 'topK' | 'topP' | 'temperature') => {
+      if (value < edgeGenerationParams[key].MIN) {
+        setErrorMessages(
+          key,
+          t('validation.minRange.message', {
+            size: edgeGenerationParams[key].MIN,
+          })
+        );
+        return false;
+      } else if (value > edgeGenerationParams[key].MAX) {
+        setErrorMessages(
+          key,
+          t('validation.maxRange.message', {
+            size: edgeGenerationParams[key].MAX,
+          })
+        );
+        return false;
+      }
 
-    return true;
-  }, [setErrorMessages, t]);
+      return true;
+    },
+    [setErrorMessages, t]
+  );
 
   const isValid = useCallback((): boolean => {
     clearErrorMessages();
@@ -315,10 +324,7 @@ const BotEditPage: React.FC = () => {
     }
 
     if (stopSequences.length === 0) {
-      setErrorMessages(
-        'stopSequences',
-        t('input.validationError.required')
-      );
+      setErrorMessages('stopSequences', t('input.validationError.required'));
       return false;
     }
 
@@ -327,7 +333,7 @@ const BotEditPage: React.FC = () => {
         'maxResults',
         t('validation.minRange.message', {
           size: EDGE_SEARCH_PARAMS.maxResults.MIN,
-        }),
+        })
       );
       return false;
     } else if (searchParams.maxResults > EDGE_SEARCH_PARAMS.maxResults.MAX) {
@@ -335,15 +341,17 @@ const BotEditPage: React.FC = () => {
         'maxResults',
         t('validation.maxRange.message', {
           size: EDGE_SEARCH_PARAMS.maxResults.MAX,
-        }),
+        })
       );
       return false;
     }
 
-    return isValidGenerationConfigParam(maxTokens, 'maxTokens') &&
+    return (
+      isValidGenerationConfigParam(maxTokens, 'maxTokens') &&
       isValidGenerationConfigParam(topK, 'topK') &&
       isValidGenerationConfigParam(topP, 'topP') &&
-      isValidGenerationConfigParam(temperature, 'temperature');
+      isValidGenerationConfigParam(temperature, 'temperature')
+    );
   }, [
     embeddingParams,
     maxTokens,
@@ -355,7 +363,8 @@ const BotEditPage: React.FC = () => {
     clearErrorMessages,
     setErrorMessages,
     isValidGenerationConfigParam,
-    t]);
+    t,
+  ]);
 
   const onClickCreate = useCallback(() => {
     if (!isValid()) return;
@@ -375,7 +384,7 @@ const BotEditPage: React.FC = () => {
         temperature,
         topK,
         topP,
-        stopSequences: stopSequences.split(","),
+        stopSequences: stopSequences.split(','),
       },
       searchParams,
       knowledge: {
@@ -402,16 +411,13 @@ const BotEditPage: React.FC = () => {
     urls,
     files,
     embeddingParams,
-<<<<<<< HEAD
     displayRetrievedChunks,
-=======
     maxTokens,
     temperature,
     topK,
     topP,
     stopSequences,
     searchParams,
->>>>>>> main
     navigate,
   ]);
 
@@ -434,7 +440,7 @@ const BotEditPage: React.FC = () => {
           temperature,
           topK,
           topP,
-          stopSequences: stopSequences.split(","),
+          stopSequences: stopSequences.split(','),
         },
         searchParams,
         knowledge: {
@@ -625,8 +631,7 @@ const BotEditPage: React.FC = () => {
               <ExpandableDrawerGroup
                 isDefaultShow={false}
                 label={t('generationConfig.title')}
-                className="py-2"
-              >
+                className="py-2">
                 <GenerationConfig
                   topK={topK}
                   setTopK={setTopK}
@@ -746,7 +751,6 @@ const BotEditPage: React.FC = () => {
                   />
                 </div>
               </ExpandableDrawerGroup>
-
 
               {errorMessages['syncChunkError'] && (
                 <Alert

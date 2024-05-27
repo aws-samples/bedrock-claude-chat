@@ -222,7 +222,9 @@ def update_alias_pin_status(user_id: str, alias_id: str, pinned: bool):
     return response
 
 
-def find_private_bots_by_user_id(user_id: str, limit: int | None = None) -> list[BotMeta]:
+def find_private_bots_by_user_id(
+    user_id: str, limit: int | None = None
+) -> list[BotMeta]:
     """Find all private bots owned by user.
     This does not include public bots.
     The order is descending by `last_used_time`.
@@ -366,7 +368,9 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
             None if "ApiPublishedDatetime" not in item else item["ApiPublishedDatetime"]
         ),
         published_api_codebuild_id=(
-            None if "ApiPublishCodeBuildId" not in item else item["ApiPublishCodeBuildId"]
+            None
+            if "ApiPublishCodeBuildId" not in item
+            else item["ApiPublishCodeBuildId"]
         ),
         display_retrieved_chunks=item.get("DisplayRetrievedChunks", False),
     )
@@ -444,7 +448,9 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
             None if "ApiPublishedDatetime" not in item else item["ApiPublishedDatetime"]
         ),
         published_api_codebuild_id=(
-            None if "ApiPublishCodeBuildId" not in item else item["ApiPublishCodeBuildId"]
+            None
+            if "ApiPublishCodeBuildId" not in item
+            else item["ApiPublishCodeBuildId"]
         ),
         display_retrieved_chunks=item.get("DisplayRetrievedChunks", False),
     )

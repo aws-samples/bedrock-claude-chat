@@ -221,7 +221,9 @@ def insert_knowledge(
     logger.info(f"Inserted prompt: {inserted_prompt}")
 
     conversation_with_context = deepcopy(conversation)
-    conversation_with_context.message_map["instruction"].content[0].body = inserted_prompt
+    conversation_with_context.message_map["instruction"].content[
+        0
+    ].body = inserted_prompt
 
     return conversation_with_context
 
