@@ -4,10 +4,8 @@ import os
 import re
 from typing import Any, Literal
 
-import pg8000
 from app.bedrock import calculate_query_embedding
 from app.utils import generate_presigned_url, query_postgres
-from aws_lambda_powertools.utilities import parameters
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
@@ -80,24 +78,7 @@ def search_related_docs(bot_id: str, limit: int, query: str) -> list[SearchResul
     query_embedding = calculate_query_embedding(query)
     logger.info(f"query_embedding: {query_embedding}")
 
-    secrets: Any = parameters.get_secret(DB_SECRETS_ARN)  # type: ignore
-    db_info = json.loads(secrets)
-
-    conn = pg8000.connect(
-        database=db_info["dbname"],
-        host=db_info["host"],
-        port=db_info["port"],
-        user=db_info["username"],
-        password=db_info["password"],
-    )
-
-    try:
-        with conn.cursor() as cursor:
-            # NOTE: <-> is the KNN by L2 distance in pgvector.
-            # If you want to use inner product or cosine distance, use <#> or <=> respectively.
-            # It's important to choose the same distance metric as the one used for indexing.
-            # Ref: https://github.com/pgvector/pgvector?tab=readme-ov-file#getting-started
-            search_query = """
+    search_query = """
 SELECT id, botid, content, source, embedding 
 FROM items 
 WHERE botid = %s 

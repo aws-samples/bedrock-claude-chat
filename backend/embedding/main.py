@@ -55,7 +55,6 @@ def get_exec_id() -> str:
 def insert_to_postgres(
     bot_id: str, contents: ListProxy, sources: ListProxy, embeddings: ListProxy
 ):
-
     secrets: Any = parameters.get_secret(DB_SECRETS_ARN)  # type: ignore
     db_info = json.loads(secrets)
 
