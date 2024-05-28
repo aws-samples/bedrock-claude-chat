@@ -1,7 +1,7 @@
 import sys
 import unittest
 
-sys.path.append(".")
+sys.path.insert(0, ".")
 
 from app.config import DEFAULT_EMBEDDING_CONFIG
 from app.repositories.custom_bot import (
@@ -21,51 +21,28 @@ from app.repositories.custom_bot import (
     update_bot_visibility,
 )
 from app.repositories.models.custom_bot import (
+    AgentModel,
+    AgentToolModel,
     BotAliasModel,
     BotModel,
     EmbeddingParamsModel,
-    KnowledgeModel,
     GenerationParamsModel,
+    KnowledgeModel,
     SearchParamsModel,
 )
 from app.usecases.bot import fetch_all_bots_by_user_id
+from tests.test_repositories.utils.bot_factory import (
+    create_test_private_bot,
+    create_test_public_bot,
+)
 
 
 class TestCustomBotRepository(unittest.TestCase):
     def test_store_and_find_bot(self):
-        bot = BotModel(
-            id="1",
-            title="Test Bot",
-            instruction="Test Bot Prompt",
-            description="Test Bot Description",
-            create_time=1627984879.9,
-            last_used_time=1627984879.9,
-            is_pinned=False,
-            public_bot_id=None,
-            owner_user_id="user1",
-            embedding_params=EmbeddingParamsModel(
-                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
-                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
-            ),
-            generation_params=GenerationParamsModel(
-                max_tokens=2000,
-                top_k=250,
-                top_p=0.999,
-                temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "],
-            ),
-            search_params=SearchParamsModel(
-                max_results=20,
-            ),
-            knowledge=KnowledgeModel(
-                source_urls=["https://aws.amazon.com/"],
-                sitemap_urls=["https://aws.amazon.sitemap.xml"],
-                filenames=["test.txt"],
-            ),
-            sync_status="RUNNING",
-            sync_status_reason="reason",
-            sync_last_exec_id="",
+        bot = create_test_private_bot(
+            "1",
+            False,
+            "user1",
             published_api_stack_name="TestApiStack",
             published_api_datetime=1627984879,
             published_api_codebuild_id="TestCodeBuildId",
@@ -125,44 +102,7 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(len(bot), 0)
 
     def test_update_bot_last_used_time(self):
-        bot = BotModel(
-            id="1",
-            title="Test Bot",
-            description="Test Bot Description",
-            instruction="Test Bot Prompt",
-            create_time=1627984879.9,
-            last_used_time=1627984879.9,
-            is_pinned=False,
-            public_bot_id=None,
-            owner_user_id="user1",
-            embedding_params=EmbeddingParamsModel(
-                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
-                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
-            ),
-            generation_params=GenerationParamsModel(
-                max_tokens=2000,
-                top_k=250,
-                top_p=0.999,
-                temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "],
-            ),
-            search_params=SearchParamsModel(
-                max_results=20,
-            ),
-            knowledge=KnowledgeModel(
-                source_urls=["https://aws.amazon.com/"],
-                sitemap_urls=["https://aws.amazon.sitemap.xml"],
-                filenames=["test.txt"],
-            ),
-            sync_status="RUNNING",
-            sync_status_reason="reason",
-            sync_last_exec_id="",
-            published_api_stack_name=None,
-            published_api_datetime=None,
-            published_api_codebuild_id=None,
-            display_retrieved_chunks=True,
-        )
+        bot = create_test_private_bot("1", False, "user1")
         store_bot("user1", bot)
         update_bot_last_used_time("user1", "1")
 
@@ -174,44 +114,7 @@ class TestCustomBotRepository(unittest.TestCase):
         delete_bot_by_id("user1", "1")
 
     def test_update_delete_bot_publication(self):
-        bot = BotModel(
-            id="1",
-            title="Test Bot",
-            description="Test Bot Description",
-            instruction="Test Bot Prompt",
-            create_time=1627984879.9,
-            last_used_time=1627984879.9,
-            is_pinned=False,
-            public_bot_id=None,
-            owner_user_id="user1",
-            embedding_params=EmbeddingParamsModel(
-                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
-                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
-            ),
-            generation_params=GenerationParamsModel(
-                max_tokens=2000,
-                top_k=250,
-                top_p=0.999,
-                temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "],
-            ),
-            search_params=SearchParamsModel(
-                max_results=20,
-            ),
-            knowledge=KnowledgeModel(
-                source_urls=["https://aws.amazon.com/jp"],
-                sitemap_urls=["https://aws.amazon.sitemap.xml/jp"],
-                filenames=["test.txt"],
-            ),
-            sync_status="FAILED",
-            sync_status_reason="error",
-            sync_last_exec_id="",
-            published_api_stack_name=None,
-            published_api_datetime=None,
-            published_api_codebuild_id=None,
-            display_retrieved_chunks=True,
-        )
+        bot = create_test_private_bot("1", False, "user1")
         store_bot("user1", bot)
         update_bot_publication("user1", "1", "api1", "build1")
 
@@ -231,44 +134,7 @@ class TestCustomBotRepository(unittest.TestCase):
         delete_bot_by_id("user1", "1")
 
     def test_update_bot(self):
-        bot = BotModel(
-            id="1",
-            title="Test Bot",
-            description="Test Bot Description",
-            instruction="Test Bot Prompt",
-            create_time=1627984879.9,
-            last_used_time=1627984879.9,
-            is_pinned=False,
-            public_bot_id=None,
-            owner_user_id="user1",
-            embedding_params=EmbeddingParamsModel(
-                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
-                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
-            ),
-            generation_params=GenerationParamsModel(
-                max_tokens=2000,
-                top_k=250,
-                top_p=0.999,
-                temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "],
-            ),
-            search_params=SearchParamsModel(
-                max_results=20,
-            ),
-            knowledge=KnowledgeModel(
-                source_urls=["https://aws.amazon.com/jp"],
-                sitemap_urls=["https://aws.amazon.sitemap.xml/jp"],
-                filenames=["test.txt"],
-            ),
-            sync_status="FAILED",
-            sync_status_reason="error",
-            sync_last_exec_id="",
-            published_api_stack_name=None,
-            published_api_datetime=None,
-            published_api_codebuild_id=None,
-            display_retrieved_chunks=True,
-        )
+        bot = create_test_private_bot("1", False, "user1")
         store_bot("user1", bot)
         update_bot(
             "user1",
@@ -288,6 +154,13 @@ class TestCustomBotRepository(unittest.TestCase):
             ),
             search_params=SearchParamsModel(
                 max_results=20,
+            ),
+            agent=AgentModel(
+                tools=[
+                    AgentToolModel(
+                        name="updated_tool", description="updated description"
+                    ),
+                ]
             ),
             knowledge=KnowledgeModel(
                 source_urls=["https://updated.com/"],
@@ -313,6 +186,9 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(bot.generation_params.top_p, 0.99)
         self.assertEqual(bot.generation_params.temperature, 0.2)
 
+        self.assertEqual(bot.agent.tools[0].name, "updated_tool")
+        self.assertEqual(bot.agent.tools[0].description, "updated description")
+
         self.assertEqual(bot.knowledge.source_urls, ["https://updated.com/"])
         self.assertEqual(bot.knowledge.sitemap_urls, ["https://updated.xml"])
         self.assertEqual(bot.knowledge.filenames, ["updated.txt"])
@@ -325,238 +201,17 @@ class TestCustomBotRepository(unittest.TestCase):
 
 class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
-        bot1 = BotModel(
-            id="1",
-            title="Test Bot",
-            description="Test Bot Description",
-            instruction="Test Bot Prompt",
-            create_time=1627984879.9,
-            last_used_time=1627984879.9,
-            # Pinned
-            is_pinned=True,
-            public_bot_id=None,
-            owner_user_id="user1",
-            embedding_params=EmbeddingParamsModel(
-                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
-                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
-            ),
-            generation_params=GenerationParamsModel(
-                max_tokens=2000,
-                top_k=250,
-                top_p=0.999,
-                temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "],
-            ),
-            search_params=SearchParamsModel(
-                max_results=20,
-            ),
-            knowledge=KnowledgeModel(
-                source_urls=["https://aws.amazon.com/"],
-                sitemap_urls=["https://aws.amazon.sitemap.xml"],
-                filenames=["test.txt"],
-            ),
-            sync_status="RUNNING",
-            sync_status_reason="reason",
-            sync_last_exec_id="",
-            published_api_stack_name=None,
-            published_api_datetime=None,
-            published_api_codebuild_id=None,
-            display_retrieved_chunks=True,
+        bot1 = create_test_private_bot("1", is_pinned=True, owner_user_id="user1")
+        bot2 = create_test_private_bot("2", is_pinned=True, owner_user_id="user1")
+        bot3 = create_test_private_bot("3", is_pinned=False, owner_user_id="user1")
+        bot4 = create_test_private_bot("4", is_pinned=False, owner_user_id="user1")
+        public_bot1 = create_test_public_bot(
+            "public1", is_pinned=True, owner_user_id="user2"
         )
-        bot2 = BotModel(
-            id="2",
-            title="Test Bot",
-            description="Test Bot Description",
-            instruction="Test Bot Prompt",
-            create_time=1627984879.9,
-            last_used_time=1627984879.9,
-            # Pinned
-            is_pinned=True,
-            public_bot_id=None,
-            owner_user_id="user1",
-            embedding_params=EmbeddingParamsModel(
-                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
-                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
-            ),
-            generation_params=GenerationParamsModel(
-                max_tokens=2000,
-                top_k=250,
-                top_p=0.999,
-                temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "],
-            ),
-            search_params=SearchParamsModel(
-                max_results=20,
-            ),
-            knowledge=KnowledgeModel(
-                source_urls=["https://aws.amazon.com/"],
-                sitemap_urls=["https://aws.amazon.sitemap.xml"],
-                filenames=["test.txt"],
-            ),
-            sync_status="RUNNING",
-            sync_status_reason="reason",
-            sync_last_exec_id="",
-            published_api_stack_name=None,
-            published_api_datetime=None,
-            published_api_codebuild_id=None,
-            display_retrieved_chunks=True,
+        public_bot2 = create_test_public_bot(
+            "public2", is_pinned=True, owner_user_id="user2"
         )
-        bot3 = BotModel(
-            id="3",
-            title="Test Bot",
-            description="Test Bot Description",
-            instruction="Test Bot Prompt",
-            create_time=1627984879.9,
-            last_used_time=1627984879.9,
-            # Not Pinned
-            is_pinned=False,
-            public_bot_id=None,
-            owner_user_id="user1",
-            embedding_params=EmbeddingParamsModel(
-                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
-                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
-            ),
-            generation_params=GenerationParamsModel(
-                max_tokens=2000,
-                top_k=250,
-                top_p=0.999,
-                temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "],
-            ),
-            search_params=SearchParamsModel(
-                max_results=20,
-            ),
-            knowledge=KnowledgeModel(
-                source_urls=["https://aws.amazon.com/"],
-                sitemap_urls=["https://aws.amazon.sitemap.xml"],
-                filenames=["test.txt"],
-            ),
-            sync_status="RUNNING",
-            sync_status_reason="reason",
-            sync_last_exec_id="",
-            published_api_stack_name=None,
-            published_api_datetime=None,
-            published_api_codebuild_id=None,
-            display_retrieved_chunks=True,
-        )
-        bot4 = BotModel(
-            id="4",
-            title="Test Bot",
-            description="Test Bot Description",
-            instruction="Test Bot Prompt",
-            create_time=1627984879.9,
-            last_used_time=1627984879.9,
-            # Not Pinned
-            is_pinned=False,
-            public_bot_id=None,
-            owner_user_id="user1",
-            embedding_params=EmbeddingParamsModel(
-                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
-                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
-            ),
-            generation_params=GenerationParamsModel(
-                max_tokens=2000,
-                top_k=250,
-                top_p=0.999,
-                temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "],
-            ),
-            search_params=SearchParamsModel(
-                max_results=20,
-            ),
-            knowledge=KnowledgeModel(
-                source_urls=["https://aws.amazon.com/"],
-                sitemap_urls=["https://aws.amazon.sitemap.xml"],
-                filenames=["test.txt"],
-            ),
-            sync_status="RUNNING",
-            sync_status_reason="reason",
-            sync_last_exec_id="",
-            published_api_stack_name=None,
-            published_api_datetime=None,
-            published_api_codebuild_id=None,
-            display_retrieved_chunks=True,
-        )
-        public_bot1 = BotModel(
-            id="public1",
-            title="Test Public Bot",
-            description="Test Public Bot Description",
-            instruction="Test Public Bot Prompt",
-            create_time=1627984879.9,
-            last_used_time=1627984879.9,
-            is_pinned=True,
-            public_bot_id=None,
-            owner_user_id="user2",
-            embedding_params=EmbeddingParamsModel(
-                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
-                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
-            ),
-            generation_params=GenerationParamsModel(
-                max_tokens=2000,
-                top_k=250,
-                top_p=0.999,
-                temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "],
-            ),
-            search_params=SearchParamsModel(
-                max_results=20,
-            ),
-            knowledge=KnowledgeModel(
-                source_urls=["https://aws.amazon.com/"],
-                sitemap_urls=["https://aws.amazon.sitemap.xml"],
-                filenames=["test.txt"],
-            ),
-            sync_status="RUNNING",
-            sync_status_reason="reason",
-            sync_last_exec_id="",
-            published_api_stack_name=None,
-            published_api_datetime=None,
-            published_api_codebuild_id=None,
-            display_retrieved_chunks=True,
-        )
-        public_bot2 = BotModel(
-            id="public2",
-            title="Test Public Bot",
-            description="Test Public Bot Description",
-            instruction="Test Public Bot Prompt",
-            create_time=1627984879.9,
-            last_used_time=1627984879.9,
-            is_pinned=True,
-            public_bot_id=None,
-            owner_user_id="user2",
-            embedding_params=EmbeddingParamsModel(
-                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
-                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
-            ),
-            generation_params=GenerationParamsModel(
-                max_tokens=2000,
-                top_k=250,
-                top_p=0.999,
-                temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "],
-            ),
-            search_params=SearchParamsModel(
-                max_results=20,
-            ),
-            knowledge=KnowledgeModel(
-                source_urls=["https://aws.amazon.com/"],
-                sitemap_urls=["https://aws.amazon.sitemap.xml"],
-                filenames=["test.txt"],
-            ),
-            sync_status="RUNNING",
-            sync_status_reason="reason",
-            sync_last_exec_id="",
-            published_api_stack_name=None,
-            published_api_datetime=None,
-            published_api_codebuild_id=None,
-            display_retrieved_chunks=True,
-        )
+
         alias1 = BotAliasModel(
             id="alias1",
             # Different from original. Should be updated after `find_all_bots_by_user_id`
@@ -629,119 +284,10 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
 
 class TestUpdateBotVisibility(unittest.TestCase):
     def setUp(self) -> None:
-        bot1 = BotModel(
-            id="1",
-            title="Test Bot",
-            description="Test Bot Description",
-            instruction="Test Bot Prompt",
-            create_time=1627984879.9,
-            last_used_time=1627984879.9,
-            is_pinned=True,
-            public_bot_id=None,
-            owner_user_id="user1",
-            embedding_params=EmbeddingParamsModel(
-                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
-                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
-            ),
-            generation_params=GenerationParamsModel(
-                max_tokens=2000,
-                top_k=250,
-                top_p=0.999,
-                temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "],
-            ),
-            search_params=SearchParamsModel(
-                max_results=20,
-            ),
-            knowledge=KnowledgeModel(
-                source_urls=["https://aws.amazon.com/"],
-                sitemap_urls=["https://aws.amazon.sitemap.xml"],
-                filenames=["test.txt"],
-            ),
-            sync_status="RUNNING",
-            sync_status_reason="reason",
-            sync_last_exec_id="",
-            published_api_stack_name=None,
-            published_api_datetime=None,
-            published_api_codebuild_id=None,
-            display_retrieved_chunks=True,
-        )
-        bot2 = BotModel(
-            id="2",
-            title="Test Bot",
-            description="Test Bot Description",
-            instruction="Test Bot Prompt",
-            create_time=1627984879.9,
-            last_used_time=1627984879.9,
-            is_pinned=True,
-            public_bot_id=None,
-            owner_user_id="user1",
-            embedding_params=EmbeddingParamsModel(
-                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
-                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
-            ),
-            generation_params=GenerationParamsModel(
-                max_tokens=2000,
-                top_k=250,
-                top_p=0.999,
-                temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "],
-            ),
-            search_params=SearchParamsModel(
-                max_results=20,
-            ),
-            knowledge=KnowledgeModel(
-                source_urls=["https://aws.amazon.com/"],
-                sitemap_urls=["https://aws.amazon.sitemap.xml"],
-                filenames=["test.txt"],
-            ),
-            sync_status="RUNNING",
-            sync_status_reason="reason",
-            sync_last_exec_id="",
-            published_api_stack_name=None,
-            published_api_datetime=None,
-            published_api_codebuild_id=None,
-            display_retrieved_chunks=True,
-        )
-        public1 = BotModel(
-            id="public1",
-            title="Test Public Bot",
-            description="Test Public Bot Description",
-            instruction="Test Public Bot Prompt",
-            create_time=1627984879.9,
-            last_used_time=1627984879.9,
-            is_pinned=False,
-            public_bot_id="public1",
-            owner_user_id="user2",
-            embedding_params=EmbeddingParamsModel(
-                chunk_size=DEFAULT_EMBEDDING_CONFIG["chunk_size"],
-                chunk_overlap=DEFAULT_EMBEDDING_CONFIG["chunk_overlap"],
-                enable_partition_pdf=DEFAULT_EMBEDDING_CONFIG["enable_partition_pdf"],
-            ),
-            generation_params=GenerationParamsModel(
-                max_tokens=2000,
-                top_k=250,
-                top_p=0.999,
-                temperature=0.6,
-                stop_sequences=["Human: ", "Assistant: "],
-            ),
-            search_params=SearchParamsModel(
-                max_results=20,
-            ),
-            knowledge=KnowledgeModel(
-                source_urls=["https://aws.amazon.com/"],
-                sitemap_urls=["https://aws.amazon.sitemap.xml"],
-                filenames=["test.txt"],
-            ),
-            sync_status="RUNNING",
-            sync_status_reason="reason",
-            sync_last_exec_id="",
-            published_api_stack_name=None,
-            published_api_datetime=None,
-            published_api_codebuild_id=None,
-            display_retrieved_chunks=True,
+        bot1 = create_test_private_bot("1", is_pinned=True, owner_user_id="user1")
+        bot2 = create_test_private_bot("2", is_pinned=True, owner_user_id="user1")
+        public1 = create_test_public_bot(
+            "public1", is_pinned=True, owner_user_id="user2"
         )
         alias1 = BotAliasModel(
             id="4",
@@ -789,6 +335,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             search_params=SearchParamsModel(
                 max_results=20,
             ),
+            agent=AgentModel(tools=[]),
             knowledge=KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[]),
             sync_status="RUNNING",
             sync_status_reason="",

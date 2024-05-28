@@ -227,6 +227,7 @@ def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationM
                     if v.get("used_chunks")
                     else None
                 ),
+                thinking_log=v.get("thinking_log"),
             )
             for k, v in message_map.items()
         },

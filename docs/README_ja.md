@@ -30,6 +30,11 @@
 
 ![](./imgs/admin_bot_analytics.png)
 
+### エージェント
+
+[エージェント機能](./AGENT.md)を使うと、チャットボットがより複雑なタスクを自動的に処理できるようになります。例えば、ユーザーの質問に答えるために、必要な情報を外部ツールから取得したり、複数のステップに分けて処理したりすることができます。
+TODO: screenshot
+
 ## 🚀 まずはお試し
 
 - us-east-1 リージョンにて、[Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > `Anthropic / Claude 3 Haiku`, `Anthropic / Claude 3 Sonnet` `Cohere / Embed Multilingual`をチェックし、`Save changes`をクリックします

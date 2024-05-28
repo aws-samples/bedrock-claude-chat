@@ -33,6 +33,19 @@ class SearchParams(BaseSchema):
     max_results: int
 
 
+class AgentTool(BaseSchema):
+    name: str
+    description: str
+
+
+class Agent(BaseSchema):
+    tools: list[AgentTool]
+
+
+class AgentInput(BaseSchema):
+    tools: list[str] = Field(..., description="List of tool names")
+
+
 class Knowledge(BaseSchema):
     source_urls: list[str]
     sitemap_urls: list[str]
@@ -56,6 +69,7 @@ class BotInput(BaseSchema):
     embedding_params: EmbeddingParams | None
     generation_params: GenerationParams | None
     search_params: SearchParams | None
+    agent: AgentInput | None
     knowledge: Knowledge | None
     display_retrieved_chunks: bool
 
@@ -67,6 +81,7 @@ class BotModifyInput(BaseSchema):
     embedding_params: EmbeddingParams | None
     generation_params: GenerationParams | None
     search_params: SearchParams | None
+    agent: AgentInput | None
     knowledge: KnowledgeDiffInput | None
     display_retrieved_chunks: bool
 
@@ -117,6 +132,7 @@ class BotModifyOutput(BaseSchema):
     embedding_params: EmbeddingParams
     generation_params: GenerationParams
     search_params: SearchParams
+    agent: Agent
     knowledge: Knowledge
 
 
@@ -134,6 +150,7 @@ class BotOutput(BaseSchema):
     embedding_params: EmbeddingParams
     generation_params: GenerationParams
     search_params: SearchParams
+    agent: Agent
     knowledge: Knowledge
     sync_status: type_sync_status
     sync_status_reason: str

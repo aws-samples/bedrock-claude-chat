@@ -1,18 +1,27 @@
+import logging
 import os
 from datetime import datetime
 from typing import List, Literal
 
 import boto3
+import pg8000
 from anthropic import AnthropicBedrock
 from app.repositories.models.conversation import MessageModel
 from botocore.client import Config
 from botocore.exceptions import ClientError
+
+logger = logging.getLogger(__name__)
 
 REGION = os.environ.get("REGION", "us-east-1")
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
 PUBLISH_API_CODEBUILD_PROJECT_NAME = os.environ.get(
     "PUBLISH_API_CODEBUILD_PROJECT_NAME", ""
 )
+DB_NAME = os.environ.get("DB_NAME", "postgres")
+DB_HOST = os.environ.get("DB_HOST", "")
+DB_USER = os.environ.get("DB_USER", "postgres")
+DB_PASSWORD = os.environ.get("DB_PASSWORD", "password")
+DB_PORT = int(os.environ.get("DB_PORT", 5432))
 
 
 def is_running_on_lambda():
@@ -155,3 +164,45 @@ def start_codebuild_project(environment_variables: dict) -> str:
         environmentVariablesOverride=environment_variables_override,
     )
     return response["build"]["id"]
+
+
+def query_postgres(
+    query: str,
+    params: tuple | None = None,
+    include_columns: bool = False,
+) -> tuple:
+    """Query the PostgreSQL and return the results.
+    Args:
+        query (str): The SQL query to execute.
+        params (tuple, optional): The parameters for the query template. Defaults to None.
+        include_columns (bool, optional): Whether to include the column names in the result. Defaults to False.
+
+    Returns:
+        tuple: The results of the query.
+        example: ((1, 'Alice'), (2, 'Bob')) if include_columns is False
+                 (('id', 'name'), (1, 'Alice'), (2, 'Bob')) if include_columns is True
+    """
+    conn = pg8000.connect(
+        database=DB_NAME,
+        host=DB_HOST,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        port=DB_PORT,
+    )
+    args = params if params else ()
+    try:
+        with conn.cursor() as cursor:
+            cursor.execute(query, args=args)
+            res = cursor.fetchall()
+            columns = tuple([desc[0] for desc in cursor.description])
+    except Exception as e:
+        logger.error(f"Error executing query: {e}")
+        raise e
+    finally:
+        conn.close()
+
+    logger.debug(f"{len(res)} records found.")
+
+    if include_columns:
+        return columns, res
+    return res

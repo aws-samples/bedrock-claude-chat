@@ -20,6 +20,7 @@ from app.repositories.common import (
     decompose_bot_id,
 )
 from app.repositories.models.custom_bot import (
+    AgentModel,
     BotAliasModel,
     BotMeta,
     BotMetaWithStackInfo,
@@ -63,6 +64,7 @@ def store_bot(user_id: str, custom_bot: BotModel):
         "EmbeddingParams": custom_bot.embedding_params.model_dump(),
         "GenerationParams": custom_bot.generation_params.model_dump(),
         "SearchParams": custom_bot.search_params.model_dump(),
+        "AgentData": custom_bot.agent.model_dump(),
         "Knowledge": custom_bot.knowledge.model_dump(),
         "SyncStatus": custom_bot.sync_status,
         "SyncStatusReason": custom_bot.sync_status_reason,
@@ -86,6 +88,7 @@ def update_bot(
     embedding_params: EmbeddingParamsModel,
     generation_params: GenerationParamsModel,
     search_params: SearchParamsModel,
+    agent: AgentModel,
     knowledge: KnowledgeModel,
     sync_status: type_sync_status,
     sync_status_reason: str,
@@ -100,12 +103,23 @@ def update_bot(
     try:
         response = table.update_item(
             Key={"PK": user_id, "SK": compose_bot_id(user_id, bot_id)},
-            UpdateExpression="SET Title = :title, Description = :description, Instruction = :instruction,EmbeddingParams = :embedding_params, Knowledge = :knowledge, SyncStatus = :sync_status, SyncStatusReason = :sync_status_reason, GenerationParams = :generation_params, SearchParams = :search_params, DisplayRetrievedChunks = :display_retrieved_chunks",
+            UpdateExpression="SET Title = :title, "
+            "Description = :description, "
+            "Instruction = :instruction, "
+            "EmbeddingParams = :embedding_params, "
+            "AgentData = :agent_data, "  # Note: `Agent` is reserved keyword
+            "Knowledge = :knowledge, "
+            "SyncStatus = :sync_status, "
+            "SyncStatusReason = :sync_status_reason, "
+            "GenerationParams = :generation_params, "
+            "SearchParams = :search_params, "
+            "DisplayRetrievedChunks = :display_retrieved_chunks",
             ExpressionAttributeValues={
                 ":title": title,
                 ":description": description,
                 ":instruction": instruction,
                 ":knowledge": knowledge.model_dump(),
+                ":agent_data": agent.model_dump(),
                 ":embedding_params": embedding_params.model_dump(),
                 ":sync_status": sync_status,
                 ":sync_status_reason": sync_status_reason,
@@ -355,6 +369,11 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
                 else DEFAULT_SEARCH_CONFIG["max_results"]
             )
         ),
+        agent=(
+            AgentModel(**item["AgentData"])
+            if "AgentData" in item
+            else AgentModel(tools=[])
+        ),
         knowledge=KnowledgeModel(**item["Knowledge"]),
         sync_status=item["SyncStatus"],
         sync_status_reason=item["SyncStatusReason"],
@@ -434,6 +453,11 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
                 if "SearchParams" in item
                 else DEFAULT_SEARCH_CONFIG["max_results"]
             )
+        ),
+        agent=(
+            AgentModel(**item["AgentData"])
+            if "AgentData" in item
+            else AgentModel(tools=[])
         ),
         knowledge=KnowledgeModel(**item["Knowledge"]),
         sync_status=item["SyncStatus"],

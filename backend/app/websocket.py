@@ -6,21 +6,22 @@ from datetime import datetime
 from decimal import Decimal as decimal
 
 import boto3
-from anthropic.types import ContentBlockDeltaEvent
-from anthropic.types import Message as AnthropicMessage
-from anthropic.types import MessageDeltaEvent, MessageStopEvent
+from app.agents.agent import AgentExecutor, create_react_agent, format_log_to_str
+from app.agents.handlers.apigw_websocket import ApigwWebsocketCallbackHandler
+from app.agents.handlers.token_count import get_token_count_callback
+from app.agents.handlers.used_chunk import get_used_chunk_callback
+from app.agents.langchain import BedrockLLM
+from app.agents.tools.knowledge import AnswerWithKnowledgeTool
+from app.agents.tools.rdb_sql.tool import get_sql_tools
+from app.agents.tools.weather import today_weather_tool
 from app.auth import verify_token
-from app.bedrock import calculate_price, compose_args
+from app.bedrock import compose_args
 from app.repositories.conversation import RecordNotFoundError, store_conversation
 from app.repositories.models.conversation import ChunkModel, ContentModel, MessageModel
 from app.routes.schemas.conversation import ChatInputWithToken
+from app.stream import OnStopInput, get_stream_handler_type
 from app.usecases.bot import modify_bot_last_used_time
-from app.usecases.chat import (
-    get_bedrock_response,
-    insert_knowledge,
-    prepare_conversation,
-    trace_to_root,
-)
+from app.usecases.chat import insert_knowledge, prepare_conversation, trace_to_root
 from app.utils import get_anthropic_client, get_current_time, is_anthropic_model
 from app.vector_search import filter_used_results, search_related_docs
 from boto3.dynamodb.conditions import Key
@@ -67,6 +68,99 @@ def process_chat_input(
         else:
             return {"statusCode": 400, "body": "Invalid request."}
 
+    if bot and bot.is_agent_enabled():
+        logger.info("Bot has agent tools. Using agent for response.")
+        llm = BedrockLLM.from_model(model=chat_input.message.model)
+
+        # TODO: remove SQL tool (?)
+        tools = get_sql_tools(llm)  # RDB Query Tool
+        tools.append(today_weather_tool)  # Weather Tool
+
+        if bot and bot.has_knowledge():
+            logger.info("Bot has knowledge. Adding answer with knowledge tool.")
+            answer_with_knowledge_tool = AnswerWithKnowledgeTool.from_bot(
+                bot=bot,
+                llm=llm,
+            )
+            tools.append(answer_with_knowledge_tool)
+
+        logger.info(f"Tools: {tools}")
+        agent = create_react_agent(
+            model=chat_input.message.model,
+            tools=tools,
+            generation_config=bot.generation_params,
+        )
+        executor = AgentExecutor(
+            name="Agent Executor",
+            agent=agent,
+            tools=tools,
+            return_intermediate_steps=True,
+            callbacks=[],
+            verbose=False,
+            max_iterations=15,
+            max_execution_time=None,
+            early_stopping_method="force",
+            handle_parsing_errors=True,
+        )
+
+        price = 0.0
+        used_chunks = None
+        thinking_log = None
+        with get_token_count_callback() as token_cb, get_used_chunk_callback() as chunk_cb:
+            response = executor.invoke(
+                {
+                    "input": chat_input.message.content[0].body,
+                },
+                config={
+                    "callbacks": [
+                        ApigwWebsocketCallbackHandler(gatewayapi, connection_id),
+                        token_cb,
+                        chunk_cb,
+                    ],
+                },
+            )
+            price = token_cb.total_cost
+            if bot.display_retrieved_chunks:
+                used_chunks = chunk_cb.used_chunks
+            thinking_log = format_log_to_str(response.get("intermediate_steps", []))
+
+        # Append entire completion as the last message
+        assistant_msg_id = str(ULID())
+        message = MessageModel(
+            role="assistant",
+            content=[
+                ContentModel(
+                    content_type="text", body=response["output"], media_type=None
+                )
+            ],
+            model=chat_input.message.model,
+            children=[],
+            parent=user_msg_id,
+            create_time=get_current_time(),
+            feedback=None,
+            used_chunks=used_chunks,
+            thinking_log=thinking_log,
+        )
+        conversation.message_map[assistant_msg_id] = message
+        # Append children to parent
+        conversation.message_map[user_msg_id].children.append(assistant_msg_id)
+        conversation.last_message_id = assistant_msg_id
+
+        conversation.total_price += price
+
+        # Store conversation before finish streaming so that front-end can avoid 404 issue
+        store_conversation(user_id, conversation)
+
+        # Send signal so that frontend can close the connection
+        last_data_to_send = json.dumps(
+            dict(status="STREAMING_END", completion="", stop_reason="agent_finish")
+        ).encode("utf-8")
+        gatewayapi.post_to_connection(
+            ConnectionId=connection_id, Data=last_data_to_send
+        )
+
+        return {"statusCode": 200, "body": "Message sent."}
+
     message_map = conversation.message_map
     search_results = []
     if bot and bot.has_knowledge():
@@ -111,199 +205,67 @@ def process_chat_input(
         generation_params=(bot.generation_params if bot else None),
     )
 
-    is_anthropic = is_anthropic_model(args["model"])
+    def on_stream(token: str, **kwargs) -> None:
+        # Send completion
+        data_to_send = json.dumps(dict(status="STREAMING", completion=token)).encode(
+            "utf-8"
+        )
+        gatewayapi.post_to_connection(ConnectionId=connection_id, Data=data_to_send)
 
-    args_generation_config = {
-        "max_tokens": args["max_tokens"],
-        "top_k": args["top_k"],
-        "top_p": args["top_p"],
-        "temperature": args["temperature"],
-        "stop_sequences": args["stop_sequences"],
-    }
-
-    # logger.debug(f"Invoking bedrock with args: {args}")
-    logger.info(f"Invoking bedrock with Generation Config: {args_generation_config}")
-
-    try:
-        if is_anthropic:
-            response = client.messages.create(**args)
-        else:
-            # Invoke bedrock streaming api
-            response = get_bedrock_response(args)
-    except Exception as e:
-        logger.error(f"Failed to invoke bedrock: {e}")
-        return {"statusCode": 500, "body": "Failed to invoke bedrock."}
-
-    completions: list[str] = []
-    last_data_to_send: bytes
-    if is_anthropic:
-        for event in response:
-            # NOTE: following is the example of event sequence:
-            # MessageStartEvent(message=Message(id='compl_01GwmkwncsptaeBopeaR4eWE', content=[], model='claude-instant-1.2', role='assistant', stop_reason=None, stop_sequence=None, type='message', usage=Usage(input_tokens=21, output_tokens=1)), type='message_start')
-            # ContentBlockStartEvent(content_block=ContentBlock(text='', type='text'), index=0, type='content_block_start')
-            # ...
-            # ContentBlockDeltaEvent(delta=TextDelta(text='です', type='text_delta'), index=0, type='content_block_delta')
-            # ContentBlockStopEvent(index=0, type='content_block_stop')
-            # MessageDeltaEvent(delta=Delta(stop_reason='end_turn', stop_sequence=None), type='message_delta', usage=MessageDeltaUsage(output_tokens=26))
-            # MessageStopEvent(type='message_stop', amazon-bedrock-invocationMetrics={'inputTokenCount': 21, 'outputTokenCount': 25, 'invocationLatency': 621, 'firstByteLatency': 279})
-
-            if isinstance(event, ContentBlockDeltaEvent):
-                completions.append(event.delta.text)
-                try:
-                    # Send completion
-                    data_to_send = json.dumps(
-                        dict(
-                            status="STREAMING",
-                            completion=event.delta.text,
-                        )
-                    ).encode("utf-8")
-                    gatewayapi.post_to_connection(
-                        ConnectionId=connection_id, Data=data_to_send
-                    )
-                except Exception as e:
-                    logger.error(f"Failed to post message: {str(e)}")
-                    return {
-                        "statusCode": 500,
-                        "body": "Failed to send message to connection.",
-                    }
-            elif isinstance(event, MessageDeltaEvent):
-                logger.debug(f"Received message delta event: {event.delta}")
-                last_data_to_send = json.dumps(
-                    dict(
-                        completion="",
-                        stop_reason=event.delta.stop_reason,
-                    )
-                ).encode("utf-8")
-            elif isinstance(event, MessageStopEvent):
-                # Persist conversation before finish streaming so that front-end can avoid 404 issue
-                concatenated = "".join(completions)
-
-                # Used chunks for RAG generation
-                used_chunks = None
-                if bot and bot.display_retrieved_chunks:
-                    used_chunks = [
-                        ChunkModel(content=r.content, source=r.source, rank=r.rank)
-                        for r in filter_used_results(concatenated, search_results)
-                    ]
-
-                # Append entire completion as the last message
-                assistant_msg_id = str(ULID())
-                message = MessageModel(
-                    role="assistant",
-                    content=[
-                        ContentModel(
-                            content_type="text", body=concatenated, media_type=None
-                        )
-                    ],
-                    model=chat_input.message.model,
-                    children=[],
-                    parent=user_msg_id,
-                    create_time=get_current_time(),
-                    feedback=None,
-                    used_chunks=used_chunks,
-                )
-                conversation.message_map[assistant_msg_id] = message
-                # Append children to parent
-                conversation.message_map[user_msg_id].children.append(assistant_msg_id)
-                conversation.last_message_id = assistant_msg_id
-
-                # Update total pricing
-                metrics = event.model_dump()["amazon-bedrock-invocationMetrics"]
-                input_token_count = metrics.get("inputTokenCount")
-                output_token_count = metrics.get("outputTokenCount")
-
-                logger.debug(
-                    f"Input token count: {input_token_count}, output token count: {output_token_count}"
-                )
-
-                price = calculate_price(
-                    chat_input.message.model, input_token_count, output_token_count
-                )
-                conversation.total_price += price
-
-                store_conversation(user_id, conversation)
-            else:
-                continue
-    else:
+    def on_stop(arg: OnStopInput, **kwargs) -> None:
         used_chunks = None
-        for event in response.get("body"):
-            chunk = event.get("chunk")
-            if chunk:
-                msg_chunk = json.loads(chunk.get("bytes").decode())
-                is_stop = msg_chunk["outputs"][0]["stop_reason"]
-                if not is_stop:
-                    msg = msg_chunk["outputs"][0]["text"]
-                    completions.append(msg)
-                    data_to_send = json.dumps(
-                        dict(
-                            status="STREAMING",
-                            completion=msg,
-                        )
-                    ).encode("utf-8")
-                    gatewayapi.post_to_connection(
-                        ConnectionId=connection_id, Data=data_to_send
-                    )
-                else:
-                    last_data_to_send = json.dumps(
-                        dict(completion="", stop_reason=is_stop)
-                    ).encode("utf-8")
+        if bot and bot.display_retrieved_chunks:
+            used_chunks = [
+                ChunkModel(content=r.content, source=r.source, rank=r.rank)
+                for r in filter_used_results(arg.full_token, search_results)
+            ]
 
-                    concatenated = "".join(completions)
-                    # Used chunks for RAG generation
-                    if bot and bot.display_retrieved_chunks:
-                        used_chunks = [
-                            ChunkModel(content=r.content, source=r.source, rank=r.rank)
-                            for r in filter_used_results(concatenated, search_results)
-                        ]
-                    assistant_msg_id = str(ULID())
-                    message = MessageModel(
-                        role="assistant",
-                        content=[
-                            ContentModel(
-                                content_type="text", body=concatenated, media_type=None
-                            )
-                        ],
-                        model=chat_input.message.model,
-                        children=[],
-                        parent=user_msg_id,
-                        create_time=get_current_time(),
-                        feedback=None,
-                        used_chunks=used_chunks,
-                    )
-                    conversation.message_map[assistant_msg_id] = message
-                    # Append children to parent
-                    conversation.message_map[user_msg_id].children.append(
-                        assistant_msg_id
-                    )
-                    conversation.last_message_id = assistant_msg_id
+        # Append entire completion as the last message
+        assistant_msg_id = str(ULID())
+        message = MessageModel(
+            role="assistant",
+            content=[
+                ContentModel(content_type="text", body=arg.full_token, media_type=None)
+            ],
+            model=chat_input.message.model,
+            children=[],
+            parent=user_msg_id,
+            create_time=get_current_time(),
+            feedback=None,
+            used_chunks=used_chunks,
+            thinking_log=None,
+        )
+        conversation.message_map[assistant_msg_id] = message
+        # Append children to parent
+        conversation.message_map[user_msg_id].children.append(assistant_msg_id)
+        conversation.last_message_id = assistant_msg_id
 
-                    # Update total pricing
-                    metrics = msg_chunk["amazon-bedrock-invocationMetrics"]
-                    input_token_count = metrics.get("inputTokenCount")
-                    output_token_count = metrics.get("outputTokenCount")
+        conversation.total_price += arg.price
 
-                    logger.debug(
-                        f"Input token count: {input_token_count}, output token count: {output_token_count}"
-                    )
+        # Store conversation before finish streaming so that front-end can avoid 404 issue
+        store_conversation(user_id, conversation)
 
-                    price = calculate_price(
-                        chat_input.message.model, input_token_count, output_token_count
-                    )
-                    conversation.total_price += price
-
-                    store_conversation(user_id, conversation)
-
-    # Send last completion after saving conversation
-    try:
-        logger.debug(f"Sending last completion: {last_data_to_send.decode('utf-8')}")
+        last_data_to_send = json.dumps(
+            dict(status="STREAMING_END", completion="", stop_reason=arg.stop_reason)
+        ).encode("utf-8")
         gatewayapi.post_to_connection(
             ConnectionId=connection_id, Data=last_data_to_send
         )
+
+    stream_handler = get_stream_handler_type(chat_input.message.model)(
+        model=chat_input.message.model,
+        on_stream=on_stream,
+        on_stop=on_stop,
+    )
+    try:
+        for _ in stream_handler.run(args):
+            # `StreamHandler.run` returns a generator, so need to iterate
+            ...
     except Exception as e:
-        logger.error(f"Failed to post message: {str(e)}")
+        logger.error(f"Failed to run stream handler: {e}")
         return {
             "statusCode": 500,
-            "body": "Failed to send message to connection.",
+            "body": "Failed to run stream handler.",
         }
 
     # Update bot last used time

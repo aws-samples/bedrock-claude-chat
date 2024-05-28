@@ -14,10 +14,19 @@ from app.repositories.models.custom_bot import (
     KnowledgeModel,
     SearchParamsModel,
 )
+from app.routes.schemas.bot import type_sync_status
 
 
 def create_test_private_bot(
-    id, is_pinned, owner_user_id, instruction="Test Bot Prompt", sync_status="RUNNING"
+    id,
+    is_pinned: bool,
+    owner_user_id: str,
+    instruction: str = "Test Bot Prompt",
+    sync_status: type_sync_status = "RUNNING",
+    published_api_stack_name: str | None = None,
+    published_api_datetime: int | None = None,
+    published_api_codebuild_id: str | None = None,
+    display_retrieved_chunks: bool = True,
 ):
     return BotModel(
         id=id,
@@ -26,7 +35,6 @@ def create_test_private_bot(
         instruction=instruction,
         create_time=1627984879.9,
         last_used_time=1627984879.9,
-        # Pinned
         is_pinned=is_pinned,
         public_bot_id=None,
         owner_user_id=owner_user_id,
@@ -59,9 +67,10 @@ def create_test_private_bot(
         sync_status=sync_status,
         sync_status_reason="reason",
         sync_last_exec_id="",
-        published_api_stack_name=None,
-        published_api_datetime=None,
-        published_api_codebuild_id=None,
+        published_api_stack_name=published_api_stack_name,
+        published_api_datetime=published_api_datetime,
+        published_api_codebuild_id=published_api_codebuild_id,
+        display_retrieved_chunks=display_retrieved_chunks,
     )
 
 
@@ -114,28 +123,5 @@ def create_test_public_bot(
         published_api_stack_name=None,
         published_api_datetime=None,
         published_api_codebuild_id=None,
+        display_retrieved_chunks=True,
     )
-
-
-def create_test_bot_alias(id, original_bot_id, is_pinned):
-    return BotAliasModel(
-        id=id,
-        # Different from original. Should be updated after `fetch_all_bots_by_user_id`
-        title="Test Alias",
-        description="Test Alias Description",
-        original_bot_id=original_bot_id,
-        last_used_time=1627984879.9,
-        create_time=1627984879.9,
-        is_pinned=is_pinned,
-        sync_status="RUNNING",
-        has_knowledge=True,
-    )
-
-
-create_test_instruction_template = (
-    lambda condition: f"いついかなる時も、{condition}返答してください。日本語以外の言語は認めません。"
-)
-
-
-if __name__ == "__main__":
-    unittest.main()

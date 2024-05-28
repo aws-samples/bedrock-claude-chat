@@ -100,6 +100,7 @@ def prepare_conversation(
                 create_time=current_time,
                 feedback=None,
                 used_chunks=None,
+                thinking_log=None,
             )
         }
         parent_id = "system"
@@ -123,6 +124,7 @@ def prepare_conversation(
                 create_time=current_time,
                 feedback=None,
                 used_chunks=None,
+                thinking_log=None,
             )
             initial_message_map["system"].children.append("instruction")
 
@@ -182,6 +184,7 @@ def prepare_conversation(
         create_time=current_time,
         feedback=None,
         used_chunks=None,
+        thinking_log=None,
     )
     conversation.message_map[message_id] = new_message
     conversation.message_map[parent_id].children.append(message_id)  # type: ignore
@@ -295,6 +298,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         create_time=get_current_time(),
         feedback=None,
         used_chunks=used_chunks,
+        thinking_log=None,
     )
     conversation.message_map[assistant_msg_id] = message
 
@@ -404,6 +408,7 @@ def propose_conversation_title(
         create_time=get_current_time(),
         feedback=None,
         used_chunks=None,
+        thinking_log=None,
     )
     messages.append(new_message)
 
