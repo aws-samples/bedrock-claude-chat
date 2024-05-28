@@ -139,6 +139,7 @@ def process_chat_input(
             create_time=get_current_time(),
             feedback=None,
             used_chunks=used_chunks,
+            thinking_log=thinking_log,
         )
         conversation.message_map[assistant_msg_id] = message
         # Append children to parent
@@ -232,6 +233,7 @@ def process_chat_input(
             create_time=get_current_time(),
             feedback=None,
             used_chunks=used_chunks,
+            thinking_log=None,
         )
         conversation.message_map[assistant_msg_id] = message
         # Append children to parent

@@ -22,7 +22,7 @@ from app.repositories.custom_bot import (
     find_private_bots_by_user_id,
     store_bot,
 )
-from app.repositories.models.conversation import FeedbackModel
+from app.repositories.models.conversation import ChunkModel, FeedbackModel
 from app.repositories.models.custom_bot import (
     AgentModel,
     AgentToolModel,
@@ -140,7 +140,10 @@ class TestConversationRepository(unittest.TestCase):
                     parent="z",
                     create_time=1627984879.9,
                     feedback=None,
-                    used_chunks=None,
+                    used_chunks=[
+                        ChunkModel(content="chunk1", source="source1", rank=1),
+                    ],
+                    thinking_log="test thinking log",
                 )
             },
             last_message_id="x",
@@ -177,6 +180,8 @@ class TestConversationRepository(unittest.TestCase):
         self.assertEqual(message_map["a"].children, ["x", "y"])
         self.assertEqual(message_map["a"].parent, "z")
         self.assertEqual(message_map["a"].create_time, 1627984879.9)
+        self.assertEqual(len(message_map["a"].used_chunks), 1)  # type: ignore
+        self.assertEqual(message_map["a"].thinking_log, "test thinking log")
         self.assertEqual(found_conversation.last_message_id, "x")
         self.assertEqual(found_conversation.total_price, 100)
         self.assertEqual(found_conversation.bot_id, None)
@@ -241,6 +246,7 @@ class TestConversationRepository(unittest.TestCase):
                 create_time=1627984879.9,
                 feedback=None,
                 used_chunks=None,
+                thinking_log=None,
             )
             for i in range(10)  # Create 10 large messages
         }
@@ -323,6 +329,7 @@ class TestConversationBotRepository(unittest.TestCase):
                     create_time=1627984879.9,
                     feedback=None,
                     used_chunks=None,
+                    thinking_log=None,
                 )
             },
             last_message_id="x",
@@ -352,6 +359,7 @@ class TestConversationBotRepository(unittest.TestCase):
                     create_time=1627984879.9,
                     feedback=None,
                     used_chunks=None,
+                    thinking_log=None,
                 )
             },
             last_message_id="x",

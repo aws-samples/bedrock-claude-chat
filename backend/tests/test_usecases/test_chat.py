@@ -65,6 +65,7 @@ class TestTraceToRoot(unittest.TestCase):
                 create_time=1627984879.9,
                 feedback=None,
                 used_chunks=None,
+                thinking_log=None,
             ),
             "bot_1": MessageModel(
                 role="assistant",
@@ -77,6 +78,7 @@ class TestTraceToRoot(unittest.TestCase):
                 create_time=1627984879.9,
                 feedback=None,
                 used_chunks=None,
+                thinking_log=None,
             ),
             "user_2": MessageModel(
                 role="user",
@@ -89,6 +91,7 @@ class TestTraceToRoot(unittest.TestCase):
                 create_time=1627984879.9,
                 feedback=None,
                 used_chunks=None,
+                thinking_log=None,
             ),
             "bot_2": MessageModel(
                 role="assistant",
@@ -101,6 +104,7 @@ class TestTraceToRoot(unittest.TestCase):
                 create_time=1627984879.9,
                 feedback=None,
                 used_chunks=None,
+                thinking_log=None,
             ),
             "user_3a": MessageModel(
                 role="user",
@@ -113,6 +117,7 @@ class TestTraceToRoot(unittest.TestCase):
                 create_time=1627984879.9,
                 feedback=None,
                 used_chunks=None,
+                thinking_log=None,
             ),
             "user_3b": MessageModel(
                 role="user",
@@ -125,6 +130,7 @@ class TestTraceToRoot(unittest.TestCase):
                 create_time=1627984879.9,
                 feedback=None,
                 used_chunks=None,
+                thinking_log=None,
             ),
         }
         messages = trace_to_root("user_3a", message_map)
@@ -298,6 +304,7 @@ class TestContinueChat(unittest.TestCase):
                         create_time=1627984879.9,
                         feedback=None,
                         used_chunks=None,
+                        thinking_log=None,
                     ),
                     "1-assistant": MessageModel(
                         role="assistant",
@@ -314,6 +321,7 @@ class TestContinueChat(unittest.TestCase):
                         create_time=1627984879.9,
                         feedback=None,
                         used_chunks=None,
+                        thinking_log=None,
                     ),
                 },
                 bot_id=None,
@@ -386,6 +394,7 @@ class TestRegenerateChat(unittest.TestCase):
                         create_time=1627984879.9,
                         feedback=None,
                         used_chunks=None,
+                        thinking_log=None,
                     ),
                     "a-2": MessageModel(
                         role="assistant",
@@ -402,6 +411,7 @@ class TestRegenerateChat(unittest.TestCase):
                         create_time=1627984879.9,
                         feedback=None,
                         used_chunks=None,
+                        thinking_log=None,
                     ),
                     "b-1": MessageModel(
                         role="user",
@@ -418,6 +428,7 @@ class TestRegenerateChat(unittest.TestCase):
                         create_time=1627984879.9,
                         feedback=None,
                         used_chunks=None,
+                        thinking_log=None,
                     ),
                     "b-2": MessageModel(
                         role="assistant",
@@ -434,6 +445,7 @@ class TestRegenerateChat(unittest.TestCase):
                         create_time=1627984879.9,
                         feedback=None,
                         used_chunks=None,
+                        thinking_log=None,
                     ),
                 },
                 bot_id=None,
@@ -763,6 +775,7 @@ class TestInsertKnowledge(unittest.TestCase):
                     create_time=1627984879.9,
                     feedback=None,
                     used_chunks=None,
+                    thinking_log=None,
                 ),
                 "1-user": MessageModel(
                     role="user",
@@ -779,6 +792,7 @@ class TestInsertKnowledge(unittest.TestCase):
                     create_time=1627984879.9,
                     feedback=None,
                     used_chunks=None,
+                    thinking_log=None,
                 ),
             },
             bot_id="bot1",

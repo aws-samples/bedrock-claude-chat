@@ -76,6 +76,7 @@ class BedrockLLM(LLM):
             create_time=0,
             feedback=None,
             used_chunks=None,
+            thinking_log=None,
         )
         args = compose_args(
             [message],
