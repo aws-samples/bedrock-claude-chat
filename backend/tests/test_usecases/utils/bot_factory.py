@@ -4,14 +4,14 @@ import unittest
 sys.path.append(".")
 
 from app.config import DEFAULT_EMBEDDING_CONFIG
-
-
 from app.repositories.models.custom_bot import (
+    AgentModel,
+    AgentToolModel,
     BotAliasModel,
     BotModel,
     EmbeddingParamsModel,
-    KnowledgeModel,
     GenerationParamsModel,
+    KnowledgeModel,
     SearchParamsModel,
 )
 
@@ -44,6 +44,12 @@ def create_test_private_bot(
         ),
         search_params=SearchParamsModel(
             max_results=20,
+        ),
+        agent=AgentModel(
+            tools=[
+                AgentToolModel(name="tool1", description="tool1 description"),
+                AgentToolModel(name="tool2", description="tool2 description"),
+            ]
         ),
         knowledge=KnowledgeModel(
             source_urls=["https://aws.amazon.com/"],
@@ -90,6 +96,12 @@ def create_test_public_bot(
         ),
         search_params=SearchParamsModel(
             max_results=20,
+        ),
+        agent=AgentModel(
+            tools=[
+                AgentToolModel(name="tool1", description="tool1 description"),
+                AgentToolModel(name="tool2", description="tool2 description"),
+            ]
         ),
         knowledge=KnowledgeModel(
             source_urls=["https://aws.amazon.com/"],

@@ -6,11 +6,12 @@ from typing import Any, Literal
 
 import pg8000
 from app.bedrock import calculate_query_embedding
-from app.utils import generate_presigned_url
+from app.utils import generate_presigned_url, query_postgres
 from aws_lambda_powertools.utilities import parameters
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
+
 
 DB_SECRETS_ARN = os.environ.get("DB_SECRETS_ARN", "")
 
@@ -103,16 +104,8 @@ WHERE botid = %s
 ORDER BY embedding <-> %s 
 LIMIT %s
 """
-            cursor.execute(search_query, (bot_id, json.dumps(query_embedding), limit))
-            results = cursor.fetchall()
-    except Exception as e:
-        conn.rollback()
-        raise e
-    finally:
-        conn.close()
 
-    logger.info(f"{len(results)} records found.")
-
+    results = query_postgres(search_query, (bot_id, json.dumps(query_embedding), limit))
     # NOTE: results should be:
     # [
     #     ('123', 'bot_1', 'content_1', 'source_1', [0.123, 0.456, 0.789]),

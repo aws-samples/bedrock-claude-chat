@@ -24,11 +24,19 @@ Add your own instruction and give external knowledge as URL or files (a.k.a [RAG
 ![](./docs/imgs/bot_chat.png)
 ![](./docs/imgs/bot_api_publish_screenshot3.png)
 
+> [!Important]
+> For governance reasons, only allowed users are able to create customized bots. To allow the creation of customized bots, the user must be a member of group called `CreatingBotAllowed`, which can be set up via the management console > Amazon Cognito User pools or aws cli. Note that the user pool id can be referred by accessing CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx`.
+
 ### Administrator dashboard
 
 Analyze usage for each user / bot on administrator dashboard. [detail](./docs/ADMINISTRATOR.md)
 
 ![](./docs/imgs/admin_bot_analytics.png)
+
+### LLM-powered Agent
+
+By using the [Agent functionality](./docs/AGENT.md), your chatbot can automatically handle more complex tasks. For example, to answer a user's question, the Agent can retrieve necessary information from external tools or break down the task into multiple steps for processing.
+TODO: Screenshot
 
 ## 📚 Supported Languages
 
@@ -56,12 +64,13 @@ Analyze usage for each user / bot on administrator dashboard. [detail](./docs/AD
 - Run deployment via following commands
 
 ```sh
-git clone https://github.com/aws-samples/bedrock-claude-chat.git
+git clone --branch v1.0 https://github.com/aws-samples/bedrock-claude-chat.git
 cd bedrock-claude-chat
 chmod +x bin.sh
 ./bin.sh
 ```
 
+- You will be asked if a new user or not. If new user, enter `y`. If not, we recommend [deploy with cdk](#deploy-using-cdk). Note that `y` DESTROY ALL DATA in your existing data in RDS.
 - After about 30 minutes, you will get the following output, which you can access from your browser
 
 ```
@@ -150,6 +159,13 @@ Super-easy Deployment uses [AWS CodeBuild](https://aws.amazon.com/codebuild/) to
 
 ```
 git clone https://github.com/aws-samples/bedrock-claude-chat
+```
+
+> [!Warning]
+> If you are using old version (e.g. `v0.4.x`) and want to use the latest version, use the latest branch as following. Note that ALL DATA IN RDS WILL BE DESTROYED. Refer [migration guide](./docs/MIGRATION_GUIDE.md) to restore your existing data.
+
+```
+git clone --branch v1.0 https://github.com/aws-samples/bedrock-claude-chat.git
 ```
 
 - Install npm packages
@@ -291,6 +307,22 @@ By default, this sample does not restrict the domains for sign-up email addresse
 ### External Identity Provider
 
 This sample supports external identity provider. Currently we support [Google](./docs/idp/SET_UP_GOOGLE.md) and [custom OIDC provider](./docs/idp/SET_UP_CUSTOM_OIDC.md).
+
+### Add new users to groups automatically
+
+This sample has the following groups to give permissions to users:
+
+- [`Admin`](./docs/ADMINISTRATOR.md)
+- [`CreatingBotAllowed`](#bot-personalization)
+- [`PublishAllowed`](./docs/PUBLISH_API.md)
+
+If you want newly created users to automatically join groups, you can specify them in [cdk.json](./cdk/cdk.json).
+
+```json
+"autoJoinUserGroups": ["CreatingBotAllowed"],
+```
+
+By default, newly created users will be joined to the `CreatingBotAllowed` group.
 
 ### Local Development
 

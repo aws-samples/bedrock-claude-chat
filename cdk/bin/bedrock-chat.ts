@@ -30,6 +30,10 @@ const IDENTITY_PROVIDERS: TIdentityProvider[] =
 const USER_POOL_DOMAIN_PREFIX: string = app.node.tryGetContext(
   "userPoolDomainPrefix"
 );
+const AUTO_JOIN_USER_GROUPS: string[] = app.node.tryGetContext(
+  "autoJoinUserGroups"
+);
+
 const RDS_SCHEDULES: CronScheduleProps = app.node.tryGetContext("rdbSchedules");
 const ENABLE_MISTRAL: boolean = app.node.tryGetContext("enableMistral");
 
@@ -65,6 +69,7 @@ const chat = new BedrockChatStack(app, `BedrockChatStack`, {
     PUBLISHED_API_ALLOWED_IP_V6_ADDRESS_RANGES,
   allowedSignUpEmailDomains:
     ALLOWED_SIGN_UP_EMAIL_DOMAINS,
+  autoJoinUserGroups: AUTO_JOIN_USER_GROUPS,
   rdsSchedules: RDS_SCHEDULES,
   enableMistral: ENABLE_MISTRAL,
   embeddingContainerVcpu: EMBEDDING_CONTAINER_VCPU,

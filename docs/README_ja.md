@@ -21,11 +21,19 @@
 ![](./imgs/bot_chat_ja.png)
 ![](./imgs/bot_api_publish_screenshot3.png)
 
+> [!Important]
+> ガバナンス上の理由により、許可されたユーザーのみがカスタマイズされたボットを作成できます。作成を許可するには、そのユーザーをマネジメントコンソール > Amazon Cognito ユーザープールまたは aws cli で `CreatingBotAllowed` というグループのメンバーにする必要があります。ユーザープール ID は CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx` で確認できます。
+
 ### 管理者ダッシュボード
 
 管理者ダッシュボードで各ユーザー/ボットの使用状況を分析できます。[詳細](./ADMINISTRATOR.md)
 
 ![](./imgs/admin_bot_analytics.png)
+
+### エージェント
+
+[エージェント機能](./AGENT.md)を使うと、チャットボットがより複雑なタスクを自動的に処理できるようになります。例えば、ユーザーの質問に答えるために、必要な情報を外部ツールから取得したり、複数のステップに分けて処理したりすることができます。
+TODO: screenshot
 
 ## 🚀 まずはお試し
 
@@ -49,6 +57,7 @@ chmod +x bin.sh
 ./bin.sh
 ```
 
+- 新規ユーザーかどうかを聞かれます。新規ユーザーの場合は `y` を入力してください。そうでない場合は、[CDK を使ってデプロイ](#deploy-using-cdk)することをおすすめします。`y` を入力すると既存の RDS データが全て削除されるので注意してください。
 - 30 分ほど経過後、下記の出力が得られるのでブラウザからアクセスします
 
 ```
@@ -137,6 +146,13 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 
 ```
 git clone https://github.com/aws-samples/bedrock-claude-chat
+```
+
+> [!Warning]
+> 古いバージョン (例: v0.4.x) を使用している場合で、最新バージョンを使用したい場合は、以下のように最新のブランチを使用してください。 注意: RDS 内のすべてのデータが破壊されます。 既存のデータを復元するには、[移行ガイド](./MIGRATION_GUIDE.md)を参照してください。
+
+```
+git clone --branch v1.0 https://github.com/aws-samples/bedrock-claude-chat.git
 ```
 
 - npm パッケージをインストールします
@@ -278,6 +294,22 @@ const userPool = new UserPool(this, "UserPool", {
 ### 外部のアイデンティティプロバイダー
 
 このサンプルは外部のアイデンティティプロバイダーをサポートしています。現在、[Google](./idp/SET_UP_GOOGLE_ja.md)および[カスタム OIDC プロバイダー](./idp/SET_UP_CUSTOM_OIDC.md)をサポートしています。
+
+### 新規ユーザーを自動的にグループに追加
+
+このサンプルには、ユーザーに権限を与えるための以下のようなグループがあります。
+
+- [`Admin`](./ADMINISTRATOR.md)
+- [`CreatingBotAllowed`](#ボットのカスタマイズ)
+- [`PublishAllowed`](./PUBLISH_API.md)
+
+新規に作成されたユーザーを自動的にグループに参加させたい場合、[cdk.json](../cdk/cdk.json) で指定することができます。
+
+```json
+"autoJoinUserGroups": ["CreatingBotAllowed"],
+```
+
+デフォルトでは、新規作成ユーザーは `CreatingBotAllowed` グループに参加します。
 
 ### ローカルでの開発について
 

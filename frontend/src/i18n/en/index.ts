@@ -32,6 +32,7 @@ const translation = {
         noBots: 'No Bots.',
         noBotsRecentlyUsed: 'No Recently Used Shared Bots.',
         retrievingKnowledge: '[Retrieving Knowledge...]',
+        agentThinking: '[Agent Thinking...]',
         dndFileUpload:
           'You can upload files by drag and drop.\nSupported files: {{fileExtensions}}',
         uploadError: 'Error Message',
@@ -47,6 +48,7 @@ const translation = {
           uploaded: 'Uploaded',
           error: 'ERROR',
         },
+        citeRetrievedContexts: 'Retrieved Context Citation',
       },
       titleSubmenu: {
         edit: 'Edit',
@@ -65,6 +67,8 @@ const translation = {
           sitemap:
             'By specifying the URL of the sitemap, the information obtained through automatically scraping websites within it will be used as Knowledge.',
           file: 'The uploaded files will be used as Knowledge.',
+          citeRetrievedContexts:
+            'Configure whether to display context retrieved to answer user queries as citation information.\nIf enabled, users can access the original source URLs or files.',
         },
       },
       alert: {
@@ -397,7 +401,8 @@ How would you categorize this email?`,
     },
     generationConfig: {
       title: 'Generation Config',
-      description: ' You can configure LLM inference parameters to control the response from the models.',
+      description:
+        ' You can configure LLM inference parameters to control the response from the models.',
       maxTokens: {
         label: 'Maximum generation length/maximum new tokens',
         hint: 'The maximum number of tokens allowed in the generated response',
@@ -420,15 +425,16 @@ How would you categorize this email?`,
       stopSequences: {
         label: 'End token/end sequence',
         hint: 'Specify sequences of characters that stop the model from generating further tokens. Use commas to separate multiple words',
-      }
+      },
     },
     searchSettings: {
       title: 'Search Settings',
-      description: 'You can configure search parameters to fetch relevant documents from vector store.',
+      description:
+        'You can configure search parameters to fetch relevant documents from vector store.',
       maxResults: {
         label: 'Max Results',
         hint: 'The maximum number of records fetched from vector store',
-      }
+      },
     },
     error: {
       answerResponse: 'An error occurred while responding.',
@@ -453,7 +459,6 @@ How would you categorize this email?`,
       chunkOverlapLessThanChunkSize: {
         message: 'Chunk overlap must be set to less than Chunk size',
       },
-
     },
   },
 };

@@ -59,6 +59,7 @@ export type BotDetails = BotMeta & {
   searchParams: SearchParams;
   knowledge: BotKnowledge;
   syncStatusReason: string;
+  displayRetrievedChunks: boolean;
 };
 
 export type BotSummary = BotMeta & {
@@ -81,6 +82,7 @@ export type RegisterBotRequest = {
   generationParams?: GenerationParams;
   searchParams?: SearchParams;
   knowledge?: BotKnowledge;
+  displayRetrievedChunks: boolean;
 };
 
 export type RegisterBotResponse = BotDetails;
@@ -93,6 +95,7 @@ export type UpdateBotRequest = {
   generationParams?: BotGenerationConfig;
   searchParams?: SearchParams;
   knowledge?: BotKnowledgeDiff;
+  displayRetrievedChunks: boolean;
 };
 
 export type UpdateBotResponse = {
@@ -104,6 +107,7 @@ export type UpdateBotResponse = {
   generationParams: GenerationParams;
   searchParams: SearchParams;
   knowledge?: BotKnowledge;
+  displayRetrievedChunks: boolean;
 };
 
 export type UpdateBotPinnedRequest = {

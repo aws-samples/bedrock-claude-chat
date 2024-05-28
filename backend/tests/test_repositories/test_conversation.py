@@ -22,12 +22,14 @@ from app.repositories.custom_bot import (
     find_private_bots_by_user_id,
     store_bot,
 )
-from app.repositories.models.conversation import FeedbackModel
+from app.repositories.models.conversation import ChunkModel, FeedbackModel
 from app.repositories.models.custom_bot import (
+    AgentModel,
+    AgentToolModel,
     BotModel,
     EmbeddingParamsModel,
-    KnowledgeModel,
     GenerationParamsModel,
+    KnowledgeModel,
     SearchParamsModel,
 )
 from boto3.dynamodb.conditions import Key
@@ -138,7 +140,10 @@ class TestConversationRepository(unittest.TestCase):
                     parent="z",
                     create_time=1627984879.9,
                     feedback=None,
-                    used_chunks=None,
+                    used_chunks=[
+                        ChunkModel(content="chunk1", source="source1", rank=1),
+                    ],
+                    thinking_log="test thinking log",
                 )
             },
             last_message_id="x",
@@ -175,6 +180,8 @@ class TestConversationRepository(unittest.TestCase):
         self.assertEqual(message_map["a"].children, ["x", "y"])
         self.assertEqual(message_map["a"].parent, "z")
         self.assertEqual(message_map["a"].create_time, 1627984879.9)
+        self.assertEqual(len(message_map["a"].used_chunks), 1)  # type: ignore
+        self.assertEqual(message_map["a"].thinking_log, "test thinking log")
         self.assertEqual(found_conversation.last_message_id, "x")
         self.assertEqual(found_conversation.total_price, 100)
         self.assertEqual(found_conversation.bot_id, None)
@@ -239,6 +246,7 @@ class TestConversationRepository(unittest.TestCase):
                 create_time=1627984879.9,
                 feedback=None,
                 used_chunks=None,
+                thinking_log=None,
             )
             for i in range(10)  # Create 10 large messages
         }
@@ -321,6 +329,7 @@ class TestConversationBotRepository(unittest.TestCase):
                     create_time=1627984879.9,
                     feedback=None,
                     used_chunks=None,
+                    thinking_log=None,
                 )
             },
             last_message_id="x",
@@ -350,6 +359,7 @@ class TestConversationBotRepository(unittest.TestCase):
                     create_time=1627984879.9,
                     feedback=None,
                     used_chunks=None,
+                    thinking_log=None,
                 )
             },
             last_message_id="x",
@@ -380,6 +390,12 @@ class TestConversationBotRepository(unittest.TestCase):
             search_params=SearchParamsModel(
                 max_results=20,
             ),
+            agent=AgentModel(
+                tools=[
+                    AgentToolModel(name="tool1", description="tool1 description"),
+                    AgentToolModel(name="tool2", description="tool2 description"),
+                ]
+            ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -391,6 +407,7 @@ class TestConversationBotRepository(unittest.TestCase):
             published_api_codebuild_id="",
             published_api_datetime=0,
             published_api_stack_name="",
+            display_retrieved_chunks=True,
         )
         bot2 = BotModel(
             id="2",
@@ -417,6 +434,12 @@ class TestConversationBotRepository(unittest.TestCase):
             search_params=SearchParamsModel(
                 max_results=20,
             ),
+            agent=AgentModel(
+                tools=[
+                    AgentToolModel(name="tool1", description="tool1 description"),
+                    AgentToolModel(name="tool2", description="tool2 description"),
+                ]
+            ),
             knowledge=KnowledgeModel(
                 source_urls=["https://aws.amazon.com/"],
                 sitemap_urls=["https://aws.amazon.sitemap.xml"],
@@ -428,6 +451,7 @@ class TestConversationBotRepository(unittest.TestCase):
             published_api_codebuild_id="",
             published_api_datetime=0,
             published_api_stack_name="",
+            display_retrieved_chunks=True,
         )
 
         store_conversation("user", conversation1)

@@ -3,12 +3,9 @@ import logging
 import os
 
 from anthropic import AnthropicBedrock
-from app.config import (
-    BEDROCK_PRICING,
-    DEFAULT_EMBEDDING_CONFIG,
-    DEFAULT_GENERATION_CONFIG,
-    DEFAULT_MISTRAL_GENERATION_CONFIG,
-)
+from app.config import BEDROCK_PRICING, DEFAULT_EMBEDDING_CONFIG
+from app.config import DEFAULT_GENERATION_CONFIG as DEFAULT_CLAUDE_GENERATION_CONFIG
+from app.config import DEFAULT_MISTRAL_GENERATION_CONFIG
 from app.repositories.models.conversation import MessageModel
 from app.repositories.models.custom_bot import GenerationParamsModel
 from app.utils import get_bedrock_client, is_anthropic_model
@@ -17,7 +14,12 @@ from pydantic import BaseModel
 logger = logging.getLogger(__name__)
 
 BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
-
+ENABLE_MISTRAL = os.environ.get("ENABLE_MISTRAL", "") == "true"
+DEFAULT_GENERATION_CONFIG = (
+    DEFAULT_MISTRAL_GENERATION_CONFIG
+    if ENABLE_MISTRAL
+    else DEFAULT_CLAUDE_GENERATION_CONFIG
+)
 
 client = get_bedrock_client()
 anthropic_client = AnthropicBedrock()
@@ -238,7 +240,6 @@ def calculate_document_embeddings(documents: list[str]) -> list[list[float]]:
 
 
 def get_bedrock_response(args: dict) -> dict:
-
     client = get_bedrock_client()
     messages = args["messages"]
 
