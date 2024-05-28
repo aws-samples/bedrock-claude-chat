@@ -1,4 +1,42 @@
 #!/bin/bash
+echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+echo "!!!                                                                     !!!"
+echo "!!!                            WARNING!!!                               !!!"
+echo "!!!                                                                     !!!"
+echo "!!! This script is intended for NEW USERS ONLY.                         !!!"
+echo "!!!                                                                     !!!"
+echo "!!! If you are an EXISTING USER, please note the following:            !!!"
+echo "!!! - It is STRONGLY RECOMMENDED to use 'cdk deploy' for deployment.    !!!"
+echo "!!!   URL: https://github.com/aws-samples/bedrock-claude-chat           !!!"
+echo "!!!   - Reason: If the major version is OLDER (before v1.0,            !!!"
+echo "!!!     e.g., v0.4), the RDS for RAG WILL BE REPLACED, and             !!!"
+echo "!!!     DATA WILL BE LOST.                                             !!!"
+echo "!!! - When using the latest version, EXPLICITLY PULL/DEPLOY            !!!"
+echo "!!!   the new version branch and then follow the MIGRATION             !!!"
+echo "!!!   PROCEDURE (refer to the URL above for details).                  !!!"
+echo "!!!                                                                     !!!"
+echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+echo ""
+while true; do
+read -p "Are you a new user? (y/N): " answer
+case ${answer:0:1} in
+y|Y )
+echo "Starting deployment for new users..."
+break
+;;
+n|N )
+echo "This script is intended for new users only. If you are an existing user, please use cdk for deployment."
+exit 1
+;;
+* )
+echo "Please enter y or n."
+;;
+esac
+done
+
+
+StackName="CodeBuildForDeploy"
+stackId=$(aws cloudformation create-stack 
 
 StackName="CodeBuildForDeploy"
 

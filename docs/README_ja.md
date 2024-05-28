@@ -49,6 +49,7 @@ chmod +x bin.sh
 ./bin.sh
 ```
 
+- 新規ユーザーかどうかを聞かれます。新規ユーザーの場合は `y` を入力してください。そうでない場合は、[CDK を使ってデプロイ](#deploy-using-cdk)することをおすすめします。`y` を入力すると既存の RDS データが全て削除されるので注意してください。
 - 30 分ほど経過後、下記の出力が得られるのでブラウザからアクセスします
 
 ```
@@ -137,6 +138,13 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 
 ```
 git clone https://github.com/aws-samples/bedrock-claude-chat
+```
+
+> [!Warning]
+> 古いバージョン (例: v0.4.x) を使用している場合で、最新バージョンを使用したい場合は、以下のように最新のブランチを使用してください。 注意: RDS 内のすべてのデータが破壊されます。 既存のデータを復元するには、[移行ガイド](./MIGRATION_GUIDE.md)を参照してください。
+
+```
+git clone --branch v1.0 https://github.com/aws-samples/bedrock-claude-chat.git
 ```
 
 - npm パッケージをインストールします

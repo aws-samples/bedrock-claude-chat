@@ -62,6 +62,7 @@ chmod +x bin.sh
 ./bin.sh
 ```
 
+- You will be asked if a new user or not. If new user, enter `y`. If not, we recommend [deploy with cdk](#deploy-using-cdk). Note that `y` DESTROY ALL DATA in your existing data in RDS.
 - After about 30 minutes, you will get the following output, which you can access from your browser
 
 ```
@@ -150,6 +151,13 @@ Super-easy Deployment uses [AWS CodeBuild](https://aws.amazon.com/codebuild/) to
 
 ```
 git clone https://github.com/aws-samples/bedrock-claude-chat
+```
+
+> [!Warning]
+> If you are using old version (e.g. `v0.4.x`) and want to use the latest version, use the latest branch as following. Note that ALL DATA IN RDS WILL BE DESTROYED. Refer [migration guide](./docs/MIGRATION_GUIDE.md) to restore your existing data.
+
+```
+git clone --branch v1.0 https://github.com/aws-samples/bedrock-claude-chat.git
 ```
 
 - Install npm packages
