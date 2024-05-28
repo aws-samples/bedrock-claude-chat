@@ -2,32 +2,29 @@ import argparse
 import json
 import logging
 import multiprocessing
-from multiprocessing.managers import ListProxy
-
 import os
+from multiprocessing.managers import ListProxy
 from typing import Any
 
 import pg8000
 import requests
-from retry import retry
-
 from app.config import DEFAULT_EMBEDDING_CONFIG
-from app.repositories.common import _get_table_client, RecordNotFoundError
+from app.repositories.common import RecordNotFoundError, _get_table_client
 from app.repositories.custom_bot import (
     compose_bot_id,
     decompose_bot_id,
     find_private_bot_by_id,
 )
-
 from app.routes.schemas.bot import type_sync_status
 from app.utils import compose_upload_document_s3_path
+from aws_lambda_powertools.utilities import parameters
 from embedding.loaders import UrlLoader
 from embedding.loaders.base import BaseLoader
 from embedding.loaders.s3 import S3FileLoader
 from embedding.wrapper import DocumentSplitter, Embedder
 from llama_index.core.node_parser import SentenceSplitter
+from retry import retry
 from ulid import ULID
-from aws_lambda_powertools.utilities import parameters
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -60,14 +57,14 @@ def insert_to_postgres(
 ):
 
     secrets: Any = parameters.get_secret(DB_SECRETS_ARN)  # type: ignore
-    access_info = json.loads(secrets)
+    db_info = json.loads(secrets)
 
     conn = pg8000.connect(
-        database=access_info["dbname"],
-        host=access_info["host"],
-        port=access_info["port"],
-        user=access_info["username"],
-        password=access_info["password"],
+        database=db_info["dbname"],
+        host=db_info["host"],
+        port=db_info["port"],
+        user=db_info["username"],
+        password=db_info["password"],
     )
 
     try:

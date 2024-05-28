@@ -16,8 +16,8 @@ import {
   Role,
   ServicePrincipal,
 } from "aws-cdk-lib/aws-iam";
-import { LambdaPowertoolsLayer } from 'cdk-aws-lambda-powertools-layer';
-import { NagSuppressions } from 'cdk-nag';
+import { LambdaPowertoolsLayer } from "cdk-aws-lambda-powertools-layer";
+import { NagSuppressions } from "cdk-nag";
 
 const DB_NAME = "postgres";
 
@@ -39,7 +39,7 @@ export class VectorStore extends Construct {
 
     const sg = new ec2.SecurityGroup(this, "ClusterSecurityGroup", {
       vpc: props.vpc,
-      description: "RDSClusterSecurityGroup"
+      description: "RDSClusterSecurityGroup",
     });
     const cluster = new rds.DatabaseCluster(this, "Cluster", {
       engine: rds.DatabaseClusterEngine.auroraPostgres({
@@ -62,7 +62,7 @@ export class VectorStore extends Construct {
       //   }),
       // ],
     });
-    cluster.addRotationSingleUser()
+    cluster.addRotationSingleUser();
 
     const dbClusterIdentifier = cluster
       .secret!.secretValueFromJson("dbClusterIdentifier")
@@ -112,12 +112,6 @@ export class VectorStore extends Construct {
       });
     }
 
-    const powertoolsLayer = new LambdaPowertoolsLayer(this, 'TestLayer', {
-      version: '2.1.0',
-      includeExtras: true,
-      runtimeFamily: lambda.RuntimeFamily.NODEJS
-    });
-
     const setupHandler = new NodejsFunction(this, "CustomResourceHandler", {
       vpc: props.vpc,
       runtime: lambda.Runtime.NODEJS_18_X,
@@ -131,7 +125,6 @@ export class VectorStore extends Construct {
         DB_CLUSTER_IDENTIFIER: dbClusterIdentifier,
         DB_SECRETS_ARN: cluster.secret!.secretFullArn!,
       },
-      layers: [powertoolsLayer],
     });
     cluster.secret!.grantRead(setupHandler);
 
@@ -150,25 +143,26 @@ export class VectorStore extends Construct {
     });
     cr.node.addDependency(cluster);
 
-    NagSuppressions.addResourceSuppressions(cr,
+    NagSuppressions.addResourceSuppressions(
+      cr,
       [
         {
-          id: 'AwsPrototyping-IAMNoManagedPolicies',
-          reason: 'Default Policy',
+          id: "AwsPrototyping-IAMNoManagedPolicies",
+          reason: "Default Policy",
           appliesTo: [
             {
-              regex: '/^Policy::arn:<AWS::Partition>:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole/'
-            }
-          ]
-
+              regex:
+                "/^Policy::arn:<AWS::Partition>:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole/",
+            },
+          ],
         },
         {
-          id: 'AwsPrototyping-CodeBuildProjectKMSEncryptedArtifacts',
-          reason: 'SociIndexBuild is dependencies package',
-        }
+          id: "AwsPrototyping-CodeBuildProjectKMSEncryptedArtifacts",
+          reason: "SociIndexBuild is dependencies package",
+        },
       ],
       true
-    )
+    );
 
     this.securityGroup = sg;
     this.cluster = cluster;

@@ -2,14 +2,13 @@ import json
 import logging
 import os
 import re
-from typing import Literal
-from typing import Any
+from typing import Any, Literal
 
 import pg8000
 from app.bedrock import calculate_query_embedding
 from app.utils import generate_presigned_url
-from pydantic import BaseModel
 from aws_lambda_powertools.utilities import parameters
+from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -81,14 +80,14 @@ def search_related_docs(bot_id: str, limit: int, query: str) -> list[SearchResul
     logger.info(f"query_embedding: {query_embedding}")
 
     secrets: Any = parameters.get_secret(DB_SECRETS_ARN)  # type: ignore
-    access_info = json.loads(secrets)
+    db_info = json.loads(secrets)
 
     conn = pg8000.connect(
-        database=access_info["dbname"],
-        host=access_info["host"],
-        port=access_info["port"],
-        user=access_info["username"],
-        password=access_info["password"],
+        database=db_info["dbname"],
+        host=db_info["host"],
+        port=db_info["port"],
+        user=db_info["username"],
+        password=db_info["password"],
     )
 
     try:

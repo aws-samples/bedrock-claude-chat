@@ -6,19 +6,20 @@ from datetime import datetime
 from decimal import Decimal as decimal
 
 import boto3
-from anthropic.types import ContentBlockDeltaEvent, MessageDeltaEvent, MessageStopEvent
+from anthropic.types import ContentBlockDeltaEvent
 from anthropic.types import Message as AnthropicMessage
+from anthropic.types import MessageDeltaEvent, MessageStopEvent
 from app.auth import verify_token
 from app.bedrock import calculate_price, compose_args
 from app.repositories.conversation import RecordNotFoundError, store_conversation
 from app.repositories.models.conversation import ChunkModel, ContentModel, MessageModel
-from app.routes.schemas.conversation import ChatInputWithToken
+from app.routes.schemas.conversation import ChatInput
 from app.usecases.bot import modify_bot_last_used_time
 from app.usecases.chat import (
+    get_bedrock_response,
     insert_knowledge,
     prepare_conversation,
     trace_to_root,
-    get_bedrock_response,
 )
 from app.utils import get_anthropic_client, get_current_time, is_anthropic_model
 from app.vector_search import filter_used_results, search_related_docs
@@ -36,19 +37,11 @@ logger.setLevel(logging.INFO)
 
 
 def process_chat_input(
-    chat_input: ChatInputWithToken, gatewayapi, connection_id: str
+    user_id: str, chat_input: ChatInput, gatewayapi, connection_id: str
 ) -> dict:
     """Process chat input and send the message to the client."""
     logger.info(f"Received chat input: {chat_input}")
 
-    try:
-        # Verify JWT token
-        decoded = verify_token(chat_input.token)
-    except Exception as e:
-        logger.error(f"Invalid token: {e}")
-        return {"statusCode": 403, "body": "Invalid token."}
-
-    user_id = decoded["sub"]
     try:
         user_msg_id, conversation, bot = prepare_conversation(user_id, chat_input)
     except RecordNotFoundError:
@@ -293,9 +286,7 @@ def process_chat_input(
     # Send last completion after saving conversation
     try:
         logger.debug(f"Sending last completion: {last_data_to_send.decode('utf-8')}")
-        gatewayapi.post_to_connection(
-            ConnectionId=connection_id, Data=last_data_to_send
-        )
+        gatewayapi.post_to_connection(ConnectionId=connection_id, Data=last_data_to_send)
     except Exception as e:
         logger.error(f"Failed to post message: {str(e)}")
         return {
@@ -329,6 +320,16 @@ def handler(event, context):
     now = datetime.now()
     expire = int(now.timestamp()) + 60 * 2  # 2 minute from now
     body = event["body"]
+
+    token = json.loads(body)["token"]
+    try:
+        # Verify JWT token
+        decoded = verify_token(token)
+    except Exception as e:
+        logger.error(f"Invalid token: {e}")
+        return {"statusCode": 403, "body": "Invalid token."}
+
+    user_id = decoded["sub"]
 
     try:
         # API Gateway (websocket) has hard limit of 32KB per message, so if the message is larger than that,
@@ -370,8 +371,13 @@ def handler(event, context):
             full_message = "".join(item["MessagePart"] for item in message_parts)
 
             # Process the concatenated full message
-            chat_input = ChatInputWithToken(**json.loads(full_message))
-            return process_chat_input(chat_input, gatewayapi, connection_id)
+            chat_input = ChatInput(**json.loads(full_message))
+            return process_chat_input(
+                user_id=user_id,
+                chat_input=chat_input,
+                gatewayapi=gatewayapi,
+                connection_id=connection_id,
+            )
         else:
             # Store the message part of full message
             message_json = json.loads(body)

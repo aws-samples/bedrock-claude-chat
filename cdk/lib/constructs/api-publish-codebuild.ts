@@ -6,11 +6,11 @@ import * as s3deploy from "aws-cdk-lib/aws-s3-deployment";
 import * as path from "path";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
-import { NagSuppressions } from 'cdk-nag';
+import { NagSuppressions } from "cdk-nag";
 
 export interface ApiPublishCodebuildProps {
-  readonly accessLogBucket: s3.Bucket;
   readonly dbSecret: secretsmanager.ISecret;
+  readonly accessLogBucket?: s3.Bucket;
 }
 
 export class ApiPublishCodebuild extends Construct {
@@ -26,7 +26,7 @@ export class ApiPublishCodebuild extends Construct {
       objectOwnership: s3.ObjectOwnership.OBJECT_WRITER,
       autoDeleteObjects: true,
       serverAccessLogsBucket: props.accessLogBucket,
-        serverAccessLogsPrefix: "ApiPublishCodebuildBucket"
+      serverAccessLogsPrefix: "ApiPublishCodebuildBucket",
     });
 
     new s3deploy.BucketDeployment(this, "PublishApiSourceDeploy", {
@@ -111,13 +111,14 @@ export class ApiPublishCodebuild extends Construct {
 
     NagSuppressions.addResourceSuppressions(project, [
       {
-        id: 'AwsPrototyping-CodeBuildProjectKMSEncryptedArtifacts',
-        reason: 'default: The AWS-managed CMK for Amazon Simple Storage Service (Amazon S3) is used.',
+        id: "AwsPrototyping-CodeBuildProjectKMSEncryptedArtifacts",
+        reason:
+          "default: The AWS-managed CMK for Amazon Simple Storage Service (Amazon S3) is used.",
       },
       {
-        id: 'AwsPrototyping-CodeBuildProjectPrivilegedModeDisabled',
-        reason: 'for runnning on the docker daemon on the docker container'
-      }
+        id: "AwsPrototyping-CodeBuildProjectPrivilegedModeDisabled",
+        reason: "for runnning on the docker daemon on the docker container",
+      },
     ]);
 
     this.project = project;

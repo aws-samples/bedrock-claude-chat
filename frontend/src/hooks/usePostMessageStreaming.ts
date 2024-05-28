@@ -38,7 +38,7 @@ const usePostMessageStreaming = create<{
       let receivedCount = 0;
       return new Promise<string>((resolve, reject) => {
         let completion = '';
-        const ws = new WebSocket(`${WS_ENDPOINT}?idToken=${token}`);
+        const ws = new WebSocket(WS_ENDPOINT);
 
         ws.onopen = () => {
           ws.send('START');

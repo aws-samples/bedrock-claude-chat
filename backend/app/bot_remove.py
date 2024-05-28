@@ -19,14 +19,14 @@ def delete_from_postgres(bot_id: str):
     """Delete data related to `bot_id` from vector store (i.e. PostgreSQL)."""
 
     secrets: Any = parameters.get_secret(DB_SECRETS_ARN)  # type: ignore
-    access_info = json.loads(secrets)
+    db_info = json.loads(secrets)
 
     conn = pg8000.connect(
-        database=access_info["dbname"],
-        host=access_info["host"],
-        port=access_info["port"],
-        user=access_info["username"],
-        password=access_info["password"],
+        database=db_info["dbname"],
+        host=db_info["host"],
+        port=db_info["port"],
+        user=db_info["username"],
+        password=db_info["password"],
     )
 
     try:

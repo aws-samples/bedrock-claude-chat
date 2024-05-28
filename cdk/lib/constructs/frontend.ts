@@ -13,12 +13,12 @@ import {
 import { NodejsBuild } from "deploy-time-build";
 import { Auth } from "./auth";
 import { Idp } from "../utils/identity-provider";
-import { NagSuppressions } from 'cdk-nag';
+import { NagSuppressions } from "cdk-nag";
 
 export interface FrontendProps {
-  readonly accessLogBucket: IBucket;
   readonly webAclId: string;
   readonly enableMistral: boolean;
+  readonly accessLogBucket?: IBucket;
 }
 
 export class Frontend extends Construct {
@@ -34,7 +34,7 @@ export class Frontend extends Construct {
       removalPolicy: RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       serverAccessLogsBucket: props.accessLogBucket,
-      serverAccessLogsPrefix: "AssetBucket"
+      serverAccessLogsPrefix: "AssetBucket",
     });
 
     const originAccessIdentity = new OriginAccessIdentity(
@@ -78,8 +78,8 @@ export class Frontend extends Construct {
 
     NagSuppressions.addResourceSuppressions(distribution, [
       {
-        id: 'AwsPrototyping-CloudFrontDistributionGeoRestrictions',
-        reason: 'this asset is being used all over the world',
+        id: "AwsPrototyping-CloudFrontDistributionGeoRestrictions",
+        reason: "this asset is being used all over the world",
       },
     ]);
 
@@ -142,8 +142,7 @@ export class Frontend extends Construct {
           commands: ["npm ci"],
         },
       ],
-      buildCommands: [
-        "npm run build"],
+      buildCommands: ["npm run build"],
       buildEnvironment: buildEnvProps,
       destinationBucket: this.assetBucket,
       distribution: this.cloudFrontWebDistribution,

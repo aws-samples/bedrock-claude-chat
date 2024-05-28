@@ -82,10 +82,6 @@ class ChatInput(BaseSchema):
     bot_id: str | None = Field(None)
 
 
-class ChatInputWithToken(ChatInput):
-    token: str
-
-
 class ChatOutput(BaseSchema):
     conversation_id: str
     message: MessageOutput
