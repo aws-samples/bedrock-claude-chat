@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 import re
 from typing import Any, Literal
 
@@ -9,9 +8,6 @@ from app.utils import generate_presigned_url, query_postgres
 from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
-
-
-DB_SECRETS_ARN = os.environ.get("DB_SECRETS_ARN", "")
 
 
 class SearchResult(BaseModel):

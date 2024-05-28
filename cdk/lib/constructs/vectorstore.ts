@@ -1,7 +1,7 @@
 import { Construct } from "constructs";
 import * as rds from "aws-cdk-lib/aws-rds";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
-import { CustomResource, Duration } from "aws-cdk-lib";
+import { CustomResource, Duration, RemovalPolicy } from "aws-cdk-lib";
 
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as path from "path";
@@ -56,6 +56,7 @@ export class VectorStore extends Construct {
         publiclyAccessible: false,
       }),
       storageEncrypted: true,
+      removalPolicy: RemovalPolicy.SNAPSHOT,
       // readers: [
       //   rds.ClusterInstance.serverlessV2("reader", {
       //     autoMinorVersionUpgrade: false,
@@ -63,6 +64,7 @@ export class VectorStore extends Construct {
       // ],
     });
     cluster.addRotationSingleUser();
+    // cluster.secret!.applyRemovalPolicy(RemovalPolicy.RETAIN);
 
     const dbClusterIdentifier = cluster
       .secret!.secretValueFromJson("dbClusterIdentifier")

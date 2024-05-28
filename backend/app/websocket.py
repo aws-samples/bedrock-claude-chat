@@ -147,9 +147,7 @@ def process_chat_input(
         last_data_to_send = json.dumps(
             dict(status="STREAMING_END", completion="", stop_reason="agent_finish")
         ).encode("utf-8")
-        gatewayapi.post_to_connection(
-            ConnectionId=connection_id, Data=last_data_to_send
-        )
+        gatewayapi.post_to_connection(ConnectionId=connection_id, Data=last_data_to_send)
 
         return {"statusCode": 200, "body": "Message sent."}
 
@@ -239,9 +237,7 @@ def process_chat_input(
         last_data_to_send = json.dumps(
             dict(status="STREAMING_END", completion="", stop_reason=arg.stop_reason)
         ).encode("utf-8")
-        gatewayapi.post_to_connection(
-            ConnectionId=connection_id, Data=last_data_to_send
-        )
+        gatewayapi.post_to_connection(ConnectionId=connection_id, Data=last_data_to_send)
 
     stream_handler = get_stream_handler_type(chat_input.message.model)(
         model=chat_input.message.model,
@@ -286,16 +282,6 @@ def handler(event, context):
     expire = int(now.timestamp()) + 60 * 2  # 2 minute from now
     body = event["body"]
 
-    token = json.loads(body)["token"]
-    try:
-        # Verify JWT token
-        decoded = verify_token(token)
-    except Exception as e:
-        logger.error(f"Invalid token: {e}")
-        return {"statusCode": 403, "body": "Invalid token."}
-
-    user_id = decoded["sub"]
-
     try:
         # API Gateway (websocket) has hard limit of 32KB per message, so if the message is larger than that,
         # need to concatenate chunks and send as a single full message.
@@ -336,7 +322,10 @@ def handler(event, context):
             full_message = "".join(item["MessagePart"] for item in message_parts)
 
             # Process the concatenated full message
-            chat_input = ChatInput(**json.loads(full_message))
+            message_json = json.loads(full_message)
+            user_id = message_json["user_id"]
+            chat_input = ChatInput(**json.loads(message_json["chat_input"]))
+            # chat_input = ChatInput(**json.loads(full_message))
             return process_chat_input(
                 user_id=user_id,
                 chat_input=chat_input,
@@ -344,10 +333,23 @@ def handler(event, context):
                 connection_id=connection_id,
             )
         else:
+            token = json.loads(json.loads(body)["part"])["token"]
+            try:
+                # Verify JWT token
+                decoded = verify_token(token)
+            except Exception as e:
+                logger.error(f"Invalid token: {e}")
+                return {"statusCode": 403, "body": "Invalid token."}
+
+            user_id = decoded["sub"]
+
             # Store the message part of full message
             message_json = json.loads(body)
             part_index = message_json["index"]
-            message_part = message_json["part"]
+            # message_part = message_json["part"]
+            message_part = json.dumps(
+                {"user_id": user_id, "chat_input": message_json["part"]}
+            )
 
             # Store the message part with its index
             table.put_item(
