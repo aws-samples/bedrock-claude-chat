@@ -10,7 +10,7 @@ The output from LLM may not always meet the user's expectations. Sometimes it fa
 
 ![](./imgs/feedback-using-claude-chat.png)
 
-Data analysts can access to conversation logs using [Amazon Athena](https://aws.amazon.com/jp/athena/). If they want to analyze the data by [Jupyter Notebook](https://jupyter.org/), [this notebook example](../examples/notebooks/feedback_analysis_example.ipynb) can be a reference.
+Data analysts can access to conversation logs using [Amazon Athena](https://aws.amazon.com/jp/athena/). If they want to analyze the data by [Jupyter Notebook](https://jupyter.org/), [this notebook example](./notebooks/feedback_analysis_example.ipynb) can be a reference.
 
 ## Administrator dashboard
 
