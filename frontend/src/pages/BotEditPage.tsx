@@ -541,6 +541,18 @@ const BotEditPage: React.FC = () => {
               <div className="mt-3">
                 <div className="flex items-center gap-1">
                   <div className="text-lg font-bold">
+                    {t('bot.label.agent')}
+                  </div>
+                </div>
+
+                <div className="text-sm text-aws-font-color/50">
+                  {t('bot.help.agent.overview')}
+                </div>
+              </div>
+
+              <div className="mt-3">
+                <div className="flex items-center gap-1">
+                  <div className="text-lg font-bold">
                     {t('bot.label.knowledge')}
                   </div>
                 </div>

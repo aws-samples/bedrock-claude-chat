@@ -17,6 +17,7 @@ const translation = {
     },
     bot: {
       label: {
+        agent: 'Agent',
         myBots: 'My Bots',
         recentlyUsedBots: 'Recently Used Shared Bots',
         knowledge: 'Knowledge',
@@ -69,6 +70,9 @@ const translation = {
           file: 'The uploaded files will be used as Knowledge.',
           citeRetrievedContexts:
             'Configure whether to display context retrieved to answer user queries as citation information.\nIf enabled, users can access the original source URLs or files.',
+        },
+        agent: {
+          overview: 'Agent',
         },
       },
       alert: {
@@ -381,7 +385,8 @@ How would you categorize this email?`,
         hint: 'You can specify the number of overlapping characters between adjacent chunks.',
       },
       enablePartitionPdf: {
-        label: 'Enable detailed PDF analysis. If enabled, the PDF will be analyzed in detail over time.',
+        label:
+          'Enable detailed PDF analysis. If enabled, the PDF will be analyzed in detail over time.',
         hint: 'It is effective when you want to improve search accuracy. Computation costs increase because computation takes more time.',
       },
       help: {
