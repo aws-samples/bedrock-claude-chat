@@ -24,6 +24,7 @@ describe("Fine-grained Assertions Test", () => {
         publishedApiAllowedIpV4AddressRanges: [""],
         publishedApiAllowedIpV6AddressRanges: [""],
         allowedSignUpEmailDomains: [],
+        autoJoinUserGroups: [],
         rdsSchedules: {
           stop: {},
           start: {},
@@ -79,6 +80,7 @@ describe("Fine-grained Assertions Test", () => {
         publishedApiAllowedIpV4AddressRanges: [""],
         publishedApiAllowedIpV6AddressRanges: [""],
         allowedSignUpEmailDomains: [],
+        autoJoinUserGroups: [],
         rdsSchedules: {
           stop: {},
           start: {},
@@ -123,6 +125,7 @@ describe("Fine-grained Assertions Test", () => {
       publishedApiAllowedIpV4AddressRanges: [""],
       publishedApiAllowedIpV6AddressRanges: [""],
       allowedSignUpEmailDomains: [],
+      autoJoinUserGroups: [],
       rdsSchedules: {
         stop: {},
         start: {},
@@ -155,6 +158,7 @@ describe("Scheduler Test", () => {
       publishedApiAllowedIpV4AddressRanges: [""],
       publishedApiAllowedIpV6AddressRanges: [""],
       allowedSignUpEmailDomains: [],
+      autoJoinUserGroups: [],
       rdsSchedules: {
         stop: {
           minute: "00",
@@ -195,6 +199,7 @@ describe("Scheduler Test", () => {
       publishedApiAllowedIpV4AddressRanges: [""],
       publishedApiAllowedIpV6AddressRanges: [""],
       allowedSignUpEmailDomains: [],
+      autoJoinUserGroups: [],
       rdsSchedules: {
         stop: {},
         start: {},

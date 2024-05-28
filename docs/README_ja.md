@@ -21,6 +21,9 @@
 ![](./imgs/bot_chat_ja.png)
 ![](./imgs/bot_api_publish_screenshot3.png)
 
+> [!Important]
+> ガバナンス上の理由により、許可されたユーザーのみがカスタマイズされたボットを作成できます。作成を許可するには、そのユーザーをマネジメントコンソール > Amazon Cognito ユーザープールまたは aws cli で `CreatingBotAllowed` というグループのメンバーにする必要があります。ユーザープール ID は CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx` で確認できます。
+
 ### 管理者ダッシュボード
 
 管理者ダッシュボードで各ユーザー/ボットの使用状況を分析できます。[詳細](./ADMINISTRATOR.md)
@@ -286,6 +289,22 @@ const userPool = new UserPool(this, "UserPool", {
 ### 外部のアイデンティティプロバイダー
 
 このサンプルは外部のアイデンティティプロバイダーをサポートしています。現在、[Google](./idp/SET_UP_GOOGLE_ja.md)および[カスタム OIDC プロバイダー](./idp/SET_UP_CUSTOM_OIDC.md)をサポートしています。
+
+### 新規ユーザーを自動的にグループに追加
+
+このサンプルには、ユーザーに権限を与えるための以下のようなグループがあります。
+
+- [`Admin`](./ADMINISTRATOR.md)
+- [`CreatingBotAllowed`](#ボットのカスタマイズ)
+- [`PublishAllowed`](./PUBLISH_API.md)
+
+新規に作成されたユーザーを自動的にグループに参加させたい場合、[cdk.json](../cdk/cdk.json) で指定することができます。
+
+```json
+"autoJoinUserGroups": ["CreatingBotAllowed"],
+```
+
+デフォルトでは、新規作成ユーザーは `CreatingBotAllowed` グループに参加します。
 
 ### ローカルでの開発について
 

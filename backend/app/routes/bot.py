@@ -1,5 +1,6 @@
 from typing import Literal
 
+from app.dependencies import check_creating_bot_allowed
 from app.repositories.custom_bot import (
     find_private_bot_by_id,
     find_private_bots_by_user_id,
@@ -30,13 +31,17 @@ from app.usecases.bot import (
     remove_uploaded_file,
 )
 from app.user import User
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, Request
 
 router = APIRouter(tags=["bot"])
 
 
 @router.post("/bot", response_model=BotOutput)
-def post_bot(request: Request, bot_input: BotInput):
+def post_bot(
+    request: Request,
+    bot_input: BotInput,
+    create_bot_check=Depends(check_creating_bot_allowed),
+):
     """Create new private owned bot."""
     current_user: User = request.state.current_user
 
