@@ -29,6 +29,7 @@ import ExpandableDrawerGroup from '../components/ExpandableDrawerGroup';
 import useErrorMessage from '../hooks/useErrorMessage';
 import Help from '../components/Help';
 import Toggle from '../components/Toggle';
+import { useAgent } from '../hooks/useAgent';
 
 const edgeGenerationParams =
   import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true'
@@ -45,6 +46,8 @@ const BotEditPage: React.FC = () => {
   const navigate = useNavigate();
   const { botId: paramsBotId } = useParams();
   const { getMyBot, registerBot, updateBot } = useBot();
+  const { getTools } = useAgent();
+  getTools().then((res) => console.log(res));
 
   const [isLoading, setIsLoading] = useState(false);
 
