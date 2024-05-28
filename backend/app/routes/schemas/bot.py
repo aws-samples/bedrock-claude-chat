@@ -71,6 +71,7 @@ class BotInput(BaseSchema):
     search_params: SearchParams | None
     agent: AgentInput | None
     knowledge: Knowledge | None
+    display_retrieved_chunks: bool
 
 
 class BotModifyInput(BaseSchema):
@@ -82,6 +83,7 @@ class BotModifyInput(BaseSchema):
     search_params: SearchParams | None
     agent: AgentInput | None
     knowledge: KnowledgeDiffInput | None
+    display_retrieved_chunks: bool
 
     def has_update_files(self) -> bool:
         return self.knowledge is not None and (
@@ -153,6 +155,7 @@ class BotOutput(BaseSchema):
     sync_status: type_sync_status
     sync_status_reason: str
     sync_last_exec_id: str
+    display_retrieved_chunks: bool
 
 
 class BotMetaOutput(BaseSchema):

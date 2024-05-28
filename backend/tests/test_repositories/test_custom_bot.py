@@ -45,6 +45,8 @@ class TestCustomBotRepository(unittest.TestCase):
             "user1",
             published_api_stack_name="TestApiStack",
             published_api_datetime=1627984879,
+            published_api_codebuild_id="TestCodeBuildId",
+            display_retrieved_chunks=True,
         )
         store_bot("user1", bot)
 
@@ -101,13 +103,13 @@ class TestCustomBotRepository(unittest.TestCase):
 
     def test_update_bot_last_used_time(self):
         bot = create_test_private_bot("1", False, "user1")
-
         store_bot("user1", bot)
         update_bot_last_used_time("user1", "1")
 
         bot = find_private_bot_by_id("user1", "1")
         self.assertIsNotNone(bot.last_used_time)
         self.assertNotEqual(bot.last_used_time, 1627984879.9)
+        self.assertEqual(bot.display_retrieved_chunks, True)
 
         delete_bot_by_id("user1", "1")
 
@@ -167,6 +169,7 @@ class TestCustomBotRepository(unittest.TestCase):
             ),
             sync_status="RUNNING",
             sync_status_reason="reason",
+            display_retrieved_chunks=False,
         )
 
         bot = find_private_bot_by_id("user1", "1")
@@ -191,6 +194,7 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(bot.knowledge.filenames, ["updated.txt"])
         self.assertEqual(bot.sync_status, "RUNNING")
         self.assertEqual(bot.sync_status_reason, "reason")
+        self.assertEqual(bot.display_retrieved_chunks, False)
 
         delete_bot_by_id("user1", "1")
 
@@ -335,6 +339,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             knowledge=KnowledgeModel(source_urls=[], sitemap_urls=[], filenames=[]),
             sync_status="RUNNING",
             sync_status_reason="",
+            display_retrieved_chunks=True,
         )
         bots = fetch_all_bots_by_user_id("user1", limit=3)
         self.assertEqual(len(bots), 3)

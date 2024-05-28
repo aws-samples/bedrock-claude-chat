@@ -120,7 +120,8 @@ def process_chat_input(
                 },
             )
             price = token_cb.total_cost
-            used_chunks = chunk_cb.used_chunks
+            if bot.display_retrieved_chunks:
+                used_chunks = chunk_cb.used_chunks
             thinking_log = format_log_to_str(response.get("intermediate_steps", []))
 
         # Append entire completion as the last message
@@ -153,7 +154,9 @@ def process_chat_input(
         last_data_to_send = json.dumps(
             dict(status="STREAMING_END", completion="", stop_reason="agent_finish")
         ).encode("utf-8")
-        gatewayapi.post_to_connection(ConnectionId=connection_id, Data=last_data_to_send)
+        gatewayapi.post_to_connection(
+            ConnectionId=connection_id, Data=last_data_to_send
+        )
 
         return {"statusCode": 200, "body": "Message sent."}
 
@@ -178,7 +181,9 @@ def process_chat_input(
         logger.info(f"Search results from vector store: {search_results}")
 
         # Insert contexts to instruction
-        conversation_with_context = insert_knowledge(conversation, search_results)
+        conversation_with_context = insert_knowledge(
+            conversation, search_results, display_citation=bot.display_retrieved_chunks
+        )
         message_map = conversation_with_context.message_map
 
     messages = trace_to_root(
@@ -208,7 +213,7 @@ def process_chat_input(
 
     def on_stop(arg: OnStopInput, **kwargs) -> None:
         used_chunks = None
-        if bot:
+        if bot and bot.display_retrieved_chunks:
             used_chunks = [
                 ChunkModel(content=r.content, source=r.source, rank=r.rank)
                 for r in filter_used_results(arg.full_token, search_results)
@@ -241,7 +246,9 @@ def process_chat_input(
         last_data_to_send = json.dumps(
             dict(status="STREAMING_END", completion="", stop_reason=arg.stop_reason)
         ).encode("utf-8")
-        gatewayapi.post_to_connection(ConnectionId=connection_id, Data=last_data_to_send)
+        gatewayapi.post_to_connection(
+            ConnectionId=connection_id, Data=last_data_to_send
+        )
 
     stream_handler = get_stream_handler_type(chat_input.message.model)(
         model=chat_input.message.model,

@@ -192,6 +192,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             published_api_stack_name=None,
             published_api_datetime=None,
             published_api_codebuild_id=None,
+            display_retrieved_chunks=bot_input.display_retrieved_chunks,
         ),
     )
     return BotOutput(
@@ -223,6 +224,7 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         sync_status=sync_status,
         sync_status_reason="",
         sync_last_exec_id="",
+        display_retrieved_chunks=bot_input.display_retrieved_chunks,
     )
 
 
@@ -327,6 +329,7 @@ def modify_owned_bot(
         ),
         sync_status=sync_status,
         sync_status_reason="",
+        display_retrieved_chunks=modify_input.display_retrieved_chunks,
     )
 
     return BotModifyOutput(

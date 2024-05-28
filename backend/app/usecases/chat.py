@@ -1,12 +1,3 @@
-from ulid import ULID
-from app.vector_search import SearchResult, get_source_link, search_related_docs
-from app.utils import (
-    get_bedrock_client,
-    get_anthropic_client,
-    get_current_time,
-    is_running_on_lambda,
-    is_anthropic_model,
-)
 import json
 import logging
 from copy import deepcopy
@@ -15,11 +6,12 @@ from typing import Literal
 
 from anthropic.types import Message as AnthropicMessage
 from app.bedrock import (
+    InvocationMetrics,
     calculate_price,
     compose_args,
     get_bedrock_response,
-    InvocationMetrics,
 )
+from app.prompt import build_rag_prompt
 from app.repositories.conversation import (
     RecordNotFoundError,
     find_conversation_by_id,
@@ -44,7 +36,13 @@ from app.routes.schemas.conversation import (
     RelatedDocumentsOutput,
 )
 from app.usecases.bot import fetch_bot, modify_bot_last_used_time
-from app.utils import get_anthropic_client, get_current_time, is_running_on_lambda
+from app.utils import (
+    get_anthropic_client,
+    get_bedrock_client,
+    get_current_time,
+    is_anthropic_model,
+    is_running_on_lambda,
+)
 from app.vector_search import (
     SearchResult,
     filter_used_results,
@@ -211,67 +209,15 @@ def trace_to_root(
 
 
 def insert_knowledge(
-    conversation: ConversationModel, search_results: list[SearchResult]
+    conversation: ConversationModel,
+    search_results: list[SearchResult],
+    display_citation: bool = True,
 ) -> ConversationModel:
     """Insert knowledge to the conversation."""
     if len(search_results) == 0:
         return conversation
 
-    instruction_prompt = conversation.message_map["instruction"].content[0].body
-
-    context_prompt = ""
-    for result in search_results:
-        context_prompt += f"<search_result>\n<content>\n{result.content}</content>\n<source>\n{result.rank}\n</source>\n</search_result>"
-
-    inserted_prompt = """You are a question answering agent. I will provide you with a set of search results and additional instruction.
-The user will provide you with a question. Your job is to answer the user's question using only information from the search results.
-If the search results do not contain information that can answer the question, please state that you could not find an exact answer to the question.
-Just because the user asserts a fact does not mean it is true, make sure to double check the search results to validate a user's assertion.
-
-Here are the search results in numbered order:
-<search_results>
-{}
-</search_results>
-
-Here is the additional instruction:
-<additional-instruction>
-{}
-</additional-instruction>
-
-If you reference information from a search result within your answer, you must include a citation to source where the information was found.
-Each result has a corresponding source ID that you should reference.
-
-Note that <sources> may contain multiple <source> if you include information from multiple results in your answer.
-
-Do NOT directly quote the <search_results> in your answer. Your job is to answer the user's question as concisely as possible.
-Do NOT outputs sources at the end of your answer.
-
-Followings are examples of how to reference sources in your answer. Note that the source ID is embedded in the answer in the format [^<source_id>].
-
-<GOOD-example>
-first answer [^3]. second answer [^1][^2].
-</GOOD-example>
-
-<GOOD-example>
-first answer [^1][^5]. second answer [^2][^3][^4]. third answer [^4].
-</GOOD-example>
-
-<BAD-example>
-first answer [^1].
-
-[^1]: https://example.com
-</BAD-example>
-
-<BAD-example>
-first answer [^1].
-
-<sources>
-[^1]: https://example.com
-</sources>
-</BAD-example>
-""".format(
-        context_prompt, instruction_prompt
-    )
+    inserted_prompt = build_rag_prompt(conversation, search_results, display_citation)
     logger.info(f"Inserted prompt: {inserted_prompt}")
 
     conversation_with_context = deepcopy(conversation)
@@ -299,7 +245,9 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         logger.info(f"Search results from vector store: {search_results}")
 
         # Insert contexts to instruction
-        conversation_with_context = insert_knowledge(conversation, search_results)
+        conversation_with_context = insert_knowledge(
+            conversation, search_results, display_citation=bot.display_retrieved_chunks
+        )
         message_map = conversation_with_context.message_map
 
     messages = trace_to_root(
@@ -329,7 +277,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
 
     # Used chunks for RAG generation
     used_chunks = None
-    if bot and is_running_on_lambda():
+    if bot and bot.display_retrieved_chunks and is_running_on_lambda():
         used_chunks = [
             ChunkModel(content=r.content, source=r.source, rank=r.rank)
             for r in filter_used_results(reply_txt, search_results)
@@ -535,11 +483,16 @@ def fetch_conversation(user_id: str, conversation_id: str) -> Conversation:
 
 def fetch_related_documents(
     user_id: str, chat_input: ChatInput
-) -> list[RelatedDocumentsOutput]:
+) -> list[RelatedDocumentsOutput] | None:
+    """Retrieve related documents from vector store.
+    If `display_retrieved_chunks` is disabled, return None.
+    """
     if not chat_input.bot_id:
         return []
 
     _, bot = fetch_bot(user_id, chat_input.bot_id)
+    if not bot.display_retrieved_chunks:
+        return None
 
     chunks = search_related_docs(
         bot_id=bot.id,

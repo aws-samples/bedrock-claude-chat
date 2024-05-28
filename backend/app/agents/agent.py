@@ -217,10 +217,7 @@ class RunnableAgent(BaseSingleActionAgent):
         intermediate_steps: list[tuple[AgentAction, str]],
         callbacks: Callbacks = None,
         **kwargs: Any,
-    ) -> Union[
-        AgentAction,
-        AgentFinish,
-    ]:
+    ) -> Union[AgentAction, AgentFinish,]:
         """Based on past history and current inputs, decide what to do.
 
         Args:
@@ -333,9 +330,9 @@ class AgentExecutor(Chain):
     `"generate"` calls the agent's LLM Chain one final time to generate
         a final answer based on the previous steps.
     """
-    handle_parsing_errors: Union[bool, str, Callable[[OutputParserException], str]] = (
-        False
-    )
+    handle_parsing_errors: Union[
+        bool, str, Callable[[OutputParserException], str]
+    ] = False
     """How to handle errors raised by the agent's output parser.
     Defaults to `False`, which raises the error.
     If `true`, the error will be sent back to the LLM as an observation.
@@ -442,7 +439,9 @@ class AgentExecutor(Chain):
         run_manager: Optional[AsyncCallbackManagerForChainRun] = None,
     ) -> dict[str, Any]:
         if run_manager:
-            await run_manager.on_agent_finish(output, color="green", verbose=self.verbose)
+            await run_manager.on_agent_finish(
+                output, color="green", verbose=self.verbose
+            )
         final_output = output.return_values
         if self.return_intermediate_steps:
             final_output["intermediate_steps"] = intermediate_steps
@@ -455,7 +454,9 @@ class AgentExecutor(Chain):
             assert len(values) == 1
             return values[-1]
         else:
-            return [(a.action, a.observation) for a in values if isinstance(a, AgentStep)]
+            return [
+                (a.action, a.observation) for a in values if isinstance(a, AgentStep)
+            ]
 
     def _take_next_step(
         self,

@@ -25,6 +25,8 @@ def create_test_private_bot(
     sync_status: type_sync_status = "RUNNING",
     published_api_stack_name: str | None = None,
     published_api_datetime: int | None = None,
+    published_api_codebuild_id: str | None = None,
+    display_retrieved_chunks: bool = True,
 ):
     return BotModel(
         id=id,
@@ -67,7 +69,8 @@ def create_test_private_bot(
         sync_last_exec_id="",
         published_api_stack_name=published_api_stack_name,
         published_api_datetime=published_api_datetime,
-        published_api_codebuild_id=None,
+        published_api_codebuild_id=published_api_codebuild_id,
+        display_retrieved_chunks=display_retrieved_chunks,
     )
 
 
@@ -120,4 +123,5 @@ def create_test_public_bot(
         published_api_stack_name=None,
         published_api_datetime=None,
         published_api_codebuild_id=None,
+        display_retrieved_chunks=True,
     )
