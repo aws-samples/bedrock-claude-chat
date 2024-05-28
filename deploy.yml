@@ -1,3 +1,23 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: A template to deploy the Bedrock-Claude Chat application with customizable parameters.
+
+Parameters:
+  AllowSelfRegister:
+    Type: String
+    Default: "true"
+  Ipv4Ranges:
+    Type: String
+    Default: '["0.0.0.0/1","128.0.0.0/1"]'  # Set default values based on current config
+  Ipv6Ranges:
+    Type: String
+    Default: '["0000:0000:0000:0000:0000:0000:0000:0000/1","8000:0000:0000:0000:0000:0000:0000:0000/1"]'  # Set default values based on current config
+  AllowedSignUpEmailDomains:
+    Type: String
+    Default: '[]'
+  Region:
+    Type: String
+    Default: "us-east-1"
+
 Resources:
   ProjectRole:
     Type: AWS::IAM::Role
@@ -84,6 +104,17 @@ Resources:
         ImagePullCredentialsType: CODEBUILD
         PrivilegedMode: true
         Type: LINUX_CONTAINER
+        EnvironmentVariables:
+          - Name: ALLOW_SELF_REGISTER
+            Value: !Ref AllowSelfRegister
+          - Name: IPV4_RANGES
+            Value: !Ref Ipv4Ranges
+          - Name: IPV6_RANGES
+            Value: !Ref Ipv6Ranges
+          - Name: ALLOWED_SIGN_UP_EMAIL_DOMAINS
+            Value: !Ref AllowedSignUpEmailDomains
+          - Name: REGION
+            Value: !Ref Region            
       ServiceRole:
         Fn::GetAtt:
           - ProjectRole
@@ -104,8 +135,15 @@ Resources:
               },
               "build": {
                 "commands": [
+                  "echo 'Build phase...'",
                   "git clone https://github.com/aws-samples/bedrock-claude-chat.git",
-                  "cd bedrock-claude-chat/cdk",
+                  "cd bedrock-claude-chat",
+                  "if [ \"$ALLOW_SELF_REGISTER\" = \"false\" ]; then sed -i 's/\"selfSignUpEnabled\": true,/\"selfSignUpEnabled\": false,/' cdk/cdk.json; fi",
+                  "if [ ! -z \"$IPV4_RANGES\" ]; then jq --arg ipv4 \"$IPV4_RANGES\" '.context.allowedIpV4AddressRanges = ($ipv4 | split(\",\"))' cdk/cdk.json > temp.json && mv temp.json cdk/cdk.json; fi",
+                  "if [ ! -z \"$IPV6_RANGES\" ]; then jq --arg ipv6 \"$IPV6_RANGES\" '.context.allowedIpV6AddressRanges = ($ipv6 | split(\",\"))' cdk/cdk.json > temp.json && mv temp.json cdk/cdk.json; fi",
+                  "if [ ! -z \"$ALLOWED_SIGN_UP_EMAIL_DOMAINS\" ]; then jq --arg domains \"$ALLOWED_SIGN_UP_EMAIL_DOMAINS\" '.context.allowedSignUpEmailDomains = ($domains | split(\",\"))' cdk/cdk.json > temp.json && mv temp.json cdk/cdk.json; fi",
+                  "sed -i \"s/\\\"bedrockRegion\\\": \\\"[^\\\"]*\\\"/\\\"bedrockRegion\\\": \\\"${REGION}\\\"/\" cdk/cdk.json",
+                  "cd cdk",
                   "npm ci",
                   "cdk bootstrap",
                   "cdk deploy --require-approval never --all"
@@ -118,3 +156,4 @@ Outputs:
   ProjectName:
     Value:
       Ref: Project
+

@@ -35,6 +35,7 @@ export interface BedrockChatStackProps extends StackProps {
   readonly enableMistral: boolean;
   readonly embeddingContainerVcpu: number;
   readonly embeddingContainerMemory: number;
+  readonly selfSignUpEnabled: boolean;
 }
 
 export class BedrockChatStack extends cdk.Stack {
@@ -104,6 +105,7 @@ export class BedrockChatStack extends cdk.Stack {
       userPoolDomainPrefixKey: props.userPoolDomainPrefix,
       idp,
       allowedSignUpEmailDomains: props.allowedSignUpEmailDomains,
+      selfSignUpEnabled: props.selfSignUpEnabled,
     });
     const largeMessageBucket = new Bucket(this, "LargeMessageBucket", {
       encryption: BucketEncryption.S3_MANAGED,

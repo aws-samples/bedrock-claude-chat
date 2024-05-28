@@ -20,6 +20,7 @@ export interface AuthProps {
   readonly userPoolDomainPrefixKey: string;
   readonly idp: Idp;
   readonly allowedSignUpEmailDomains: string[];
+  readonly selfSignUpEnabled: boolean;
 }
 
 export class Auth extends Construct {
@@ -34,8 +35,8 @@ export class Auth extends Construct {
         requireDigits: true,
         minLength: 8,
       },
-      // Disable if identity providers are configured
-      selfSignUpEnabled: !props.idp.isExist(),
+      // Disable id selfSignUpEnabled is given as false or if selfSignUpEnabled is true and idp is provided
+      selfSignUpEnabled: props.selfSignUpEnabled && !props.idp.isExist(),
       signInAliases: {
         username: false,
         email: true,

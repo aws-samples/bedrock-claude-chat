@@ -32,6 +32,7 @@ const USER_POOL_DOMAIN_PREFIX: string = app.node.tryGetContext(
 );
 const RDS_SCHEDULES: CronScheduleProps = app.node.tryGetContext("rdbSchedules");
 const ENABLE_MISTRAL: boolean = app.node.tryGetContext("enableMistral");
+const SELF_SIGN_UP_ENABLED: boolean = app.node.tryGetContext("selfSignUpEnabled");
 
 // container size of embedding ecs tasks
 const EMBEDDING_CONTAINER_VCPU:number = app.node.tryGetContext("embeddingContainerVcpu")
@@ -69,5 +70,6 @@ const chat = new BedrockChatStack(app, `BedrockChatStack`, {
   enableMistral: ENABLE_MISTRAL,
   embeddingContainerVcpu: EMBEDDING_CONTAINER_VCPU,
   embeddingContainerMemory: EMBEDDING_CONTAINER_MEMORY,
+  selfSignUpEnabled: SELF_SIGN_UP_ENABLED,
 });
 chat.addDependency(waf);
