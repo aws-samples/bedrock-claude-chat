@@ -21,19 +21,11 @@
 ![](./imgs/bot_chat_ja.png)
 ![](./imgs/bot_api_publish_screenshot3.png)
 
-> [!Important]
-> ガバナンス上の理由により、許可されたユーザーのみがカスタマイズされたボットを作成できます。作成を許可するには、そのユーザーをマネジメントコンソール > Amazon Cognito ユーザープールまたは aws cli で `CreatingBotAllowed` というグループのメンバーにする必要があります。ユーザープール ID は CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx` で確認できます。
-
 ### 管理者ダッシュボード
 
 管理者ダッシュボードで各ユーザー/ボットの使用状況を分析できます。[詳細](./ADMINISTRATOR.md)
 
 ![](./imgs/admin_bot_analytics.png)
-
-### エージェント
-
-[エージェント機能](./AGENT.md)を使うと、チャットボットがより複雑なタスクを自動的に処理できるようになります。例えば、ユーザーの質問に答えるために、必要な情報を外部ツールから取得したり、複数のステップに分けて処理したりすることができます。
-TODO: screenshot
 
 ## 🚀 まずはお試し
 
@@ -57,7 +49,22 @@ chmod +x bin.sh
 ./bin.sh
 ```
 
-- 新規ユーザーかどうかを聞かれます。新規ユーザーの場合は `y` を入力してください。そうでない場合は、[CDK を使ってデプロイ](#deploy-using-cdk)することをおすすめします。`y` を入力すると既存の RDS データが全て削除されるので注意してください。
+### オプションのパラメータ
+
+デプロイ時に以下のパラメータを指定することで、セキュリティとカスタマイズを強化できるようになりました。
+
+--disable-self-register: セルフ登録を無効にします（デフォルト: 有効）。このフラグを設定すると、Cognito 上で全てのユーザーを作成する必要があり、ユーザーが自分でアカウントを登録することはできなくなります。
+--ipv4-ranges: 許可する IPv4 範囲のカンマ区切りリスト。（デフォルト: 全ての IPv4 アドレスを許可）
+--ipv6-ranges: 許可する IPv6 範囲のカンマ区切りリスト。（デフォルト: 全ての IPv6 アドレスを許可）
+--allowed-signup-email-domains: サインアップ時に許可するメールドメインのカンマ区切りリスト。（デフォルト: ドメイン制限なし）
+--region: Bedrock が利用可能なリージョンを指定します。（デフォルト: us-east-1）
+
+#### パラメータを指定したコマンド例:
+
+```sh
+./bin.sh --disable-self-register --ipv4-ranges "192.0.2.0/25,192.0.2.128/25" --ipv6-ranges "2001:db8:1:2::/64,2001:db8:1:3::/64" --allowed-signup-email-domains "example.com,anotherexample.com" --region "ap-northeast-1"
+```
+
 - 30 分ほど経過後、下記の出力が得られるのでブラウザからアクセスします
 
 ```
@@ -69,7 +76,7 @@ Frontend URL: https://xxxxxxxxx.cloudfront.net
 上記のようなサインアップ画面が現れますので、E メールを登録・ログインしご利用ください。
 
 > [!Important]
-> このデプロイ方法では、URL を知っている誰でもサインアップできてしまいます。本番運用で使用する場合は、セキュリティリスクを軽減するために IP アドレス制限やセルフサインアップの無効化を強くお勧めします。設定方法は、IP アドレス制限の場合は[Deploy using CDK](#deploy-using-cdk)、セルフサインアップの無効化の場合は[セルフサインアップを無効化する](#セルフサインアップを無効化する)をご覧ください。
+> オプションのパラメータを設定しない場合、このデプロイ方法では URL を知っている誰でもサインアップできてしまいます。本番環境で使用する場合は、セキュリティリスクを軽減するために、IP アドレスの制限を追加し、セルフサインアップを無効にすることを強くお勧めします（`allowed-signup-email-domains` を定義して、会社のドメインからのメールアドレスのみがサインアップできるようにすることで、ユーザーを制限できます）。IP アドレスの制限には `ipv4-ranges` と `ipv6-ranges` の両方を使用し、`./bin` を実行する際に `disable-self-register` を使用してセルフサインアップを無効にしてください。
 
 ## アーキテクチャ
 
@@ -88,51 +95,6 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 
 ![](imgs/arch.png)
 
-## 機能・ロードマップ
-
-<details>
-<summary>基本的なチャット機能</summary>
-
-- [x] 認証 (サインアップ、サインイン)
-- [x] 会話の作成、保存、削除
-- [x] チャットボットの返答のコピー
-- [x] 会話のための自動的なトピックの提案
-- [x] コードの構文強調表示
-- [x] Markdown の表示
-- [x] ストリーミング応答
-- [x] IP アドレスの制限
-- [x] メッセージの編集と再送信
-- [x] 国際化
-- [x] モデルの切り替え
-</details>
-
-<details>
-<summary>カスタマイズされたボットの機能</summary>
-
-- [x] カスタマイズされたボットの作成
-- [x] カスタマイズされたボットの共有
-- [x] 独立した API として公開
-</details>
-
-<details>
-<summary>RAG機能</summary>
-
-- [x] Web (html)
-- [x] テキストデータ (txt、csv、markdown など)
-- [x] PDF
-- [x] Microsoft Office ファイル (pptx、docx、xlsx)
-- [x] YouTube の字幕
-- [ ] S3 バケットからのインポート
-- [ ] 既存の Kendra / OpenSearch / KnowledgeBase からのインポート
-</details>
-
-<details>
-<summary>管理者機能</summary>
-
-- [x] ボットごとの使用料の追跡
-- [x] 公開されたボットの一覧表示
-</details>
-
 ## Deploy using CDK
 
 上記 Easy Deployment は[AWS CodeBuild](https://aws.amazon.com/jp/codebuild/)を利用し、内部で CDK によるデプロイを実行しています。ここでは直接 CDK によりデプロイする手順を記載します。
@@ -146,13 +108,6 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 
 ```
 git clone https://github.com/aws-samples/bedrock-claude-chat
-```
-
-> [!Warning]
-> 古いバージョン (例: v0.4.x) を使用している場合で、最新バージョンを使用したい場合は、以下のように最新のブランチを使用してください。 注意: RDS 内のすべてのデータが破壊されます。 既存のデータを復元するには、[移行ガイド](./migration/MIGRATION_GUIDE.md)を参照してください。
-
-```
-git clone --branch v1.0 https://github.com/aws-samples/bedrock-claude-chat.git
 ```
 
 - npm パッケージをインストールします
@@ -272,44 +227,11 @@ cli および CDK を利用されている場合、`cdk destroy`を実行して�
 
 ### セルフサインアップを無効化する
 
-このサンプルはデフォルトでセルフサインアップが有効化してあります。セルフサインアップを無効にするには、[auth.ts](./cdk/lib/constructs/auth.ts)を開き、`selfSignUpEnabled` を `false` に変更してから再デプロイしてください。
-
-```ts
-const userPool = new UserPool(this, "UserPool", {
-  passwordPolicy: {
-    requireUppercase: true,
-    requireSymbols: true,
-    requireDigits: true,
-    minLength: 8,
-  },
-  // Set to false
-  selfSignUpEnabled: false,
-  signInAliases: {
-    username: false,
-    email: true,
-  },
-});
-```
+このサンプルはデフォルトでセルフサインアップが有効になっています。セルフサインアップを無効にするには、[cdk.json](../cdk/cdk.json) を開き、`selfSignUpEnabled` を `false` に切り替えてください。[外部のアイデンティティプロバイダー](#外部のアイデンティティプロバイダー)を設定している場合、この値は無視され、自動的に無効になります。
 
 ### 外部のアイデンティティプロバイダー
 
 このサンプルは外部のアイデンティティプロバイダーをサポートしています。現在、[Google](./idp/SET_UP_GOOGLE_ja.md)および[カスタム OIDC プロバイダー](./idp/SET_UP_CUSTOM_OIDC.md)をサポートしています。
-
-### 新規ユーザーを自動的にグループに追加
-
-このサンプルには、ユーザーに権限を与えるための以下のようなグループがあります。
-
-- [`Admin`](./ADMINISTRATOR.md)
-- [`CreatingBotAllowed`](#ボットのカスタマイズ)
-- [`PublishAllowed`](./PUBLISH_API.md)
-
-新規に作成されたユーザーを自動的にグループに参加させたい場合、[cdk.json](../cdk/cdk.json) で指定することができます。
-
-```json
-"autoJoinUserGroups": ["CreatingBotAllowed"],
-```
-
-デフォルトでは、新規作成ユーザーは `CreatingBotAllowed` グループに参加します。
 
 ### ローカルでの開発について
 
