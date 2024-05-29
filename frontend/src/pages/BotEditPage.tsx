@@ -79,9 +79,26 @@ const BotEditPage: React.FC = () => {
   const [searchParams, setSearchParams] = useState<SearchParams>(
     DEFAULT_SEARCH_CONFIG
   );
-  const [tools, setTools] = useState<AgentTool[]>([
-    // { name: 'get_weather', description: 'aaa' },
-  ]);
+  const [tools, setTools] = useState<AgentTool[]>([]);
+  console.log(tools);
+  const handleChangeTool = useCallback(
+    (toolName: string) => () => {
+      tools.map(({ name }) => name).includes(toolName)
+        ? setTools((preTools) => [
+            ...preTools.filter(({ name }) => name != toolName),
+          ])
+        : setTools((preTools) => [
+            ...preTools,
+            {
+              name: toolName,
+              description:
+                availableTools?.find(({ name }) => name == toolName)
+                  ?.description ?? '',
+            },
+          ]);
+    },
+    [tools, setTools, availableTools]
+  );
   const {
     errorMessages,
     setErrorMessage: setErrorMessages,
@@ -558,7 +575,7 @@ const BotEditPage: React.FC = () => {
                 <div key={tool.name} className="flex items-center">
                   <Toggle
                     value={!!tools?.map(({ name }) => name).includes(tool.name)}
-                    onChange={setDisplayRetrievedChunks}
+                    onChange={handleChangeTool(tool.name)}
                   />
                   <div className="whitespace-pre-wrap text-sm text-aws-font-color/50">
                     {tool.name}:{tool.description}
