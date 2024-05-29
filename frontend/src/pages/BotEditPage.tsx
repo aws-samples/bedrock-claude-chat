@@ -30,6 +30,7 @@ import useErrorMessage from '../hooks/useErrorMessage';
 import Help from '../components/Help';
 import Toggle from '../components/Toggle';
 import { useAgent } from '../hooks/useAgent';
+import { Tool } from '../@types/agent';
 
 const edgeGenerationParams =
   import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true'
@@ -47,7 +48,6 @@ const BotEditPage: React.FC = () => {
   const { botId: paramsBotId } = useParams();
   const { getMyBot, registerBot, updateBot } = useBot();
   const { getTools } = useAgent();
-  getTools().then((res) => console.log(res));
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -65,7 +65,6 @@ const BotEditPage: React.FC = () => {
   const [unchangedFilenames, setUnchangedFilenames] = useState<string[]>([]);
   const [deletedFilenames, setDeletedFilenames] = useState<string[]>([]);
   const [displayRetrievedChunks, setDisplayRetrievedChunks] = useState(true);
-
   const [maxTokens, setMaxTokens] = useState<number>(
     defaultGenerationConfig.maxTokens
   );
@@ -77,11 +76,10 @@ const BotEditPage: React.FC = () => {
   const [stopSequences, setStopSequences] = useState<string>(
     defaultGenerationConfig.stopSequences?.join(',') || ''
   );
-
   const [searchParams, setSearchParams] = useState<SearchParams>(
     DEFAULT_SEARCH_CONFIG
   );
-
+  const [tools, setTools] = useState<Tool[]>();
   const {
     errorMessages,
     setErrorMessage: setErrorMessages,
@@ -95,6 +93,10 @@ const BotEditPage: React.FC = () => {
   const botId = useMemo(() => {
     return isNewBot ? ulid() : paramsBotId ?? '';
   }, [isNewBot, paramsBotId]);
+
+  useEffect(() => {
+    getTools().then((res) => setTools(() => res.data));
+  }, []);
 
   useEffect(() => {
     if (!isNewBot) {
@@ -552,6 +554,17 @@ const BotEditPage: React.FC = () => {
                   {t('bot.help.agent.overview')}
                 </div>
               </div>
+              {tools?.map((tool) => (
+                <div className="flex">
+                  <Toggle
+                    value={displayRetrievedChunks}
+                    onChange={setDisplayRetrievedChunks}
+                  />
+                  <div className="whitespace-pre-wrap text-sm text-aws-font-color/50">
+                    {t('bot.help.knowledge.citeRetrievedContexts')}
+                  </div>
+                </div>
+              ))}
 
               <div className="mt-3">
                 <div className="flex items-center gap-1">
