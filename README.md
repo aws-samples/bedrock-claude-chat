@@ -162,7 +162,7 @@ git clone https://github.com/aws-samples/bedrock-claude-chat
 ```
 
 > [!Warning]
-> If you are using old version (e.g. `v0.4.x`) and want to use the latest version, use the latest branch as following. Note that ALL DATA IN RDS WILL BE DESTROYED. Refer [migration guide](./docs/MIGRATION_GUIDE.md) to restore your existing data.
+> If you are using old version (e.g. `v0.4.x`) and want to use the latest version, use the latest branch as following. Note that ALL DATA IN RDS WILL BE DESTROYED. Refer [migration guide](./docs/migration/MIGRATION_GUIDE.md) to restore your existing data.
 
 ```
 git clone --branch v1.0 https://github.com/aws-samples/bedrock-claude-chat.git
