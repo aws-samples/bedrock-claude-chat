@@ -72,7 +72,8 @@ const translation = {
             'Configure whether to display context retrieved to answer user queries as citation information.\nIf enabled, users can access the original source URLs or files.',
         },
         agent: {
-          overview: 'Agent',
+          overview:
+            'By using the Agent functionality, your chatbot can automatically handle more complex tasks.',
         },
       },
       alert: {
