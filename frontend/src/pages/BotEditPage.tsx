@@ -30,7 +30,7 @@ import useErrorMessage from '../hooks/useErrorMessage';
 import Help from '../components/Help';
 import Toggle from '../components/Toggle';
 import { useAgent } from '../hooks/useAgent';
-import { AvailableTool } from '../@types/agent';
+import { AgentTool } from '../@types/agent';
 
 const edgeGenerationParams =
   import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true'
@@ -79,7 +79,7 @@ const BotEditPage: React.FC = () => {
   const [searchParams, setSearchParams] = useState<SearchParams>(
     DEFAULT_SEARCH_CONFIG
   );
-  const [tools, setTools] = useState<AvailableTool[]>();
+  const [tools, setTools] = useState<AgentTool[]>();
   const {
     errorMessages,
     setErrorMessage: setErrorMessages,
@@ -555,13 +555,13 @@ const BotEditPage: React.FC = () => {
                 </div>
               </div>
               {tools?.map((tool) => (
-                <div className="flex">
+                <div className="flex items-center">
                   <Toggle
                     value={displayRetrievedChunks}
                     onChange={setDisplayRetrievedChunks}
                   />
                   <div className="whitespace-pre-wrap text-sm text-aws-font-color/50">
-                    {t('bot.help.knowledge.citeRetrievedContexts')}
+                    {tool.name}:{tool.description}
                   </div>
                 </div>
               ))}

@@ -46,17 +46,18 @@ export type GenerationParams = {
   topP: number;
   temperature: number;
   stopSequences: string[];
-}
+};
 
 export type SearchParams = {
   maxResults: number;
-}
+};
 
 export type BotDetails = BotMeta & {
   instruction: string;
   embeddingParams: EmdeddingParams;
   generationParams: GenerationParams;
   searchParams: SearchParams;
+  agent: Agent;
   knowledge: BotKnowledge;
   syncStatusReason: string;
   displayRetrievedChunks: boolean;
