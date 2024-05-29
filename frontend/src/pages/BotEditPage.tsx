@@ -93,7 +93,7 @@ const BotEditPage: React.FC = () => {
           : [...preTools, tool]
       );
     },
-    [tools, setTools, availableTools]
+    [tools, setTools]
   );
   const {
     errorMessages,
@@ -424,6 +424,7 @@ const BotEditPage: React.FC = () => {
   }, [
     registerBot,
     isValid,
+    tools,
     botId,
     title,
     description,
@@ -487,6 +488,7 @@ const BotEditPage: React.FC = () => {
     isNewBot,
     isValid,
     updateBot,
+    tools,
     botId,
     title,
     description,
