@@ -149,7 +149,7 @@ git clone https://github.com/aws-samples/bedrock-claude-chat
 ```
 
 > [!Warning]
-> 古いバージョン (例: v0.4.x) を使用している場合で、最新バージョンを使用したい場合は、以下のように最新のブランチを使用してください。 注意: RDS 内のすべてのデータが破壊されます。 既存のデータを復元するには、[移行ガイド](./MIGRATION_GUIDE.md)を参照してください。
+> 古いバージョン (例: v0.4.x) を使用している場合で、最新バージョンを使用したい場合は、以下のように最新のブランチを使用してください。 注意: RDS 内のすべてのデータが破壊されます。 既存のデータを復元するには、[移行ガイド](./migration/MIGRATION_GUIDE.md)を参照してください。
 
 ```
 git clone --branch v1.0 https://github.com/aws-samples/bedrock-claude-chat.git

@@ -2,29 +2,28 @@ import argparse
 import json
 import logging
 import multiprocessing
-from multiprocessing.managers import ListProxy
 import os
+from multiprocessing.managers import ListProxy
 from typing import Any
 
 import pg8000
 import requests
-from retry import retry
-
 from app.config import DEFAULT_EMBEDDING_CONFIG
-from app.repositories.common import _get_table_client, RecordNotFoundError
+from app.repositories.common import RecordNotFoundError, _get_table_client
 from app.repositories.custom_bot import (
     compose_bot_id,
     decompose_bot_id,
     find_private_bot_by_id,
 )
-
 from app.routes.schemas.bot import type_sync_status
 from app.utils import compose_upload_document_s3_path
+from aws_lambda_powertools.utilities import parameters
 from embedding.loaders import UrlLoader
 from embedding.loaders.base import BaseLoader
 from embedding.loaders.s3 import S3FileLoader
 from embedding.wrapper import DocumentSplitter, Embedder
 from llama_index.core.node_parser import SentenceSplitter
+from retry import retry
 from ulid import ULID
 
 logging.basicConfig(level=logging.INFO)
@@ -36,11 +35,7 @@ RETRY_DELAY_TO_INSERT_TO_POSTGRES = 2
 RETRIES_TO_UPDATE_SYNC_STATUS = 4
 RETRY_DELAY_TO_UPDATE_SYNC_STATUS = 2
 
-DB_NAME = os.environ.get("DB_NAME", "postgres")
-DB_HOST = os.environ.get("DB_HOST", "")
-DB_USER = os.environ.get("DB_USER", "postgres")
-DB_PASSWORD = os.environ.get("DB_PASSWORD", "password")
-DB_PORT = int(os.environ.get("DB_PORT", 5432))
+DB_SECRETS_ARN = os.environ.get("DB_SECRETS_ARN", "")
 DOCUMENT_BUCKET = os.environ.get("DOCUMENT_BUCKET", "documents")
 
 METADATA_URI = os.environ.get("ECS_CONTAINER_METADATA_URI_V4")
@@ -60,12 +55,15 @@ def get_exec_id() -> str:
 def insert_to_postgres(
     bot_id: str, contents: ListProxy, sources: ListProxy, embeddings: ListProxy
 ):
+    secrets: Any = parameters.get_secret(DB_SECRETS_ARN)  # type: ignore
+    db_info = json.loads(secrets)
+
     conn = pg8000.connect(
-        database=DB_NAME,
-        host=DB_HOST,
-        port=DB_PORT,
-        user=DB_USER,
-        password=DB_PASSWORD,
+        database=db_info["dbname"],
+        host=db_info["host"],
+        port=db_info["port"],
+        user=db_info["username"],
+        password=db_info["password"],
     )
 
     try:

@@ -1,10 +1,8 @@
 import json
 import logging
-import os
 import re
-from typing import Literal
+from typing import Any, Literal
 
-import pg8000
 from app.bedrock import calculate_query_embedding
 from app.utils import generate_presigned_url, query_postgres
 from pydantic import BaseModel

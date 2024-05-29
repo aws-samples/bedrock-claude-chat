@@ -1,6 +1,8 @@
 {
   "name": "custom-resources",
   "dependencies": {
+    "@aws-lambda-powertools/parameters": "^2.1.1",
+    "@aws-sdk/client-secrets-manager": "^3.576.0",
     "pg": "^8.11.3"
   }
 }

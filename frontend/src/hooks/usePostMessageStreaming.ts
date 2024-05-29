@@ -41,7 +41,12 @@ const usePostMessageStreaming = create<{
         const ws = new WebSocket(WS_ENDPOINT);
 
         ws.onopen = () => {
-          ws.send('START');
+          ws.send(
+            JSON.stringify({
+              step: 'START',
+              token: token,
+            })
+          );
         };
 
         ws.onmessage = (message) => {
@@ -59,6 +64,7 @@ const usePostMessageStreaming = create<{
               chunkedPayloads.forEach((chunk, index) => {
                 ws.send(
                   JSON.stringify({
+                    step: 'BODY',
                     index,
                     part: chunk,
                   })
@@ -68,7 +74,11 @@ const usePostMessageStreaming = create<{
             } else if (message.data === 'Message part received.') {
               receivedCount++;
               if (receivedCount === chunkedPayloads.length) {
-                ws.send('END');
+                ws.send(
+                  JSON.stringify({
+                    step: 'END',
+                  })
+                );
               }
               return;
             }

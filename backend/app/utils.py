@@ -1,12 +1,14 @@
+import json
 import logging
 import os
 from datetime import datetime
-from typing import List, Literal
+from typing import Any, List, Literal
 
 import boto3
 import pg8000
 from anthropic import AnthropicBedrock
 from app.repositories.models.conversation import MessageModel
+from aws_lambda_powertools.utilities import parameters
 from botocore.client import Config
 from botocore.exceptions import ClientError
 
@@ -17,11 +19,7 @@ BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
 PUBLISH_API_CODEBUILD_PROJECT_NAME = os.environ.get(
     "PUBLISH_API_CODEBUILD_PROJECT_NAME", ""
 )
-DB_NAME = os.environ.get("DB_NAME", "postgres")
-DB_HOST = os.environ.get("DB_HOST", "")
-DB_USER = os.environ.get("DB_USER", "postgres")
-DB_PASSWORD = os.environ.get("DB_PASSWORD", "password")
-DB_PORT = int(os.environ.get("DB_PORT", 5432))
+DB_SECRETS_ARN = os.environ.get("DB_SECRETS_ARN", "")
 
 
 def is_running_on_lambda():
@@ -182,13 +180,17 @@ def query_postgres(
         example: ((1, 'Alice'), (2, 'Bob')) if include_columns is False
                  (('id', 'name'), (1, 'Alice'), (2, 'Bob')) if include_columns is True
     """
+    secrets: Any = parameters.get_secret(DB_SECRETS_ARN)  # type: ignore
+    db_info = json.loads(secrets)
+
     conn = pg8000.connect(
-        database=DB_NAME,
-        host=DB_HOST,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        port=DB_PORT,
+        database=db_info["dbname"],
+        host=db_info["host"],
+        port=db_info["port"],
+        user=db_info["username"],
+        password=db_info["password"],
     )
+
     args = params if params else ()
     try:
         with conn.cursor() as cursor:

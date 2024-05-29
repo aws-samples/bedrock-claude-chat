@@ -18,13 +18,13 @@ from app.auth import verify_token
 from app.bedrock import compose_args
 from app.repositories.conversation import RecordNotFoundError, store_conversation
 from app.repositories.models.conversation import ChunkModel, ContentModel, MessageModel
-from app.routes.schemas.conversation import ChatInputWithToken
+from app.routes.schemas.conversation import ChatInput
 from app.stream import OnStopInput, get_stream_handler_type
 from app.usecases.bot import modify_bot_last_used_time
 from app.usecases.chat import insert_knowledge, prepare_conversation, trace_to_root
 from app.utils import get_anthropic_client, get_current_time, is_anthropic_model
 from app.vector_search import filter_used_results, search_related_docs
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Attr, Key
 from ulid import ULID
 
 WEBSOCKET_SESSION_TABLE_NAME = os.environ["WEBSOCKET_SESSION_TABLE_NAME"]
@@ -38,19 +38,11 @@ logger.setLevel(logging.INFO)
 
 
 def process_chat_input(
-    chat_input: ChatInputWithToken, gatewayapi, connection_id: str
+    user_id: str, chat_input: ChatInput, gatewayapi, connection_id: str
 ) -> dict:
     """Process chat input and send the message to the client."""
     logger.info(f"Received chat input: {chat_input}")
 
-    try:
-        # Verify JWT token
-        decoded = verify_token(chat_input.token)
-    except Exception as e:
-        logger.error(f"Invalid token: {e}")
-        return {"statusCode": 403, "body": "Invalid token."}
-
-    user_id = decoded["sub"]
     try:
         user_msg_id, conversation, bot = prepare_conversation(user_id, chat_input)
     except RecordNotFoundError:
@@ -244,7 +236,6 @@ def process_chat_input(
 
         # Store conversation before finish streaming so that front-end can avoid 404 issue
         store_conversation(user_id, conversation)
-
         last_data_to_send = json.dumps(
             dict(status="STREAMING_END", completion="", stop_reason=arg.stop_reason)
         ).encode("utf-8")
@@ -293,7 +284,9 @@ def handler(event, context):
 
     now = datetime.now()
     expire = int(now.timestamp()) + 60 * 2  # 2 minute from now
-    body = event["body"]
+    # body = event["body"]
+    body = json.loads(event["body"])
+    step = body.get("step")
 
     try:
         # API Gateway (websocket) has hard limit of 32KB per message, so if the message is larger than that,
@@ -306,9 +299,35 @@ def handler(event, context):
         # 4. This handler receives the message parts and appends them to the item in DynamoDB with index.
         # 5. Client sends `END` message to the WebSocket API.
         # 6. This handler receives the `END` message, concatenates the parts and sends the message to Bedrock.
-        if body == "START":
+        if step == "START":
+            token = body["token"]
+            try:
+                # Verify JWT token
+                decoded = verify_token(token)
+            except Exception as e:
+                logger.error(f"Invalid token: {e}")
+                return {"statusCode": 403, "body": "Invalid token."}
+            user_id = decoded["sub"]
+
+            # Store user id
+            response = table.put_item(
+                Item={
+                    "ConnectionId": connection_id,
+                    # Store as zero
+                    "MessagePartId": decimal(0),
+                    "UserId": user_id,
+                    "expire": expire,
+                }
+            )
             return {"statusCode": 200, "body": "Session started."}
-        elif body == "END":
+        elif step == "END":
+            # Retrieve user id
+            response = table.query(
+                KeyConditionExpression=Key("ConnectionId").eq(connection_id),
+                FilterExpression=Attr("UserId").exists(),
+            )
+            user_id = response["Items"][0]["UserId"]
+
             # Concatenate the message parts
             message_parts = []
             last_evaluated_key = None
@@ -316,12 +335,15 @@ def handler(event, context):
             while True:
                 if last_evaluated_key:
                     response = table.query(
-                        KeyConditionExpression=Key("ConnectionId").eq(connection_id),
+                        KeyConditionExpression=Key("ConnectionId").eq(connection_id)
+                        # Zero is reserved for user id, so start from 1
+                        & Key("MessagePartId").gte(1),
                         ExclusiveStartKey=last_evaluated_key,
                     )
                 else:
                     response = table.query(
                         KeyConditionExpression=Key("ConnectionId").eq(connection_id)
+                        & Key("MessagePartId").gte(1),
                     )
 
                 message_parts.extend(response["Items"])
@@ -332,16 +354,22 @@ def handler(event, context):
                     break
 
             logger.info(f"Number of message chunks: {len(message_parts)}")
+            message_parts.sort(key=lambda x: x["MessagePartId"])
             full_message = "".join(item["MessagePart"] for item in message_parts)
 
             # Process the concatenated full message
-            chat_input = ChatInputWithToken(**json.loads(full_message))
-            return process_chat_input(chat_input, gatewayapi, connection_id)
+            chat_input = ChatInput(**json.loads(full_message))
+            return process_chat_input(
+                user_id=user_id,
+                chat_input=chat_input,
+                gatewayapi=gatewayapi,
+                connection_id=connection_id,
+            )
         else:
             # Store the message part of full message
-            message_json = json.loads(body)
-            part_index = message_json["index"]
-            message_part = message_json["part"]
+            # Zero is reserved for user id, so start from 1
+            part_index = body["index"] + 1
+            message_part = body["part"]
 
             # Store the message part with its index
             table.put_item(
