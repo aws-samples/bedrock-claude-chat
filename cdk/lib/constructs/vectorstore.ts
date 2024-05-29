@@ -55,7 +55,7 @@ export class VectorStore extends Construct {
         autoMinorVersionUpgrade: true,
         publiclyAccessible: false,
       }),
-      storageEncrypted: true,
+      // storageEncrypted: true,
       removalPolicy: RemovalPolicy.SNAPSHOT,
       // readers: [
       //   rds.ClusterInstance.serverlessV2("reader", {
@@ -64,7 +64,6 @@ export class VectorStore extends Construct {
       // ],
     });
     cluster.addRotationSingleUser();
-    // cluster.secret!.applyRemovalPolicy(RemovalPolicy.RETAIN);
 
     const dbClusterIdentifier = cluster
       .secret!.secretValueFromJson("dbClusterIdentifier")

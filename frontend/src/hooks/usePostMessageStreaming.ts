@@ -41,7 +41,6 @@ const usePostMessageStreaming = create<{
         const ws = new WebSocket(WS_ENDPOINT);
 
         ws.onopen = () => {
-          // ws.send('START');
           ws.send(
             JSON.stringify({
               step: 'START',
