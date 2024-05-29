@@ -1,4 +1,4 @@
-import { AgentTool } from '../@types/agent';
+import { AgentTool } from '../@types/bot';
 import useHttp from './useHttp';
 
 export const useAgentApi = () => {

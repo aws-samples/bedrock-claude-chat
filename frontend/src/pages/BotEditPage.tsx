@@ -12,7 +12,12 @@ import { produce } from 'immer';
 import Alert from '../components/Alert';
 import KnowledgeFileUploader from '../components/KnowledgeFileUploader';
 import GenerationConfig from '../components/GenerationConfig';
-import { BotFile, EmdeddingParams, SearchParams } from '../@types/bot';
+import {
+  AgentTool,
+  BotFile,
+  EmdeddingParams,
+  SearchParams,
+} from '../@types/bot';
 import { ulid } from 'ulid';
 import {
   DEFAULT_EMBEDDING_CONFIG,
@@ -30,7 +35,6 @@ import useErrorMessage from '../hooks/useErrorMessage';
 import Help from '../components/Help';
 import Toggle from '../components/Toggle';
 import { useAgent } from '../hooks/useAgent';
-import { Agent, AgentTool } from '../@types/agent';
 
 const edgeGenerationParams =
   import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true'
@@ -110,7 +114,7 @@ const BotEditPage: React.FC = () => {
       setIsLoading(true);
       getMyBot(botId)
         .then((bot) => {
-          console.log(bot.agent);
+          setTools(bot.agent.tools);
           setTitle(bot.title);
           setDescription(bot.description);
           setInstruction(bot.instruction);
@@ -383,6 +387,9 @@ const BotEditPage: React.FC = () => {
     if (!isValid()) return;
     setIsLoading(true);
     registerBot({
+      agent: {
+        tools,
+      },
       id: botId,
       title,
       description,
@@ -440,6 +447,9 @@ const BotEditPage: React.FC = () => {
     if (!isNewBot) {
       setIsLoading(true);
       updateBot(botId, {
+        agent: {
+          tools,
+        },
         title,
         description,
         instruction,

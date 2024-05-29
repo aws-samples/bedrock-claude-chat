@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { AgentTool } from '../@types/agent';
 import { useAgentApi } from './useAgentToolApi';
+import { AgentTool } from '../@types/bot';
 
 export const useAgent = () => {
   const api = useAgentApi();
@@ -9,6 +9,7 @@ export const useAgent = () => {
 
   useEffect(() => {
     getAvailableTools().then((res) => setAvailableTools(() => res.data));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {

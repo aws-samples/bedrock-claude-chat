@@ -78,6 +78,7 @@ export type RegisterBotRequest = {
   id: string;
   title: string;
   instruction: string;
+  agent: Agent;
   description?: string;
   embeddingParams?: EmdeddingParams;
   generationParams?: GenerationParams;
@@ -92,6 +93,7 @@ export type UpdateBotRequest = {
   title: string;
   instruction: string;
   description?: string;
+  agent: Agent;
   embeddingParams?: EmdeddingParams;
   generationParams?: BotGenerationConfig;
   searchParams?: SearchParams;
@@ -147,4 +149,12 @@ export type GetPublicBotResponse = BotDetails;
 
 export type GetPresignedUrlResponse = {
   url: string;
+};
+
+export type AgentTool = {
+  name: string;
+  description: string;
+};
+export type Agent = {
+  tools: AgentTool[];
 };
