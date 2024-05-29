@@ -28,13 +28,15 @@ import Alert from '../components/Alert';
 import useBotSummary from '../hooks/useBotSummary';
 import useModel from '../hooks/useModel';
 
-const MISTRAL_ENABLED: boolean = import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
+const MISTRAL_ENABLED: boolean =
+  import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
 
 const ChatPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
   const {
+    thinkingCount,
     postingMessage,
     postChat,
     messages,

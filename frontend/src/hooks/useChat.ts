@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useReducer } from 'react';
 import useConversationApi from './useConversationApi';
 import { produce } from 'immer';
 import {
@@ -30,6 +30,12 @@ type BotInputType = {
   botId: string;
   hasKnowledge: boolean;
 };
+
+export type ThinkingAction =
+  | {
+      type: 'doing';
+    }
+  | { type: 'init' };
 
 const NEW_MESSAGE_ID = {
   USER: 'new-message',
@@ -218,8 +224,21 @@ const useChatState = create<{
   };
 });
 
+const thinkingReducer = (state: number, action: ThinkingAction) => {
+  switch (action.type) {
+    case 'doing':
+      return state + 1;
+    case 'init':
+      return 0;
+    default:
+      throw new Error(`Unknown action type`);
+  }
+};
+
 const useChat = () => {
   const { t } = useTranslation();
+
+  const [thinkingCount, dispath] = useReducer(thinkingReducer, 0);
   const {
     chats,
     conversationId,
@@ -410,6 +429,9 @@ const useChat = () => {
           dispatch: (c: string) => {
             editMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT, c);
           },
+          thinkingDispatch: (event) => {
+            dispath({ type: event });
+          },
         })
           .then((message) => {
             resolve(message);
@@ -545,6 +567,9 @@ const useChat = () => {
       dispatch: (c: string) => {
         editMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT, c);
       },
+      thinkingDispatch: (event) => {
+        dispath({ type: event });
+      },
     })
       .then(() => {
         mutate();
@@ -581,7 +606,10 @@ const useChat = () => {
     return length_ === 0 ? false : messages[length_ - 1].role === 'user';
   }, [messages]);
 
+  console.log(thinkingCount);
+
   return {
+    thinkingCount,
     hasError,
     setConversationId,
     conversationId,
