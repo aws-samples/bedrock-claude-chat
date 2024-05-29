@@ -1,4 +1,4 @@
-export type Tool = {
+export type AvailableTool = {
   name: string;
   description: string;
 };

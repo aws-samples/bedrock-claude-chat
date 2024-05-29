@@ -30,7 +30,7 @@ import useErrorMessage from '../hooks/useErrorMessage';
 import Help from '../components/Help';
 import Toggle from '../components/Toggle';
 import { useAgent } from '../hooks/useAgent';
-import { Tool } from '../@types/agent';
+import { AvailableTool } from '../@types/agent';
 
 const edgeGenerationParams =
   import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true'
@@ -47,7 +47,7 @@ const BotEditPage: React.FC = () => {
   const navigate = useNavigate();
   const { botId: paramsBotId } = useParams();
   const { getMyBot, registerBot, updateBot } = useBot();
-  const { getTools } = useAgent();
+  const { getAvailableTools } = useAgent();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -79,7 +79,7 @@ const BotEditPage: React.FC = () => {
   const [searchParams, setSearchParams] = useState<SearchParams>(
     DEFAULT_SEARCH_CONFIG
   );
-  const [tools, setTools] = useState<Tool[]>();
+  const [tools, setTools] = useState<AvailableTool[]>();
   const {
     errorMessages,
     setErrorMessage: setErrorMessages,
@@ -95,7 +95,7 @@ const BotEditPage: React.FC = () => {
   }, [isNewBot, paramsBotId]);
 
   useEffect(() => {
-    getTools().then((res) => setTools(() => res.data));
+    getAvailableTools().then((res) => setTools(() => res.data));
   }, []);
 
   useEffect(() => {

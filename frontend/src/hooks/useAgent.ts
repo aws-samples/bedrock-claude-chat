@@ -4,6 +4,6 @@ export const useAgent = () => {
   const api = useAgentApi();
 
   return {
-    getTools: async () => await api.tools(),
+    getAvailableTools: async () => await api.availableTools(),
   };
 };
