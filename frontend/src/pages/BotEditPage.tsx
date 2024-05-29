@@ -388,7 +388,7 @@ const BotEditPage: React.FC = () => {
     setIsLoading(true);
     registerBot({
       agent: {
-        tools,
+        tools: tools.map(({ name }) => name),
       },
       id: botId,
       title,
@@ -449,7 +449,7 @@ const BotEditPage: React.FC = () => {
       setIsLoading(true);
       updateBot(botId, {
         agent: {
-          tools,
+          tools: tools.map(({ name }) => name),
         },
         title,
         description,

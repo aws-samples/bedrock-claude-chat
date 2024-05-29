@@ -74,11 +74,15 @@ export type BotFile = {
   progress?: number;
 };
 
+export type AgentInput = {
+  tools: string[];
+};
+
 export type RegisterBotRequest = {
   id: string;
   title: string;
   instruction: string;
-  agent: Agent;
+  agent: AgentInput;
   description?: string;
   embeddingParams?: EmdeddingParams;
   generationParams?: GenerationParams;
@@ -93,7 +97,7 @@ export type UpdateBotRequest = {
   title: string;
   instruction: string;
   description?: string;
-  agent: Agent;
+  agent: AgentInput;
   embeddingParams?: EmdeddingParams;
   generationParams?: BotGenerationConfig;
   searchParams?: SearchParams;
