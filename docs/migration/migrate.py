@@ -21,7 +21,18 @@ scan_kwargs = {
 while True:
     response = table.scan(**scan_kwargs)
 
-    print("Bots found in this scan:")
+    if len(response["Items"]) == 0:
+        print("  - No bots found in this scan.")
+        has_more_scans = "LastEvaluatedKey" in response
+        if not has_more_scans:
+            print("All bots have been processed. No more scans needed.")
+            break
+
+        scan_kwargs["ExclusiveStartKey"] = response["LastEvaluatedKey"]
+        continue
+
+    # print("Bots found in this scan:")
+    print(f"{len(response['Items'])} Bots found in this scan:")
     for item in response["Items"]:
         print(f"  - {item['Title']} ({item['SK']})")
 
@@ -50,7 +61,7 @@ while True:
                 },
             }
 
-            response = ecs.run_task(
+            _ = ecs.run_task(
                 cluster=CLUSTER_NAME,
                 launchType="FARGATE",
                 taskDefinition=TASK_DEFINITION_NAME,

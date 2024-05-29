@@ -167,6 +167,7 @@ def main(
     status_reason = ""
     try:
         if len(sitemap_urls) + len(source_urls) + len(filenames) == 0:
+            logger.info("No contents to embed. Skipping.")
             status_reason = "No contents to embed."
             update_sync_status(
                 user_id,
