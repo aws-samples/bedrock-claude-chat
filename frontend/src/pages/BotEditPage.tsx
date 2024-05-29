@@ -30,7 +30,7 @@ import useErrorMessage from '../hooks/useErrorMessage';
 import Help from '../components/Help';
 import Toggle from '../components/Toggle';
 import { useAgent } from '../hooks/useAgent';
-import { AgentTool } from '../@types/agent';
+import { Agent, AgentTool } from '../@types/agent';
 
 const edgeGenerationParams =
   import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true'
@@ -80,22 +80,14 @@ const BotEditPage: React.FC = () => {
     DEFAULT_SEARCH_CONFIG
   );
   const [tools, setTools] = useState<AgentTool[]>([]);
-  console.log(tools);
+
   const handleChangeTool = useCallback(
-    (toolName: string) => () => {
-      tools.map(({ name }) => name).includes(toolName)
-        ? setTools((preTools) => [
-            ...preTools.filter(({ name }) => name != toolName),
-          ])
-        : setTools((preTools) => [
-            ...preTools,
-            {
-              name: toolName,
-              description:
-                availableTools?.find(({ name }) => name == toolName)
-                  ?.description ?? '',
-            },
-          ]);
+    (tool: AgentTool) => () => {
+      setTools((preTools) =>
+        tools.map(({ name }) => name).includes(tool.name)
+          ? [...preTools.filter(({ name }) => name != tool.name)]
+          : [...preTools, tool]
+      );
     },
     [tools, setTools, availableTools]
   );
@@ -575,7 +567,7 @@ const BotEditPage: React.FC = () => {
                 <div key={tool.name} className="flex items-center">
                   <Toggle
                     value={!!tools?.map(({ name }) => name).includes(tool.name)}
-                    onChange={handleChangeTool(tool.name)}
+                    onChange={handleChangeTool(tool)}
                   />
                   <div className="whitespace-pre-wrap text-sm text-aws-font-color/50">
                     {tool.name}:{tool.description}
