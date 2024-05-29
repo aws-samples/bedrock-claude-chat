@@ -310,11 +310,30 @@ const ChatPage: React.FC = () => {
               className={`${
                 message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
               }`}>
-              <ChatMessage
-                chatContent={message}
-                onChangeMessageId={onChangeCurrentMessageId}
-                onSubmit={onSubmitEditedContent}
-              />
+              {messages.length === idx + 1 && thinkingCount > 0 ? (
+                <ChatMessage
+                  chatContent={{
+                    ...message,
+                    content: [
+                      {
+                        contentType: 'text',
+                        body: `${[...Array(thinkingCount)]
+                          .map((_) => '◼︎')
+                          .join('')}`,
+                      },
+                    ],
+                  }}
+                  onChangeMessageId={onChangeCurrentMessageId}
+                  onSubmit={onSubmitEditedContent}
+                />
+              ) : (
+                <ChatMessage
+                  chatContent={message}
+                  onChangeMessageId={onChangeCurrentMessageId}
+                  onSubmit={onSubmitEditedContent}
+                />
+              )}
+
               <div className="w-full border-b border-aws-squid-ink/10"></div>
             </div>
           ))

@@ -606,8 +606,6 @@ const useChat = () => {
     return length_ === 0 ? false : messages[length_ - 1].role === 'user';
   }, [messages]);
 
-  console.log(thinkingCount);
-
   return {
     thinkingCount,
     hasError,

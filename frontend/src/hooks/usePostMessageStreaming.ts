@@ -102,8 +102,8 @@ const usePostMessageStreaming = create<{
                   }
                   break;
                 case 'STREAMING_END':
+                  thinkingDispatch('init');
                   if (data.stop_reason) {
-                    thinkingDispatch('init');
                   }
                   if (completion.endsWith(i18next.t('app.chatWaitingSymbol'))) {
                     completion = completion.slice(0, -1);
