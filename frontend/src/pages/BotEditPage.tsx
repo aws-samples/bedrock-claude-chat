@@ -47,7 +47,7 @@ const BotEditPage: React.FC = () => {
   const navigate = useNavigate();
   const { botId: paramsBotId } = useParams();
   const { getMyBot, registerBot, updateBot } = useBot();
-  const { getAvailableTools } = useAgent();
+  const { availableTools } = useAgent();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -79,7 +79,9 @@ const BotEditPage: React.FC = () => {
   const [searchParams, setSearchParams] = useState<SearchParams>(
     DEFAULT_SEARCH_CONFIG
   );
-  const [tools, setTools] = useState<AgentTool[]>();
+  const [tools, setTools] = useState<AgentTool[]>([
+    // { name: 'get_weather', description: 'aaa' },
+  ]);
   const {
     errorMessages,
     setErrorMessage: setErrorMessages,
@@ -95,14 +97,11 @@ const BotEditPage: React.FC = () => {
   }, [isNewBot, paramsBotId]);
 
   useEffect(() => {
-    getAvailableTools().then((res) => setTools(() => res.data));
-  }, []);
-
-  useEffect(() => {
     if (!isNewBot) {
       setIsLoading(true);
       getMyBot(botId)
         .then((bot) => {
+          console.log(bot.agent);
           setTitle(bot.title);
           setDescription(bot.description);
           setInstruction(bot.instruction);
@@ -554,10 +553,11 @@ const BotEditPage: React.FC = () => {
                   {t('bot.help.agent.overview')}
                 </div>
               </div>
-              {tools?.map((tool) => (
-                <div className="flex items-center">
+
+              {availableTools?.map((tool) => (
+                <div key={tool.name} className="flex items-center">
                   <Toggle
-                    value={displayRetrievedChunks}
+                    value={!!tools?.map(({ name }) => name).includes(tool.name)}
                     onChange={setDisplayRetrievedChunks}
                   />
                   <div className="whitespace-pre-wrap text-sm text-aws-font-color/50">
