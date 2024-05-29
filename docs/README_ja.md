@@ -58,6 +58,23 @@ chmod +x bin.sh
 ```
 
 - 新規ユーザーかどうかを聞かれます。新規ユーザーの場合は `y` を入力してください。そうでない場合は、[CDK を使ってデプロイ](#deploy-using-cdk)することをおすすめします。`y` を入力すると既存の RDS データが全て削除されるので注意してください。
+
+### オプションのパラメータ
+
+デプロイ時に以下のパラメータを指定することで、セキュリティとカスタマイズを強化できるようになりました。
+
+--disable-self-register: セルフ登録を無効にします（デフォルト: 有効）。このフラグを設定すると、Cognito 上で全てのユーザーを作成する必要があり、ユーザーが自分でアカウントを登録することはできなくなります。
+--ipv4-ranges: 許可する IPv4 範囲のカンマ区切りリスト。（デフォルト: 全ての IPv4 アドレスを許可）
+--ipv6-ranges: 許可する IPv6 範囲のカンマ区切りリスト。（デフォルト: 全ての IPv6 アドレスを許可）
+--allowed-signup-email-domains: サインアップ時に許可するメールドメインのカンマ区切りリスト。（デフォルト: ドメイン制限なし）
+--region: Bedrock が利用可能なリージョンを指定します。（デフォルト: us-east-1）
+
+#### パラメータを指定したコマンド例:
+
+```sh
+./bin.sh --disable-self-register --ipv4-ranges "192.0.2.0/25,192.0.2.128/25" --ipv6-ranges "2001:db8:1:2::/64,2001:db8:1:3::/64" --allowed-signup-email-domains "example.com,anotherexample.com" --region "ap-northeast-1"
+```
+
 - 30 分ほど経過後、下記の出力が得られるのでブラウザからアクセスします
 
 ```
@@ -69,7 +86,7 @@ Frontend URL: https://xxxxxxxxx.cloudfront.net
 上記のようなサインアップ画面が現れますので、E メールを登録・ログインしご利用ください。
 
 > [!Important]
-> このデプロイ方法では、URL を知っている誰でもサインアップできてしまいます。本番運用で使用する場合は、セキュリティリスクを軽減するために IP アドレス制限やセルフサインアップの無効化を強くお勧めします。設定方法は、IP アドレス制限の場合は[Deploy using CDK](#deploy-using-cdk)、セルフサインアップの無効化の場合は[セルフサインアップを無効化する](#セルフサインアップを無効化する)をご覧ください。
+> オプションのパラメータを設定しない場合、このデプロイ方法では URL を知っている誰でもサインアップできてしまいます。本番環境で使用する場合は、セキュリティリスクを軽減するために、IP アドレスの制限を追加し、セルフサインアップを無効にすることを強くお勧めします（`allowed-signup-email-domains` を定義して、会社のドメインからのメールアドレスのみがサインアップできるようにすることで、ユーザーを制限できます）。IP アドレスの制限には `ipv4-ranges` と `ipv6-ranges` の両方を使用し、`./bin` を実行する際に `disable-self-register` を使用してセルフサインアップを無効にしてください。
 
 ## アーキテクチャ
 
@@ -87,51 +104,6 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 - [Amazon Athena](https://aws.amazon.com/athena/): S3 バケット内のデータを分析するクエリサービス
 
 ![](imgs/arch.png)
-
-## 機能・ロードマップ
-
-<details>
-<summary>基本的なチャット機能</summary>
-
-- [x] 認証 (サインアップ、サインイン)
-- [x] 会話の作成、保存、削除
-- [x] チャットボットの返答のコピー
-- [x] 会話のための自動的なトピックの提案
-- [x] コードの構文強調表示
-- [x] Markdown の表示
-- [x] ストリーミング応答
-- [x] IP アドレスの制限
-- [x] メッセージの編集と再送信
-- [x] 国際化
-- [x] モデルの切り替え
-</details>
-
-<details>
-<summary>カスタマイズされたボットの機能</summary>
-
-- [x] カスタマイズされたボットの作成
-- [x] カスタマイズされたボットの共有
-- [x] 独立した API として公開
-</details>
-
-<details>
-<summary>RAG機能</summary>
-
-- [x] Web (html)
-- [x] テキストデータ (txt、csv、markdown など)
-- [x] PDF
-- [x] Microsoft Office ファイル (pptx、docx、xlsx)
-- [x] YouTube の字幕
-- [ ] S3 バケットからのインポート
-- [ ] 既存の Kendra / OpenSearch / KnowledgeBase からのインポート
-</details>
-
-<details>
-<summary>管理者機能</summary>
-
-- [x] ボットごとの使用料の追跡
-- [x] 公開されたボットの一覧表示
-</details>
 
 ## Deploy using CDK
 
@@ -272,24 +244,7 @@ cli および CDK を利用されている場合、`cdk destroy`を実行して�
 
 ### セルフサインアップを無効化する
 
-このサンプルはデフォルトでセルフサインアップが有効化してあります。セルフサインアップを無効にするには、[auth.ts](./cdk/lib/constructs/auth.ts)を開き、`selfSignUpEnabled` を `false` に変更してから再デプロイしてください。
-
-```ts
-const userPool = new UserPool(this, "UserPool", {
-  passwordPolicy: {
-    requireUppercase: true,
-    requireSymbols: true,
-    requireDigits: true,
-    minLength: 8,
-  },
-  // Set to false
-  selfSignUpEnabled: false,
-  signInAliases: {
-    username: false,
-    email: true,
-  },
-});
-```
+このサンプルはデフォルトでセルフサインアップが有効になっています。セルフサインアップを無効にするには、[cdk.json](../cdk/cdk.json) を開き、`selfSignUpEnabled` を `false` に切り替えてください。[外部のアイデンティティプロバイダー](#外部のアイデンティティプロバイダー)を設定している場合、この値は無視され、自動的に無効になります。
 
 ### 外部のアイデンティティプロバイダー
 

@@ -73,6 +73,24 @@ chmod +x bin.sh
 - You will be asked if a new user or not. If new user, enter `y`. If not, we recommend [deploy with cdk](#deploy-using-cdk). Note that `y` DESTROY ALL DATA in your existing data in RDS.
 - After about 30 minutes, you will get the following output, which you can access from your browser
 
+### Optional Parameters
+
+You can now specify the following parameters during deployment to enhance security and customization:
+
+- **--disable-self-register**: Disable self-registration (default: enabled). If this flag is set, you will need to create all users on cognito and it will not allow users to self register their accounts.
+- **--ipv4-ranges**: Comma-separated list of allowed IPv4 ranges. (default: allow all ipv4 addresses)
+- **--ipv6-ranges**: Comma-separated list of allowed IPv6 ranges. (default: allow all ipv6 addresses)
+- **--allowed-signup-email-domains**: Comma-separated list of allowed email domains for sign-up. (default: no domain restriction)
+- **--region**: Define the region where bedrock is available. (default: us-east-1)
+
+#### Example command with parameters:
+
+```sh
+./bin.sh --disable-self-register --ipv4-ranges "192.0.2.0/25,192.0.2.128/25" --ipv6-ranges "2001:db8:1:2::/64,2001:db8:1:3::/64" --allowed-signup-email-domains "example.com,anotherexample.com" --region "us-west-2"
+```
+
+- After about 35 minutes, you will get the following output, which you can access from your browser
+
 ```
 Frontend URL: https://xxxxxxxxx.cloudfront.net
 ```
@@ -82,7 +100,7 @@ Frontend URL: https://xxxxxxxxx.cloudfront.net
 The sign-up screen will appear as shown above, where you can register your email and log in.
 
 > [!Important]
-> This deployment method allows anyone with the URL to sign up. For production use, we strongly recommend adding IP address restrictions or disabling self-signup to mitigate security risks. To set up, [Deploy using CDK](#deploy-using-cdk) for IP address restrictions or [Disable self sign up](#disable-self-sign-up).
+> This deployment method allows anyone with the URL to sign up if optional parameters are not configured. For production use, we strongly recommend adding IP address restrictions and disabling self-signup to mitigate security risks (Defining the `allowed-signup-email-domains` to allow only your emails from your comapny domain to be able to sing-up to restrict the users). For ip address restriction use both `ipv4-ranges` and `ipv6-ranges` and to disable self-signup use `disable-self-register` when executing `./bin`.
 
 ## Architecture
 
@@ -100,51 +118,6 @@ It's an architecture built on AWS managed services, eliminating the need for inf
 - [Amazon Athena](https://aws.amazon.com/athena/): Query service to analyze S3 bucket
 
 ![](docs/imgs/arch.png)
-
-## Features and Roadmap
-
-<details>
-<summary>Basic chat features</summary>
-
-- [x] Authentication (Sign-up, Sign-in)
-- [x] Creation, storage, and deletion of conversations
-- [x] Copying of chatbot replies
-- [x] Automatic subject suggestion for conversations
-- [x] Syntax highlighting for code
-- [x] Rendering of Markdown
-- [x] Streaming Response
-- [x] IP address restriction
-- [x] Edit message & re-send
-- [x] I18n
-- [x] Model switch
-</details>
-
-<details>
-<summary>Customized bot features</summary>
-
-- [x] Customized bot creation
-- [x] Customized bot sharing
-- [x] Publish as stand-alone API
-</details>
-
-<details>
-<summary>RAG features</summary>
-
-- [x] Web (html)
-- [x] Text data (txt, csv, markdown and etc)
-- [x] PDF
-- [x] Microsoft office files (pptx, docx, xlsx)
-- [x] Youtube transcript
-- [ ] Import from S3 bucket
-- [ ] Import external existing Kendra / OpenSearch / KnowledgeBase
-</details>
-
-<details>
-<summary>Admin features</summary>
-
-- [x] Tracking usage fees per bot
-- [x] List all published bot
-</details>
 
 ## Deploy using CDK
 
@@ -277,24 +250,7 @@ This asset automatically detects the language using [i18next-browser-languageDet
 
 ### Disable self sign up
 
-This sample has self sign up enabled by default. To disable self sign up, open [auth.ts](./cdk/lib/constructs/auth.ts) and switch `selfSignUpEnabled` as `false`, then re-deploy.
-
-```ts
-const userPool = new UserPool(this, "UserPool", {
-  passwordPolicy: {
-    requireUppercase: true,
-    requireSymbols: true,
-    requireDigits: true,
-    minLength: 8,
-  },
-  // Set to false
-  selfSignUpEnabled: false,
-  signInAliases: {
-    username: false,
-    email: true,
-  },
-});
-```
+This sample has self sign up enabled by default. To disable self sign up, open [cdk.json](./cdk/cdk.json) and switch `selfSignUpEnabled` as `false`. If you configure [external identity provider](#external-identity-provider), the value will be ignored and automatically disabled.
 
 ### Restrict Domains for Sign-Up Email Addresses
 

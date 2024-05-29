@@ -21,7 +21,7 @@ import { TIdentityProvider, identityProvider } from "./utils/identity-provider";
 import { ApiPublishCodebuild } from "./constructs/api-publish-codebuild";
 import { WebAclForPublishedApi } from "./constructs/webacl-for-published-api";
 import { CronScheduleProps, createCronSchedule } from "./utils/cron-schedule";
-import { NagSuppressions } from 'cdk-nag';
+import { NagSuppressions } from "cdk-nag";
 
 export interface BedrockChatStackProps extends StackProps {
   readonly bedrockRegion: string;
@@ -36,6 +36,7 @@ export interface BedrockChatStackProps extends StackProps {
   readonly enableMistral: boolean;
   readonly embeddingContainerVcpu: number;
   readonly embeddingContainerMemory: number;
+  readonly selfSignUpEnabled: boolean;
 }
 
 export class BedrockChatStack extends cdk.Stack {
@@ -49,7 +50,7 @@ export class BedrockChatStack extends cdk.Stack {
     const vpc = new ec2.Vpc(this, "VPC", {});
     vpc.publicSubnets.forEach((subnet) => {
       (subnet.node.defaultChild as ec2.CfnSubnet).mapPublicIpOnLaunch = false;
-    })
+    });
 
     const vectorStore = new VectorStore(this, "VectorStore", {
       vpc: vpc,
@@ -74,14 +75,18 @@ export class BedrockChatStack extends cdk.Stack {
       objectOwnership: ObjectOwnership.OBJECT_WRITER,
       autoDeleteObjects: true,
       serverAccessLogsBucket: accessLogBucket,
-      serverAccessLogsPrefix: "DocumentBucket"
+      serverAccessLogsPrefix: "DocumentBucket",
     });
 
     // CodeBuild is used for api publication
-    const apiPublishCodebuild = new ApiPublishCodebuild(this, "ApiPublishCodebuild",{ 
-      accessLogBucket,
-      dbSecret: vectorStore.secret 
-    });
+    const apiPublishCodebuild = new ApiPublishCodebuild(
+      this,
+      "ApiPublishCodebuild",
+      {
+        accessLogBucket,
+        dbSecret: vectorStore.secret,
+      }
+    );
 
     const frontend = new Frontend(this, "Frontend", {
       accessLogBucket,
@@ -95,6 +100,7 @@ export class BedrockChatStack extends cdk.Stack {
       idp,
       allowedSignUpEmailDomains: props.allowedSignUpEmailDomains,
       autoJoinUserGroups: props.autoJoinUserGroups,
+      selfSignUpEnabled: props.selfSignUpEnabled,
     });
     const largeMessageBucket = new Bucket(this, "LargeMessageBucket", {
       encryption: BucketEncryption.S3_MANAGED,
@@ -104,7 +110,7 @@ export class BedrockChatStack extends cdk.Stack {
       objectOwnership: ObjectOwnership.OBJECT_WRITER,
       autoDeleteObjects: true,
       serverAccessLogsBucket: accessLogBucket,
-      serverAccessLogsPrefix: "LargeMessageBucket"
+      serverAccessLogsPrefix: "LargeMessageBucket",
     });
 
     const database = new Database(this, "Database", {
@@ -255,6 +261,5 @@ export class BedrockChatStack extends cdk.Stack {
       value: largeMessageBucket.bucketName,
       exportName: "BedrockClaudeChatLargeMessageBucketName",
     });
-
   }
 }
