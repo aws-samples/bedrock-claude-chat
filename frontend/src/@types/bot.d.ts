@@ -65,6 +65,7 @@ export type BotDetails = BotMeta & {
 
 export type BotSummary = BotMeta & {
   hasKnowledge: boolean;
+  hasAgent: boolean;
 };
 
 export type BotFile = {

@@ -181,6 +181,7 @@ class BotSummaryOutput(BaseSchema):
     last_used_time: float
     is_pinned: bool
     is_public: bool
+    has_agent: bool
     owned: bool
     sync_status: type_sync_status
     has_knowledge: bool

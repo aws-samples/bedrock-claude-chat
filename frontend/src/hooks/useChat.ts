@@ -31,6 +31,7 @@ type ChatStateType = {
 type BotInputType = {
   botId: string;
   hasKnowledge: boolean;
+  hasAgent: boolean;
 };
 
 export type ThinkingAction =
@@ -414,7 +415,7 @@ const useChat = () => {
     // post message
     const postPromise: Promise<string> = new Promise((resolve, reject) => {
       if (USE_STREAMING) {
-        send({ type: 'wakeup' });
+        if (bot?.hasAgent) send({ type: 'wakeup' });
 
         postStreaming({
           input,
@@ -554,7 +555,8 @@ const useChat = () => {
     }
 
     setCurrentMessageId(NEW_MESSAGE_ID.ASSISTANT);
-    send({ type: 'wakeup' });
+
+    if (props?.bot?.hasAgent) send({ type: 'wakeup' });
 
     postStreaming({
       input,
@@ -632,6 +634,7 @@ const useChat = () => {
             ? {
                 botId: params.bot.botId,
                 hasKnowledge: params.bot.hasKnowledge,
+                hasAgent: params.bot.hasAgent,
               }
             : undefined,
         });

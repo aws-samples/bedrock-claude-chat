@@ -111,6 +111,7 @@ const ChatPage: React.FC = () => {
       ? {
           botId: botId,
           hasKnowledge: bot?.hasKnowledge ?? false,
+          hasAgent: bot?.hasAgent ?? false,
         }
       : undefined;
   }, [bot?.hasKnowledge, botId]);

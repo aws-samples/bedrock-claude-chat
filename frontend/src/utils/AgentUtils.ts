@@ -12,7 +12,7 @@ export const progress = (thinkingCount: number) => {
   const current = [...Array(progressBlock)].map((_) => '◼︎');
   const rest = [...Array(MAX_BLOCK - progressBlock)].map((_) => '◻︎');
 
-  return `Thinking Agent ${[...current, ...rest].join('')} ${Math.round(
+  return `${[...current, ...rest].join('')} ${Math.round(
     logisticCurve(thinkingCount) * 100
   )}%`;
 };
