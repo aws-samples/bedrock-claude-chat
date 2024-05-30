@@ -67,7 +67,7 @@ chmod +x bin.sh
 ./bin.sh
 ```
 
-- You will be asked if a new user or not. If new user, enter `y`. If not, we recommend [deploy with cdk](#deploy-using-cdk). Note that `y` DESTROY ALL DATA in your existing data in RDS.
+- You will be asked if a new user or using v1. If so, enter `y`.
 - After about 30 minutes, you will get the following output, which you can access from your browser
 
 ### Optional Parameters
