@@ -28,6 +28,17 @@ import Alert from '../components/Alert';
 import useBotSummary from '../hooks/useBotSummary';
 import useModel from '../hooks/useModel';
 
+/*
+ * 進捗率計算の累積分布関数
+ * X : 0　の場合に0.08を返却するため、インタラクションの役割として使用する
+ */
+function logisticCurve(x: number) {
+  const L = 1; // 最大値
+  const k = 0.8; // 勾配を決定する定数
+  const x0 = 3; // 中点
+  return L / (1 + Math.exp(-k * (x - x0)));
+}
+
 const MISTRAL_ENABLED: boolean =
   import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
 
@@ -317,9 +328,7 @@ const ChatPage: React.FC = () => {
                     content: [
                       {
                         contentType: 'text',
-                        body: `${[...Array(thinkingCount)]
-                          .map((_) => '◼︎')
-                          .join('')}`,
+                        body: `${logisticCurve(thinkingCount) * 100}%`,
                       },
                     ],
                   }}
