@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useReducer } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import useConversationApi from './useConversationApi';
 import { produce } from 'immer';
 import {
@@ -226,22 +226,10 @@ const useChatState = create<{
   };
 });
 
-// const thinkingReducer = (state: number, action: ThinkingAction) => {
-//   switch (action.type) {
-//     case 'doing':
-//       return state + 1;
-//     case 'init':
-//       return 0;
-//     default:
-//       throw new Error(`Unknown action type`);
-//   }
-// };
-
 const useChat = () => {
   const { t } = useTranslation();
   const [agentThinking, send] = useMachine(agentThinkingState);
 
-  // const [thinkingCount, dispath] = useReducer(thinkingReducer, 0);
   const {
     chats,
     conversationId,
