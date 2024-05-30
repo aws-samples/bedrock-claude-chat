@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, Optional
 
 from app.routes.schemas.base import BaseSchema
 from pydantic import Field
@@ -69,7 +69,7 @@ class BotInput(BaseSchema):
     embedding_params: EmbeddingParams | None
     generation_params: GenerationParams | None
     search_params: SearchParams | None
-    agent: AgentInput | None
+    agent: Optional[AgentInput] = None
     knowledge: Knowledge | None
     display_retrieved_chunks: bool
 
@@ -81,7 +81,7 @@ class BotModifyInput(BaseSchema):
     embedding_params: EmbeddingParams | None
     generation_params: GenerationParams | None
     search_params: SearchParams | None
-    agent: AgentInput | None
+    agent: Optional[AgentInput] = None
     knowledge: KnowledgeDiffInput | None
     display_retrieved_chunks: bool
 
