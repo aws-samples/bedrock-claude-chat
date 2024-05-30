@@ -136,7 +136,7 @@ Resources:
               "build": {
                 "commands": [
                   "echo 'Build phase...'",
-                  "git clone --branch v1.0 https://github.com/aws-samples/bedrock-claude-chat.git",
+                  "git clone --branch v1 https://github.com/aws-samples/bedrock-claude-chat.git",
                   "cd bedrock-claude-chat",
                   "if [ \"$ALLOW_SELF_REGISTER\" = \"false\" ]; then sed -i 's/\"selfSignUpEnabled\": true,/\"selfSignUpEnabled\": false,/' cdk/cdk.json; fi",
                   "if [ ! -z \"$IPV4_RANGES\" ]; then jq --arg ipv4 \"$IPV4_RANGES\" '.context.allowedIpV4AddressRanges = ($ipv4 | split(\",\"))' cdk/cdk.json > temp.json && mv temp.json cdk/cdk.json; fi",

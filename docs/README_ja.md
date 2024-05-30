@@ -1,10 +1,7 @@
 # Bedrock Claude Chat
 
-> [!Tip]
-> 🔔**Claude3 Opus をサポートしました。** 2024/04/17 現在、Bedrock は`us-west-2`のみサポートしています。このリポジトリでは Bedrock はデフォルトで`us-east-1`リージョンを利用します。このため、ご利用される場合はデプロイ前に`bedrockRegion`の値を変更してください。詳細は[こちら](#deploy-using-cdk)
-
 > [!Warning]
-> 現在のバージョン(v0.4.x)は、DynamoDB テーブルスキーマの変更のため、過去バージョン(~v0.3.0)とは互換性がありません。**以前のバージョンから v0.4.x へアップデートすると、既存の対話記録は全て破棄されますので注意が必要です。**
+> 古いバージョン(v0.4.x 以前) を使用していて最新バージョンを使いたい場合は、[移行ガイド](./migration/V0_TO_V1.md)を参照してください。気をつけないと、Aurora クラスターのすべてのデータが破壊され、ユーザーはもはやボットを作成できなくなります。
 
 このリポジトリは、生成系 AI を提供する[Amazon Bedrock](https://aws.amazon.com/jp/bedrock/)の基盤モデルの一つである、Anthropic 社製 LLM [Claude](https://www.anthropic.com/)を利用したチャットボットのサンプルです。
 
@@ -63,11 +60,11 @@ chmod +x bin.sh
 
 デプロイ時に以下のパラメータを指定することで、セキュリティとカスタマイズを強化できるようになりました。
 
---disable-self-register: セルフ登録を無効にします（デフォルト: 有効）。このフラグを設定すると、Cognito 上で全てのユーザーを作成する必要があり、ユーザーが自分でアカウントを登録することはできなくなります。
---ipv4-ranges: 許可する IPv4 範囲のカンマ区切りリスト。（デフォルト: 全ての IPv4 アドレスを許可）
---ipv6-ranges: 許可する IPv6 範囲のカンマ区切りリスト。（デフォルト: 全ての IPv6 アドレスを許可）
---allowed-signup-email-domains: サインアップ時に許可するメールドメインのカンマ区切りリスト。（デフォルト: ドメイン制限なし）
---region: Bedrock が利用可能なリージョンを指定します。（デフォルト: us-east-1）
+- --disable-self-register: セルフ登録を無効にします（デフォルト: 有効）。このフラグを設定すると、Cognito 上で全てのユーザーを作成する必要があり、ユーザーが自分でアカウントを登録することはできなくなります。
+- --ipv4-ranges: 許可する IPv4 範囲のカンマ区切りリスト。（デフォルト: 全ての IPv4 アドレスを許可）
+- --ipv6-ranges: 許可する IPv6 範囲のカンマ区切りリスト。（デフォルト: 全ての IPv6 アドレスを許可）
+- --allowed-signup-email-domains: サインアップ時に許可するメールドメインのカンマ区切りリスト。（デフォルト: ドメイン制限なし）
+- --region: Bedrock が利用可能なリージョンを指定します。（デフォルト: us-east-1）
 
 #### パラメータを指定したコマンド例:
 
@@ -118,13 +115,6 @@ AWS のマネージドサービスで構成した、インフラストラクチ�
 
 ```
 git clone https://github.com/aws-samples/bedrock-claude-chat
-```
-
-> [!Warning]
-> 古いバージョン (例: v0.4.x) を使用している場合で、最新バージョンを使用したい場合は、以下のように最新のブランチを使用してください。 注意: RDS 内のすべてのデータが破壊されます。 既存のデータを復元するには、[移行ガイド](./migration/MIGRATION_GUIDE.md)を参照してください。
-
-```
-git clone --branch v1.0 https://github.com/aws-samples/bedrock-claude-chat.git
 ```
 
 - npm パッケージをインストールします

@@ -8,17 +8,7 @@ The migration process involves scanning all bots and launching embedding ECS tas
 
 ## Migration Steps
 
-- Determine the branch that contains the updates you wish to deploy (e.g., moving from v0.4.x to v1.0.x)
-- Open your terminal and navigate to the project directory
-- Run the following commands to switch to the desired branch and pull the latest changes:
-
-```
-git checkout v1.0
-git pull origin v1.0
-```
-
-- Run [cdk deploy](../README.md#deploy-using-cdk), which triggers Aurora cluster replacement.
-- After the deployment is complete, open the [migrate.py](./migrate.py) script and update the following variables with the appropriate values:
+- After [cdk deploy](../README.md#deploy-using-cdk) with Aurora replacement, open the [migrate.py](./migrate.py) script and update the following variables with the appropriate values:
 
 ```py
 TABLE_NAME = "BedrockChatStack-DatabaseConversationTableXXXXX"

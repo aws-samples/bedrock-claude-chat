@@ -2,11 +2,8 @@
 
 ![](https://github.com/aws-samples/bedrock-claude-chat/actions/workflows/cdk.yml/badge.svg)
 
-> [!Tip]
-> 🔔**Claude3 Opus supported.** As of 04/17/2024, Bedrock only supports the `us-west-2` region. In this repository, Bedrock uses the `us-east-1` region by default. Therefore, if you plan to use it, please change the value of `bedrockRegion` before deployment. For more details, please refer [here](#deploy-using-cdk).
-
 > [!Warning]
-> The current version (`v0.4.x`) has no compatibility with the previous version (~`v0.3.0`) due to changes in the DynamoDB table schema. **Please note that the UPDATE (i.e. `cdk deploy`) FROM PREVIOUS VERSION TO `v0.4.x` WILL DESTROY ALL OF THE EXISTING CONVERSATIONS.**
+> If you are using old version (e.g. `v0.4.x`) and wish to use the latest version, refer [migration guide](./docs/migration/V0_TO_V1.md). Without any care, **ALL DATA IN Aurora cluster WILL BE DESTROYED, and NO LONGER USERS CANNOT CREATE BOTS**.
 
 This repository is a sample chatbot using the Anthropic company's LLM [Claude](https://www.anthropic.com/), one of the foundational models provided by [Amazon Bedrock](https://aws.amazon.com/bedrock/) for generative AI.
 
@@ -64,7 +61,7 @@ TODO: Screenshot
 - Run deployment via following commands
 
 ```sh
-git clone --branch v1.0 https://github.com/aws-samples/bedrock-claude-chat.git
+git clone https://github.com/aws-samples/bedrock-claude-chat.git
 cd bedrock-claude-chat
 chmod +x bin.sh
 ./bin.sh
@@ -132,13 +129,6 @@ Super-easy Deployment uses [AWS CodeBuild](https://aws.amazon.com/codebuild/) to
 
 ```
 git clone https://github.com/aws-samples/bedrock-claude-chat
-```
-
-> [!Warning]
-> If you are using old version (e.g. `v0.4.x`) and want to use the latest version, use the latest branch as following. Note that ALL DATA IN RDS WILL BE DESTROYED. Refer [migration guide](./docs/migration/MIGRATION_GUIDE.md) to restore your existing data.
-
-```
-git clone --branch v1.0 https://github.com/aws-samples/bedrock-claude-chat.git
 ```
 
 - Install npm packages

@@ -1,31 +1,32 @@
 #!/bin/bash
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-echo "!!!                                                                     !!!"
-echo "!!!                            WARNING!!!                               !!!"
-echo "!!!                                                                     !!!"
-echo "!!! This script is intended for NEW USERS ONLY.                         !!!"
-echo "!!!                                                                     !!!"
-echo "!!! If you are an EXISTING USER, please note the following:            !!!"
-echo "!!! - It is STRONGLY RECOMMENDED to use 'cdk deploy' for deployment.    !!!"
-echo "!!!   URL: https://github.com/aws-samples/bedrock-claude-chat           !!!"
-echo "!!!   - Reason: If the major version is OLDER (before v1.0,            !!!"
-echo "!!!     e.g., v0.4), the RDS for RAG WILL BE REPLACED, and             !!!"
-echo "!!!     DATA WILL BE LOST.                                             !!!"
-echo "!!! - When using the latest version, EXPLICITLY PULL/DEPLOY            !!!"
-echo "!!!   the new version branch and then follow the MIGRATION             !!!"
-echo "!!!   PROCEDURE (refer to the URL above for details).                  !!!"
-echo "!!!                                                                     !!!"
+echo "!!! !!!"
+echo "!!! IMPORTANT NOTICE !!!"
+echo "!!! !!!"
+echo "!!! If you are using Bedrock Claude Chat with a version prior to v1.x !!!"
+echo "!!! (e.g., v0.4.x), please follow the migration guide before proceeding. !!!"
+echo "!!! !!!"
+echo "!!! Migrating from an older version requires specific steps to ensure !!!"
+echo "!!! your data is properly preserved and migrated. Failure to follow !!!"
+echo "!!! the migration guide may result in DATA LOSS. !!!"
+echo "!!! !!!"
+echo "!!! Please refer to the migration guide at: !!!"
+echo "!!! https://github.com/aws-samples/bedrock-claude-chat/blob/v1/docs/migration/V0_TO_V1.md !!!"
+echo "!!! !!!"
+echo "!!! If you are a new user or already using v1.x, !!!"
+echo "!!! you can safely proceed with the installation. !!!"
+echo "!!! !!!"
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 echo ""
 while true; do
-read -p "Are you a new user? (y/N): " answer
+read -p "Are you a new user or already using v1.x of Bedrock Claude Chat? (y/N):  " answer
 case ${answer:0:1} in
 y|Y )
-echo "Starting deployment for new users..."
+echo "Starting deployment..."
 break
 ;;
 n|N )
-echo "This script is intended for new users only. If you are an existing user, please use cdk for deployment."
+echo "This script is intended for new users or v1.x user only. If you are using previous version, please refer migration guide."
 exit 1
 ;;
 * )
