@@ -21,6 +21,8 @@ import { convertMessageMapToArray } from '../utils/MessageUtils';
 import { useTranslation } from 'react-i18next';
 import useModel from './useModel';
 import useFeedbackApi from './useFeedbackApi';
+import { useMachine } from '@xstate/react';
+import { agentThinkingState } from '../xstates/agentThinkProgress';
 
 type ChatStateType = {
   [id: string]: MessageMap;
@@ -224,21 +226,22 @@ const useChatState = create<{
   };
 });
 
-const thinkingReducer = (state: number, action: ThinkingAction) => {
-  switch (action.type) {
-    case 'doing':
-      return state + 1;
-    case 'init':
-      return 0;
-    default:
-      throw new Error(`Unknown action type`);
-  }
-};
+// const thinkingReducer = (state: number, action: ThinkingAction) => {
+//   switch (action.type) {
+//     case 'doing':
+//       return state + 1;
+//     case 'init':
+//       return 0;
+//     default:
+//       throw new Error(`Unknown action type`);
+//   }
+// };
 
 const useChat = () => {
   const { t } = useTranslation();
+  const [agentThinking, send] = useMachine(agentThinkingState);
 
-  const [thinkingCount, dispath] = useReducer(thinkingReducer, 0);
+  // const [thinkingCount, dispath] = useReducer(thinkingReducer, 0);
   const {
     chats,
     conversationId,
@@ -423,6 +426,8 @@ const useChat = () => {
     // post message
     const postPromise: Promise<string> = new Promise((resolve, reject) => {
       if (USE_STREAMING) {
+        send({ type: 'wakeup' });
+
         postStreaming({
           input,
           hasKnowledge: bot?.hasKnowledge,
@@ -430,7 +435,7 @@ const useChat = () => {
             editMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT, c);
           },
           thinkingDispatch: (event) => {
-            dispath({ type: event });
+            send({ type: event });
           },
         })
           .then((message) => {
@@ -561,6 +566,7 @@ const useChat = () => {
     }
 
     setCurrentMessageId(NEW_MESSAGE_ID.ASSISTANT);
+    send({ type: 'wakeup' });
 
     postStreaming({
       input,
@@ -568,7 +574,7 @@ const useChat = () => {
         editMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT, c);
       },
       thinkingDispatch: (event) => {
-        dispath({ type: event });
+        send({ type: event });
       },
     })
       .then(() => {
@@ -607,7 +613,7 @@ const useChat = () => {
   }, [messages]);
 
   return {
-    thinkingCount,
+    agentThinking,
     hasError,
     setConversationId,
     conversationId,

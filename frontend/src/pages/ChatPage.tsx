@@ -37,7 +37,7 @@ const ChatPage: React.FC = () => {
   const navigate = useNavigate();
 
   const {
-    thinkingCount,
+    agentThinking,
     postingMessage,
     postChat,
     messages,
@@ -210,6 +210,8 @@ const ChatPage: React.FC = () => {
     [t]
   );
 
+  console.log(agentThinking.value);
+
   const onClickSyncError = useCallback(() => {
     navigate(`/bot/edit/${bot?.id}`);
   }, [bot?.id, navigate]);
@@ -311,14 +313,16 @@ const ChatPage: React.FC = () => {
               className={`${
                 message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
               }`}>
-              {messages.length === idx + 1 && thinkingCount > 0 ? (
+              {messages.length === idx + 1 &&
+              (agentThinking.value == 'conscious' ||
+                agentThinking.value == 'finishWork') ? (
                 <ChatMessage
                   chatContent={{
                     ...message,
                     content: [
                       {
                         contentType: 'text',
-                        body: progress(thinkingCount),
+                        body: progress(agentThinking.context.count),
                       },
                     ],
                   }}
