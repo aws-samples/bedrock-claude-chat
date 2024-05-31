@@ -1,7 +1,7 @@
 # Bedrock Claude Chat
 
 > [!Warning]
-> 古いバージョン(v0.4.x 以前) を使用していて最新バージョンを使いたい場合は、[移行ガイド](./migration/V0_TO_V1.md)を参照してください。気をつけないと、Aurora クラスターのすべてのデータが破壊され、ユーザーはもはやボットを作成できなくなります。
+> 古いバージョン(v0.4.x 以前) を使用していて最新バージョンを使いたい場合は、[移行ガイド](./migration/V0_TO_V1.md)を参照してください。気をつけないと、Aurora クラスターのすべてのデータが破壊され、ユーザーはもはや既存の RAG ボットを利用できず、また新規にボットを作成できなくなります。
 
 このリポジトリは、生成系 AI を提供する[Amazon Bedrock](https://aws.amazon.com/jp/bedrock/)の基盤モデルの一つである、Anthropic 社製 LLM [Claude](https://www.anthropic.com/)を利用したチャットボットのサンプルです。
 
