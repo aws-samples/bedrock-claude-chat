@@ -18,6 +18,7 @@ class FeedbackModel(BaseModel):
 
 class ChunkModel(BaseModel):
     content: str
+    content_type: str
     source: str
     rank: int
 

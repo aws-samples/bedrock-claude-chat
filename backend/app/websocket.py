@@ -23,7 +23,7 @@ from app.stream import OnStopInput, get_stream_handler_type
 from app.usecases.bot import modify_bot_last_used_time
 from app.usecases.chat import insert_knowledge, prepare_conversation, trace_to_root
 from app.utils import get_anthropic_client, get_current_time, is_anthropic_model
-from app.vector_search import filter_used_results, search_related_docs
+from app.vector_search import filter_used_results, get_source_link, search_related_docs
 from boto3.dynamodb.conditions import Attr, Key
 from ulid import ULID
 
@@ -147,9 +147,7 @@ def process_chat_input(
         last_data_to_send = json.dumps(
             dict(status="STREAMING_END", completion="", stop_reason="agent_finish")
         ).encode("utf-8")
-        gatewayapi.post_to_connection(
-            ConnectionId=connection_id, Data=last_data_to_send
-        )
+        gatewayapi.post_to_connection(ConnectionId=connection_id, Data=last_data_to_send)
 
         return {"statusCode": 200, "body": "Message sent."}
 
@@ -207,10 +205,18 @@ def process_chat_input(
     def on_stop(arg: OnStopInput, **kwargs) -> None:
         used_chunks = None
         if bot and bot.display_retrieved_chunks:
-            used_chunks = [
-                ChunkModel(content=r.content, source=r.source, rank=r.rank)
-                for r in filter_used_results(arg.full_token, search_results)
-            ]
+            if len(search_results) > 0:
+                used_chunks = []
+                for r in filter_used_results(arg.full_token, search_results):
+                    content_type, source_link = get_source_link(r.source)
+                    used_chunks.append(
+                        ChunkModel(
+                            content=r.content,
+                            content_type=content_type,
+                            source=source_link,
+                            rank=r.rank,
+                        )
+                    )
 
         # Append entire completion as the last message
         assistant_msg_id = str(ULID())
@@ -239,9 +245,7 @@ def process_chat_input(
         last_data_to_send = json.dumps(
             dict(status="STREAMING_END", completion="", stop_reason=arg.stop_reason)
         ).encode("utf-8")
-        gatewayapi.post_to_connection(
-            ConnectionId=connection_id, Data=last_data_to_send
-        )
+        gatewayapi.post_to_connection(ConnectionId=connection_id, Data=last_data_to_send)
 
     stream_handler = get_stream_handler_type(chat_input.message.model)(
         model=chat_input.message.model,

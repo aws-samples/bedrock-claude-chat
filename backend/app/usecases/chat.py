@@ -224,9 +224,7 @@ def insert_knowledge(
     logger.info(f"Inserted prompt: {inserted_prompt}")
 
     conversation_with_context = deepcopy(conversation)
-    conversation_with_context.message_map["instruction"].content[
-        0
-    ].body = inserted_prompt
+    conversation_with_context.message_map["instruction"].content[0].body = inserted_prompt
 
     return conversation_with_context
 
@@ -281,10 +279,18 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     # Used chunks for RAG generation
     used_chunks = None
     if bot and bot.display_retrieved_chunks and is_running_on_lambda():
-        used_chunks = [
-            ChunkModel(content=r.content, source=r.source, rank=r.rank)
-            for r in filter_used_results(reply_txt, search_results)
-        ]
+        if len(search_results) > 0:
+            used_chunks = []
+            for r in filter_used_results(reply_txt, search_results):
+                content_type, source_link = get_source_link(r.source)
+                used_chunks.append(
+                    ChunkModel(
+                        content=r.content,
+                        content_type=content_type,
+                        source=source_link,
+                        rank=r.rank,
+                    )
+                )
 
     # Issue id for new assistant message
     assistant_msg_id = str(ULID())
@@ -347,6 +353,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
                 [
                     Chunk(
                         content=c.content,
+                        content_type=c.content_type,
                         source=c.source,
                         rank=c.rank,
                     )
@@ -456,6 +463,7 @@ def fetch_conversation(user_id: str, conversation_id: str) -> Conversation:
                 [
                     Chunk(
                         content=c.content,
+                        content_type=c.content_type,
                         source=c.source,
                         rank=c.rank,
                     )

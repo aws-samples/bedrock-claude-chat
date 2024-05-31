@@ -63,9 +63,7 @@ def store_conversation(
     message_map_size = len(json.dumps(message_map).encode("utf-8"))
     logger.info(f"Message map size: {message_map_size}")
     if message_map_size > threshold:
-        logger.info(
-            f"Message map size {message_map_size} exceeds threshold {threshold}"
-        )
+        logger.info(f"Message map size {message_map_size} exceeds threshold {threshold}")
         item_params["IsLargeMessage"] = True
         large_message_path = f"{user_id}/{conversation.id}/message_map.json"
         item_params["LargeMessagePath"] = large_message_path
@@ -219,6 +217,9 @@ def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationM
                     [
                         ChunkModel(
                             content=c["content"],
+                            content_type=(
+                                c["content_type"] if "content_type" in c else "s3"
+                            ),
                             source=c["source"],
                             rank=c["rank"],
                         )
@@ -264,9 +265,7 @@ def delete_conversation_by_id(user_id: str, conversation_id: str):
 
     except ClientError as e:
         if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
-            raise RecordNotFoundError(
-                f"Conversation with id {conversation_id} not found"
-            )
+            raise RecordNotFoundError(f"Conversation with id {conversation_id} not found")
         else:
             raise e
 
@@ -340,9 +339,7 @@ def change_conversation_title(user_id: str, conversation_id: str, new_title: str
         )
     except ClientError as e:
         if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
-            raise RecordNotFoundError(
-                f"Conversation with id {conversation_id} not found"
-            )
+            raise RecordNotFoundError(f"Conversation with id {conversation_id} not found")
         else:
             raise e
 
