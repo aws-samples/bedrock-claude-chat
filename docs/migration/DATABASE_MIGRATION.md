@@ -19,8 +19,9 @@ SUBNETS = ["subnet-xxxxx"]
 SECURITY_GROUPS = ["sg-xxxx"]  # BedrockChatStack-EmbeddingTaskSecurityGroupXXXXX
 ```
 
-- Run the `migrate.py` script to initiate the migration process. This script will scan all bots, launch embedding ECS tasks, and create the data to the new Aurora cluster.
-  - Note that the script requires `boto3`.
+- Run the `migrate.py` script to initiate the migration process. This script will scan all bots, launch embedding ECS tasks, and create the data to the new Aurora cluster. Note that:
+  - The script requires `boto3`.
+  - The environment requires IAM permissions to access the dynamodb table and to invoke ECS tasks.
 
 ## Alternative Migration Options
 
