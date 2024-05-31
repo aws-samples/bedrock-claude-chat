@@ -11,6 +11,7 @@ import * as logs from "aws-cdk-lib/aws-logs";
 import { IBucket } from "aws-cdk-lib/aws-s3";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import { ISecret } from "aws-cdk-lib/aws-secretsmanager";
+import * as cdk from "aws-cdk-lib";
 import {
   DockerImageCode,
   DockerImageFunction,
@@ -280,8 +281,15 @@ export class Embedding extends Construct {
       value: cluster.clusterName,
     });
     new CfnOutput(this, "TaskDefinitionName", {
-      value: taskDefinition.taskDefinitionArn.split("/").pop()!,
+      value: cdk.Fn.select(
+        1,
+        cdk.Fn.split(
+          "/",
+          cdk.Fn.select(5, cdk.Fn.split(":", taskDefinition.taskDefinitionArn))
+        )
+      ),
     });
+
     new CfnOutput(this, "TaskSecurityGroupId", {
       value: taskSg.securityGroupId,
     });
