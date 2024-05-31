@@ -2,12 +2,18 @@ import json
 
 import boto3
 
+# Open the CloudFormation stack in the AWS Management Console and copy the values from the Outputs tab.
+# Key: DatabaseConversationTableNameXXXX
 TABLE_NAME = "BedrockChatStack-DatabaseConversationTableXXXXX"
+# Key: EmbeddingClusterNameXXX
 CLUSTER_NAME = "BedrockChatStack-EmbeddingClusterXXXXX"
+# Key: EmbeddingTaskDefinitionNameXXX
 TASK_DEFINITION_NAME = "BedrockChatStackEmbeddingTaskDefinitionXXXXX"
 CONTAINER_NAME = "Container"  # No need to change
-SUBNETS = ["subnet-xxxxx"]
-SECURITY_GROUPS = ["sg-xxxx"]  # BedrockChatStack-EmbeddingTaskSecurityGroupXXXXX
+# Key: PrivateSubnetId0
+SUBNET_ID = "subnet-xxxxx"
+# Key: EmbeddingTaskSecurityGroupIdXXX
+SECURITY_GROUP_ID = "sg-xxxx"  # BedrockChatStack-EmbeddingTaskSecurityGroupXXXXX
 
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(TABLE_NAME)
@@ -67,8 +73,8 @@ while True:
                 taskDefinition=TASK_DEFINITION_NAME,
                 networkConfiguration={
                     "awsvpcConfiguration": {
-                        "subnets": SUBNETS,
-                        "securityGroups": SECURITY_GROUPS,
+                        "subnets": [SUBNET_ID],
+                        "securityGroups": [SECURITY_GROUP_ID],
                         "assignPublicIp": "ENABLED",
                     }
                 },
