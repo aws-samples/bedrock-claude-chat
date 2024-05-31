@@ -1,4 +1,4 @@
-import { SocialProvider } from '@aws-amplify/ui';
+import { SocialProvider } from '../@types/auth';
 
 export const validateSocialProvider = (
   provider: string
