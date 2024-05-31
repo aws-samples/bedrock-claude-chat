@@ -8,15 +8,21 @@ The migration process involves scanning all bots and launching embedding ECS tas
 
 ## Migration Steps
 
-- After [cdk deploy](../README.md#deploy-using-cdk) with Aurora replacement, open the [migrate.py](./migrate.py) script and update the following variables with the appropriate values:
+- After [cdk deploy](../README.md#deploy-using-cdk) with Aurora replacement, open the [migrate.py](./migrate.py) script and update the following variables with the appropriate values. The values can be referred on `CloudFormation` > `BedrockChatStack` > `Outputs` tab.
 
 ```py
+# Open the CloudFormation stack in the AWS Management Console and copy the values from the Outputs tab.
+# Key: DatabaseConversationTableNameXXXX
 TABLE_NAME = "BedrockChatStack-DatabaseConversationTableXXXXX"
+# Key: EmbeddingClusterNameXXX
 CLUSTER_NAME = "BedrockChatStack-EmbeddingClusterXXXXX"
+# Key: EmbeddingTaskDefinitionNameXXX
 TASK_DEFINITION_NAME = "BedrockChatStackEmbeddingTaskDefinitionXXXXX"
 CONTAINER_NAME = "Container"  # No need to change
-SUBNETS = ["subnet-xxxxx"]
-SECURITY_GROUPS = ["sg-xxxx"]  # BedrockChatStack-EmbeddingTaskSecurityGroupXXXXX
+# Key: PrivateSubnetId0
+SUBNET_ID = "subnet-xxxxx"
+# Key: EmbeddingTaskSecurityGroupIdXXX
+SECURITY_GROUP_ID = "sg-xxxx"  # BedrockChatStack-EmbeddingTaskSecurityGroupXXXXX
 ```
 
 - Run the `migrate.py` script to initiate the migration process. This script will scan all bots, launch embedding ECS tasks, and create the data to the new Aurora cluster. Note that:

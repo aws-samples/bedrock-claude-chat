@@ -1,4 +1,4 @@
-import { RemovalPolicy, Stack } from "aws-cdk-lib";
+import { CfnOutput, RemovalPolicy, Stack } from "aws-cdk-lib";
 import {
   AttributeType,
   BillingMode,
@@ -70,5 +70,9 @@ export class Database extends Construct {
     this.table = table;
     this.tableAccessRole = tableAccessRole;
     this.websocketSessionTable = websocketSessionTable;
+
+    new CfnOutput(this, "ConversationTableName", {
+      value: table.tableName,
+    });
   }
 }
