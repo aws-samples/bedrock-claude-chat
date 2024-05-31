@@ -1,7 +1,7 @@
 import { Construct } from "constructs";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as path from "path";
-import { Duration, RemovalPolicy, Stack } from "aws-cdk-lib";
+import { CfnOutput, Duration, RemovalPolicy, Stack } from "aws-cdk-lib";
 import { DockerImageAsset, Platform } from "aws-cdk-lib/aws-ecr-assets";
 import * as iam from "aws-cdk-lib/aws-iam";
 import { ITable } from "aws-cdk-lib/aws-dynamodb";
@@ -10,7 +10,8 @@ import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as logs from "aws-cdk-lib/aws-logs";
 import { IBucket } from "aws-cdk-lib/aws-s3";
 import * as lambda from "aws-cdk-lib/aws-lambda";
-import { ISecret } from "aws-cdk-lib/aws-secretsmanager"
+import { ISecret } from "aws-cdk-lib/aws-secretsmanager";
+import * as cdk from "aws-cdk-lib";
 import {
   DockerImageCode,
   DockerImageFunction,
@@ -275,5 +276,22 @@ export class Embedding extends Construct {
     this.taskSecurityGroup = taskSg;
     this.container = container;
     this.removalHandler = removalHandler;
+
+    new CfnOutput(this, "ClusterName", {
+      value: cluster.clusterName,
+    });
+    new CfnOutput(this, "TaskDefinitionName", {
+      value: cdk.Fn.select(
+        1,
+        cdk.Fn.split(
+          "/",
+          cdk.Fn.select(5, cdk.Fn.split(":", taskDefinition.taskDefinitionArn))
+        )
+      ),
+    });
+
+    new CfnOutput(this, "TaskSecurityGroupId", {
+      value: taskSg.securityGroupId,
+    });
   }
 }
