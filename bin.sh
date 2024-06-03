@@ -35,10 +35,6 @@ echo "Please enter y or n."
 esac
 done
 
-
-StackName="CodeBuildForDeploy"
-stackId=$(aws cloudformation create-stack 
-
 # Default parameters
 ALLOW_SELF_REGISTER="true"
 IPV4_RANGES=""
