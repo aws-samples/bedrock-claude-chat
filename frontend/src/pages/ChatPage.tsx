@@ -28,6 +28,7 @@ import Alert from '../components/Alert';
 import useBotSummary from '../hooks/useBotSummary';
 import useModel from '../hooks/useModel';
 import { progress } from '../features/agent/libs/AgentUtils';
+import { TextInputChatContent } from '../features/agent/components/TextInputChatContent';
 
 const MISTRAL_ENABLED: boolean =
   import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
@@ -374,18 +375,33 @@ const ChatPage: React.FC = () => {
             </Alert>
           </div>
         )}
-        <InputChatContent
-          dndMode={dndMode}
-          disabledSend={postingMessage}
-          disabled={disabledInput}
-          placeholder={
-            disabledInput
-              ? t('bot.label.notAvailableBotInputMessage')
-              : undefined
-          }
-          onSend={onSend}
-          onRegenerate={onRegenerate}
-        />
+        {bot?.hasAgent ? (
+          <TextInputChatContent
+            dndMode={dndMode}
+            disabledSend={postingMessage}
+            disabled={disabledInput}
+            placeholder={
+              disabledInput
+                ? t('bot.label.notAvailableBotInputMessage')
+                : undefined
+            }
+            onSend={onSend}
+            onRegenerate={onRegenerate}
+          />
+        ) : (
+          <InputChatContent
+            dndMode={dndMode}
+            disabledSend={postingMessage}
+            disabled={disabledInput}
+            placeholder={
+              disabledInput
+                ? t('bot.label.notAvailableBotInputMessage')
+                : undefined
+            }
+            onSend={onSend}
+            onRegenerate={onRegenerate}
+          />
+        )}
       </div>
     </div>
   );
