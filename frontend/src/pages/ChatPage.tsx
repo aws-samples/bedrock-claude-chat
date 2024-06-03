@@ -27,8 +27,8 @@ import StatusSyncBot from '../components/StatusSyncBot';
 import Alert from '../components/Alert';
 import useBotSummary from '../hooks/useBotSummary';
 import useModel from '../hooks/useModel';
-import { progress } from '../features/agent/libs/AgentUtils';
 import { TextInputChatContent } from '../features/agent/components/TextInputChatContent';
+import { AgentProcessingIndicator } from '../features/agent/components/AgentProcessingIndicator';
 
 const MISTRAL_ENABLED: boolean =
   import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
@@ -318,18 +318,8 @@ const ChatPage: React.FC = () => {
               {messages.length === idx + 1 &&
               (agentThinking.value == 'conscious' ||
                 agentThinking.value == 'finishWork') ? (
-                <ChatMessage
-                  chatContent={{
-                    ...message,
-                    content: [
-                      {
-                        contentType: 'text',
-                        body: progress(agentThinking.context.count),
-                      },
-                    ],
-                  }}
-                  onChangeMessageId={onChangeCurrentMessageId}
-                  onSubmit={onSubmitEditedContent}
+                <AgentProcessingIndicator
+                  processCount={agentThinking.context.count}
                 />
               ) : (
                 <ChatMessage
