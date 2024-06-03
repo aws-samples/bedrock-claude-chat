@@ -18,6 +18,32 @@ const translation = {
       chatWaitingSymbol: '▍',
       adminConsoles: '管理者用',
     },
+    agent: {
+      tools: {
+        get_weather: {
+          name: '現在の天気',
+          description: '現在の天気予報を取得します。',
+        },
+        sql_db_query: {
+          name: 'データベースクエリ',
+          description:
+            'データベースから結果を取得するために、詳細で正確なSQLクエリを実行します。',
+        },
+        sql_db_schema: {
+          name: 'データベーススキーマ',
+          description: 'テーブルのリストのスキーマとサンプル行を取得します。',
+        },
+        sql_db_list_tables: {
+          name: 'データベーステーブル一覧',
+          description:
+            'データベースで利用可能なすべてのテーブルをリストします。',
+        },
+        sql_db_query_checker: {
+          name: 'クエリチェッカー',
+          description: '実行前にSQLクエリが正しいかどうかを確認します。',
+        },
+      },
+    },
     bot: {
       label: {
         myBots: '自分のボット',
@@ -384,7 +410,8 @@ const translation = {
         hint: '隣接するチャンク同士で重複する文字数を指定します。',
       },
       enablePartitionPdf: {
-        label: 'PDFの詳細解析の有効化。有効にすると時間をかけてPDFを詳細に分析します。',
+        label:
+          'PDFの詳細解析の有効化。有効にすると時間をかけてPDFを詳細に分析します。',
         hint: '検索精度を高めたい場合に有効です。計算により多くの時間がかかるため計算コストが増加します。',
       },
       help: {

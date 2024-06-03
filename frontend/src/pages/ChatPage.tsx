@@ -116,7 +116,7 @@ const ChatPage: React.FC = () => {
           hasAgent: bot?.hasAgent ?? false,
         }
       : undefined;
-  }, [bot?.hasKnowledge, botId]);
+  }, [bot?.hasKnowledge, botId, bot?.hasAgent]);
 
   const onSend = useCallback(
     (content: string, base64EncodedImages?: string[]) => {
