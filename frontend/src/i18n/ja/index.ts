@@ -46,6 +46,7 @@ const translation = {
     },
     bot: {
       label: {
+        agent: 'エージェント',
         myBots: '自分のボット',
         recentlyUsedBots: '最近使用した公開ボット',
         knowledge: 'ナレッジ',
@@ -97,6 +98,10 @@ const translation = {
           file: 'アップロードしたファイルがナレッジとして利用されます。',
           citeRetrievedContexts:
             'ユーザーの質問に答えるために取得したコンテキストを引用情報として表示するかどうかを設定します。\n有効にすると、ユーザーは元のソースURLやファイルにアクセスできます。',
+        },
+        agent: {
+          overview:
+            'エージェント機能を使用すると、チャットボットはより複雑なタスクを自動的に処理できます。',
         },
       },
       alert: {
