@@ -32,6 +32,7 @@ import Help from '../components/Help';
 import Toggle from '../components/Toggle';
 import { useAgent } from '../features/agent/hooks/useAgent';
 import { AgentTool } from '../features/agent/types';
+import { AvailableTools } from '../features/agent/components/AvailableTools';
 
 const edgeGenerationParams =
   import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true'
@@ -82,16 +83,6 @@ const BotEditPage: React.FC = () => {
   );
   const [tools, setTools] = useState<AgentTool[]>([]);
 
-  const handleChangeTool = useCallback(
-    (tool: AgentTool) => () => {
-      setTools((preTools) =>
-        tools.map(({ name }) => name).includes(tool.name)
-          ? [...preTools.filter(({ name }) => name != tool.name)]
-          : [...preTools, tool]
-      );
-    },
-    [tools, setTools]
-  );
   const {
     errorMessages,
     setErrorMessage: setErrorMessages,
@@ -560,29 +551,12 @@ const BotEditPage: React.FC = () => {
                 />
               </div>
 
-              <div className="mt-3">
-                <div className="flex items-center gap-1">
-                  <div className="text-lg font-bold">
-                    {t('bot.label.agent')}
-                  </div>
-                </div>
-
-                <div className="text-sm text-aws-font-color/50">
-                  {t('bot.help.agent.overview')}
-                </div>
-              </div>
-
-              {availableTools?.map((tool) => (
-                <div key={tool.name} className="flex items-center">
-                  <Toggle
-                    value={!!tools?.map(({ name }) => name).includes(tool.name)}
-                    onChange={handleChangeTool(tool)}
-                  />
-                  <div className="whitespace-pre-wrap text-sm text-aws-font-color/50">
-                    {tool.name}:{tool.description}
-                  </div>
-                </div>
-              ))}
+              <div className="mt-3" />
+              <AvailableTools
+                availableTools={availableTools}
+                tools={tools}
+                setTools={setTools}
+              />
 
               <div className="mt-3">
                 <div className="flex items-center gap-1">

@@ -15,6 +15,32 @@ const translation = {
       chatWaitingSymbol: '▍',
       adminConsoles: 'Admin Only',
     },
+    agent: {
+      tools: {
+        get_weather: {
+          name: 'Current Weather',
+          description: 'Retrieve the current weather forecast.',
+        },
+        sql_db_query: {
+          name: 'Database Query',
+          description:
+            'Execute a detailed and correct SQL query to retrieve results from the database.',
+        },
+        sql_db_schema: {
+          name: 'Database Schema',
+          description:
+            'Retrieve the schema and sample rows for a list of tables.',
+        },
+        sql_db_list_tables: {
+          name: 'List Database Tables',
+          description: 'List all tables available in the database.',
+        },
+        sql_db_query_checker: {
+          name: 'Query Checker',
+          description: 'Check if your SQL query is correct before execution.',
+        },
+      },
+    },
     bot: {
       label: {
         agent: 'Agent',
