@@ -213,8 +213,6 @@ const ChatPage: React.FC = () => {
     [t]
   );
 
-  console.log(agentThinking.value);
-
   const onClickSyncError = useCallback(() => {
     navigate(`/bot/edit/${bot?.id}`);
   }, [bot?.id, navigate]);
