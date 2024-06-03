@@ -32,6 +32,9 @@ Analyze usage for each user / bot on administrator dashboard. [detail](./docs/AD
 
 ### LLM-powered Agent
 
+> [!Important]
+> This feature is WIP. Coming soon.
+
 By using the [Agent functionality](./docs/AGENT.md), your chatbot can automatically handle more complex tasks. For example, to answer a user's question, the Agent can retrieve necessary information from external tools or break down the task into multiple steps for processing.
 TODO: Screenshot
 
