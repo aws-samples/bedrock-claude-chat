@@ -30,21 +30,21 @@ export const agentThinkingState = setup({
     }),
   },
 }).createMachine({
-  /** @xstate-layout N4IgpgJg5mDOIC5QAoC2BDAxgCwJYDswBKAOlgBswwAHAYgHd0BrMAV2oG0AGAXUVGoB7WLgAuuQfn4gAHogCMAFi4kATAA55qxQGZd89V2U6ANCACeiVQHYVOgGzqAnKp2vH866oC+3s2iw8QlJMSVhMCVZYWlEgpgIobj4kECERcUlpOQRVex0SAFYndR0teWL7eXlTCysuFVcCrlUnapL5LicC338MHAJiElD8cMjoiipqBKTpNLEJKRTsnXVrQqLnIq43e3ttM0sc6zXK6wNFRQ11ewLrex6QAP7gkgAzAlxYbAB1QQAnJi0GSwUToURgEjoV7gv7IVRNLhEWhPIKDd74T4-f5MGYpOYZRagZardbFLpOba5PaKA6ITQkNwtJT2axOXZcdSKXx+ED4QQQODSFEDIizYTzTJLRAAWnstIQ0oKJCcKtVarVOgewpeExoYvSCyyiEu8vUStuBhsuR01kMNy1fVRITCEUEUX1EsJsisRQZBRZ1kUBQMrK4BRqhx09UKnWO8JZWk2DsCIreHy+vwBHoJRoQBVU8hIFxuKvqu0UWlN6hIXDOZqZ1Wqims3O8QA */
+  /** @xstate-layout N4IgpgJg5mDOIC5QAoC2BDAxgCwJYDswBKAOlgBswwAHAqAYgHd0BrMAV2oG0AGAXUShqAe1i4ALrmH5BIAB6IAjADYATCQDsKxQBZVAZmUBWHqY06ANCACeiVRp4lDADgCcixT3fLnyxQF9-KzQsPEJScTCWOnooYQBaaV4BJBARMUlpWQUEe2cSHS19fVdVVRV3IytbXNMSAxNFIyMtVT9lDUDgjBwCYhJIgmj8BjjhCAAjazBk2XSJKRlUnJL8xXd9cx4-DQ1nVWq7XZIdxS0ddbajHSMukBDe8JJKdAA3GLlYcXRxMBJ0ABmvwATshVCYeER6A8wv0Xu8RrNUvNMktQCtXGsNlsdnsDjZEM5FE4yq4vPsdModPtlIEgiB8OM4LIYX0iHNRAssstEPFlIcEPEjCRXKKxeLxfo7qynhQqLQRhyMotsog9ALnMKWooiUZ9M59opNrT6TL+oN8MMoEquWj5HYiZpvIV9lpFOCNAL9HUTK4NMZvWdXPoAqaerDSPC6DbUaqEHr1Dw9jwiTwdSm9hr8kn001jcoqbc6UA */
   context: {
     count: 0,
   },
-  initial: AgentState.SLEEPING,
+  initial: 'sleeping',
   states: {
-    [AgentState.SLEEPING]: {
+    sleeping: {
       on: {
         wakeup: {
           actions: 'reset',
-          target: AgentState.THINKING,
+          target: 'thinking',
         },
       },
     },
-    [AgentState.THINKING]: {
+    thinking: {
       on: {
         'go-on': [
           {
@@ -53,13 +53,13 @@ export const agentThinkingState = setup({
         ],
         goodbye: {
           actions: 'close',
-          target: AgentState.LEAVING,
+          target: 'leaving',
         },
       },
     },
-    [AgentState.LEAVING]: {
+    leaving: {
       after: {
-        2500: { target: AgentState.SLEEPING },
+        2500: { target: 'sleeping' },
       },
     },
   },
