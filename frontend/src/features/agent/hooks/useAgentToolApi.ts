@@ -1,5 +1,5 @@
-import { AgentTool } from '../@types/bot';
-import useHttp from './useHttp';
+import useHttp from '../../../hooks/useHttp';
+import { AgentTool } from '../types';
 
 export const useAgentApi = () => {
   const http = useHttp();

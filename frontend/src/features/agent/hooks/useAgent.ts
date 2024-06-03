@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAgentApi } from './useAgentToolApi';
-import { AgentTool } from '../@types/bot';
+import { AgentTool } from '../types';
 
 export const useAgent = () => {
   const api = useAgentApi();

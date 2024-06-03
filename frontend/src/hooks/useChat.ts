@@ -22,7 +22,7 @@ import { useTranslation } from 'react-i18next';
 import useModel from './useModel';
 import useFeedbackApi from './useFeedbackApi';
 import { useMachine } from '@xstate/react';
-import { agentThinkingState } from '../xstates/agentThinkProgress';
+import { agentThinkingState } from '../features/agent/xstates/agentThinkProgress';
 
 type ChatStateType = {
   [id: string]: MessageMap;

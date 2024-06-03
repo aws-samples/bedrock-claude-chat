@@ -75,10 +75,6 @@ export type BotFile = {
   progress?: number;
 };
 
-export type AgentInput = {
-  tools: string[];
-};
-
 export type RegisterBotRequest = {
   id: string;
   title: string;
@@ -154,12 +150,4 @@ export type GetPublicBotResponse = BotDetails;
 
 export type GetPresignedUrlResponse = {
   url: string;
-};
-
-export type AgentTool = {
-  name: string;
-  description: string;
-};
-export type Agent = {
-  tools: AgentTool[];
 };

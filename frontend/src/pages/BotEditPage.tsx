@@ -12,12 +12,8 @@ import { produce } from 'immer';
 import Alert from '../components/Alert';
 import KnowledgeFileUploader from '../components/KnowledgeFileUploader';
 import GenerationConfig from '../components/GenerationConfig';
-import {
-  AgentTool,
-  BotFile,
-  EmdeddingParams,
-  SearchParams,
-} from '../@types/bot';
+import { BotFile, EmdeddingParams, SearchParams } from '../@types/bot';
+
 import { ulid } from 'ulid';
 import {
   DEFAULT_EMBEDDING_CONFIG,
@@ -34,7 +30,8 @@ import ExpandableDrawerGroup from '../components/ExpandableDrawerGroup';
 import useErrorMessage from '../hooks/useErrorMessage';
 import Help from '../components/Help';
 import Toggle from '../components/Toggle';
-import { useAgent } from '../hooks/useAgent';
+import { useAgent } from '../features/agent/hooks/useAgent';
+import { AgentTool } from '../features/agent/types';
 
 const edgeGenerationParams =
   import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true'
