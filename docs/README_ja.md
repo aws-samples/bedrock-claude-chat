@@ -1,10 +1,6 @@
 # Bedrock Claude Chat
 
-> [!Tip]
-> 🔔**Claude3 Opus をサポートしました。** 2024/04/17 現在、Bedrock は`us-west-2`のみサポートしています。このリポジトリでは Bedrock はデフォルトで`us-east-1`リージョンを利用します。このため、ご利用される場合はデプロイ前に`bedrockRegion`の値を変更してください。詳細は[こちら](#deploy-using-cdk)
-
-> [!Warning]
-> 現在のバージョン(v0.4.x)は、DynamoDB テーブルスキーマの変更のため、過去バージョン(~v0.3.0)とは互換性がありません。**以前のバージョンから v0.4.x へアップデートすると、既存の対話記録は全て破棄されますので注意が必要です。**
+> [!Caution] > `main` ブランチはメンテナンスされておらず、`v0` バージョンに相当します。デフォルトブランチとなった最新の [`v1`](https://github.com/aws-samples/bedrock-claude-chat/tree/v1) ブランチへの移行をご検討ください。
 
 このリポジトリは、生成系 AI を提供する[Amazon Bedrock](https://aws.amazon.com/jp/bedrock/)の基盤モデルの一つである、Anthropic 社製 LLM [Claude](https://www.anthropic.com/)を利用したチャットボットのサンプルです。
 
