@@ -1,9 +1,17 @@
 import { setup, assign } from 'xstate';
 
+export const AgentState = {
+  SLEEPING: 'sleeping',
+  THINKING: 'thinking',
+  LEAVING: 'leaving',
+} as const;
+
+export type AgentState = (typeof AgentState)[keyof typeof AgentState];
+
 export type AgentThinkingEvent =
   | { type: 'wakeup' }
-  | { type: 'thinking' }
-  | { type: 'sleeping' };
+  | { type: 'go-on' }
+  | { type: 'goodbye' };
 
 export type AgentThinkingEventKeys = AgentThinkingEvent['type'];
 
@@ -26,32 +34,32 @@ export const agentThinkingState = setup({
   context: {
     count: 0,
   },
-  initial: 'sleep',
+  initial: AgentState.SLEEPING,
   states: {
-    sleep: {
+    [AgentState.SLEEPING]: {
       on: {
         wakeup: {
           actions: 'reset',
-          target: 'conscious',
+          target: AgentState.THINKING,
         },
       },
     },
-    conscious: {
+    [AgentState.THINKING]: {
       on: {
-        thinking: [
+        'go-on': [
           {
             actions: 'counter',
           },
         ],
-        sleeping: {
+        goodbye: {
           actions: 'close',
-          target: 'finishWork',
+          target: AgentState.LEAVING,
         },
       },
     },
-    finishWork: {
+    [AgentState.LEAVING]: {
       after: {
-        2500: { target: 'sleep' },
+        2500: { target: AgentState.SLEEPING },
       },
     },
   },

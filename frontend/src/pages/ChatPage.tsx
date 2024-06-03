@@ -29,6 +29,7 @@ import useBotSummary from '../hooks/useBotSummary';
 import useModel from '../hooks/useModel';
 import { TextInputChatContent } from '../features/agent/components/TextInputChatContent';
 import { AgentProcessingIndicator } from '../features/agent/components/AgentProcessingIndicator';
+import { AgentState } from '../features/agent/xstates/agentThinkProgress';
 
 const MISTRAL_ENABLED: boolean =
   import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
@@ -316,8 +317,9 @@ const ChatPage: React.FC = () => {
                 message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
               }`}>
               {messages.length === idx + 1 &&
-              (agentThinking.value == 'conscious' ||
-                agentThinking.value == 'finishWork') ? (
+              [AgentState.THINKING, AgentState.LEAVING].some(
+                (v) => v == agentThinking.value
+              ) ? (
                 <AgentProcessingIndicator
                   processCount={agentThinking.context.count}
                 />

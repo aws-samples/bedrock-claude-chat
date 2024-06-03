@@ -86,7 +86,7 @@ const usePostMessageStreaming = create<{
                   break;
                 case 'THINKING':
                   completion += data.body;
-                  thinkingDispatch('thinking');
+                  thinkingDispatch('go-on');
                   // count up
                   // completion =
                   //   i18next.t('bot.label.agentThinking') + '\n\n' + data.body;
@@ -105,7 +105,7 @@ const usePostMessageStreaming = create<{
                   }
                   break;
                 case 'STREAMING_END':
-                  thinkingDispatch('sleeping');
+                  thinkingDispatch('goodbye');
                   if (data.stop_reason) {
                   }
                   if (completion.endsWith(i18next.t('app.chatWaitingSymbol'))) {
