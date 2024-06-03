@@ -39,7 +39,7 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
             onChange={handleChangeTool(tool)}
           />
           <div className="whitespace-pre-wrap text-sm text-aws-font-color/50">
-            {getToolName(tool, t)}
+            {formatDescription(tool, t)}
           </div>
         </div>
       ))}
@@ -47,7 +47,7 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
   );
 };
 
-const getToolName = (tool: AgentTool, t: TFunction) => {
+const formatDescription = (tool: AgentTool, t: TFunction) => {
   switch (tool.name) {
     case 'get_weather':
       return `${t(`agent.tools.get_weather.name`)}:${t(
