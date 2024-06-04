@@ -7,7 +7,6 @@ from typing import Any, Dict, Generator, List, Optional
 from app.repositories.models.conversation import ChunkModel
 from app.vector_search import SearchResult
 from langchain_core.callbacks.base import BaseCallbackHandler
-from langchain_core.outputs import LLMResult
 
 
 class UsedChunkCallbackHandler(BaseCallbackHandler):
@@ -19,7 +18,9 @@ class UsedChunkCallbackHandler(BaseCallbackHandler):
 
     def on_tool_end(self, output: Any, **kwargs: Any) -> None:
         """Save the used chunks."""
-        search_results: list[SearchResult] = output["search_results"]
+        search_results: list[SearchResult] = output.get("search_results")
+        if search_results is None:
+            return
         self.used_chunks = [
             ChunkModel(
                 content=r.content,
