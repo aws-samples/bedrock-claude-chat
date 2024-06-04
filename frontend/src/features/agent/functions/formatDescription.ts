@@ -25,6 +25,6 @@ export const formatDescription = (tool: AgentTool, t: TFunction) => {
         `agent.tools.sql_db_query_checker.description`
       )}`;
     default:
-      `${tool.name}:${tool.description}`;
+      return `${tool.name}:${tool.description}`;
   }
 };
