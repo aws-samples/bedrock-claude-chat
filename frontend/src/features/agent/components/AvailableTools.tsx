@@ -4,6 +4,7 @@ import Toggle from '../../../components/Toggle';
 import { Dispatch, useCallback } from 'react';
 import { formatDescription } from '../functions/formatDescription';
 import Help from '../../../components/Help';
+import Skeleton from '../../../components/Skeleton';
 
 type Props = {
   availableTools: AgentTool[] | undefined;
@@ -33,6 +34,7 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
       <div className="text-sm text-aws-font-color/50">
         {t('agent.help.overview')}
       </div>
+      {availableTools === undefined && <Skeleton className="h-12 w-full" />}
 
       {availableTools?.map((tool) => (
         <div key={tool.name} className="flex items-center">
