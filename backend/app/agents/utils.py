@@ -1,5 +1,6 @@
 from app.agents.langchain import BedrockLLM
 from app.agents.tools.base import BaseTool
+from app.agents.tools.internet_search import internet_search_tool
 from app.agents.tools.rdb_sql.tool import get_sql_tools
 from app.agents.tools.weather import today_weather_tool
 
@@ -7,6 +8,7 @@ from app.agents.tools.weather import today_weather_tool
 def get_available_tools() -> list[BaseTool]:
     tools: list[BaseTool] = []
     tools.append(today_weather_tool)
+    tools.append(internet_search_tool)
     # TODO
 
     llm = BedrockLLM.from_model(model="claude-v3-haiku")

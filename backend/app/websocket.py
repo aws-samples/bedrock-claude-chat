@@ -14,6 +14,7 @@ from app.agents.langchain import BedrockLLM
 from app.agents.tools.knowledge import AnswerWithKnowledgeTool
 from app.agents.tools.rdb_sql.tool import get_sql_tools
 from app.agents.tools.weather import today_weather_tool
+from app.agents.utils import get_tool_by_name
 from app.auth import verify_token
 from app.bedrock import compose_args
 from app.repositories.conversation import RecordNotFoundError, store_conversation
@@ -64,9 +65,7 @@ def process_chat_input(
         logger.info("Bot has agent tools. Using agent for response.")
         llm = BedrockLLM.from_model(model=chat_input.message.model)
 
-        # TODO: remove SQL tool (?)
-        tools = get_sql_tools(llm)  # RDB Query Tool
-        tools.append(today_weather_tool)  # Weather Tool
+        tools = [get_tool_by_name(t.name) for t in bot.agent.tools]
 
         if bot and bot.has_knowledge():
             logger.info("Bot has knowledge. Adding answer with knowledge tool.")
@@ -284,7 +283,6 @@ def handler(event, context):
 
     now = datetime.now()
     expire = int(now.timestamp()) + 60 * 2  # 2 minute from now
-    # body = event["body"]
     body = json.loads(event["body"])
     step = body.get("step")
 
