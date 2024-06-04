@@ -41,7 +41,6 @@ const ChatMessage: React.FC<Props> = (props) => {
 
   useEffect(() => {
     if (props.chatContent) {
-      console.log(`Used Chunks: ${props.chatContent.usedChunks}`);
       if (props.chatContent.usedChunks) {
         // usedChunks is available for existing messages
         setRelatedDocuments(
