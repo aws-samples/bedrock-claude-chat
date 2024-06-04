@@ -1,5 +1,5 @@
 import Progress from '../../../components/Progress';
-import { logisticCurve } from '../functions';
+import { logisticCurve } from '../functions/logisticCurve';
 
 type Props = {
   processCount: number;
