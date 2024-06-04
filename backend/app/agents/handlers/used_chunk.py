@@ -18,17 +18,22 @@ class UsedChunkCallbackHandler(BaseCallbackHandler):
 
     def on_tool_end(self, output: Any, **kwargs: Any) -> None:
         """Save the used chunks."""
-        search_results: list[SearchResult] = output.get("search_results")
-        if search_results is None:
+        if isinstance(output, str):
             return
-        self.used_chunks = [
-            ChunkModel(
-                content=r.content,
-                source=r.source,
-                rank=r.rank,
-            )
-            for r in search_results
-        ]
+        elif isinstance(output, dict):
+            search_results: list[SearchResult] = output.get("search_results")
+            if search_results is None:
+                return
+            self.used_chunks = [
+                ChunkModel(
+                    content=r.content,
+                    source=r.source,
+                    rank=r.rank,
+                )
+                for r in search_results
+            ]
+        else:
+            raise ValueError(f"Invalid output type: {type(output)}")
 
 
 used_chunk_callback_var: ContextVar[Optional[UsedChunkCallbackHandler]] = ContextVar(
