@@ -1,7 +1,7 @@
 import { Construct } from "constructs";
 import * as rds from "aws-cdk-lib/aws-rds";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
-import { CustomResource, Duration } from "aws-cdk-lib";
+import { CustomResource, Duration, RemovalPolicy } from "aws-cdk-lib";
 
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import * as path from "path";
@@ -16,6 +16,8 @@ import {
   Role,
   ServicePrincipal,
 } from "aws-cdk-lib/aws-iam";
+import { LambdaPowertoolsLayer } from "cdk-aws-lambda-powertools-layer";
+import { NagSuppressions } from "cdk-nag";
 
 const DB_NAME = "postgres";
 
@@ -37,6 +39,7 @@ export class VectorStore extends Construct {
 
     const sg = new ec2.SecurityGroup(this, "ClusterSecurityGroup", {
       vpc: props.vpc,
+      description: "RDSClusterSecurityGroup",
     });
     const cluster = new rds.DatabaseCluster(this, "Cluster", {
       engine: rds.DatabaseClusterEngine.auroraPostgres({
@@ -49,14 +52,18 @@ export class VectorStore extends Construct {
       serverlessV2MinCapacity: 0.5,
       serverlessV2MaxCapacity: 5.0,
       writer: rds.ClusterInstance.serverlessV2("writer", {
-        autoMinorVersionUpgrade: false,
+        autoMinorVersionUpgrade: true,
+        publiclyAccessible: false,
       }),
+      storageEncrypted: true,
+      removalPolicy: RemovalPolicy.SNAPSHOT,
       // readers: [
       //   rds.ClusterInstance.serverlessV2("reader", {
       //     autoMinorVersionUpgrade: false,
       //   }),
       // ],
     });
+    cluster.addRotationSingleUser();
 
     const dbClusterIdentifier = cluster
       .secret!.secretValueFromJson("dbClusterIdentifier")
@@ -116,23 +123,11 @@ export class VectorStore extends Construct {
       handler: "handler",
       timeout: Duration.minutes(5),
       environment: {
-        DB_HOST: cluster.clusterEndpoint.hostname,
-        DB_USER: cluster
-          .secret!.secretValueFromJson("username")
-          .unsafeUnwrap()
-          .toString(),
-        DB_PASSWORD: cluster
-          .secret!.secretValueFromJson("password")
-          .unsafeUnwrap()
-          .toString(),
-        DB_NAME: cluster
-          .secret!.secretValueFromJson("dbname")
-          .unsafeUnwrap()
-          .toString(),
-        DB_PORT: cluster.clusterEndpoint.port.toString(),
         DB_CLUSTER_IDENTIFIER: dbClusterIdentifier,
+        DB_SECRETS_ARN: cluster.secret!.secretFullArn!,
       },
     });
+    cluster.secret!.grantRead(setupHandler);
 
     sg.connections.allowFrom(
       setupHandler,
@@ -148,6 +143,27 @@ export class VectorStore extends Construct {
       },
     });
     cr.node.addDependency(cluster);
+
+    NagSuppressions.addResourceSuppressions(
+      cr,
+      [
+        {
+          id: "AwsPrototyping-IAMNoManagedPolicies",
+          reason: "Default Policy",
+          appliesTo: [
+            {
+              regex:
+                "/^Policy::arn:<AWS::Partition>:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole/",
+            },
+          ],
+        },
+        {
+          id: "AwsPrototyping-CodeBuildProjectKMSEncryptedArtifacts",
+          reason: "SociIndexBuild is dependencies package",
+        },
+      ],
+      true
+    );
 
     this.securityGroup = sg;
     this.cluster = cluster;

@@ -1,7 +1,7 @@
 import { Construct } from "constructs";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as path from "path";
-import { Duration, RemovalPolicy, Stack } from "aws-cdk-lib";
+import { CfnOutput, Duration, RemovalPolicy, Stack } from "aws-cdk-lib";
 import { DockerImageAsset, Platform } from "aws-cdk-lib/aws-ecr-assets";
 import * as iam from "aws-cdk-lib/aws-iam";
 import { ITable } from "aws-cdk-lib/aws-dynamodb";
@@ -10,6 +10,8 @@ import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as logs from "aws-cdk-lib/aws-logs";
 import { IBucket } from "aws-cdk-lib/aws-s3";
 import * as lambda from "aws-cdk-lib/aws-lambda";
+import { ISecret } from "aws-cdk-lib/aws-secretsmanager";
+import * as cdk from "aws-cdk-lib";
 import {
   DockerImageCode,
   DockerImageFunction,
@@ -18,18 +20,10 @@ import {
 import { DynamoEventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import { SociIndexBuild } from "deploy-time-build";
 
-export interface DbConfig {
-  readonly host: string;
-  readonly port: number;
-  readonly username: string;
-  readonly password: string;
-  readonly database: string;
-}
-
 export interface EmbeddingProps {
   readonly vpc: ec2.IVpc;
   readonly database: ITable;
-  readonly dbConfig: DbConfig;
+  readonly dbSecrets: ISecret;
   readonly bedrockRegion: string;
   readonly tableAccessRole: iam.IRole;
   readonly documentBucket: IBucket;
@@ -95,11 +89,7 @@ export class Embedding extends Construct {
       }),
       environment: {
         BEDROCK_REGION: props.bedrockRegion,
-        DB_HOST: props.dbConfig.host,
-        DB_PORT: props.dbConfig.port.toString(),
-        DB_USER: props.dbConfig.username,
-        DB_PASSWORD: props.dbConfig.password,
-        DB_NAME: props.dbConfig.database,
+        DB_SECRETS_ARN: props.dbSecrets.secretArn,
         ACCOUNT: Stack.of(this).account,
         REGION: Stack.of(this).region,
         TABLE_NAME: props.database.tableName,
@@ -108,6 +98,7 @@ export class Embedding extends Construct {
       },
     });
     taskLogGroup.grantWrite(container.taskDefinition.executionRole!);
+    props.dbSecrets.grantRead(container.taskDefinition.taskRole);
     const taskSg = new ec2.SecurityGroup(this, "TaskSecurityGroup", {
       vpc: props.vpc,
       allowAllOutbound: true,
@@ -263,15 +254,12 @@ export class Embedding extends Construct {
       vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
       timeout: Duration.minutes(1),
       environment: {
-        DB_HOST: props.dbConfig.host,
-        DB_PORT: props.dbConfig.port.toString(),
-        DB_USER: props.dbConfig.username,
-        DB_PASSWORD: props.dbConfig.password,
-        DB_NAME: props.dbConfig.database,
+        DB_SECRETS_ARN: props.dbSecrets.secretArn,
         DOCUMENT_BUCKET: props.documentBucket.bucketName,
       },
       role: removeHandlerRole,
     });
+    props.dbSecrets.grantRead(removalHandler);
     removalHandler.addEventSource(
       new DynamoEventSource(props.database, {
         startingPosition: lambda.StartingPosition.TRIM_HORIZON,
@@ -288,5 +276,22 @@ export class Embedding extends Construct {
     this.taskSecurityGroup = taskSg;
     this.container = container;
     this.removalHandler = removalHandler;
+
+    new CfnOutput(this, "ClusterName", {
+      value: cluster.clusterName,
+    });
+    new CfnOutput(this, "TaskDefinitionName", {
+      value: cdk.Fn.select(
+        1,
+        cdk.Fn.split(
+          "/",
+          cdk.Fn.select(5, cdk.Fn.split(":", taskDefinition.taskDefinitionArn))
+        )
+      ),
+    });
+
+    new CfnOutput(this, "TaskSecurityGroupId", {
+      value: taskSg.securityGroupId,
+    });
   }
 }

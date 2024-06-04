@@ -1,10 +1,12 @@
 import * as cdk from "aws-cdk-lib";
 import { BedrockChatStack } from "../lib/bedrock-chat-stack";
 import { Template } from "aws-cdk-lib/assertions";
+import { AwsPrototypingChecks } from "@aws-prototyping-sdk/pdk-nag";
 
 describe("Fine-grained Assertions Test", () => {
   test("Identity Provider Generation", () => {
     const app = new cdk.App();
+
     const domainPrefix = "test-domain";
 
     const hasGoogleProviderStack = new BedrockChatStack(
@@ -30,6 +32,7 @@ describe("Fine-grained Assertions Test", () => {
           start: {},
         },
         enableMistral: false,
+	selfSignUpEnabled: true,
         embeddingContainerVcpu: 1024,
         embeddingContainerMemory: 2048,
       }
@@ -86,6 +89,7 @@ describe("Fine-grained Assertions Test", () => {
           start: {},
         },
         enableMistral: false,
+	selfSignUpEnabled: true,
         embeddingContainerVcpu: 1024,
         embeddingContainerMemory: 2048,
       }
@@ -115,6 +119,8 @@ describe("Fine-grained Assertions Test", () => {
 
   test("default stack", () => {
     const app = new cdk.App();
+    // Security check
+    cdk.Aspects.of(app).add(new AwsPrototypingChecks());
 
     const stack = new BedrockChatStack(app, "MyTestStack", {
       bedrockRegion: "us-east-1",
@@ -131,6 +137,7 @@ describe("Fine-grained Assertions Test", () => {
         start: {},
       },
       enableMistral: false,
+      selfSignUpEnabled: true,
       embeddingContainerVcpu: 1024,
       embeddingContainerMemory: 2048,
     });
@@ -149,6 +156,7 @@ describe("Fine-grained Assertions Test", () => {
 describe("Scheduler Test", () => {
   test("has schedules", () => {
     const app = new cdk.App();
+
     const hasScheduleStack = new BedrockChatStack(app, "HasSchedulesStack", {
       bedrockRegion: "us-east-1",
       crossRegionReferences: true,
@@ -176,6 +184,7 @@ describe("Scheduler Test", () => {
         },
       },
       enableMistral: false,
+      selfSignUpEnabled: true,
       embeddingContainerVcpu: 1024,
       embeddingContainerMemory: 2048,
     });
@@ -205,6 +214,7 @@ describe("Scheduler Test", () => {
         start: {},
       },
       enableMistral: false,
+      selfSignUpEnabled: true,
       embeddingContainerVcpu: 1024,
       embeddingContainerMemory: 2048,
     });
