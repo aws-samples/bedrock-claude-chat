@@ -20,6 +20,9 @@ export const AgentProcessingIndicator = ({ processCount }: Props) => {
               {t('agent.progress.label')}
             </span>
             <Progress progress={logisticCurve(processCount) * 100} />
+            <span className="whitespace-nowrap">
+              {Math.round(logisticCurve(processCount) * 100)} %
+            </span>
           </div>
         </div>
       </div>
