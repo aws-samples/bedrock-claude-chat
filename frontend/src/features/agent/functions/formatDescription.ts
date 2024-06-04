@@ -24,6 +24,10 @@ export const formatDescription = (tool: AgentTool, t: TFunction) => {
       return `${t(`agent.tools.sql_db_query_checker.name`)}:${t(
         `agent.tools.sql_db_query_checker.description`
       )}`;
+    case 'internet_search':
+      return `${t(`agent.tools.internet_search.name`)}:${t(
+        `agent.tools.internet_search.desciription`
+      )}`;
     default:
       return `${tool.name}:${tool.description}`;
   }

@@ -45,6 +45,10 @@ const translation = {
           name: 'Query Checker',
           description: 'Check if your SQL query is correct before execution.',
         },
+        internet_search: {
+          name: 'Internet Search',
+          desciription: 'Search the internet for information.',
+        },
       },
     },
     bot: {

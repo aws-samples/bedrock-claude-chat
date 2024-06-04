@@ -48,6 +48,10 @@ const translation = {
           name: 'クエリチェッカー',
           description: '実行前にSQLクエリが正しいかどうかを確認します。',
         },
+        internet_search: {
+          name: 'インターネット検索',
+          desciription: 'インターネットで情報を検索します。',
+        },
       },
     },
     bot: {
