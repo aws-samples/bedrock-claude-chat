@@ -6,6 +6,10 @@ An Agent is an advanced AI system that utilizes large language models (LLMs) as 
 
 This sample implements an Agent using the ReAct (Reasoning + Acting) approach. ReAct enables the agent to solve complex tasks by combining reasoning and actions in an iterative feedback loop. The agent repeatedly goes through three key steps: Thought, Action, and Observation. It analyzes the current situation using the LLM, decides on the next action to take, executes the action using available tools or APIs, and learns from the observed results. This continuous process allows the agent to adapt to dynamic environments, improve its task-solving accuracy, and provide context-aware solutions.
 
+## Example Use Case
+
+For instance, an Agent using ReAct can be utilized in a customer service scenario. When a user asks a complex question, the Agent can break down the query, gather relevant information from various sources, perform necessary calculations or data retrieval, and provide a comprehensive, accurate response.
+
 ## To use the Agent feature
 
 To enable the Agent functionality for your customized chatbot, follow these steps:
@@ -33,14 +37,21 @@ conversation with weather tool
 
 To develop your own custom tools for the Agent, follow these guidelines:
 
-- Create a new class that inherits from the `BaseTool` class. Although the interface is compatible with LangChain, this sample implementation provides its own `BaseTool` class, which you should inherit from.
-  TODO: path to basetool
+- Create a new class that inherits from the `BaseTool` class. Although the interface is compatible with LangChain, this sample implementation provides its own `BaseTool` class, which you should inherit from ([source](../backend/app/agents/tools/base.py)).
 
 - Refer to the sample implementation of a [BMI calculation tool](../examples/agents/tools/bmi.py). This example demonstrates how to create a tool that calculates the Body Mass Index (BMI) based on user input.
 
-- Once you have implemented your custom tool, it's recommended to verify its functionality using test script ([example](../backend/tests/test_agent/test_tools/test_weather.py)). This script will help you ensure that your tool is working as expected.
+  - The name and description declared on the tool are used when LLM considers which tool should be used to respond user's question. In other words, they are embedded on prompt when invoke LLM. So it's recommended to describe precisely as much as possible.
+
+- [Optional] Once you have implemented your custom tool, it's recommended to verify its functionality using test script ([example](../examples/agents/tools/test_bmi.py)). This script will help you ensure that your tool is working as expected.
 
 - After completing the development and testing of your custom tool, move the implementation file to the [backend/app/agents/tools/](../backend/app/agents/tools/) directory. Then open [backend/app/agents/utils.py](../backend/app/agents/utils.py) and edit `get_available_tools` so that the user can select the tool developed.
+
+- [Optional] Add clear names and descriptions for the frontend. This step is optional, but if you don't do this step, the tool name and description declared in your tool will be used. They are for LLM but not for the user, so it's recommended to add a dedicated explanation for better UX.
+
+  - Edit i18n files. Open [en/index.ts](../frontend/src/i18n/en/index.ts) and add your own `name` and `description` on `agent.tools`.
+  - Edit `xx/index.ts` as well. Where `xx` represents the country code you wish.
+  - Edit [formatDescription.ts](../frontend/src/features/agent/functions/formatDescription.ts) so that frontend app can refer to it correctly.
 
 - Run `cdk deploy` to deploy your changes. This will make your custom tool available in the custom bot screen.
 
