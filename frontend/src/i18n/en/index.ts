@@ -21,7 +21,7 @@ const translation = {
         overview:
           'By using the Agent functionality, your chatbot can automatically handle more complex tasks.',
       },
-      hint: 'The agent automatically determines which tool to use in order to answer the user’s questions and handle more complex tasks. Due to the complexity of the tasks it can perform, the response time may be longer. Activating even one tool enables the agent’s functions. Conversely, if no tools are selected, the agent’s functions will not be utilized. Once the agent’s functions are activated, it automatically decides whether to use its knowledge base to respond to queries.',
+      hint: `The agent automatically determines which tools to use to answer the user's questions. Due to the time required for decision, the response time tends to be longer. Activating one or more tools enables the agent's functionality. Conversely, if no tools are selected, the agent's functionality is not utilized. When the agent's functionality is enabled, the use of "Knowledge" is also treated as one of the tools. This means that "Knowledge" may not be used in responses.`,
       tools: {
         get_weather: {
           name: 'Current Weather',
