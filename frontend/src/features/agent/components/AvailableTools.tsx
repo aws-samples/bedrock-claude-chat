@@ -3,6 +3,7 @@ import { AgentTool } from '../types';
 import Toggle from '../../../components/Toggle';
 import { Dispatch, useCallback } from 'react';
 import { formatDescription } from '../functions/formatDescription';
+import Help from '../../../components/Help';
 
 type Props = {
   availableTools: AgentTool[] | undefined;
@@ -25,11 +26,12 @@ export const AvailableTools = ({ availableTools, tools, setTools }: Props) => {
   return (
     <>
       <div className="flex items-center gap-1">
-        <div className="text-lg font-bold">{t('bot.label.agent')}</div>
+        <div className="text-lg font-bold">{t('agent.label')}</div>
+        <Help direction="right" message={t('agent.hint')} />
       </div>
 
       <div className="text-sm text-aws-font-color/50">
-        {t('bot.help.agent.overview')}
+        {t('agent.help.overview')}
       </div>
 
       {availableTools?.map((tool) => (

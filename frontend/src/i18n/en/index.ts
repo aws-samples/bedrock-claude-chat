@@ -16,6 +16,12 @@ const translation = {
       adminConsoles: 'Admin Only',
     },
     agent: {
+      label: 'Agent',
+      help: {
+        overview:
+          'By using the Agent functionality, your chatbot can automatically handle more complex tasks.',
+      },
+      hint: 'The agent automatically determines which tool to use in order to answer the user’s questions and handle more complex tasks. Due to the complexity of the tasks it can perform, the response time may be longer. Activating even one tool enables the agent’s functions. Conversely, if no tools are selected, the agent’s functions will not be utilized. Once the agent’s functions are activated, it automatically decides whether to use its knowledge base to respond to queries.',
       tools: {
         get_weather: {
           name: 'Current Weather',
@@ -43,7 +49,6 @@ const translation = {
     },
     bot: {
       label: {
-        agent: 'Agent',
         myBots: 'My Bots',
         recentlyUsedBots: 'Recently Used Shared Bots',
         knowledge: 'Knowledge',
@@ -96,10 +101,6 @@ const translation = {
           file: 'The uploaded files will be used as Knowledge.',
           citeRetrievedContexts:
             'Configure whether to display context retrieved to answer user queries as citation information.\nIf enabled, users can access the original source URLs or files.',
-        },
-        agent: {
-          overview:
-            'By using the Agent functionality, your chatbot can automatically handle more complex tasks.',
         },
       },
       alert: {
