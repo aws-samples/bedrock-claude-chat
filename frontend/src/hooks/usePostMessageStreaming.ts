@@ -95,12 +95,7 @@ const usePostMessageStreaming = create<{
                   dispatch(i18next.t('bot.label.retrievingKnowledge'));
                   break;
                 case 'THINKING':
-                  completion += data.body;
                   thinkingDispatch('go-on');
-                  // count up
-                  // completion =
-                  //   i18next.t('bot.label.agentThinking') + '\n\n' + data.body;
-                  dispatch(completion);
                   break;
                 case 'STREAMING':
                   if (data.completion || data.completion === '') {
