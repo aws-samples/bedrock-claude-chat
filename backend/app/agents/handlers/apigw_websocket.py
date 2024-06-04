@@ -92,5 +92,4 @@ class ApigwWebsocketCallbackHandler(BaseCallbackHandler):
     ) -> Any:
         """Callback when agent finishes."""
         print(f"finish: {finish}")
-        self._send("STREAMING_END", "agent_finish")
         return finish
