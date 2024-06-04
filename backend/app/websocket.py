@@ -114,6 +114,7 @@ def process_chat_input(
             if bot.display_retrieved_chunks and chunk_cb.used_chunks:
                 used_chunks = chunk_cb.used_chunks
             thinking_log = format_log_to_str(response.get("intermediate_steps", []))
+            logger.info(f"Thinking log: {thinking_log}")
 
         # Append entire completion as the last message
         assistant_msg_id = str(ULID())
