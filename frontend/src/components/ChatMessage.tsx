@@ -41,7 +41,22 @@ const ChatMessage: React.FC<Props> = (props) => {
 
   useEffect(() => {
     if (props.chatContent) {
-      setRelatedDocuments(getRelatedDocuments(props.chatContent.id));
+      if (props.chatContent.usedChunks) {
+        // usedChunks is available for existing messages
+        setRelatedDocuments(
+          props.chatContent.usedChunks.map((chunk) => {
+            return {
+              chunkBody: chunk.content,
+              contentType: chunk.contentType,
+              sourceLink: chunk.source,
+              rank: chunk.rank,
+            };
+          })
+        );
+      } else {
+        // For new messages, get related documents from the api
+        setRelatedDocuments(getRelatedDocuments(props.chatContent.id));
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.chatContent]);

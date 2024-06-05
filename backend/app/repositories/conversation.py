@@ -219,6 +219,9 @@ def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationM
                     [
                         ChunkModel(
                             content=c["content"],
+                            content_type=(
+                                c["content_type"] if "content_type" in c else "s3"
+                            ),
                             source=c["source"],
                             rank=c["rank"],
                         )

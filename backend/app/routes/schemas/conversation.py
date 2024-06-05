@@ -52,6 +52,7 @@ class FeedbackOutput(BaseSchema):
 
 class Chunk(BaseSchema):
     content: str
+    content_type: str
     source: str
     rank: int
 
