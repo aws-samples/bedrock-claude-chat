@@ -159,6 +159,7 @@ class PlaywrightURLLoader(BaseLoader):
                     text = self.evaluator.evaluate(page, browser, response)
                     metadata = {"source": url}
                     docs.append(Document(page_content=text, metadata=metadata))
+                    page.close()
                 except Exception as e:
                     if self.continue_on_failure:
                         logger.error(
