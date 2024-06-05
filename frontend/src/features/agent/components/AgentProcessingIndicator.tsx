@@ -21,7 +21,7 @@ export const AgentProcessingIndicator = ({ processCount }: Props) => {
               {t('agent.progress.label')}
             </span>
             <Progress progress={calc} />
-            <span className="whitespace-nowrap">{Math.round(calc)} %</span>
+            <span className="whitespace-nowrap">{calc.toFixed(1)} %</span>
           </div>
         </div>
       </div>
