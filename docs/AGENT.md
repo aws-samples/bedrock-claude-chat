@@ -4,11 +4,19 @@
 
 An Agent is an advanced AI system that utilizes large language models (LLMs) as its central computational engine. It combines the reasoning capabilities of LLMs with additional functionalities such as planning and tool usage to autonomously perform complex tasks. Agents can break down complicated queries, generate step-by-step solutions, and interact with external tools or APIs to gather information or execute subtasks.
 
-This sample implements an Agent using the ReAct (Reasoning + Acting) approach. ReAct enables the agent to solve complex tasks by combining reasoning and actions in an iterative feedback loop. The agent repeatedly goes through three key steps: Thought, Action, and Observation. It analyzes the current situation using the LLM, decides on the next action to take, executes the action using available tools or APIs, and learns from the observed results. This continuous process allows the agent to adapt to dynamic environments, improve its task-solving accuracy, and provide context-aware solutions.
+This sample implements an Agent using the [ReAct (Reasoning + Acting)](https://www.promptingguide.ai/techniques/react) approach. ReAct enables the agent to solve complex tasks by combining reasoning and actions in an iterative feedback loop. The agent repeatedly goes through three key steps: Thought, Action, and Observation. It analyzes the current situation using the LLM, decides on the next action to take, executes the action using available tools or APIs, and learns from the observed results. This continuous process allows the agent to adapt to dynamic environments, improve its task-solving accuracy, and provide context-aware solutions.
 
 ## Example Use Case
 
-For instance, an Agent using ReAct can be utilized in a customer service scenario. When a user asks a complex question, the Agent can break down the query, gather relevant information from various sources, perform necessary calculations or data retrieval, and provide a comprehensive, accurate response.
+An Agent using ReAct can be applied in various scenarios, providing accurate and efficient solutions.
+
+### Text-to-SQL Example
+
+A user asks for "the total sales for the last quarter." The Agent interprets this request, converts it into a SQL query, executes it against the database, and presents the results. For the detail, see: [Text-to-SQL tool](../examples/agents/tools/text_to_sql/)
+
+### Financial Forecasting Example
+
+A financial analyst needs to forecast next quarter's revenue. The Agent gathers relevant data, performs necessary calculations using financial models, and generates a detailed forecast report, ensuring the accuracy of the projections.
 
 ## To use the Agent feature
 
@@ -23,11 +31,13 @@ To enable the Agent functionality for your customized chatbot, follow these step
 ![](./imgs/agent_tools.png)
 
 > [!Important]
-> It's important to note that enabling any tool in the Agent section will automatically treat the Knowledge-based RAG (Retrieval-Augmented Generation) functionality as a tool as well. This means that the LLM will autonomously determine whether to use the knowledge base to answer user queries, considering it as one of the available tools at its disposal.
+> It's important to note that enabling any tool in the Agent section will automatically treat the ["Knowledge" functionality](RAG.md) as a tool as well. This means that the LLM will autonomously determine whether to use the "Knowledge" to answer user queries, considering it as one of the available tools at its disposal.
 
 4. By default "Internet Search" tool is provided. This tool allows the Agent to fetch information from the internet to answer user questions.
 
 ![](./imgs/agent.gif)
+
+This tool depends [DuckDuckGo](https://duckduckgo.com/) which has rate limit. It's suitable for PoC or demo purpose, but if you'd like to use for production environment, we recommend to use another search API.
 
 5. You can develop and add your own custom tools to extend the capabilities of the Agent. Refer to the [How to develop your own tools](#how-to-develop-your-own-tools) section for more information on creating and integrating custom tools.
 
