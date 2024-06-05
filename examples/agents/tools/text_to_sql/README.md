@@ -4,13 +4,13 @@
 
 The Text-to-SQL tool is designed to simplify the interaction with SQL databases by leveraging the capabilities of large language models (LLMs). This tool set allows users to query SQL databases, retrieve schema information, and check the correctness of SQL queries using natural language prompts. It consists of several components, each serving a specific function to enhance the querying experience:
 
-- QuerySQLDataBaseTool: Executes detailed and correct SQL queries against the database and returns the results. If the query is incorrect, it provides error messages for further refinement.
+- **QuerySQLDataBaseTool**: Executes detailed and correct SQL queries against the database and returns the results. If the query is incorrect, it provides error messages for further refinement.
 
-- InfoSQLDatabaseTool: Retrieves schema information and sample rows for specified tables. This is useful for understanding the structure and content of the database tables.
+- **InfoSQLDatabaseTool**: Retrieves schema information and sample rows for specified tables. This is useful for understanding the structure and content of the database tables.
 
-- ListSQLDatabaseTool: Lists the names of all tables in the database. This helps in identifying the available tables for querying.
+- **ListSQLDatabaseTool**: Lists the names of all tables in the database. This helps in identifying the available tables for querying.
 
-- QuerySQLCheckerTool: Uses an LLM to check the correctness of SQL queries before execution. This ensures that the queries are accurate and reduces the likelihood of errors during execution.
+- **QuerySQLCheckerTool**: Uses an LLM to check the correctness of SQL queries before execution. This ensures that the queries are accurate and reduces the likelihood of errors during execution.
 
 The tool is built to support PostgreSQL databases and utilizes the pg8000 adapter for database interactions.
 

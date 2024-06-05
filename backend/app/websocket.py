@@ -12,8 +12,6 @@ from app.agents.handlers.token_count import get_token_count_callback
 from app.agents.handlers.used_chunk import get_used_chunk_callback
 from app.agents.langchain import BedrockLLM
 from app.agents.tools.knowledge import AnswerWithKnowledgeTool
-from app.agents.tools.rdb_sql.tool import get_sql_tools
-from app.agents.tools.weather import today_weather_tool
 from app.agents.utils import get_tool_by_name
 from app.auth import verify_token
 from app.bedrock import compose_args

@@ -5,7 +5,7 @@ import logging
 from typing import Any, Dict, Iterable, Optional, Sequence, Type, Union
 
 from app.agents.tools.base import BaseTool
-from app.agents.tools.rdb_sql.prompt import QUERY_CHECKER
+from app.agents.tools.text_to_sql.prompt import QUERY_CHECKER
 from app.utils import query_postgres
 from langchain_core.callbacks import (
     AsyncCallbackManagerForToolRun,
@@ -297,7 +297,9 @@ class ListSQLDatabaseTool(BaseSQLDatabaseTool, BaseTool):
     """Tool for getting tables names."""
 
     name: str = "sql_db_list_tables"
-    description: str = "Input is an empty string, output is a comma-separated list of tables in the database."
+    description: str = (
+        "Input is an empty string, output is a comma-separated list of tables in the database."
+    )
 
     args_schema: Type[BaseModel] = _ListSQLDataBaseToolInput
 

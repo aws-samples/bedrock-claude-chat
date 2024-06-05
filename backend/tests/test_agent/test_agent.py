@@ -5,14 +5,12 @@ sys.path.append(".")
 import unittest
 from pprint import pprint
 
-from app.agents.agent import AgentExecutor, create_react_agent, format_log_to_str
+from app.agents.agent import AgentExecutor, create_react_agent
 from app.agents.handlers.apigw_websocket import ApigwWebsocketCallbackHandler
 from app.agents.handlers.token_count import get_token_count_callback
 from app.agents.handlers.used_chunk import get_used_chunk_callback
 from app.agents.langchain import BedrockLLM
 from app.agents.tools.knowledge import AnswerWithKnowledgeTool
-from app.agents.tools.rdb_sql.tool import get_sql_tools
-from app.agents.tools.weather import today_weather_tool
 from app.config import DEFAULT_EMBEDDING_CONFIG
 from app.repositories.models.custom_bot import (
     AgentModel,
@@ -65,6 +63,7 @@ class TestReactAgent(unittest.TestCase):
                     "Yakiniku.pdf",
                 ],
             ),
+            display_retrieved_chunks=True,
             sync_status="RUNNING",
             sync_status_reason="reason",
             sync_last_exec_id="",
@@ -77,7 +76,6 @@ class TestReactAgent(unittest.TestCase):
             llm=llm,
         )
         tools = []
-        tools.append(today_weather_tool)  # Weather Tool
         tools.append(answer_with_knowledge_tool)  # RAG Tool
 
         agent = create_react_agent(model=self.MODEL, tools=tools)
