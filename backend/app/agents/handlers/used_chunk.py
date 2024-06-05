@@ -5,7 +5,7 @@ from pprint import pprint
 from typing import Any, Dict, Generator, List, Optional
 
 from app.repositories.models.conversation import ChunkModel
-from app.vector_search import SearchResult
+from app.vector_search import SearchResult, filter_used_results, get_source_link
 from langchain_core.callbacks.base import BaseCallbackHandler
 
 
@@ -27,6 +27,7 @@ class UsedChunkCallbackHandler(BaseCallbackHandler):
             self.used_chunks = [
                 ChunkModel(
                     content=r.content,
+                    content_type=content_type,
                     source=r.source,
                     rank=r.rank,
                 )
