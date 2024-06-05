@@ -19,20 +19,26 @@ class UsedChunkCallbackHandler(BaseCallbackHandler):
     def on_tool_end(self, output: Any, **kwargs: Any) -> None:
         """Save the used chunks."""
         if isinstance(output, str):
+            # Tools return string
             return
         elif isinstance(output, dict):
+            # KnowledgeTool returns dict
             search_results: list[SearchResult] = output.get("search_results")  # type: ignore
-            if search_results is None:
+            if search_results is None or len(search_results) == 0:
                 return
-            self.used_chunks = [
-                ChunkModel(
-                    content=r.content,
-                    content_type=content_type,
-                    source=r.source,
-                    rank=r.rank,
+
+            self.used_chunks = []
+            generated_text: str = output.get("output")  # type: ignore
+            for r in filter_used_results(generated_text, search_results):
+                content_type, source_link = get_source_link(r.source)
+                self.used_chunks.append(
+                    ChunkModel(
+                        content=r.content,
+                        content_type=content_type,
+                        source=source_link,
+                        rank=r.rank,
+                    )
                 )
-                for r in search_results
-            ]
         else:
             raise ValueError(f"Invalid output type: {type(output)}")
 
