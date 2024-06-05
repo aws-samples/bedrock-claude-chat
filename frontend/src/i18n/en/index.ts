@@ -71,7 +71,6 @@ const translation = {
         noBots: 'No Bots.',
         noBotsRecentlyUsed: 'No Recently Used Shared Bots.',
         retrievingKnowledge: '[Retrieving Knowledge...]',
-        agentThinking: '[Agent Thinking...]',
         dndFileUpload:
           'You can upload files by drag and drop.\nSupported files: {{fileExtensions}}',
         uploadError: 'Error Message',

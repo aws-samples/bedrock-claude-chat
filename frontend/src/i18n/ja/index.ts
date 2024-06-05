@@ -442,6 +442,43 @@ const translation = {
         },
       },
     },
+    generationConfig: {
+      title: '推論パラメーターの設定',
+      description:
+        'LLM の推論パラメーターを設定して、モデルからの応答を制御することができます。',
+      maxTokens: {
+        label: '最大長',
+        hint: '生成されるトークン数の最大長を指定します。',
+      },
+      temperature: {
+        label: '温度（Temperature）',
+        hint: '予測される出力の確率分布の形状に影響を与え、モデルが低確率の出力を選択する可能性に影響を及ぼします。',
+        help: '温度を低くするとランダム性の低い出力を行い、温度を高くするとランダム性の高い出力を行います。',
+      },
+      topK: {
+        label: 'Top-k',
+        hint: 'モデルが次のトークンを予測する際に、最も可能性の高い候補の数を指定します。',
+        help: '値を小さくすると候補の数が少なくなり、結果としてランダム性が低くなります。値を大きくすると候補の数が多くなり、結果としてランダム性が高くなります。',
+      },
+      topP: {
+        label: 'Top-p',
+        hint: 'モデルが次のトークンを予測する際に、最も可能性が高い候補の割合を示します。',
+        help: '値を小さくすると候補の数が少なくなり、結果としてランダム性が低くなります。値を大きくすると候補の数が多くなり、結果としてランダム性が高くなります。',
+      },
+      stopSequences: {
+        label: '停止シーケンス',
+        hint: '指定したキーワードを含む場合、モデルは生成を停止します。複数の単語を設定する場合は、カンマ区切りで入力してください。',
+      },
+    },
+    searchSettings: {
+      title: '検索設定',
+      description:
+        'ベクトルストアから関連ドキュメントを検索する際の設定が行えます。',
+      maxResults: {
+        label: '最大検索数',
+        hint: 'ベクトルストアから検索するレコードの最大数',
+      },
+    },
     error: {
       answerResponse: '回答中にエラーが発生しました。',
       notFoundConversation:
@@ -457,6 +494,9 @@ const translation = {
       title: 'バリデーションエラー',
       maxRange: {
         message: '設定できる最大値は{{size}}です',
+      },
+      minRange: {
+        message: 'The minimum value that can be set is {{size}}',
       },
       chunkOverlapLessThanChunkSize: {
         message:
