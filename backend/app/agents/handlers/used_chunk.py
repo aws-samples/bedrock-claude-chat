@@ -21,7 +21,7 @@ class UsedChunkCallbackHandler(BaseCallbackHandler):
         if isinstance(output, str):
             return
         elif isinstance(output, dict):
-            search_results: list[SearchResult] = output.get("search_results")
+            search_results: list[SearchResult] = output.get("search_results")  # type: ignore
             if search_results is None:
                 return
             self.used_chunks = [
