@@ -20,18 +20,16 @@ To enable the Agent functionality for your customized chatbot, follow these step
 
 3. To activate a tool, simply toggle the switch next to the desired tool. Once a tool is enabled, the Agent will have access to it and can utilize it when processing user queries.
 
-TODO
-Screenshot
+![](./imgs/agent_tools.png)
 
-4. The sample implementation provides a default "Weather Retrieval" tool. This tool allows the Agent to fetch weather information when necessary to answer user questions related to weather conditions.
+> [!Important]
+> It's important to note that enabling any tool in the Agent section will automatically treat the Knowledge-based RAG (Retrieval-Augmented Generation) functionality as a tool as well. This means that the LLM will autonomously determine whether to use the knowledge base to answer user queries, considering it as one of the available tools at its disposal.
 
-TODO
-conversation with weather tool
+4. By default "Internet Search" tool is provided. This tool allows the Agent to fetch information from the internet to answer user questions.
+
+![](./imgs/agent.gif)
 
 5. You can develop and add your own custom tools to extend the capabilities of the Agent. Refer to the [How to develop your own tools](#how-to-develop-your-own-tools) section for more information on creating and integrating custom tools.
-
-> [!Info]
-> It's important to note that enabling any tool in the Agent section will automatically treat the Knowledge-based RAG (Retrieval-Augmented Generation) functionality as a tool as well. This means that the LLM will autonomously determine whether to use the knowledge base to answer user queries, considering it as one of the available tools at its disposal.
 
 ## How to develop your own tools
 
@@ -39,11 +37,11 @@ To develop your own custom tools for the Agent, follow these guidelines:
 
 - Create a new class that inherits from the `BaseTool` class. Although the interface is compatible with LangChain, this sample implementation provides its own `BaseTool` class, which you should inherit from ([source](../backend/app/agents/tools/base.py)).
 
-- Refer to the sample implementation of a [BMI calculation tool](../examples/agents/tools/bmi.py). This example demonstrates how to create a tool that calculates the Body Mass Index (BMI) based on user input.
+- Refer to the sample implementation of a [BMI calculation tool](../examples/agents/tools/bmi/bmi.py). This example demonstrates how to create a tool that calculates the Body Mass Index (BMI) based on user input.
 
   - The name and description declared on the tool are used when LLM considers which tool should be used to respond user's question. In other words, they are embedded on prompt when invoke LLM. So it's recommended to describe precisely as much as possible.
 
-- [Optional] Once you have implemented your custom tool, it's recommended to verify its functionality using test script ([example](../examples/agents/tools/test_bmi.py)). This script will help you ensure that your tool is working as expected.
+- [Optional] Once you have implemented your custom tool, it's recommended to verify its functionality using test script ([example](../examples/agents/tools/bmi/test_bmi.py)). This script will help you ensure that your tool is working as expected.
 
 - After completing the development and testing of your custom tool, move the implementation file to the [backend/app/agents/tools/](../backend/app/agents/tools/) directory. Then open [backend/app/agents/utils.py](../backend/app/agents/utils.py) and edit `get_available_tools` so that the user can select the tool developed.
 
@@ -55,8 +53,8 @@ To develop your own custom tools for the Agent, follow these guidelines:
 
 - Run `cdk deploy` to deploy your changes. This will make your custom tool available in the custom bot screen.
 
-TODO: screenshot for bmi tool
+In addition to the BMI calculation example, there are other tool examples available for reference, including [Text-to-SQL](../examples/agents/tools/text_to_sql/). Feel free to explore these [examples](../examples/agents/tools/) to gain insights and inspiration for creating your own tools.
 
-In addition to the BMI calculation example, there are other tool examples available for reference. Feel free to explore these examples to gain insights and inspiration for creating your own tools.
+## Contribution
 
-Contributions to the tool repository are welcome! If you develop a useful and well-implemented tool, consider contributing it to the project by submitting a pull request.
+**Contributions to the tool repository are welcome!** If you develop a useful and well-implemented tool, consider contributing it to the project by submitting an issue or a pull request.
