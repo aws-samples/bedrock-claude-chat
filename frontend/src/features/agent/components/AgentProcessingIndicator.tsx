@@ -8,6 +8,7 @@ type Props = {
 
 export const AgentProcessingIndicator = ({ processCount }: Props) => {
   const { t } = useTranslation();
+  const calc = processCount == 0 ? 0 : logisticCurve(processCount - 1) * 100;
   return (
     <div className={` grid grid-cols-12 gap-2 p-3 `}>
       <div className="order-first col-span-12 flex items-center lg:order-none lg:col-span-8 lg:col-start-3">
@@ -19,10 +20,8 @@ export const AgentProcessingIndicator = ({ processCount }: Props) => {
             <span className="whitespace-nowrap">
               {t('agent.progress.label')}
             </span>
-            <Progress progress={logisticCurve(processCount) * 100} />
-            <span className="whitespace-nowrap">
-              {Math.round(logisticCurve(processCount) * 100)} %
-            </span>
+            <Progress progress={calc} />
+            <span className="whitespace-nowrap">{Math.round(calc)} %</span>
           </div>
         </div>
       </div>
