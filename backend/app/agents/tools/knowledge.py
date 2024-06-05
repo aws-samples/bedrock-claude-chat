@@ -141,6 +141,9 @@ class AnswerWithKnowledgeTool(BaseTool):
 
         context_prompt = self._format_search_results(search_results)
         output = self.llm_chain.invoke({"context": context_prompt, "query": query})
+        # This tool does not return string because it is handled by the callback and AgentExecutor.
+        # `AgentExecutor` will extract the string from the output and use it for next step.
+        # `UsedChunkCallbackHandler` will save the used chunks from the search results.
         return {
             "search_results": search_results,
             "output": output,

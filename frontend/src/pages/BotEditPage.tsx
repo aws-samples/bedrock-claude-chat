@@ -13,6 +13,7 @@ import Alert from '../components/Alert';
 import KnowledgeFileUploader from '../components/KnowledgeFileUploader';
 import GenerationConfig from '../components/GenerationConfig';
 import { BotFile, EmdeddingParams, SearchParams } from '../@types/bot';
+
 import { ulid } from 'ulid';
 import {
   DEFAULT_EMBEDDING_CONFIG,
@@ -29,6 +30,9 @@ import ExpandableDrawerGroup from '../components/ExpandableDrawerGroup';
 import useErrorMessage from '../hooks/useErrorMessage';
 import Help from '../components/Help';
 import Toggle from '../components/Toggle';
+import { useAgent } from '../features/agent/hooks/useAgent';
+import { AgentTool } from '../features/agent/types';
+import { AvailableTools } from '../features/agent/components/AvailableTools';
 
 const edgeGenerationParams =
   import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true'
@@ -45,6 +49,7 @@ const BotEditPage: React.FC = () => {
   const navigate = useNavigate();
   const { botId: paramsBotId } = useParams();
   const { getMyBot, registerBot, updateBot } = useBot();
+  const { availableTools } = useAgent();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -62,7 +67,6 @@ const BotEditPage: React.FC = () => {
   const [unchangedFilenames, setUnchangedFilenames] = useState<string[]>([]);
   const [deletedFilenames, setDeletedFilenames] = useState<string[]>([]);
   const [displayRetrievedChunks, setDisplayRetrievedChunks] = useState(true);
-
   const [maxTokens, setMaxTokens] = useState<number>(
     defaultGenerationConfig.maxTokens
   );
@@ -74,10 +78,10 @@ const BotEditPage: React.FC = () => {
   const [stopSequences, setStopSequences] = useState<string>(
     defaultGenerationConfig.stopSequences?.join(',') || ''
   );
-
   const [searchParams, setSearchParams] = useState<SearchParams>(
     DEFAULT_SEARCH_CONFIG
   );
+  const [tools, setTools] = useState<AgentTool[]>([]);
 
   const {
     errorMessages,
@@ -98,6 +102,7 @@ const BotEditPage: React.FC = () => {
       setIsLoading(true);
       getMyBot(botId)
         .then((bot) => {
+          setTools(bot.agent.tools);
           setTitle(bot.title);
           setDescription(bot.description);
           setInstruction(bot.instruction);
@@ -370,6 +375,9 @@ const BotEditPage: React.FC = () => {
     if (!isValid()) return;
     setIsLoading(true);
     registerBot({
+      agent: {
+        tools: tools.map(({ name }) => name),
+      },
       id: botId,
       title,
       description,
@@ -404,6 +412,7 @@ const BotEditPage: React.FC = () => {
   }, [
     registerBot,
     isValid,
+    tools,
     botId,
     title,
     description,
@@ -427,6 +436,9 @@ const BotEditPage: React.FC = () => {
     if (!isNewBot) {
       setIsLoading(true);
       updateBot(botId, {
+        agent: {
+          tools: tools.map(({ name }) => name),
+        },
         title,
         description,
         instruction,
@@ -464,6 +476,7 @@ const BotEditPage: React.FC = () => {
     isNewBot,
     isValid,
     updateBot,
+    tools,
     botId,
     title,
     description,
@@ -537,6 +550,13 @@ const BotEditPage: React.FC = () => {
                   onChange={setInstruction}
                 />
               </div>
+
+              <div className="mt-3" />
+              <AvailableTools
+                availableTools={availableTools}
+                tools={tools}
+                setTools={setTools}
+              />
 
               <div className="mt-3">
                 <div className="flex items-center gap-1">

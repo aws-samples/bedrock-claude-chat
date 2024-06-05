@@ -46,17 +46,18 @@ export type GenerationParams = {
   topP: number;
   temperature: number;
   stopSequences: string[];
-}
+};
 
 export type SearchParams = {
   maxResults: number;
-}
+};
 
 export type BotDetails = BotMeta & {
   instruction: string;
   embeddingParams: EmdeddingParams;
   generationParams: GenerationParams;
   searchParams: SearchParams;
+  agent: Agent;
   knowledge: BotKnowledge;
   syncStatusReason: string;
   displayRetrievedChunks: boolean;
@@ -64,6 +65,7 @@ export type BotDetails = BotMeta & {
 
 export type BotSummary = BotMeta & {
   hasKnowledge: boolean;
+  hasAgent: boolean;
 };
 
 export type BotFile = {
@@ -77,6 +79,7 @@ export type RegisterBotRequest = {
   id: string;
   title: string;
   instruction: string;
+  agent: AgentInput;
   description?: string;
   embeddingParams?: EmdeddingParams;
   generationParams?: GenerationParams;
@@ -91,6 +94,7 @@ export type UpdateBotRequest = {
   title: string;
   instruction: string;
   description?: string;
+  agent: AgentInput;
   embeddingParams?: EmdeddingParams;
   generationParams?: BotGenerationConfig;
   searchParams?: SearchParams;

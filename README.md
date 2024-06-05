@@ -32,11 +32,9 @@ Analyze usage for each user / bot on administrator dashboard. [detail](./docs/AD
 
 ### LLM-powered Agent
 
-> [!Important]
-> This feature is WIP. Coming soon.
-
 By using the [Agent functionality](./docs/AGENT.md), your chatbot can automatically handle more complex tasks. For example, to answer a user's question, the Agent can retrieve necessary information from external tools or break down the task into multiple steps for processing.
-TODO: Screenshot
+
+![](./docs/imgs/agent.gif)
 
 ## 📚 Supported Languages
 
@@ -279,7 +277,7 @@ See [LOCAL DEVELOPMENT](./docs/LOCAL_DEVELOPMENT.md).
 
 ### Contribution
 
-Thank you for considering contributing to this repository! We welcome bug fixes, language translations (i18n), feature enhancements, and other improvements.
+Thank you for considering contributing to this repository! We welcome bug fixes, language translations (i18n), feature enhancements, [agent tools](./docs/AGENT.md#how-to-develop-your-own-tools), and other improvements.
 
 For feature enhancements and other improvements, **before creating a Pull Request, we would greatly appreciate it if you could create a Feature Request Issue to discuss the implementation approach and details. For bug fixes and language translations (i18n), proceed with creating a Pull Request directly.**
 
@@ -292,7 +290,7 @@ Please also take a look at the following guidelines before contributing:
 
 See [here](./docs/RAG.md).
 
-## Authors
+## Contacts
 
 - [Takehiro Suzuki](https://github.com/statefb)
 - [Yusuke Wada](https://github.com/wadabee)
