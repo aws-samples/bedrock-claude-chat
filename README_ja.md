@@ -1,7 +1,6 @@
 # Bedrock Claude Chat
 
-> [!Warning]
-> 古いバージョン(v0.4.x 以前) を使用していて最新バージョンを使いたい場合は、[移行ガイド](./migration/V0_TO_V1.md)を参照してください。気をつけないと、Aurora クラスターのすべてのデータが破壊され、ユーザーはもはや既存の RAG ボットを利用できず、また新規にボットを作成できなくなります。
+> [!Caution] > `main` ブランチはメンテナンスされておらず、`v0` バージョンに相当します。デフォルトブランチとなった最新の [`v1`](https://github.com/aws-samples/bedrock-claude-chat/tree/v1) ブランチへの移行をご検討ください。
 
 このリポジトリは、生成系 AI を提供する[Amazon Bedrock](https://aws.amazon.com/jp/bedrock/)の基盤モデルの一つである、Anthropic 社製 LLM [Claude](https://www.anthropic.com/)を利用したチャットボットのサンプルです。
 
@@ -18,19 +17,11 @@
 ![](./imgs/bot_chat_ja.png)
 ![](./imgs/bot_api_publish_screenshot3.png)
 
-> [!Important]
-> ガバナンス上の理由により、許可されたユーザーのみがカスタマイズされたボットを作成できます。作成を許可するには、そのユーザーをマネジメントコンソール > Amazon Cognito ユーザープールまたは aws cli で `CreatingBotAllowed` というグループのメンバーにする必要があります。ユーザープール ID は CloudFormation > BedrockChatStack > Outputs > `AuthUserPoolIdxxxx` で確認できます。
-
 ### 管理者ダッシュボード
 
 管理者ダッシュボードで各ユーザー/ボットの使用状況を分析できます。[詳細](./ADMINISTRATOR.md)
 
 ![](./imgs/admin_bot_analytics.png)
-
-### エージェント
-
-[エージェント機能](./AGENT.md)を使うと、チャットボットがより複雑なタスクを自動的に処理できるようになります。例えば、ユーザーの質問に答えるために、必要な情報を外部ツールから取得したり、複数のステップに分けて処理したりすることができます。
-![](./imgs/agent.gif)
 
 ## 🚀 まずはお試し
 
@@ -54,17 +45,15 @@ chmod +x bin.sh
 ./bin.sh
 ```
 
-- 新規ユーザーまたは v1 ユーザーかどうかを聞かれます。その場合は `y` を入力してください。
-
 ### オプションのパラメータ
 
 デプロイ時に以下のパラメータを指定することで、セキュリティとカスタマイズを強化できるようになりました。
 
-- --disable-self-register: セルフ登録を無効にします（デフォルト: 有効）。このフラグを設定すると、Cognito 上で全てのユーザーを作成する必要があり、ユーザーが自分でアカウントを登録することはできなくなります。
-- --ipv4-ranges: 許可する IPv4 範囲のカンマ区切りリスト。（デフォルト: 全ての IPv4 アドレスを許可）
-- --ipv6-ranges: 許可する IPv6 範囲のカンマ区切りリスト。（デフォルト: 全ての IPv6 アドレスを許可）
-- --allowed-signup-email-domains: サインアップ時に許可するメールドメインのカンマ区切りリスト。（デフォルト: ドメイン制限なし）
-- --region: Bedrock が利用可能なリージョンを指定します。（デフォルト: us-east-1）
+--disable-self-register: セルフ登録を無効にします（デフォルト: 有効）。このフラグを設定すると、Cognito 上で全てのユーザーを作成する必要があり、ユーザーが自分でアカウントを登録することはできなくなります。
+--ipv4-ranges: 許可する IPv4 範囲のカンマ区切りリスト。（デフォルト: 全ての IPv4 アドレスを許可）
+--ipv6-ranges: 許可する IPv6 範囲のカンマ区切りリスト。（デフォルト: 全ての IPv6 アドレスを許可）
+--allowed-signup-email-domains: サインアップ時に許可するメールドメインのカンマ区切りリスト。（デフォルト: ドメイン制限なし）
+--region: Bedrock が利用可能なリージョンを指定します。（デフォルト: us-east-1）
 
 #### パラメータを指定したコマンド例:
 
@@ -240,29 +229,13 @@ cli および CDK を利用されている場合、`cdk destroy`を実行して�
 
 このサンプルは外部のアイデンティティプロバイダーをサポートしています。現在、[Google](./idp/SET_UP_GOOGLE_ja.md)および[カスタム OIDC プロバイダー](./idp/SET_UP_CUSTOM_OIDC.md)をサポートしています。
 
-### 新規ユーザーを自動的にグループに追加
-
-このサンプルには、ユーザーに権限を与えるための以下のようなグループがあります。
-
-- [`Admin`](./ADMINISTRATOR.md)
-- [`CreatingBotAllowed`](#ボットのカスタマイズ)
-- [`PublishAllowed`](./PUBLISH_API.md)
-
-新規に作成されたユーザーを自動的にグループに参加させたい場合、[cdk.json](../cdk/cdk.json) で指定することができます。
-
-```json
-"autoJoinUserGroups": ["CreatingBotAllowed"],
-```
-
-デフォルトでは、新規作成ユーザーは `CreatingBotAllowed` グループに参加します。
-
 ### ローカルでの開発について
 
 - [こちら](./LOCAL_DEVELOPMENT_ja.md)を参照ください。
 
 ### Pull Request
 
-コントリビュートを検討していただきありがとうございます！バグ修正、言語翻訳（i18n）、機能拡張、[エージェントのツール](./AGENT.md#how-to-develop-your-own-tools)、その他の改善を歓迎しています。
+コントリビュートを検討していただきありがとうございます！バグ修正、言語翻訳（i18n）、機能拡張、その他の改善を歓迎しています。
 
 機能拡張やその他の改善については、**プルリクエストを作成する前に、実装方法や詳細について議論するために、Feature Request Issue を作成いただくようお願いいたします。**
 
