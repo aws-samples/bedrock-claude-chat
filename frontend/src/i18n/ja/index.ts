@@ -496,7 +496,7 @@ const translation = {
         message: '設定できる最大値は{{size}}です',
       },
       minRange: {
-        message: 'The minimum value that can be set is {{size}}',
+        message: '設定できる最小値は{{size}}です',
       },
       chunkOverlapLessThanChunkSize: {
         message:
