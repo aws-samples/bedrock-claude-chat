@@ -361,6 +361,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
 def propose_conversation_title(
     user_id: str,
     conversation_id: str,
+    language: str = "en",
     model: Literal[
         "claude-instant-v1",
         "claude-v2",
@@ -372,12 +373,12 @@ def propose_conversation_title(
         "mistral-large",
     ] = "claude-v3-haiku",
 ) -> str:
-    PROMPT = """Reading the conversation above, what is the appropriate title for the conversation? When answering the title, please follow the rules below:
+    PROMPT = f"""Reading the conversation above, what is the appropriate title for the conversation? When answering the title, please follow the rules below:
 <rules>
 - Title length must be from 15 to 20 characters.
 - Prefer more specific title than general. Your title should always be distinct from others.
 - Return the conversation title only. DO NOT include any strings other than the title.
-- Title must be in the same language as the conversation.
+- Title must be in {language}.
 </rules>
 """
     # Fetch existing conversation

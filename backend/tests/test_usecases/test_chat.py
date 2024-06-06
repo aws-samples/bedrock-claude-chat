@@ -46,6 +46,10 @@ from tests.test_usecases.utils.bot_factory import (
     create_test_private_bot,
     create_test_public_bot,
 )
+import pytest
+from langdetect import detect
+from pydantic import ValidationError
+
 
 MODEL: type_model_name = "claude-instant-v1"
 MISTRAL_MODEL: type_model_name = "mistral-7b-instruct"
@@ -526,6 +530,18 @@ class TestProposeTitle(unittest.TestCase):
         self.mistral_output = mistral_output
         print(mistral_output)
 
+        self.example_texts = {
+            "en": "What are the top tourist attractions in New York?",
+            "ja": "日本の有名な観光地はどこですか？",
+            "ko": "서울의 주요 관광지는 어디인가요?",
+            "es": "¿Cuáles son los principales destinos turísticos en España?",
+            "zh-Hans": "中国的主要旅游景点在哪里？",
+            "zh-Hant": "台灣的主要旅遊景點在哪裡？",
+            "fr": "Quelles sont les principales attractions touristiques en France?",
+            "de": "Was sind die Haupttouristenattraktionen in Deutschland?",
+            "it": "Quali sono le principali attrazioni turistiche in Italia?",
+        }
+
     def test_propose_title(self):
         title = propose_conversation_title("user1", self.output.conversation_id)
         print(f"[title]: {title}")
@@ -533,6 +549,37 @@ class TestProposeTitle(unittest.TestCase):
     def test_propose_title_mistral(self):
         title = propose_conversation_title("user1", self.mistral_output.conversation_id)
         print(f"[title]: {title}")
+
+    def test_language_titles(self):
+        for lang_code, text in self.example_texts.items():
+            with self.subTest(lang_code=lang_code):
+                # Mock your chat function or use the actual one if possible
+                chat_input = ChatInput(
+                    conversation_id="test_conversation_id",
+                    message=MessageInput(
+                        role="user",
+                        content=[Content(content_type="text", body=text)],
+                        model="MODEL_NAME",  # Replace with actual model variable
+                        parent_message_id=None,
+                        message_id=None,
+                    ),
+                    bot_id=None,
+                )
+                output = chat(self.user_id, chat_input)
+                title, detected_language = propose_conversation_title(
+                    self.user_id, output.conversation_id, lang_code
+                )
+                self.assertEqual(
+                    detected_language,
+                    lang_code,
+                    f"Expected language {lang_code}, but got {detected_language}",
+                )
+                detected_title_lang = detect(title)
+                self.assertEqual(
+                    detected_title_lang,
+                    lang_code,
+                    f"Title language mismatch: expected {lang_code}, detected {detected_title_lang}",
+                )
 
     def tearDown(self) -> None:
         delete_conversation_by_id("user1", self.output.conversation_id)

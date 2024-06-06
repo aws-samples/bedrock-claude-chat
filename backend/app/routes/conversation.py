@@ -119,7 +119,8 @@ def patch_conversation_title(
 
 
 @router.get(
-    "/conversation/{conversation_id}/proposed-title", response_model=ProposedTitle
+    "/conversation/{conversation_id}/proposed-title/{language}",
+    response_model=ProposedTitle,
 )
 def get_proposed_title(request: Request, conversation_id: str):
     """Suggest conversation title"""
