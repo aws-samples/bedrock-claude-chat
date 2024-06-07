@@ -3,7 +3,6 @@ import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
 import { ApiPublishmentStack, VpcConfig } from "../lib/api-publishment-stack";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
-import { DbConfig } from "../lib/constructs/embedding";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 
 const app = new cdk.App();
