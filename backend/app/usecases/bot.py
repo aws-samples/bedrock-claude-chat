@@ -518,7 +518,7 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
             last_used_time=alias.last_used_time,
             is_pinned=alias.is_pinned,
             is_public=True,
-            has_agent=bot.is_agent_enabled(),
+            has_agent=alias.has_agent,
             owned=False,
             sync_status=alias.sync_status,
             has_knowledge=alias.has_knowledge,
