@@ -504,6 +504,7 @@ def find_alias_by_id(user_id: str, alias_id: str) -> BotAliasModel:
         is_pinned=item["IsPinned"],
         sync_status=item["SyncStatus"],
         has_knowledge=item["HasKnowledge"],
+        has_agent=item.get("HasAgent", False),
     )
 
     logger.info(f"Found alias: {bot}")
