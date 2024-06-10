@@ -56,8 +56,8 @@ def format_log_to_str(
     intermediate_steps: list[tuple[AgentAction, str]],
     observation_prefix: str = "<observation>",
     observation_suffix: str = "</observation>",
-    llm_prefix: str = "<thought>",
-    llm_suffix: str = "</thought>",
+    llm_prefix: str = "",
+    llm_suffix: str = "",
 ) -> str:
     """Construct the scratchpad that lets the agent continue its thought process."""
     thoughts = ""
