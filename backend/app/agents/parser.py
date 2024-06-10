@@ -6,13 +6,11 @@ from langchain_core.exceptions import OutputParserException
 from langchain_core.output_parsers import BaseOutputParser
 
 FINAL_ANSWER_TAG = "final-answer"
-MISSING_THOUGHT_TAG_ERROR_MESSAGE = "Invalid Format: Missing '<thought>' tag"
+MISSING_THOUGHT_TAG_ERROR_MESSAGE = "Invalid Format: Missing '<thought></thought>' tag"
 MISSING_ACTION_TAG_ERROR_MESSAGE = (
-    "Invalid Format: Missing '<action>' tag after '<thought>'"
+    "Invalid Format: Missing '<action></action>' tag after '<thought></thought>'"
 )
-MISSING_ACTION_INPUT_TAG_ERROR_MESSAGE = (
-    "Invalid Format: Missing '<action-input>' tag after '<action>'"
-)
+MISSING_ACTION_INPUT_TAG_ERROR_MESSAGE = "Invalid Format: Missing '<action-input></action-input>' tag after '<action></action>'"
 
 
 class ReActSingleInputOutputParser(BaseOutputParser):

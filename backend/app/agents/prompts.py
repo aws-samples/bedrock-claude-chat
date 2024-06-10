@@ -19,14 +19,14 @@ You will ALWAYS follow the below guidelines when you are answering a question:
 <action-input>The input to the action. The format of the input must be json format.</action-input>
 <observation>The result of the action<observation>
 ... (this Thought/Action/Action Input/Observation can repeat N times)
-<thought>I now know the final answer</thought>
+<final-thought>I now know the final answer</final-thought>
 <final-answer>The final answer to the original input question. The language of the final answer must be the same language of original input: {input}</final-answer>
 </format>
 
-Do not end your output with Thought. Always end with Final Answer or Observation.
+Do not make thought empty. Always provide a thought before an action.
 <bad-example>
 <question>What is the weather in Tokyo?</question>
-<thought>I should check the weather in Tokyo.</thought>
+<thought>DO NOT LEAVE EMPTY HERE</thought>
 </bad-example>
 </guidelines>
 
