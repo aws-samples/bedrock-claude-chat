@@ -179,13 +179,13 @@ WHERE table_name = %s
     def run(
         self,
         query: str,
-        include_columns: bool = False,
     ) -> Union[str, Sequence[Dict[str, Any]]]:
         """Execute a SQL command and return a string representing the results.
 
         If the statement returns rows, a string of the results is returned.
         If the statement returns no rows, an empty string is returned.
         """
+        INCLUDE_COLUMNS = True
         try:
             # Parse the JSON query
             query_params = json.loads(query)
@@ -195,11 +195,11 @@ WHERE table_name = %s
 
         logger.debug(f"Running query: {query}")
 
-        results = query_postgres(query, include_columns=include_columns)
+        results = query_postgres(query, include_columns=INCLUDE_COLUMNS)
         logger.debug(f"Results: {results}")
-        if results:
+        if bool(results[1]):  # Note that the first row is the column names
             return str(results)
-        return ""
+        return "No results found."
 
     def run_no_throw(self, query: str) -> Union[str, Sequence[Dict[str, Any]]]:
         """Execute a query and return the results or an error message."""
