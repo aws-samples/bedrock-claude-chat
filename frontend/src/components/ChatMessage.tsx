@@ -157,11 +157,11 @@ const ChatMessage: React.FC<Props> = (props) => {
                   );
                 } else {
                   return (
-                    <React.Fragment key={idx}>
-                      {content.body.split('\n').map((c, idxBody) => (
-                        <div key={idxBody}>{c}</div>
-                      ))}
-                    </React.Fragment>
+                    // [Customize]インプットメッセージもMarkdown書式で整形表示できるよう修正
+                    <ChatMessageMarkdown
+                    messageId={String(idx)}>
+                    {content.body}
+                  </ChatMessageMarkdown>    
                   );
                 }
               })}

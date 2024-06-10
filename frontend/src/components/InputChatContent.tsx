@@ -9,7 +9,7 @@ import ButtonSend from './ButtonSend';
 import Textarea from './Textarea';
 import useChat from '../hooks/useChat';
 import Button from './Button';
-import { PiArrowsCounterClockwise, PiX } from 'react-icons/pi';
+import { PiArrowsCounterClockwise, PiX, PiFileTextThin } from 'react-icons/pi';
 import { TbPhotoPlus } from 'react-icons/tb';
 import { useTranslation } from 'react-i18next';
 import ButtonIcon from './ButtonIcon';
@@ -38,6 +38,10 @@ const useInputChatContentState = create<{
   pushBase64EncodedImage: (encodedImage: string) => void;
   removeBase64EncodedImage: (index: number) => void;
   clearBase64EncodedImages: () => void;
+  textFiles: { name: string, content: string }[];  
+  pushTextFile: (file: { name: string, content: string }) => void;  
+  removeTextFile: (index: number) => void;
+  clearTextFiles: () => void;
   previewImageUrl: string | null;
   setPreviewImageUrl: (url: string | null) => void;
   isOpenPreviewImage: boolean;
@@ -71,12 +75,36 @@ const useInputChatContentState = create<{
   setIsOpenPreviewImage: (isOpen) => {
     set({ isOpenPreviewImage: isOpen });
   },
+  textFiles: [],
+  pushTextFile: (file) => {
+    set({
+      textFiles: produce(get().textFiles, (draft) => {
+        draft.push(file);
+      }),
+    });
+  },
+  removeTextFile: (index) => {
+    set({
+      textFiles: produce(get().textFiles, (draft) => {
+        draft.splice(index, 1);
+      }),
+    });
+  },
+  clearTextFiles: () => {
+    set({
+      textFiles: [],
+    });
+  },
 }));
 
 const InputChatContent: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const { postingMessage, hasError, messages } = useChat();
   const { disabledImageUpload, model, acceptMediaType } = useModel();
+
+  const extendedAcceptMediaType = useMemo(() => {
+    return [...acceptMediaType, '.md', '.ts', '.js']; // 追加のメディアタイプをここに追加
+  }, [acceptMediaType]);
 
   const [content, setContent] = useState('');
   const {
@@ -88,10 +116,15 @@ const InputChatContent: React.FC<Props> = (props) => {
     setPreviewImageUrl,
     isOpenPreviewImage,
     setIsOpenPreviewImage,
+    textFiles,
+    pushTextFile,
+    removeTextFile,
+    clearTextFiles,
   } = useInputChatContentState();
 
   useEffect(() => {
     clearBase64EncodedImages();
+    clearTextFiles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -105,18 +138,57 @@ const InputChatContent: React.FC<Props> = (props) => {
 
   const inputRef = useRef<HTMLDivElement>(null);
 
+  const truncateFileName = (name: string, maxLength = 30) => {
+    if (name.length <= maxLength) {
+      return name;
+    }
+    const halfLength = Math.floor((maxLength - 3) / 2);
+    return `${name.slice(0, halfLength)}...${name.slice(-halfLength)}`;
+  };
+
+  const extensionToLanguageMap: { [key: string]: string } = {
+    'js': 'javascript',
+    'ts': 'typescript',
+    'md': 'markdown',
+    'txt': 'plaintext',
+    // 必要に応じて他の拡張子と言語のマッピングを追加
+  };
+
+  const getFileLanguage = (filename: string) => {
+    const lastDotIndex = filename.lastIndexOf('.');
+    if (lastDotIndex === -1) {
+      return '';
+    }
+
+    const ext = filename.slice(lastDotIndex + 1).toLowerCase();
+    const lang = extensionToLanguageMap[ext];
+
+    return lang === undefined ? ext : lang;
+  };
+
   const sendContent = useCallback(() => {
+    const filesString = textFiles.length > 0 ? textFiles.map(file => `\`\`\`${getFileLanguage(file.name)}:${file.name}\n${file.content}\n\`\`\`\n\n`).join('') : undefined;
+    let message = ""
+    if (filesString !== undefined){
+      message = content + `\n\n` + filesString
+    }else{
+      message = content
+    }
+
     props.onSend(
-      content,
+      message,
       !disabledImageUpload && base64EncodedImages.length > 0
         ? base64EncodedImages
         : undefined
     );
     setContent('');
     clearBase64EncodedImages();
+    clearTextFiles();
   }, [
     base64EncodedImages,
+    textFiles,
     clearBase64EncodedImages,
+    clearTextFiles,
     content,
     disabledImageUpload,
     props,
@@ -169,6 +241,19 @@ const InputChatContent: React.FC<Props> = (props) => {
     [pushBase64EncodedImage]
   );
 
+  const handleFileRead = useCallback(
+    (file: File) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          pushTextFile({ name: file.name, content: reader.result });
+        }
+      };
+      reader.readAsText(file);
+    },
+    [pushTextFile]
+  );
+
   useEffect(() => {
     const currentElem = inputRef?.current;
     const keypressListener = (e: DocumentEventMap['keypress']) => {
@@ -211,11 +296,15 @@ const InputChatContent: React.FC<Props> = (props) => {
       for (let i = 0; i < fileList.length; i++) {
         const file = fileList.item(i);
         if (file) {
-          encodeAndPushImage(file);
+          if (file.type.startsWith('text/') || file.name.endsWith('.md') || file.name.endsWith('.ts')) {
+            handleFileRead(file);
+          } else {
+            encodeAndPushImage(file);
+          }
         }
       }
     },
-    [encodeAndPushImage]
+    [encodeAndPushImage, handleFileRead]
   );
 
   const onDragOver: React.DragEventHandler<HTMLDivElement> = useCallback(
@@ -319,6 +408,24 @@ const InputChatContent: React.FC<Props> = (props) => {
                 />
               )}
             </ModalDialog>
+          </div>
+        )}
+        {textFiles.length > 0 && (
+          <div className="relative m-2 mr-24 flex flex-wrap gap-3">
+            {textFiles.map((file, idx) => (
+              <div key={idx} className="relative flex flex-col items-center">
+                <PiFileTextThin className="h-16 w-16 text-gray-500" />
+                <div className="file-name">{truncateFileName(file.name)}</div>
+                <ButtonIcon
+                  className="absolute right-0 top-0 -m-2 border border-aws-sea-blue bg-white p-1 text-xs text-aws-sea-blue"
+                  onClick={() => {
+                    removeTextFile(idx);
+                  }}
+                >
+                  <PiX />
+                </ButtonIcon>
+              </div>
+            ))}
           </div>
         )}
         {messages.length > 1 && (

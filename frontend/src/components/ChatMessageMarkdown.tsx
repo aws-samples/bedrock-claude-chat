@@ -143,25 +143,35 @@ const ChatMessageMarkdown: React.FC<Props> = ({
       // @ts-ignore
       rehypePlugins={rehypePlugins}
       components={{
+        // [Customize]ファイル名表示できるようにカスタマイズ
+        pre({children}) {
+          return (<pre className='code-container'>{children}</pre>)
+        },
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         code({ node, inline, className, children, ...props }) {
           const match = /language-(\w+)/.exec(className || '');
           const codeText = onlyText(children).replace(/\n$/, '');
+          const filename = match ? className?.split(":")[1] ?? undefined : undefined;
 
           return !inline && match ? (
-            <CopyToClipboard codeText={codeText}>
-              <SyntaxHighlighter
-                {...props}
-                children={codeText}
-                style={vscDarkPlus}
-                language={match[1]}
-                x
-                PreTag="div"
-                wrapLongLines={true}
-              />
-            </CopyToClipboard>
+            // [Customize]ファイル名を表示できるようにカスタマイズ
+            <div>
+              {filename && (<div className="code-header">{filename}</div>)}
+              <CopyToClipboard codeText={codeText}>
+                <SyntaxHighlighter
+                  {...props}
+                  children={codeText}
+                  style={vscDarkPlus}
+                  filename={filename}
+                  language={match[1]}
+                  x
+                  PreTag="div"
+                  wrapLongLines={true}
+                />
+              </CopyToClipboard>
+            </div>
           ) : (
             <code {...props} className={className}>
               {children}
