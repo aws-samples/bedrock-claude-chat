@@ -7,6 +7,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
   PiArrowsCounterClockwise,
   PiLink,
+  PiPenNib,
   PiPencilLine,
   PiStar,
   PiStarFill,
@@ -365,6 +366,24 @@ const ChatPage: React.FC = () => {
             </Alert>
           </div>
         )}
+        {messages.length === 0 && (
+          <div className="mb-3 flex w-11/12 flex-wrap-reverse justify-start gap-2 md:w-10/12 lg:w-4/6 xl:w-3/6">
+            {bot?.conversationQuickStarters.map((qs, idx) => (
+              <div
+                key={idx}
+                className="w-[calc(33.333%-0.5rem)] cursor-pointer rounded-2xl border border-aws-squid-ink/20 bg-white p-2  text-sm text-dark-gray  hover:shadow-lg hover:shadow-gray"
+                onClick={() => {
+                  onSend(qs.example);
+                }}>
+                <div>
+                  <PiPenNib />
+                </div>
+                {qs.title}
+              </div>
+            ))}
+          </div>
+        )}
+
         {bot?.hasAgent ? (
           <TextInputChatContent
             dndMode={dndMode}

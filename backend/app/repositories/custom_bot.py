@@ -29,6 +29,7 @@ from app.repositories.models.custom_bot import (
     GenerationParamsModel,
     KnowledgeModel,
     SearchParamsModel,
+    ConversationQuickStarterModel,
 )
 from app.routes.schemas.bot import type_sync_status
 from app.utils import get_current_time
@@ -73,6 +74,7 @@ def store_bot(user_id: str, custom_bot: BotModel):
         "ApiPublishedDatetime": custom_bot.published_api_datetime,
         "ApiPublishCodeBuildId": custom_bot.published_api_codebuild_id,
         "DisplayRetrievedChunks": custom_bot.display_retrieved_chunks,
+        "ConversationQuickStarters": custom_bot.conversation_quick_starters,
     }
 
     response = table.put_item(Item=item)
@@ -93,6 +95,7 @@ def update_bot(
     sync_status: type_sync_status,
     sync_status_reason: str,
     display_retrieved_chunks: bool,
+    conversation_quick_starters: list[ConversationQuickStarterModel]
 ):
     """Update bot title, description, and instruction.
     NOTE: Use `update_bot_visibility` to update visibility.
@@ -113,7 +116,8 @@ def update_bot(
             "SyncStatusReason = :sync_status_reason, "
             "GenerationParams = :generation_params, "
             "SearchParams = :search_params, "
-            "DisplayRetrievedChunks = :display_retrieved_chunks",
+            "DisplayRetrievedChunks = :display_retrieved_chunks, "
+            "ConversationQuickStarters = :conversation_quick_starters",
             ExpressionAttributeValues={
                 ":title": title,
                 ":description": description,
@@ -126,6 +130,9 @@ def update_bot(
                 ":display_retrieved_chunks": display_retrieved_chunks,
                 ":generation_params": generation_params.model_dump(),
                 ":search_params": search_params.model_dump(),
+                ":conversation_quick_starters": [
+                    starter.model_dump() for starter in conversation_quick_starters
+                ],
             },
             ReturnValues="ALL_NEW",
             ConditionExpression="attribute_exists(PK) AND attribute_exists(SK)",
@@ -154,6 +161,7 @@ def store_alias(user_id: str, alias: BotAliasModel):
         "IsPinned": alias.is_pinned,
         "SyncStatus": alias.sync_status,
         "HasKnowledge": alias.has_knowledge,
+        "ConversationQuickStarters": alias.conversation_quick_starters
     }
 
     response = table.put_item(Item=item)
@@ -392,6 +400,7 @@ def find_private_bot_by_id(user_id: str, bot_id: str) -> BotModel:
             else item["ApiPublishCodeBuildId"]
         ),
         display_retrieved_chunks=item.get("DisplayRetrievedChunks", False),
+        conversation_quick_starters=item.get("ConversationQuickStarters", []),
     )
 
     logger.info(f"Found bot: {bot}")
@@ -477,6 +486,7 @@ def find_public_bot_by_id(bot_id: str) -> BotModel:
             else item["ApiPublishCodeBuildId"]
         ),
         display_retrieved_chunks=item.get("DisplayRetrievedChunks", False),
+        conversation_quick_starters=item.get("ConversationQuickStarters", []),
     )
     logger.info(f"Found public bot: {bot}")
     return bot
@@ -504,6 +514,7 @@ def find_alias_by_id(user_id: str, alias_id: str) -> BotAliasModel:
         is_pinned=item["IsPinned"],
         sync_status=item["SyncStatus"],
         has_knowledge=item["HasKnowledge"],
+        conversation_quick_starters=item["ConversationQuickStarters"],
     )
 
     logger.info(f"Found alias: {bot}")

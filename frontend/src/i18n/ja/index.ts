@@ -89,6 +89,11 @@ const translation = {
           uploaded: 'アップロード完了',
           error: 'エラー',
         },
+        quickStarter: {
+          title: '会話のクイックスタート',
+          exampleTitle: 'タイトル',
+          example: '会話例',
+        },
         citeRetrievedContexts: '取得したコンテキストの引用',
       },
       titleSubmenu: {
@@ -110,6 +115,10 @@ const translation = {
           file: 'アップロードしたファイルがナレッジとして利用されます。',
           citeRetrievedContexts:
             'ユーザーの質問に答えるために取得したコンテキストを引用情報として表示するかどうかを設定します。\n有効にすると、ユーザーは元のソースURLやファイルにアクセスできます。',
+        },
+        quickStarter: {
+          overview:
+            '会話を開始する際に、会話例を表示します。会話例を提供することで、ボットの使い方を利用者に示すことができます。',
         },
       },
       alert: {
@@ -501,6 +510,9 @@ const translation = {
       chunkOverlapLessThanChunkSize: {
         message:
           'チャンクオーバーラップはチャンクサイズより小さく設定する必要があります',
+      },
+      quickStarter: {
+        message: 'タイトルと入力例は、どちらも入力してください。',
       },
     },
   },
