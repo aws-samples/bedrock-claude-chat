@@ -112,6 +112,7 @@ class Conversation(BaseSchema):
     message_map: dict[str, MessageOutput]
     last_message_id: str
     bot_id: str | None
+    should_continue: bool
 
 
 class NewTitleInput(BaseSchema):

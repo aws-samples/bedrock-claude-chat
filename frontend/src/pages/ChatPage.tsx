@@ -49,6 +49,7 @@ const ChatPage: React.FC = () => {
     retryPostChat,
     setCurrentMessageId,
     regenerate,
+    continueGenerate,
     getPostedModel,
     loadingConversation,
   } = useChat();
@@ -159,6 +160,10 @@ const ChatPage: React.FC = () => {
       bot: inputBotParams,
     });
   }, [inputBotParams, regenerate]);
+
+  const onContinueGenerate = useCallback(()=>{
+    continueGenerate({bot: inputBotParams});
+  }, [inputBotParams, continueGenerate])
 
   useEffect(() => {
     if (messages.length > 0) {
@@ -390,6 +395,7 @@ const ChatPage: React.FC = () => {
             }
             onSend={onSend}
             onRegenerate={onRegenerate}
+            continueGenerate={onContinueGenerate}
           />
         )}
       </div>

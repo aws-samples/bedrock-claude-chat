@@ -158,11 +158,12 @@ const ChatMessage: React.FC<Props> = (props) => {
                 } else {
                   return (
                     // [Customize]インプットメッセージもMarkdown書式で整形表示できるよう修正
-                    <ChatMessageMarkdown
+                  <ChatMessageMarkdown
+                    key={idx}
                     messageId={String(idx)}>
                     {content.body}
                   </ChatMessageMarkdown>    
-                  );
+                );
                 }
               })}
               <ModalDialog

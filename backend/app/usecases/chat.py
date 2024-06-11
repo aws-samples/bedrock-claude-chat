@@ -161,6 +161,7 @@ def prepare_conversation(
             message_map=initial_message_map,
             last_message_id="",
             bot_id=chat_input.bot_id,
+            should_continue=False,
         )
 
     # Append user chat input to the conversation
@@ -168,26 +169,33 @@ def prepare_conversation(
         message_id = chat_input.message.message_id
     else:
         message_id = str(ULID())
-    new_message = MessageModel(
-        role=chat_input.message.role,
-        content=[
-            ContentModel(
-                content_type=c.content_type,
-                media_type=c.media_type,
-                body=c.body,
-            )
-            for c in chat_input.message.content
-        ],
-        model=chat_input.message.model,
-        children=[],
-        parent=parent_id,
-        create_time=current_time,
-        feedback=None,
-        used_chunks=None,
-        thinking_log=None,
-    )
-    conversation.message_map[message_id] = new_message
-    conversation.message_map[parent_id].children.append(message_id)  # type: ignore
+
+    # TODO: Continueが空メッセージという仕様で良いか要検討
+    # Empty messages for continuity purposes are not added.
+    if (
+        chat_input.message.content[0].content_type == "text"
+        and chat_input.message.content[0].body != ""
+    ):
+        new_message = MessageModel(
+            role=chat_input.message.role,
+            content=[
+                ContentModel(
+                    content_type=c.content_type,
+                    media_type=c.media_type,
+                    body=c.body,
+                )
+                for c in chat_input.message.content
+            ],
+            model=chat_input.message.model,
+            children=[],
+            parent=parent_id,
+            create_time=current_time,
+            feedback=None,
+            used_chunks=None,
+            thinking_log=None,
+        )
+        conversation.message_map[message_id] = new_message
+        conversation.message_map[parent_id].children.append(message_id)  # type: ignore
 
     return (message_id, conversation, bot)
 
@@ -492,6 +500,7 @@ def fetch_conversation(user_id: str, conversation_id: str) -> Conversation:
         last_message_id=conversation.last_message_id,
         message_map=message_map,
         bot_id=conversation.bot_id,
+        should_continue=conversation.should_continue,
     )
     return output
 

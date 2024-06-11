@@ -148,6 +148,7 @@ class TestConversationRepository(unittest.TestCase):
             },
             last_message_id="x",
             bot_id=None,
+            should_continue=False,
         )
 
         # Test storing conversation
@@ -185,6 +186,7 @@ class TestConversationRepository(unittest.TestCase):
         self.assertEqual(found_conversation.last_message_id, "x")
         self.assertEqual(found_conversation.total_price, 100)
         self.assertEqual(found_conversation.bot_id, None)
+        self.assertEqual(found_conversation.should_continue, False)
 
         # Test update title
         response = change_conversation_title(
@@ -259,6 +261,7 @@ class TestConversationRepository(unittest.TestCase):
             message_map=large_message_map,
             last_message_id="msg_9",
             bot_id=None,
+            should_continue=False,
         )
 
         # Test storing large conversation with a small threshold
@@ -274,6 +277,7 @@ class TestConversationRepository(unittest.TestCase):
         self.assertEqual(found_conversation.total_price, 200)
         self.assertEqual(found_conversation.last_message_id, "msg_9")
         self.assertEqual(found_conversation.bot_id, None)
+        self.assertEqual(found_conversation.should_continue, False)
 
         message_map = found_conversation.message_map
         self.assertEqual(len(message_map), 10)

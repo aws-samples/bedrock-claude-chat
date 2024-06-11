@@ -397,6 +397,7 @@ How would you categorize this email?`,
       signOut: 'Sign out',
       close: 'Close',
       add: 'Add',
+      continue: 'Continue to generate',
     },
     input: {
       hint: {
