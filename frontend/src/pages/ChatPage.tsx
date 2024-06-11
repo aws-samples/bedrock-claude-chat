@@ -28,7 +28,8 @@ import Alert from '../components/Alert';
 import useBotSummary from '../hooks/useBotSummary';
 import useModel from '../hooks/useModel';
 
-const MISTRAL_ENABLED: boolean = import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
+const MISTRAL_ENABLED: boolean =
+  import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
 
 const ChatPage: React.FC = () => {
   const { t } = useTranslation();
@@ -229,8 +230,12 @@ const ChatPage: React.FC = () => {
   }, []);
 
   return (
-    <div onDragOver={onDragOver} onDrop={endDnd} onDragEnd={endDnd}>
-      <div className="relative h-14 w-full">
+    <div
+      className="h-screen flex-1 flex-col"
+      onDragOver={onDragOver}
+      onDrop={endDnd}
+      onDragEnd={endDnd}>
+      <div className="juice:p-3 sticky top-0 z-10 mb-1.5 flex h-14 w-full items-center justify-between border-b border-gray bg-aws-paper p-2 font-semibold">
         <div className="flex w-full justify-between">
           <div className="p-2">
             <div className="mr-10 font-bold">{pageTitle}</div>
@@ -290,56 +295,59 @@ const ChatPage: React.FC = () => {
           </div>
         )}
       </div>
-      <hr className="w-full border-t border-gray" />
-      <div className="pb-52 lg:pb-40">
-        {messages.length === 0 ? (
-          <div className="relative flex w-full justify-center">
-            {!loadingConversation && (
-              <SwitchBedrockModel className="mt-3 w-min" />
-            )}
-            <div className="absolute mx-3 my-20 flex items-center justify-center text-4xl font-bold text-gray">
-              {!MISTRAL_ENABLED ? t('app.name') : t('app.nameWithoutClaude')}
+      <main className=" relative h-5/6 w-full flex-1  overflow-auto">
+        <div
+          role="presentation"
+          className=" flex h-full flex-col overflow-auto pb-9">
+          {messages.length === 0 ? (
+            <div className="relative flex w-full justify-center">
+              {!loadingConversation && (
+                <SwitchBedrockModel className="mt-3 w-min" />
+              )}
+              <div className="absolute mx-3 my-20 flex items-center justify-center text-4xl font-bold text-gray">
+                {!MISTRAL_ENABLED ? t('app.name') : t('app.nameWithoutClaude')}
+              </div>
             </div>
-          </div>
-        ) : (
-          messages.map((message, idx) => (
-            <div
-              key={idx}
-              className={`${
-                message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
-              }`}>
-              <ChatMessage
-                chatContent={message}
-                onChangeMessageId={onChangeCurrentMessageId}
-                onSubmit={onSubmitEditedContent}
-              />
-              <div className="w-full border-b border-aws-squid-ink/10"></div>
-            </div>
-          ))
-        )}
-        {hasError && (
-          <div className="mb-12 mt-2 flex flex-col items-center">
-            <div className="flex items-center font-bold text-red">
-              <PiWarningCircleFill className="mr-1 text-2xl" />
-              {t('error.answerResponse')}
-            </div>
+          ) : (
+            messages.map((message, idx) => (
+              <div
+                key={idx}
+                className={`${
+                  message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
+                }`}>
+                <ChatMessage
+                  chatContent={message}
+                  onChangeMessageId={onChangeCurrentMessageId}
+                  onSubmit={onSubmitEditedContent}
+                />
+                <div className="w-full border-b border-aws-squid-ink/10"></div>
+              </div>
+            ))
+          )}
+          {hasError && (
+            <div className="mb-12 mt-2 flex flex-col items-center">
+              <div className="flex items-center font-bold text-red">
+                <PiWarningCircleFill className="mr-1 text-2xl" />
+                {t('error.answerResponse')}
+              </div>
 
-            <Button
-              className="mt-2 shadow "
-              icon={<PiArrowsCounterClockwise />}
-              outlined
-              onClick={() => {
-                retryPostChat({
-                  bot: inputBotParams,
-                });
-              }}>
-              {t('button.resend')}
-            </Button>
-          </div>
-        )}
-      </div>
+              <Button
+                className="mt-2 shadow "
+                icon={<PiArrowsCounterClockwise />}
+                outlined
+                onClick={() => {
+                  retryPostChat({
+                    bot: inputBotParams,
+                  });
+                }}>
+                {t('button.resend')}
+              </Button>
+            </div>
+          )}
+        </div>
+      </main>
 
-      <div className="absolute bottom-0 z-0 flex w-full flex-col items-center justify-center">
+      <div className="bottom-0 z-0 flex w-full flex-col items-center justify-center">
         {bot && bot.syncStatus !== 'SUCCEEDED' && (
           <div className="mb-8 w-1/2">
             <Alert
