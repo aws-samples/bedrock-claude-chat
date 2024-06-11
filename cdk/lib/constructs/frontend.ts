@@ -138,7 +138,18 @@ export class Frontend extends Construct {
       assets: [
         {
           path: "../frontend",
-          exclude: ["node_modules", "dist"],
+          exclude: [
+            "node_modules",
+            "dist",
+            "dev-dist",
+            ".env",
+            ".env.local",
+            "../cdk/**/*",
+            "../backend/**/*",
+            "../example/**/*",
+            "../docs/**/*",
+            "../.github/**/*",
+          ],
           commands: ["npm ci"],
         },
       ],

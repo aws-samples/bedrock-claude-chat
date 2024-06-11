@@ -74,7 +74,9 @@ def store_bot(user_id: str, custom_bot: BotModel):
         "ApiPublishedDatetime": custom_bot.published_api_datetime,
         "ApiPublishCodeBuildId": custom_bot.published_api_codebuild_id,
         "DisplayRetrievedChunks": custom_bot.display_retrieved_chunks,
-        "ConversationQuickStarters": custom_bot.conversation_quick_starters,
+        "ConversationQuickStarters": [
+            starter.model_dump() for starter in custom_bot.conversation_quick_starters
+        ],
     }
 
     response = table.put_item(Item=item)
@@ -161,7 +163,9 @@ def store_alias(user_id: str, alias: BotAliasModel):
         "IsPinned": alias.is_pinned,
         "SyncStatus": alias.sync_status,
         "HasKnowledge": alias.has_knowledge,
-        "ConversationQuickStarters": alias.conversation_quick_starters,
+        "ConversationQuickStarters": [
+            starter.model_dump() for starter in alias.conversation_quick_starters
+        ],
     }
 
     response = table.put_item(Item=item)
