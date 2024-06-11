@@ -147,6 +147,7 @@ export class ApiPublishmentStack extends Stack {
         role: handlerRole,
       }
     );
+    dbSecret.grantRead(sqsConsumeHandler);
     sqsConsumeHandler.addEventSource(
       new lambdaEventSources.SqsEventSource(chatQueue)
     );
