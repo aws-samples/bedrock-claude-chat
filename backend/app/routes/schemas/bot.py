@@ -60,9 +60,11 @@ class KnowledgeDiffInput(BaseSchema):
     deleted_filenames: list[str]
     unchanged_filenames: list[str]
 
+
 class ConversationQuickStarter(BaseSchema):
     title: str
     example: str
+
 
 class BotInput(BaseSchema):
     id: str
@@ -76,6 +78,7 @@ class BotInput(BaseSchema):
     knowledge: Knowledge | None
     display_retrieved_chunks: bool
     conversation_quick_starters: list[ConversationQuickStarter] | None
+
 
 class BotModifyInput(BaseSchema):
     title: str

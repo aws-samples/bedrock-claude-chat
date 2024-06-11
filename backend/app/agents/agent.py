@@ -217,7 +217,10 @@ class RunnableAgent(BaseSingleActionAgent):
         intermediate_steps: list[tuple[AgentAction, str]],
         callbacks: Callbacks = None,
         **kwargs: Any,
-    ) -> Union[AgentAction, AgentFinish,]:
+    ) -> Union[
+        AgentAction,
+        AgentFinish,
+    ]:
         """Based on past history and current inputs, decide what to do.
 
         Args:
@@ -330,9 +333,9 @@ class AgentExecutor(Chain):
     `"generate"` calls the agent's LLM Chain one final time to generate
         a final answer based on the previous steps.
     """
-    handle_parsing_errors: Union[
-        bool, str, Callable[[OutputParserException], str]
-    ] = False
+    handle_parsing_errors: Union[bool, str, Callable[[OutputParserException], str]] = (
+        False
+    )
     """How to handle errors raised by the agent's output parser.
     Defaults to `False`, which raises the error.
     If `true`, the error will be sent back to the LLM as an observation.

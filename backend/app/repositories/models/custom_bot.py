@@ -51,9 +51,11 @@ class AgentToolModel(BaseModel):
 class AgentModel(BaseModel):
     tools: list[AgentToolModel]
 
+
 class ConversationQuickStarterModel(BaseModel):
     title: str
     example: str
+
 
 class BotModel(BaseModel):
     id: str

@@ -95,7 +95,7 @@ def update_bot(
     sync_status: type_sync_status,
     sync_status_reason: str,
     display_retrieved_chunks: bool,
-    conversation_quick_starters: list[ConversationQuickStarterModel]
+    conversation_quick_starters: list[ConversationQuickStarterModel],
 ):
     """Update bot title, description, and instruction.
     NOTE: Use `update_bot_visibility` to update visibility.
@@ -161,7 +161,7 @@ def store_alias(user_id: str, alias: BotAliasModel):
         "IsPinned": alias.is_pinned,
         "SyncStatus": alias.sync_status,
         "HasKnowledge": alias.has_knowledge,
-        "ConversationQuickStarters": alias.conversation_quick_starters
+        "ConversationQuickStarters": alias.conversation_quick_starters,
     }
 
     response = table.put_item(Item=item)

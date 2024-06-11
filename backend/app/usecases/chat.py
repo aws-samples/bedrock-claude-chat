@@ -24,7 +24,11 @@ from app.repositories.models.conversation import (
     ConversationModel,
     MessageModel,
 )
-from app.repositories.models.custom_bot import BotAliasModel, BotModel
+from app.repositories.models.custom_bot import (
+    BotAliasModel,
+    BotModel,
+    ConversationQuickStarterModel,
+)
 from app.routes.schemas.conversation import (
     ChatInput,
     ChatOutput,
@@ -149,6 +153,17 @@ def prepare_conversation(
                             is_pinned=False,
                             sync_status=bot.sync_status,
                             has_knowledge=bot.has_knowledge(),
+                            conversation_quick_starters=(
+                                []
+                                if bot.conversation_quick_starters is None
+                                else [
+                                    ConversationQuickStarterModel(
+                                        title=starter.title,
+                                        example=starter.example,
+                                    )
+                                    for starter in bot.conversation_quick_starters
+                                ]
+                            ),
                         ),
                     )
 

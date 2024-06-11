@@ -169,7 +169,8 @@ def get_private_bot(request: Request, bot_id: str):
             ConversationQuickStarter(
                 title=starter.title,
                 example=starter.example,
-            ) for starter in bot.conversation_quick_starters
+            )
+            for starter in bot.conversation_quick_starters
         ],
     )
     return output

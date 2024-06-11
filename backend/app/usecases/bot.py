@@ -195,12 +195,17 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             published_api_datetime=None,
             published_api_codebuild_id=None,
             display_retrieved_chunks=bot_input.display_retrieved_chunks,
-            conversation_quick_starters=[
-                ConversationQuickStarterModel(
-                    title=starter.title,
-                    example=starter.example,
-                ) for starter in bot_input.conversation_quick_starters
-            ],
+            conversation_quick_starters=(
+                []
+                if bot_input.conversation_quick_starters is None
+                else [
+                    ConversationQuickStarterModel(
+                        title=starter.title,
+                        example=starter.example,
+                    )
+                    for starter in bot_input.conversation_quick_starters
+                ]
+            ),
         ),
     )
     return BotOutput(
@@ -233,7 +238,17 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         sync_status_reason="",
         sync_last_exec_id="",
         display_retrieved_chunks=bot_input.display_retrieved_chunks,
-        conversation_quick_starters=bot_input.conversation_quick_starters,
+        conversation_quick_starters=(
+            []
+            if bot_input.conversation_quick_starters is None
+            else [
+                ConversationQuickStarter(
+                    title=starter.title,
+                    example=starter.example,
+                )
+                for starter in bot_input.conversation_quick_starters
+            ]
+        ),
     )
 
 
@@ -339,7 +354,17 @@ def modify_owned_bot(
         sync_status=sync_status,
         sync_status_reason="",
         display_retrieved_chunks=modify_input.display_retrieved_chunks,
-        conversation_quick_starters=modify_input.conversation_quick_starters,
+        conversation_quick_starters=(
+            []
+            if modify_input.conversation_quick_starters is None
+            else [
+                ConversationQuickStarterModel(
+                    title=starter.title,
+                    example=starter.example,
+                )
+                for starter in modify_input.conversation_quick_starters
+            ]
+        ),
     )
 
     return BotModifyOutput(
@@ -365,7 +390,17 @@ def modify_owned_bot(
             sitemap_urls=sitemap_urls,
             filenames=filenames,
         ),
-        conversation_quick_starters=modify_input.conversation_quick_starters,
+        conversation_quick_starters=(
+            []
+            if modify_input.conversation_quick_starters is None
+            else [
+                ConversationQuickStarter(
+                    title=starter.title,
+                    example=starter.example,
+                )
+                for starter in modify_input.conversation_quick_starters
+            ]
+        ),
     )
 
 
@@ -520,7 +555,8 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
                 ConversationQuickStarter(
                     title=starter.title,
                     example=starter.example,
-                ) for starter in bot.conversation_quick_starters
+                )
+                for starter in bot.conversation_quick_starters
             ],
         )
 
@@ -541,12 +577,17 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
             owned=False,
             sync_status=alias.sync_status,
             has_knowledge=alias.has_knowledge,
-            conversation_quick_starters=[
-                ConversationQuickStarter(
-                    title=starter.title,
-                    example=starter.example,
-                ) for starter in bot.conversation_quick_starters
-            ],
+            conversation_quick_starters=(
+                []
+                if bot.conversation_quick_starters is None
+                else [
+                    ConversationQuickStarter(
+                        title=starter.title,
+                        example=starter.example,
+                    )
+                    for starter in bot.conversation_quick_starters
+                ]
+            ),
         )
     except RecordNotFoundError:
         pass
@@ -569,10 +610,11 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
                 sync_status=bot.sync_status,
                 has_knowledge=bot.has_knowledge(),
                 conversation_quick_starters=[
-                    ConversationQuickStarter(
+                    ConversationQuickStarterModel(
                         title=starter.title,
                         example=starter.example,
-                    ) for starter in bot.conversation_quick_starters
+                    )
+                    for starter in bot.conversation_quick_starters
                 ],
             ),
         )
@@ -592,7 +634,8 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
                 ConversationQuickStarter(
                     title=starter.title,
                     example=starter.example,
-                ) for starter in bot.conversation_quick_starters
+                )
+                for starter in bot.conversation_quick_starters
             ],
         )
     except RecordNotFoundError:

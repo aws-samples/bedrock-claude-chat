@@ -31,6 +31,7 @@ from app.repositories.models.custom_bot import (
     GenerationParamsModel,
     KnowledgeModel,
     SearchParamsModel,
+    ConversationQuickStarterModel,
 )
 from boto3.dynamodb.conditions import Key
 from botocore.exceptions import ClientError
@@ -408,6 +409,9 @@ class TestConversationBotRepository(unittest.TestCase):
             published_api_datetime=0,
             published_api_stack_name="",
             display_retrieved_chunks=True,
+            conversation_quick_starters=[
+                ConversationQuickStarterModel(title="QS title", example="QS example")
+            ],
         )
         bot2 = BotModel(
             id="2",
@@ -452,6 +456,9 @@ class TestConversationBotRepository(unittest.TestCase):
             published_api_datetime=0,
             published_api_stack_name="",
             display_retrieved_chunks=True,
+            conversation_quick_starters=[
+                ConversationQuickStarterModel(title="QS title", example="QS example")
+            ],
         )
 
         store_conversation("user", conversation1)
