@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import InputChatContent from '../components/InputChatContent';
 import useChat from '../hooks/useChat';
 import ChatMessage from '../components/ChatMessage';
@@ -160,7 +166,7 @@ const ChatPage: React.FC = () => {
     });
   }, [inputBotParams, regenerate]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (messages.length > 0) {
       scrollToBottom();
     } else {
@@ -300,8 +306,9 @@ const ChatPage: React.FC = () => {
           </div>
         )}
       </div>
-      <main className="relative h-5/6 w-full flex-1  overflow-auto">
+      <section className="relative h-5/6 w-full flex-1  overflow-auto">
         <div
+          id="messages"
           role="presentation"
           className=" flex h-full flex-col overflow-auto pb-9">
           {messages.length === 0 ? (
@@ -314,30 +321,32 @@ const ChatPage: React.FC = () => {
               </div>
             </div>
           ) : (
-            messages.map((message, idx) => (
-              <div
-                key={idx}
-                className={`${
-                  message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
-                }`}>
-                {messages.length === idx + 1 &&
-                [AgentState.THINKING, AgentState.LEAVING].some(
-                  (v) => v == agentThinking.value
-                ) ? (
-                  <AgentProcessingIndicator
-                    processCount={agentThinking.context.count}
-                  />
-                ) : (
-                  <ChatMessage
-                    chatContent={message}
-                    onChangeMessageId={onChangeCurrentMessageId}
-                    onSubmit={onSubmitEditedContent}
-                  />
-                )}
+            <>
+              {messages.map((message, idx) => (
+                <div
+                  key={idx}
+                  className={`${
+                    message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
+                  }`}>
+                  {messages.length === idx + 1 &&
+                  [AgentState.THINKING, AgentState.LEAVING].some(
+                    (v) => v == agentThinking.value
+                  ) ? (
+                    <AgentProcessingIndicator
+                      processCount={agentThinking.context.count}
+                    />
+                  ) : (
+                    <ChatMessage
+                      chatContent={message}
+                      onChangeMessageId={onChangeCurrentMessageId}
+                      onSubmit={onSubmitEditedContent}
+                    />
+                  )}
 
-                <div className="w-full border-b border-aws-squid-ink/10"></div>
-              </div>
-            ))
+                  <div className="w-full border-b border-aws-squid-ink/10"></div>
+                </div>
+              ))}
+            </>
           )}
           {hasError && (
             <div className="mb-12 mt-2 flex flex-col items-center">
@@ -360,7 +369,7 @@ const ChatPage: React.FC = () => {
             </div>
           )}
         </div>
-      </main>
+      </section>
 
       <div className="bottom-0 z-0 flex w-full flex-col items-center justify-center">
         {bot && bot.syncStatus !== 'SUCCEEDED' && (
