@@ -242,134 +242,140 @@ const ChatPage: React.FC = () => {
 
   return (
     <div
-      className="h-screen flex-1 flex-col"
+      className="relative flex h-full flex-1 flex-col"
       onDragOver={onDragOver}
       onDrop={endDnd}
       onDragEnd={endDnd}>
-      <div className="sticky top-0 z-10 mb-1.5 flex h-14 w-full items-center justify-between border-b border-gray bg-aws-paper p-2 font-semibold">
-        <div className="flex w-full justify-between">
-          <div className="p-2">
-            <div className="mr-10 font-bold">{pageTitle}</div>
-            <div className="text-xs font-thin text-dark-gray">
-              {description}
+      <div className="flex-1 overflow-hidden">
+        <div className="sticky top-0 z-10 mb-1.5 flex h-14 w-full items-center justify-between border-b border-gray bg-aws-paper p-2 font-semibold">
+          <div className="flex w-full justify-between">
+            <div className="p-2">
+              <div className="mr-10 font-bold">{pageTitle}</div>
+              <div className="text-xs font-thin text-dark-gray">
+                {description}
+              </div>
             </div>
-          </div>
 
-          {isAvailabilityBot && (
-            <div className="absolute -top-1 right-0 flex h-full items-center">
-              <div className="h-full w-5 bg-gradient-to-r from-transparent to-aws-paper"></div>
-              <div className="flex items-center bg-aws-paper">
-                {bot?.owned && (
-                  <StatusSyncBot
-                    syncStatus={bot.syncStatus}
-                    onClickError={onClickSyncError}
-                  />
-                )}
-                <ButtonIcon onClick={onClickStar}>
-                  {bot?.isPinned ? (
-                    <PiStarFill className="text-aws-aqua" />
-                  ) : (
-                    <PiStar />
-                  )}
-                </ButtonIcon>
-                <ButtonPopover className="mx-1" target="bottom-right">
+            {isAvailabilityBot && (
+              <div className="absolute -top-1 right-0 flex h-full items-center">
+                <div className="h-full w-5 bg-gradient-to-r from-transparent to-aws-paper"></div>
+                <div className="flex items-center bg-aws-paper">
                   {bot?.owned && (
-                    <PopoverItem
-                      onClick={() => {
-                        if (bot) {
-                          onClickBotEdit(bot.id);
-                        }
-                      }}>
-                      <PiPencilLine />
-                      {t('bot.titleSubmenu.edit')}
-                    </PopoverItem>
-                  )}
-                  {bot?.isPublic && (
-                    <PopoverItem
-                      onClick={() => {
-                        if (bot) {
-                          onClickCopyUrl(bot.id);
-                        }
-                      }}>
-                      <PiLink />
-                      {copyLabel}
-                    </PopoverItem>
-                  )}
-                </ButtonPopover>
-              </div>
-            </div>
-          )}
-        </div>
-        {getPostedModel() && (
-          <div className="absolute right-2 top-10 text-xs text-dark-gray">
-            model: {getPostedModel()}
-          </div>
-        )}
-      </div>
-      <section className="relative h-5/6 w-full flex-1  overflow-auto">
-        <div
-          id="messages"
-          role="presentation"
-          className=" flex h-full flex-col overflow-auto pb-9">
-          {messages.length === 0 ? (
-            <div className="relative flex w-full justify-center">
-              {!loadingConversation && (
-                <SwitchBedrockModel className="mt-3 w-min" />
-              )}
-              <div className="absolute mx-3 my-20 flex items-center justify-center text-4xl font-bold text-gray">
-                {!MISTRAL_ENABLED ? t('app.name') : t('app.nameWithoutClaude')}
-              </div>
-            </div>
-          ) : (
-            <>
-              {messages.map((message, idx) => (
-                <div
-                  key={idx}
-                  className={`${
-                    message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
-                  }`}>
-                  {messages.length === idx + 1 &&
-                  [AgentState.THINKING, AgentState.LEAVING].some(
-                    (v) => v == agentThinking.value
-                  ) ? (
-                    <AgentProcessingIndicator
-                      processCount={agentThinking.context.count}
-                    />
-                  ) : (
-                    <ChatMessage
-                      chatContent={message}
-                      onChangeMessageId={onChangeCurrentMessageId}
-                      onSubmit={onSubmitEditedContent}
+                    <StatusSyncBot
+                      syncStatus={bot.syncStatus}
+                      onClickError={onClickSyncError}
                     />
                   )}
-
-                  <div className="w-full border-b border-aws-squid-ink/10"></div>
+                  <ButtonIcon onClick={onClickStar}>
+                    {bot?.isPinned ? (
+                      <PiStarFill className="text-aws-aqua" />
+                    ) : (
+                      <PiStar />
+                    )}
+                  </ButtonIcon>
+                  <ButtonPopover className="mx-1" target="bottom-right">
+                    {bot?.owned && (
+                      <PopoverItem
+                        onClick={() => {
+                          if (bot) {
+                            onClickBotEdit(bot.id);
+                          }
+                        }}>
+                        <PiPencilLine />
+                        {t('bot.titleSubmenu.edit')}
+                      </PopoverItem>
+                    )}
+                    {bot?.isPublic && (
+                      <PopoverItem
+                        onClick={() => {
+                          if (bot) {
+                            onClickCopyUrl(bot.id);
+                          }
+                        }}>
+                        <PiLink />
+                        {copyLabel}
+                      </PopoverItem>
+                    )}
+                  </ButtonPopover>
                 </div>
-              ))}
-            </>
-          )}
-          {hasError && (
-            <div className="mb-12 mt-2 flex flex-col items-center">
-              <div className="flex items-center font-bold text-red">
-                <PiWarningCircleFill className="mr-1 text-2xl" />
-                {t('error.answerResponse')}
               </div>
-
-              <Button
-                className="mt-2 shadow "
-                icon={<PiArrowsCounterClockwise />}
-                outlined
-                onClick={() => {
-                  retryPostChat({
-                    bot: inputBotParams,
-                  });
-                }}>
-                {t('button.resend')}
-              </Button>
+            )}
+          </div>
+          {getPostedModel() && (
+            <div className="absolute right-2 top-10 text-xs text-dark-gray">
+              model: {getPostedModel()}
             </div>
           )}
         </div>
-      </section>
+        <section className="relative h-full w-full flex-1 overflow-auto pb-9">
+          <div className="h-full">
+            <div
+              id="messages"
+              role="presentation"
+              className=" flex h-full flex-col overflow-auto pb-9">
+              {messages.length === 0 ? (
+                <div className="relative flex w-full justify-center">
+                  {!loadingConversation && (
+                    <SwitchBedrockModel className="mt-3 w-min" />
+                  )}
+                  <div className="absolute mx-3 my-20 flex items-center justify-center text-4xl font-bold text-gray">
+                    {!MISTRAL_ENABLED
+                      ? t('app.name')
+                      : t('app.nameWithoutClaude')}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {messages.map((message, idx) => (
+                    <div
+                      key={idx}
+                      className={`${
+                        message.role === 'assistant' ? 'bg-aws-squid-ink/5' : ''
+                      }`}>
+                      {messages.length === idx + 1 &&
+                      [AgentState.THINKING, AgentState.LEAVING].some(
+                        (v) => v == agentThinking.value
+                      ) ? (
+                        <AgentProcessingIndicator
+                          processCount={agentThinking.context.count}
+                        />
+                      ) : (
+                        <ChatMessage
+                          chatContent={message}
+                          onChangeMessageId={onChangeCurrentMessageId}
+                          onSubmit={onSubmitEditedContent}
+                        />
+                      )}
+
+                      <div className="w-full border-b border-aws-squid-ink/10"></div>
+                    </div>
+                  ))}
+                </>
+              )}
+              {hasError && (
+                <div className="mb-12 mt-2 flex flex-col items-center">
+                  <div className="flex items-center font-bold text-red">
+                    <PiWarningCircleFill className="mr-1 text-2xl" />
+                    {t('error.answerResponse')}
+                  </div>
+
+                  <Button
+                    className="mt-2 shadow "
+                    icon={<PiArrowsCounterClockwise />}
+                    outlined
+                    onClick={() => {
+                      retryPostChat({
+                        bot: inputBotParams,
+                      });
+                    }}>
+                    {t('button.resend')}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      </div>
 
       <div className="bottom-0 z-0 flex w-full flex-col items-center justify-center">
         {bot && bot.syncStatus !== 'SUCCEEDED' && (
