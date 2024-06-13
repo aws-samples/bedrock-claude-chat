@@ -61,6 +61,11 @@ class KnowledgeDiffInput(BaseSchema):
     unchanged_filenames: list[str]
 
 
+class ConversationQuickStarter(BaseSchema):
+    title: str
+    example: str
+
+
 class BotInput(BaseSchema):
     id: str
     title: str
@@ -72,6 +77,7 @@ class BotInput(BaseSchema):
     agent: Optional[AgentInput] = None
     knowledge: Knowledge | None
     display_retrieved_chunks: bool
+    conversation_quick_starters: list[ConversationQuickStarter] | None
 
 
 class BotModifyInput(BaseSchema):
@@ -84,6 +90,7 @@ class BotModifyInput(BaseSchema):
     agent: Optional[AgentInput] = None
     knowledge: KnowledgeDiffInput | None
     display_retrieved_chunks: bool
+    conversation_quick_starters: list[ConversationQuickStarter] | None
 
     def has_update_files(self) -> bool:
         return self.knowledge is not None and (
@@ -134,6 +141,7 @@ class BotModifyOutput(BaseSchema):
     search_params: SearchParams
     agent: Agent
     knowledge: Knowledge
+    conversation_quick_starters: list[ConversationQuickStarter]
 
 
 class BotOutput(BaseSchema):
@@ -156,6 +164,7 @@ class BotOutput(BaseSchema):
     sync_status_reason: str
     sync_last_exec_id: str
     display_retrieved_chunks: bool
+    conversation_quick_starters: list[ConversationQuickStarter]
 
 
 class BotMetaOutput(BaseSchema):
@@ -185,6 +194,7 @@ class BotSummaryOutput(BaseSchema):
     owned: bool
     sync_status: type_sync_status
     has_knowledge: bool
+    conversation_quick_starters: list[ConversationQuickStarter]
 
 
 class BotSwitchVisibilityInput(BaseSchema):

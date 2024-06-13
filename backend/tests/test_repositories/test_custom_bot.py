@@ -29,6 +29,7 @@ from app.repositories.models.custom_bot import (
     GenerationParamsModel,
     KnowledgeModel,
     SearchParamsModel,
+    ConversationQuickStarterModel,
 )
 from app.usecases.bot import fetch_all_bots_by_user_id
 from tests.test_repositories.utils.bot_factory import (
@@ -224,6 +225,10 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             is_pinned=True,
             sync_status="RUNNING",
             has_knowledge=True,
+            has_agent=True,
+            conversation_quick_starters=[
+                ConversationQuickStarterModel(title="QS title", example="QS example")
+            ],
         )
         alias2 = BotAliasModel(
             id="alias2",
@@ -236,6 +241,10 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             is_pinned=False,
             sync_status="RUNNING",
             has_knowledge=True,
+            has_agent=True,
+            conversation_quick_starters=[
+                ConversationQuickStarterModel(title="QS title", example="QS example")
+            ],
         )
         store_bot("user1", bot1)
         store_bot("user1", bot2)
@@ -299,6 +308,10 @@ class TestUpdateBotVisibility(unittest.TestCase):
             is_pinned=True,
             sync_status="RUNNING",
             has_knowledge=True,
+            has_agent=True,
+            conversation_quick_starters=[
+                ConversationQuickStarterModel(title="QS title", example="QS example")
+            ],
         )
         store_bot("user1", bot1)
         store_bot("user1", bot2)

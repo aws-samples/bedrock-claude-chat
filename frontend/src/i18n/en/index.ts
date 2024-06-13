@@ -86,6 +86,11 @@ const translation = {
           uploaded: 'Uploaded',
           error: 'ERROR',
         },
+        quickStarter: {
+          title: 'Conversation Quick Starter ',
+          exampleTitle: 'Title',
+          example: 'Conversation Example',
+        },
         citeRetrievedContexts: 'Retrieved Context Citation',
       },
       titleSubmenu: {
@@ -107,6 +112,10 @@ const translation = {
           file: 'The uploaded files will be used as Knowledge.',
           citeRetrievedContexts:
             'Configure whether to display context retrieved to answer user queries as citation information.\nIf enabled, users can access the original source URLs or files.',
+        },
+        quickStarter: {
+          overview:
+            'When starting a conversation, provide examples. Examples illustrate how to use the bot.',
         },
       },
       alert: {
@@ -497,6 +506,9 @@ How would you categorize this email?`,
       },
       chunkOverlapLessThanChunkSize: {
         message: 'Chunk overlap must be set to less than Chunk size',
+      },
+      quickStarter: {
+        message: 'Please input both Title and Conversation Example.',
       },
     },
   },

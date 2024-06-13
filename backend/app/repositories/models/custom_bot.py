@@ -52,6 +52,11 @@ class AgentModel(BaseModel):
     tools: list[AgentToolModel]
 
 
+class ConversationQuickStarterModel(BaseModel):
+    title: str
+    example: str
+
+
 class BotModel(BaseModel):
     id: str
     title: str
@@ -75,6 +80,7 @@ class BotModel(BaseModel):
     published_api_datetime: int | None
     published_api_codebuild_id: str | None
     display_retrieved_chunks: bool
+    conversation_quick_starters: list[ConversationQuickStarterModel]
 
     def has_knowledge(self) -> bool:
         return (
@@ -97,6 +103,8 @@ class BotAliasModel(BaseModel):
     is_pinned: bool
     sync_status: type_sync_status
     has_knowledge: bool
+    has_agent: bool
+    conversation_quick_starters: list[ConversationQuickStarterModel]
 
 
 class BotMeta(BaseModel):

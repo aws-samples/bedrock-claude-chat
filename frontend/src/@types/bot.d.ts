@@ -19,6 +19,11 @@ export type BotKnowledge = {
   filenames: string[];
 };
 
+export type ConversationQuickStarter = {
+  title: string;
+  example: string;
+};
+
 export type EmdeddingParams = {
   chunkSize: number;
   chunkOverlap: number;
@@ -61,11 +66,13 @@ export type BotDetails = BotMeta & {
   knowledge: BotKnowledge;
   syncStatusReason: string;
   displayRetrievedChunks: boolean;
+  conversationQuickStarters: ConversationQuickStarter[];
 };
 
 export type BotSummary = BotMeta & {
   hasKnowledge: boolean;
   hasAgent: boolean;
+  conversationQuickStarters: ConversationQuickStarter[];
 };
 
 export type BotFile = {
@@ -86,6 +93,7 @@ export type RegisterBotRequest = {
   searchParams?: SearchParams;
   knowledge?: BotKnowledge;
   displayRetrievedChunks: boolean;
+  conversationQuickStarters: ConversationQuickStarter[];
 };
 
 export type RegisterBotResponse = BotDetails;
@@ -100,6 +108,7 @@ export type UpdateBotRequest = {
   searchParams?: SearchParams;
   knowledge?: BotKnowledgeDiff;
   displayRetrievedChunks: boolean;
+  conversationQuickStarters: ConversationQuickStarter[];
 };
 
 export type UpdateBotResponse = {
@@ -112,6 +121,7 @@ export type UpdateBotResponse = {
   searchParams: SearchParams;
   knowledge?: BotKnowledge;
   displayRetrievedChunks: boolean;
+  conversationQuickStarters: ConversationQuickStarter[];
 };
 
 export type UpdateBotPinnedRequest = {

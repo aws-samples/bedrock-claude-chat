@@ -35,6 +35,7 @@ from app.repositories.models.custom_bot import (
     GenerationParamsModel,
     KnowledgeModel,
     SearchParamsModel,
+    ConversationQuickStarterModel,
 )
 from app.routes.schemas.bot import (
     Agent,
@@ -49,6 +50,7 @@ from app.routes.schemas.bot import (
     Knowledge,
     SearchParams,
     type_sync_status,
+    ConversationQuickStarter,
 )
 from app.utils import (
     compose_upload_document_s3_path,
@@ -193,6 +195,17 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
             published_api_datetime=None,
             published_api_codebuild_id=None,
             display_retrieved_chunks=bot_input.display_retrieved_chunks,
+            conversation_quick_starters=(
+                []
+                if bot_input.conversation_quick_starters is None
+                else [
+                    ConversationQuickStarterModel(
+                        title=starter.title,
+                        example=starter.example,
+                    )
+                    for starter in bot_input.conversation_quick_starters
+                ]
+            ),
         ),
     )
     return BotOutput(
@@ -225,6 +238,17 @@ def create_new_bot(user_id: str, bot_input: BotInput) -> BotOutput:
         sync_status_reason="",
         sync_last_exec_id="",
         display_retrieved_chunks=bot_input.display_retrieved_chunks,
+        conversation_quick_starters=(
+            []
+            if bot_input.conversation_quick_starters is None
+            else [
+                ConversationQuickStarter(
+                    title=starter.title,
+                    example=starter.example,
+                )
+                for starter in bot_input.conversation_quick_starters
+            ]
+        ),
     )
 
 
@@ -330,6 +354,17 @@ def modify_owned_bot(
         sync_status=sync_status,
         sync_status_reason="",
         display_retrieved_chunks=modify_input.display_retrieved_chunks,
+        conversation_quick_starters=(
+            []
+            if modify_input.conversation_quick_starters is None
+            else [
+                ConversationQuickStarterModel(
+                    title=starter.title,
+                    example=starter.example,
+                )
+                for starter in modify_input.conversation_quick_starters
+            ]
+        ),
     )
 
     return BotModifyOutput(
@@ -354,6 +389,17 @@ def modify_owned_bot(
             source_urls=source_urls,
             sitemap_urls=sitemap_urls,
             filenames=filenames,
+        ),
+        conversation_quick_starters=(
+            []
+            if modify_input.conversation_quick_starters is None
+            else [
+                ConversationQuickStarter(
+                    title=starter.title,
+                    example=starter.example,
+                )
+                for starter in modify_input.conversation_quick_starters
+            ]
         ),
     )
 
@@ -449,6 +495,7 @@ def fetch_all_bots_by_user_id(
                 or bot.description != item["Description"]
                 or bot.sync_status != item["SyncStatus"]
                 or bot.has_knowledge() != item["HasKnowledge"]
+                or bot.conversation_quick_starters != item["ConversationQuickStarters"]
             ):
                 # Update alias to the latest original bot
                 store_alias(
@@ -464,6 +511,8 @@ def fetch_all_bots_by_user_id(
                         is_pinned=item["IsPinned"],
                         sync_status=bot.sync_status,
                         has_knowledge=bot.has_knowledge(),
+                        has_agent=bot.is_agent_enabled(),
+                        conversation_quick_starters=item["ConversationQuickStarters"],
                     ),
                 )
 
@@ -503,6 +552,13 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
             owned=True,
             sync_status=bot.sync_status,
             has_knowledge=bot.has_knowledge(),
+            conversation_quick_starters=[
+                ConversationQuickStarter(
+                    title=starter.title,
+                    example=starter.example,
+                )
+                for starter in bot.conversation_quick_starters
+            ],
         )
 
     except RecordNotFoundError:
@@ -518,10 +574,21 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
             last_used_time=alias.last_used_time,
             is_pinned=alias.is_pinned,
             is_public=True,
-            has_agent=bot.is_agent_enabled(),
+            has_agent=alias.has_agent,
             owned=False,
             sync_status=alias.sync_status,
             has_knowledge=alias.has_knowledge,
+            conversation_quick_starters=(
+                []
+                if alias.conversation_quick_starters is None
+                else [
+                    ConversationQuickStarter(
+                        title=starter.title,
+                        example=starter.example,
+                    )
+                    for starter in alias.conversation_quick_starters
+                ]
+            ),
         )
     except RecordNotFoundError:
         pass
@@ -543,6 +610,14 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
                 is_pinned=False,
                 sync_status=bot.sync_status,
                 has_knowledge=bot.has_knowledge(),
+                has_agent=bot.is_agent_enabled(),
+                conversation_quick_starters=[
+                    ConversationQuickStarterModel(
+                        title=starter.title,
+                        example=starter.example,
+                    )
+                    for starter in bot.conversation_quick_starters
+                ],
             ),
         )
         return BotSummaryOutput(
@@ -557,6 +632,13 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
             owned=False,
             sync_status=bot.sync_status,
             has_knowledge=bot.has_knowledge(),
+            conversation_quick_starters=[
+                ConversationQuickStarter(
+                    title=starter.title,
+                    example=starter.example,
+                )
+                for starter in bot.conversation_quick_starters
+            ],
         )
     except RecordNotFoundError:
         raise RecordNotFoundError(

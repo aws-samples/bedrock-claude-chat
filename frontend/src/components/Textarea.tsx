@@ -42,7 +42,7 @@ const Textarea: React.FC<Props> = (props) => {
         className={twMerge(
           'peer w-full resize-none rounded p-1.5 outline-none',
           isMax ? 'overflow-y-auto' : 'overflow-hidden',
-          props.noBorder ? '' : 'border border-black/30',
+          props.noBorder ? '' : 'border border-aws-font-color/50',
           props.className
         )}
         rows={props.rows ?? 1}

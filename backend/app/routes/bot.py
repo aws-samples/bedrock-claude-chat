@@ -21,6 +21,7 @@ from app.routes.schemas.bot import (
     GenerationParams,
     Knowledge,
     SearchParams,
+    ConversationQuickStarter,
 )
 from app.usecases.bot import (
     create_new_bot,
@@ -164,6 +165,13 @@ def get_private_bot(request: Request, bot_id: str):
         sync_status_reason=bot.sync_status_reason,
         sync_last_exec_id=bot.sync_last_exec_id,
         display_retrieved_chunks=bot.display_retrieved_chunks,
+        conversation_quick_starters=[
+            ConversationQuickStarter(
+                title=starter.title,
+                example=starter.example,
+            )
+            for starter in bot.conversation_quick_starters
+        ],
     )
     return output
 

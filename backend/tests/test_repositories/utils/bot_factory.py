@@ -13,6 +13,7 @@ from app.repositories.models.custom_bot import (
     GenerationParamsModel,
     KnowledgeModel,
     SearchParamsModel,
+    ConversationQuickStarterModel,
 )
 from app.routes.schemas.bot import type_sync_status
 
@@ -27,6 +28,7 @@ def create_test_private_bot(
     published_api_datetime: int | None = None,
     published_api_codebuild_id: str | None = None,
     display_retrieved_chunks: bool = True,
+    conversation_quick_starters: list[ConversationQuickStarterModel] | None = None,
 ):
     return BotModel(
         id=id,
@@ -71,6 +73,9 @@ def create_test_private_bot(
         published_api_datetime=published_api_datetime,
         published_api_codebuild_id=published_api_codebuild_id,
         display_retrieved_chunks=display_retrieved_chunks,
+        conversation_quick_starters=(
+            [] if conversation_quick_starters is None else conversation_quick_starters
+        ),
     )
 
 
