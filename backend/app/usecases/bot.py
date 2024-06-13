@@ -580,13 +580,13 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
             has_knowledge=alias.has_knowledge,
             conversation_quick_starters=(
                 []
-                if bot.conversation_quick_starters is None
+                if alias.conversation_quick_starters is None
                 else [
                     ConversationQuickStarter(
                         title=starter.title,
                         example=starter.example,
                     )
-                    for starter in bot.conversation_quick_starters
+                    for starter in alias.conversation_quick_starters
                 ]
             ),
         )
