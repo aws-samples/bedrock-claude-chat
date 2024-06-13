@@ -4,7 +4,7 @@ const useScroll = () => {
   const [disabled, setDisabled] = useState(false);
 
   useEffect(() => {
-    const elem = document.getElementById('main');
+    const elem = document.getElementById('messages');
     if (!elem) {
       return;
     }
@@ -25,15 +25,15 @@ const useScroll = () => {
 
   return {
     scrollToTop: () => {
-      document.getElementById('main')?.scrollTo({
+      document.getElementById('messages')?.scrollTo({
         top: 0,
         behavior: 'smooth',
       });
     },
     scrollToBottom: () => {
       if (!disabled) {
-        document.getElementById('main')?.scrollTo({
-          top: document.getElementById('main')?.scrollHeight,
+        document.getElementById('messages')?.scrollTo({
+          top: document.getElementById('messages')?.scrollHeight,
           behavior: 'instant',
         });
       }
