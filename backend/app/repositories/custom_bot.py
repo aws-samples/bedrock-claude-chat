@@ -163,6 +163,7 @@ def store_alias(user_id: str, alias: BotAliasModel):
         "IsPinned": alias.is_pinned,
         "SyncStatus": alias.sync_status,
         "HasKnowledge": alias.has_knowledge,
+        "HasAgent": alias.has_agent,
         "ConversationQuickStarters": [
             starter.model_dump() for starter in alias.conversation_quick_starters
         ],
@@ -518,7 +519,8 @@ def find_alias_by_id(user_id: str, alias_id: str) -> BotAliasModel:
         is_pinned=item["IsPinned"],
         sync_status=item["SyncStatus"],
         has_knowledge=item["HasKnowledge"],
-        conversation_quick_starters=item["ConversationQuickStarters"],
+        has_agent=item.get("HasAgent", False),
+        conversation_quick_starters=item.get("ConversationQuickStarters", []),
     )
 
     logger.info(f"Found alias: {bot}")

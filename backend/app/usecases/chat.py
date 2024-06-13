@@ -153,6 +153,7 @@ def prepare_conversation(
                             is_pinned=False,
                             sync_status=bot.sync_status,
                             has_knowledge=bot.has_knowledge(),
+                            has_agent=bot.is_agent_enabled(),
                             conversation_quick_starters=(
                                 []
                                 if bot.conversation_quick_starters is None

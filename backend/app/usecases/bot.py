@@ -511,6 +511,7 @@ def fetch_all_bots_by_user_id(
                         is_pinned=item["IsPinned"],
                         sync_status=bot.sync_status,
                         has_knowledge=bot.has_knowledge(),
+                        has_agent=bot.is_agent_enabled(),
                         conversation_quick_starters=item["ConversationQuickStarters"],
                     ),
                 )
@@ -573,7 +574,7 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
             last_used_time=alias.last_used_time,
             is_pinned=alias.is_pinned,
             is_public=True,
-            has_agent=bot.is_agent_enabled(),
+            has_agent=alias.has_agent,
             owned=False,
             sync_status=alias.sync_status,
             has_knowledge=alias.has_knowledge,
@@ -609,6 +610,7 @@ def fetch_bot_summary(user_id: str, bot_id: str) -> BotSummaryOutput:
                 is_pinned=False,
                 sync_status=bot.sync_status,
                 has_knowledge=bot.has_knowledge(),
+                has_agent=bot.is_agent_enabled(),
                 conversation_quick_starters=[
                     ConversationQuickStarterModel(
                         title=starter.title,

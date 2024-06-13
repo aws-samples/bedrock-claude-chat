@@ -103,6 +103,7 @@ class BotAliasModel(BaseModel):
     is_pinned: bool
     sync_status: type_sync_status
     has_knowledge: bool
+    has_agent: bool
     conversation_quick_starters: list[ConversationQuickStarterModel]
 
 

@@ -225,6 +225,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             is_pinned=True,
             sync_status="RUNNING",
             has_knowledge=True,
+            has_agent=True,
             conversation_quick_starters=[
                 ConversationQuickStarterModel(title="QS title", example="QS example")
             ],
@@ -240,6 +241,7 @@ class TestFindAllBots(unittest.IsolatedAsyncioTestCase):
             is_pinned=False,
             sync_status="RUNNING",
             has_knowledge=True,
+            has_agent=True,
             conversation_quick_starters=[
                 ConversationQuickStarterModel(title="QS title", example="QS example")
             ],
@@ -306,6 +308,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             is_pinned=True,
             sync_status="RUNNING",
             has_knowledge=True,
+            has_agent=True,
             conversation_quick_starters=[
                 ConversationQuickStarterModel(title="QS title", example="QS example")
             ],
