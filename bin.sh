@@ -13,13 +13,13 @@ echo "!!! !!!"
 echo "!!! Please refer to the migration guide at: !!!"
 echo "!!! https://github.com/aws-samples/bedrock-claude-chat/blob/v1/docs/migration/V0_TO_V1.md !!!"
 echo "!!! !!!"
-echo "!!! If you are a new user or already using v1.x, !!!"
+echo "!!! If you are a previously used version v0.x, !!!"
 echo "!!! you can safely proceed with the installation. !!!"
 echo "!!! !!!"
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 echo ""
 while true; do
-read -p "Are you a new user or already using v1.x of Bedrock Claude Chat? (y/N):  " answer
+read -p "Are you a previously used version v0.x of Bedrock Claude Chat? (y/N):  " answer
 case ${answer:0:1} in
 y|Y )
 echo "Starting deployment..."
