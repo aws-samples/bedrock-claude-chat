@@ -493,6 +493,10 @@ const translation = {
       notFoundConversation:
         '指定のチャットは存在しないため、新規チャット画面を表示しました。',
       notFoundPage: 'お探しのページが見つかりませんでした。',
+      unexpectedError: {
+        title: '予期せぬエラーが発生しました',
+        restore: 'TOPページに戻る',
+      },
       predict: {
         general: '推論中にエラーが発生しました。',
         invalidResponse: '想定外のResponseが返ってきました。',

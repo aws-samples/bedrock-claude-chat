@@ -489,6 +489,10 @@ How would you categorize this email?`,
       notFoundConversation:
         'Since the specified chat does not exist, a new chat screen is displayed.',
       notFoundPage: 'The page you are looking for is not found.',
+      unexpectedError: {
+        title: 'An unexpected error has occurred.',
+        restore: 'Return to TOP page',
+      },
       predict: {
         general: 'An error occurred while predicting.',
         invalidResponse:
