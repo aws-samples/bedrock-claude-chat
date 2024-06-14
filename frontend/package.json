@@ -26,6 +26,7 @@
     "react-children-utilities": "^2.10.0",
     "react-device-detect": "^2.2.3",
     "react-dom": "^18.2.0",
+    "react-error-boundary": "^4.0.13",
     "react-i18next": "^13.3.1",
     "react-icons": "^4.10.1",
     "react-markdown": "^8.0.7",

@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import './i18n';
 import { validateSocialProvider } from './utils/SocialProviderUtils';
 import AppContent from './components/AppContent';
+import { ErrorBoundary } from 'react-error-boundary';
 
 const customProviderEnabled =
   import.meta.env.VITE_APP_CUSTOM_PROVIDER_ENABLED === 'true';
@@ -48,7 +49,15 @@ const App: React.FC = () => {
   I18n.setLanguage(i18n.language);
 
   return (
-    <>
+    <ErrorBoundary
+      fallback={
+        <>
+          <div>Something went wrong</div>
+          <button onClick={() => (window.location.href = '/')}>
+            come back
+          </button>
+        </>
+      }>
       {customProviderEnabled ? (
         <AuthCustom>
           <AppContent />
@@ -60,7 +69,7 @@ const App: React.FC = () => {
           </AuthAmplify>
         </Authenticator.Provider>
       )}
-    </>
+    </ErrorBoundary>
   );
 };
 

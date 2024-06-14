@@ -12,7 +12,6 @@ import BotApiSettingsPage from './pages/BotApiSettingsPage.tsx';
 import AdminSharedBotAnalyticsPage from './pages/AdminSharedBotAnalyticsPage.tsx';
 import AdminApiManagementPage from './pages/AdminApiManagementPage.tsx';
 import AdminBotManagementPage from './pages/AdminBotManagementPage.tsx';
-
 const router = createBrowserRouter([
   {
     path: '/',
