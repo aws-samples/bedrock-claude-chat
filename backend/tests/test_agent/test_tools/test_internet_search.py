@@ -11,8 +11,9 @@ class TestInternetSearchTool(unittest.TestCase):
         # query = "Amazon Stock Price Today"
         query = "東京 焼肉"
         time_limit = "d"
+        country = "jp-jp"
         response = internet_search_tool.run(
-            tool_input={"query": query, "time_limit": time_limit}
+            tool_input={"query": query, "time_limit": time_limit, "country": country}
         )
         self.assertIsInstance(response, str)
         print(response)

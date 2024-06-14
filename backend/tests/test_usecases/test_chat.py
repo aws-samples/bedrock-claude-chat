@@ -729,6 +729,55 @@ class TestChatWithCustomizedBot(unittest.TestCase):
         pprint(msg)
 
 
+class TestAgentChat(unittest.TestCase):
+    user_name = "user1"
+    bot_id = "bot1"
+    model: type_model_name = "claude-v3-sonnet"
+
+    def setUp(self) -> None:
+        private_bot = create_test_private_bot(
+            self.bot_id,
+            True,
+            self.user_name,
+            create_test_instruction_template("俺様風の口調で"),
+            "SUCCEEDED",
+            include_internet_tool=True,
+            set_dummy_knowledge=False,
+        )
+        store_bot(self.user_name, private_bot)
+
+    def tearDown(self) -> None:
+        delete_bot_by_id(self.user_name, self.bot_id)
+        delete_conversation_by_user_id(self.user_name)
+
+    def test_agent_chat(self):
+        chat_input = ChatInput(
+            conversation_id="test_conversation_id",
+            message=MessageInput(
+                role="user",
+                content=[
+                    Content(
+                        content_type="text",
+                        body="Today's amazon stock price?",
+                        media_type=None,
+                    )
+                ],
+                model=self.model,
+                parent_message_id=None,
+                message_id=None,
+            ),
+            bot_id=self.bot_id,
+        )
+        output: ChatOutput = chat(user_id=self.user_name, chat_input=chat_input)
+        print(output.message.content[0].body)
+
+        conv = find_conversation_by_id(self.user_name, output.conversation_id)
+        # Assert if thinking log is not empty
+        assistant_message = conv.message_map[conv.last_message_id]
+        self.assertIsNotNone(assistant_message.thinking_log)
+        print("Thinking log: ", assistant_message.thinking_log)
+
+
 class TestInsertKnowledge(unittest.TestCase):
     def test_insert_knowledge(self):
         results = [
