@@ -8,7 +8,7 @@ const ErrorFallback: React.FC = () => {
     <div className="flex h-dvh flex-col items-center justify-center">
       <div className="flex text-5xl font-bold">
         <PiSmileyXEyesFill />
-        500 ERROR
+        ERROR
       </div>
       <div className="mt-4 text-lg">{t('error.unexpectedError.title')}</div>
       <button
