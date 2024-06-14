@@ -241,6 +241,22 @@ const ChatPage: React.FC = () => {
     e.preventDefault();
   }, []);
 
+  useEffect(() => {
+    const activeCodes: { [key in KeyboardEvent['code']]: boolean } = {};
+
+    document.addEventListener('keydown', (event) => {
+      activeCodes[event.code] = true;
+
+      if (
+        activeCodes['MetaLeft'] &&
+        activeCodes['ShiftLeft'] &&
+        activeCodes['KeyO']
+      ) {
+        navigate('/');
+      }
+    });
+  });
+
   return (
     <div
       className="relative flex h-full flex-1 flex-col"
@@ -314,7 +330,7 @@ const ChatPage: React.FC = () => {
               id="messages"
               role="presentation"
               className=" flex h-full flex-col overflow-auto pb-9">
-              {messages.length === 0 ? (
+              {messages?.length === 0 ? (
                 <div className="relative flex w-full justify-center">
                   {!loadingConversation && (
                     <SwitchBedrockModel className="mt-3 w-min" />
@@ -327,7 +343,7 @@ const ChatPage: React.FC = () => {
                 </div>
               ) : (
                 <>
-                  {messages.map((message, idx) => (
+                  {messages?.map((message, idx) => (
                     <div
                       key={idx}
                       className={`${
@@ -390,7 +406,7 @@ const ChatPage: React.FC = () => {
         )}
         {messages.length === 0 && (
           <div className="mb-3 flex w-11/12 flex-wrap-reverse justify-start gap-2 md:w-10/12 lg:w-4/6 xl:w-3/6">
-            {bot?.conversationQuickStarters.map((qs, idx) => (
+            {bot?.conversationQuickStarters?.map((qs, idx) => (
               <div
                 key={idx}
                 className="w-[calc(33.333%-0.5rem)] cursor-pointer rounded-2xl border border-aws-squid-ink/20 bg-white p-2  text-sm text-dark-gray  hover:shadow-lg hover:shadow-gray"
