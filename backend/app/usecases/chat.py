@@ -1,10 +1,14 @@
-import json
 import logging
 from copy import deepcopy
-from datetime import datetime
 from typing import Literal
 
 from anthropic.types import Message as AnthropicMessage
+from app.agents.agent import AgentExecutor, create_react_agent, format_log_to_str
+from app.agents.handlers.token_count import get_token_count_callback
+from app.agents.handlers.used_chunk import get_used_chunk_callback
+from app.agents.langchain import BedrockLLM
+from app.agents.tools.knowledge import AnswerWithKnowledgeTool
+from app.agents.utils import get_tool_by_name
 from app.bedrock import (
     InvocationMetrics,
     calculate_price,
@@ -42,7 +46,6 @@ from app.routes.schemas.conversation import (
 from app.usecases.bot import fetch_bot, modify_bot_last_used_time
 from app.utils import (
     get_anthropic_client,
-    get_bedrock_client,
     get_current_time,
     is_anthropic_model,
     is_running_on_lambda,
@@ -249,66 +252,134 @@ def insert_knowledge(
 
 def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     user_msg_id, conversation, bot = prepare_conversation(user_id, chat_input)
-
-    message_map = conversation.message_map
-    search_results = []
-    if bot and is_running_on_lambda():
-        # NOTE: `is_running_on_lambda`is a workaround for local testing due to no postgres mock.
-        # Fetch most related documents from vector store
-        # NOTE: Currently embedding not support multi-modal. For now, use the last content.
-        query = conversation.message_map[user_msg_id].content[-1].body
-
-        search_results = search_related_docs(
-            bot_id=bot.id, limit=bot.search_params.max_results, query=query
-        )
-        logger.info(f"Search results from vector store: {search_results}")
-
-        # Insert contexts to instruction
-        conversation_with_context = insert_knowledge(
-            conversation, search_results, display_citation=bot.display_retrieved_chunks
-        )
-        message_map = conversation_with_context.message_map
-
-    messages = trace_to_root(
-        node_id=chat_input.message.parent_message_id, message_map=message_map
-    )
-    messages.append(chat_input.message)  # type: ignore
-
-    # Create payload to invoke Bedrock
-    args = compose_args(
-        messages=messages,
-        model=chat_input.message.model,
-        instruction=(
-            message_map["instruction"].content[0].body
-            if "instruction" in message_map
-            else None
-        ),
-        generation_params=(bot.generation_params if bot else None),
-    )
-
-    if is_anthropic_model(args["model"]):
-        client = get_anthropic_client()
-        response: AnthropicMessage = client.messages.create(**args)
-        reply_txt = response.content[0].text
-    else:
-        response = get_bedrock_response(args)  # type: ignore
-        reply_txt = response["outputs"][0]["text"]  # type: ignore
-
-    # Used chunks for RAG generation
     used_chunks = None
-    if bot and bot.display_retrieved_chunks and is_running_on_lambda():
-        if len(search_results) > 0:
-            used_chunks = []
-            for r in filter_used_results(reply_txt, search_results):
-                content_type, source_link = get_source_link(r.source)
-                used_chunks.append(
-                    ChunkModel(
-                        content=r.content,
-                        content_type=content_type,
-                        source=source_link,
-                        rank=r.rank,
+    price = 0.0
+    thinking_log = None
+
+    if bot and bot.is_agent_enabled():
+        logger.info("Bot has agent tools. Using agent for response.")
+        llm = BedrockLLM.from_model(model=chat_input.message.model)
+
+        tools = [get_tool_by_name(t.name) for t in bot.agent.tools]
+
+        if bot and bot.has_knowledge():
+            logger.info("Bot has knowledge. Adding answer with knowledge tool.")
+            answer_with_knowledge_tool = AnswerWithKnowledgeTool.from_bot(
+                bot=bot,
+                llm=llm,
+            )
+            tools.append(answer_with_knowledge_tool)
+
+        logger.info(f"Tools: {tools}")
+        agent = create_react_agent(
+            model=chat_input.message.model,
+            tools=tools,
+            generation_config=bot.generation_params,
+        )
+        executor = AgentExecutor(
+            name="Agent Executor",
+            agent=agent,
+            tools=tools,
+            return_intermediate_steps=True,
+            callbacks=[],
+            verbose=False,
+            max_iterations=15,
+            max_execution_time=None,
+            early_stopping_method="force",
+            handle_parsing_errors=True,
+        )
+
+        with get_token_count_callback() as token_cb, get_used_chunk_callback() as chunk_cb:
+            agent_response = executor.invoke(
+                {
+                    "input": chat_input.message.content[0].body,  # type: ignore
+                },
+                config={
+                    "callbacks": [
+                        token_cb,
+                        chunk_cb,
+                    ],
+                },
+            )
+            price = token_cb.total_cost
+            if bot.display_retrieved_chunks and chunk_cb.used_chunks:
+                used_chunks = chunk_cb.used_chunks
+            thinking_log = format_log_to_str(
+                agent_response.get("intermediate_steps", [])
+            )
+            logger.info(f"Thinking log: {thinking_log}")
+
+        reply_txt = agent_response["output"]
+    else:
+        message_map = conversation.message_map
+        search_results = []
+        if bot and is_running_on_lambda():
+            # NOTE: `is_running_on_lambda`is a workaround for local testing due to no postgres mock.
+            # Fetch most related documents from vector store
+            # NOTE: Currently embedding not support multi-modal. For now, use the last content.
+            query = conversation.message_map[user_msg_id].content[-1].body
+
+            search_results = search_related_docs(
+                bot_id=bot.id, limit=bot.search_params.max_results, query=query
+            )
+            logger.info(f"Search results from vector store: {search_results}")
+
+            # Insert contexts to instruction
+            conversation_with_context = insert_knowledge(
+                conversation,
+                search_results,
+                display_citation=bot.display_retrieved_chunks,
+            )
+            message_map = conversation_with_context.message_map
+
+        messages = trace_to_root(
+            node_id=chat_input.message.parent_message_id, message_map=message_map
+        )
+        messages.append(chat_input.message)  # type: ignore
+
+        # Create payload to invoke Bedrock
+        args = compose_args(
+            messages=messages,
+            model=chat_input.message.model,
+            instruction=(
+                message_map["instruction"].content[0].body
+                if "instruction" in message_map
+                else None
+            ),
+            generation_params=(bot.generation_params if bot else None),
+        )
+
+        if is_anthropic_model(args["model"]):
+            client = get_anthropic_client()
+            response: AnthropicMessage = client.messages.create(**args)
+            reply_txt = response.content[0].text
+        else:
+            response = get_bedrock_response(args)  # type: ignore
+            reply_txt = response["outputs"][0]["text"]  # type: ignore
+
+        # Used chunks for RAG generation
+        if bot and bot.display_retrieved_chunks and is_running_on_lambda():
+            if len(search_results) > 0:
+                used_chunks = []
+                for r in filter_used_results(reply_txt, search_results):
+                    content_type, source_link = get_source_link(r.source)
+                    used_chunks.append(
+                        ChunkModel(
+                            content=r.content,
+                            content_type=content_type,
+                            source=source_link,
+                            rank=r.rank,
+                        )
                     )
-                )
+        if is_anthropic_model(args["model"]):
+            # Update total pricing
+            input_tokens = response.usage.input_tokens
+            output_tokens = response.usage.output_tokens
+        else:
+            metrics: InvocationMetrics = response["amazon-bedrock-invocationMetrics"]  # type: ignore
+            input_tokens = metrics.input_tokens
+            output_tokens = metrics.output_tokens
+        price = calculate_price(chat_input.message.model, input_tokens, output_tokens)
 
     # Issue id for new assistant message
     assistant_msg_id = str(ULID())
@@ -322,7 +393,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         create_time=get_current_time(),
         feedback=None,
         used_chunks=used_chunks,
-        thinking_log=None,
+        thinking_log=thinking_log,
     )
     conversation.message_map[assistant_msg_id] = message
 
@@ -330,16 +401,6 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     conversation.message_map[user_msg_id].children.append(assistant_msg_id)
     conversation.last_message_id = assistant_msg_id
 
-    if is_anthropic_model(args["model"]):
-        # Update total pricing
-        input_tokens = response.usage.input_tokens
-        output_tokens = response.usage.output_tokens
-    else:
-        metrics: InvocationMetrics = response["amazon-bedrock-invocationMetrics"]  # type: ignore
-        input_tokens = metrics.input_tokens
-        output_tokens = metrics.output_tokens
-
-    price = calculate_price(chat_input.message.model, input_tokens, output_tokens)
     conversation.total_price += price
 
     # Store updated conversation
