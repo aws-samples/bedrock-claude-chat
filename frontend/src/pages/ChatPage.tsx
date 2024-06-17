@@ -243,15 +243,14 @@ const ChatPage: React.FC = () => {
 
   useEffect(() => {
     const activeCodes: { [key in KeyboardEvent['code']]: boolean } = {};
-
     document.addEventListener('keydown', (event) => {
       activeCodes[event.code] = true;
-
       if (
         activeCodes['MetaLeft'] &&
         activeCodes['ShiftLeft'] &&
         activeCodes['KeyO']
       ) {
+        event.preventDefault();
         navigate('/');
       }
     });
