@@ -19,6 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install poetry
+          cd backend
           poetry install
       - name: Run mypy
         run: |
@@ -40,6 +41,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install poetry
+          cd backend
           poetry install
       - name: Run Uvicorn
         env:
