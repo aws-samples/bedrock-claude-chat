@@ -76,7 +76,7 @@ export class Embedding extends Construct {
 
     const asset = new DockerImageAsset(this, "Image", {
       directory: path.join(__dirname, "../../../backend"),
-      file: "embedding.Dockerfile",
+      file: "embedding/Dockerfile",
       platform: Platform.LINUX_AMD64,
     });
     SociIndexBuild.fromDockerImageAsset(this, "Index", asset);

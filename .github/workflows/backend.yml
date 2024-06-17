@@ -62,7 +62,7 @@ jobs:
         run: |
           cd backend
           docker build -t backend .
-      - name: Build backend/embedding.Dockerfile
+      - name: Build backend/embedding/Dockerfile
         run: |
           cd backend
-          docker build -t embedding -f embedding.Dockerfile .
+          docker build -t embedding -f embedding/Dockerfile .
