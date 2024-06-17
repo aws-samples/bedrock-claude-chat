@@ -19,7 +19,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r backend/requirements.txt
+          pip install poetry
+          cd backend
+          poetry install
 
       - name: Set Environment Variables
         run: |
@@ -29,7 +31,7 @@ jobs:
       - name: Start FastAPI server
         run: |
           cd backend
-          uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 &
+          poetry run uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 &
           sleep 10
         env:
           AWS_REGION: ${{ env.AWS_REGION }}
@@ -49,7 +51,10 @@ jobs:
 
       - name: Kill FastAPI server
         run: |
-          pkill uvicorn
+          pids=$(pgrep -f "uvicorn app.main:app")
+          for pid in $pids; do
+              kill $pid
+          done
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
