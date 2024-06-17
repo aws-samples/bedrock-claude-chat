@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
     ```
     cd backend
-    docker build -f embedding.Dockerfile -t embedding .
+    docker build -f embedding/Dockerfile -t embedding .
     docker run -it -v $(pwd)/tests:/src/tests embedding /src/tests/embedding/test_embed.py
     ```
     """

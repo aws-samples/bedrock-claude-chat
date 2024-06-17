@@ -1,7 +1,9 @@
 FROM public.ecr.aws/lambda/python:3.11
 
-COPY ./requirements.txt ./
-RUN pip3 install -r requirements.txt --no-cache-dir
+COPY ./pyproject.toml ./poetry.lock ./
+RUN pip install poetry --no-cache-dir && \
+    poetry config virtualenvs.create false && \
+    poetry install --no-interaction --no-ansi
 
 COPY ./app ./app
 

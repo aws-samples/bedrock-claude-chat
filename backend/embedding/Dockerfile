@@ -38,8 +38,11 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
-COPY ./embedding.requirements.txt ./requirements.txt
-RUN pip3 install -r requirements.txt --no-cache-dir
+
+COPY ./embedding/pyproject.toml ./embedding/poetry.lock ./
+RUN pip install poetry --no-cache-dir && \
+    poetry config virtualenvs.create false && \
+    poetry install --no-interaction --no-ansi
 
 RUN playwright install chromium
 
