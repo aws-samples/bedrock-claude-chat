@@ -68,7 +68,7 @@ chmod +x bin.sh
 ./bin.sh
 ```
 
-- You will be asked if a new user or using v1. If so, enter `y`.
+- You will be asked if a new user or using v1. If so, enter `n`.
 - After about 30 minutes, you will get the following output, which you can access from your browser
 
 ### Optional Parameters
