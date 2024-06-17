@@ -5,8 +5,10 @@ COPY --from=public.ecr.aws/awsguru/aws-lambda-adapter:0.7.0 /lambda-adapter /opt
 
 WORKDIR /backend
 
-COPY ./requirements.txt ./
-RUN pip3 install -r requirements.txt --no-cache-dir
+COPY ./pyproject.toml ./poetry.lock ./
+RUN pip install poetry --no-cache-dir && \
+    poetry config virtualenvs.create false && \
+    poetry install --no-interaction --no-ansi
 
 COPY ./app ./app
 
