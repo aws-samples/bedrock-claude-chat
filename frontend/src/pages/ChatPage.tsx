@@ -37,7 +37,7 @@ import useModel from '../hooks/useModel';
 import { TextInputChatContent } from '../features/agent/components/TextInputChatContent';
 import { AgentProcessingIndicator } from '../features/agent/components/AgentProcessingIndicator';
 import { AgentState } from '../features/agent/xstates/agentThinkProgress';
-
+import { BottomHelper } from '../features/heler/components/BottomHelper';
 const MISTRAL_ENABLED: boolean =
   import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
 
@@ -243,7 +243,7 @@ const ChatPage: React.FC = () => {
 
   useEffect(() => {
     const activeCodes: { [key in KeyboardEvent['code']]: boolean } = {};
-    document.addEventListener('keydown', (event) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       activeCodes[event.code] = true;
       if (
         activeCodes['MetaLeft'] &&
@@ -253,7 +253,9 @@ const ChatPage: React.FC = () => {
         event.preventDefault();
         navigate('/');
       }
-    });
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
   });
 
   return (
@@ -449,6 +451,7 @@ const ChatPage: React.FC = () => {
           />
         )}
       </div>
+      <BottomHelper />
     </div>
   );
 };
