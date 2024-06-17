@@ -16,6 +16,7 @@ pg8000 = "^1.30.3"
 argparse = "^1.4.0"
 anthropic = {version = "^0.18.1", extras = ["bedrock"]}
 langchain-core = "^0.2.1"
+tenacity = "<=8.3.0"
 langdetect = "^1.0.9"
 retry = "^0.9.2"
 types-retry = "^0.9.9.4"
