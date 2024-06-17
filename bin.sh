@@ -19,15 +19,15 @@ echo "!!! !!!"
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 echo ""
 while true; do
-read -p "Are you a previously used version v0.x of Bedrock Claude Chat? (y/N):  " answer
+read -p "Are you a previously used version v0.x of Bedrock Claude Chat? (Y/n):  " answer
 case ${answer:0:1} in
 y|Y )
-echo "Starting deployment..."
-break
-;;
-n|N )
 echo "This script is intended for new users or v1.x user only. If you are using previous version, please refer migration guide."
 exit 1
+;;
+n|N )
+echo "Starting deployment..."
+break
 ;;
 * )
 echo "Please enter y or n."
