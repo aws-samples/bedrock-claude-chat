@@ -8,11 +8,13 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "ladle": "npx ladle serve"
   },
   "dependencies": {
     "@aws-amplify/ui-react": "^5.0.6",
     "@headlessui/react": "^1.7.15",
+    "@ladle/react": "^4.1.0",
     "@react-icons/all-files": "^4.1.0",
     "@xstate/react": "^4.1.1",
     "aws-amplify": "^5.3.5",
