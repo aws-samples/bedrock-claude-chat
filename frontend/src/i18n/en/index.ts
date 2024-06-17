@@ -491,7 +491,7 @@ How would you categorize this email?`,
       notFoundPage: 'The page you are looking for is not found.',
       unexpectedError: {
         title: 'An unexpected error has occurred.',
-        restore: 'Return to TOP page',
+        restore: 'Go to TOP page',
       },
       predict: {
         general: 'An error occurred while predicting.',

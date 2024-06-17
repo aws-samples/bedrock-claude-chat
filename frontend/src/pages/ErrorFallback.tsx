@@ -5,7 +5,7 @@ import { PiSmileyXEyesFill } from 'react-icons/pi';
 const ErrorFallback: React.FC = () => {
   const { t } = useTranslation();
   return (
-    <div className="flex h-dvh flex-col items-center justify-center">
+    <div className="flex h-dvh flex-col items-center justify-center bg-aws-paper">
       <div className="flex text-5xl font-bold">
         <PiSmileyXEyesFill />
         ERROR
