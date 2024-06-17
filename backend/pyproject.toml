@@ -22,7 +22,7 @@ types-retry = "^0.9.9.4"
 aws-lambda-powertools = "^2.1.0"
 duckduckgo-search = "^6.1.4"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 mypy = "^1.10.0"
 black = "^24.4.2"
 
