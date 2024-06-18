@@ -182,7 +182,7 @@ def process_chat_input(
         message_map=message_map,
     )
 
-    continueGenerate = False
+    should_continue = False
 
     # TODO: 空メッセージだと続けて生成するとしているが、見直しが必要
     if chat_input.message.content[0].body != "":
@@ -192,7 +192,7 @@ def process_chat_input(
             messages[-1].content[0].body = (
                 messages[-1].content[0].body.strip()
             )  # TODO: ここでstripをすることで、最終的なメッセージに影響が出ないか確認
-        continueGenerate = True
+        should_continue = True
 
     args = compose_args(
         messages,
@@ -214,7 +214,12 @@ def process_chat_input(
         gatewayapi.post_to_connection(ConnectionId=connection_id, Data=data_to_send)
 
     def on_stop(arg: OnStopInput, **kwargs) -> None:
-        if not continueGenerate:
+        if should_continue:
+            # For continue generate
+            conversation.message_map[conversation.last_message_id].content[
+                0
+            ].body += arg.full_token
+        else:
             used_chunks = None
             if bot and bot.display_retrieved_chunks:
                 if len(search_results) > 0:
@@ -251,12 +256,6 @@ def process_chat_input(
             # Append children to parent
             conversation.message_map[user_msg_id].children.append(assistant_msg_id)
             conversation.last_message_id = assistant_msg_id
-
-        else:
-            # For continue generate
-            conversation.message_map[conversation.last_message_id].content[
-                0
-            ].body += arg.full_token
 
         conversation.total_price += arg.price
 

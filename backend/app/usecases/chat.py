@@ -170,8 +170,7 @@ def prepare_conversation(
     else:
         message_id = str(ULID())
 
-    # TODO: Continueが空メッセージという仕様で良いか要検討
-    # Empty messages for continuity purposes are not added.
+    # If the "Generate continue" button is pressed, a new_message is not generated.
     if (
         chat_input.message.content[0].content_type == "text"
         and chat_input.message.content[0].body != ""
