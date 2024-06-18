@@ -325,6 +325,7 @@ class TestContinueChat(unittest.TestCase):
                     ),
                 },
                 bot_id=None,
+                should_continue=False,
             ),
         )
 
@@ -449,6 +450,7 @@ class TestRegenerateChat(unittest.TestCase):
                     ),
                 },
                 bot_id=None,
+                should_continue=False,
             ),
         )
 

@@ -338,6 +338,7 @@ class TestConversationBotRepository(unittest.TestCase):
             },
             last_message_id="x",
             bot_id=None,
+            should_continue=False,
         )
         conversation2 = ConversationModel(
             id="2",
@@ -368,6 +369,7 @@ class TestConversationBotRepository(unittest.TestCase):
             },
             last_message_id="x",
             bot_id="1",
+            should_continue=False,
         )
         bot1 = BotModel(
             id="1",
