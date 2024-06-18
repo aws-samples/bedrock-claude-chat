@@ -70,7 +70,6 @@ chmod +x bin.sh
 
 - You will be asked if a previously used version v0.x. If not so, enter `n`.
 - If you are a previously used version v0 user, please follow the [migration guide](./docs/migration/V0_TO_V1.md).
-- After about 30 minutes, you will get the following output, which you can access from your browser
 
 ### Optional Parameters
 
