@@ -261,10 +261,7 @@ def process_chat_input(
         conversation.total_price += arg.price
 
         # If continued, save the state
-        if arg.stop_reason == "max_tokens":
-            conversation.should_continue = True
-        else:
-            conversation.should_continue = False
+        conversation.should_continue = arg.stop_reason == "max_tokens"
 
         # Store conversation before finish streaming so that front-end can avoid 404 issue
         store_conversation(user_id, conversation)
