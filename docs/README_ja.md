@@ -73,7 +73,7 @@ chmod +x bin.sh
 ./bin.sh --disable-self-register --ipv4-ranges "192.0.2.0/25,192.0.2.128/25" --ipv6-ranges "2001:db8:1:2::/64,2001:db8:1:3::/64" --allowed-signup-email-domains "example.com,anotherexample.com" --region "ap-northeast-1"
 ```
 
-- 30 分ほど経過後、下記の出力が得られるのでブラウザからアクセスします
+- 35 分ほど経過後、下記の出力が得られるのでブラウザからアクセスします
 
 ```
 Frontend URL: https://xxxxxxxxx.cloudfront.net
