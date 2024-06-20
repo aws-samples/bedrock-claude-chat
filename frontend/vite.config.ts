@@ -1,12 +1,18 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
-
+const ReactCompilerConfig = {
+  compilationMode: 'annotation',
+};
 // https://vitejs.dev/config/
 export default defineConfig({
   resolve: { alias: { './runtimeConfig': './runtimeConfig.browser' } },
   plugins: [
-    react(),
+    react({
+      babel: {
+        plugins: [['babel-plugin-react-compiler', ReactCompilerConfig]],
+      },
+    }),
     VitePWA({
       registerType: 'autoUpdate',
       devOptions: {
