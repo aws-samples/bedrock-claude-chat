@@ -181,6 +181,8 @@ def get_model_id(model: str) -> str:
         return "anthropic.claude-3-haiku-20240307-v1:0"
     elif model == "claude-v3-opus":
         return "anthropic.claude-3-opus-20240229-v1:0"
+    elif model == "claude-v3.5-sonnet":
+        return "anthropic.claude-3-5-sonnet-20240620-v1:0"
     elif model == "mistral-7b-instruct":
         return "mistral.mistral-7b-instruct-v0:2"
     elif model == "mixtral-8x7b-instruct":
