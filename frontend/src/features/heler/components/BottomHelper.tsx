@@ -7,8 +7,7 @@ export const BottomHelper = () => {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <>
-      <div className="flex justify-between px-4 pb-2">
-        <div />
+      <div className="fixed bottom-3 right-3">
         <PiQuestionFill
           className="cursor-pointer"
           onClick={() => setIsOpen(() => true)}
