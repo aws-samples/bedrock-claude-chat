@@ -70,6 +70,7 @@ chmod +x bin.sh
 
 - You will be asked if a previously used version v0.x. If not so, enter `n` and deploy.
   - If you are a previously used version v0 user, enter `Y` to abort the deployment. please follow the [migration guide](./docs/migration/V0_TO_V1.md).
+- After approximately 35 minutes, when executing ~./bin, please use the optional parameter --disable-self-register to disable self-signup and deploy.
 
 ### Optional Parameters
 
@@ -98,7 +99,7 @@ Frontend URL: https://xxxxxxxxx.cloudfront.net
 The sign-up screen will appear as shown above, where you can register your email and log in.
 
 > [!Important]
-> This deployment method allows anyone with the URL to sign up if optional parameters are not configured. For production use, we strongly recommend adding IP address restrictions and disabling self-signup to mitigate security risks (Defining the `allowed-signup-email-domains` to allow only your emails from your company domain to be able to sing-up to restrict the users). For ip address restriction use both `ipv4-ranges` and `ipv6-ranges` and to disable self-signup use `disable-self-register` when executing `./bin`.
+> Without setting the optional parameter, this deployment method allows anyone who knows the URL to sign up. For production use, it is strongly recommended to add IP address restrictions and disable self-signup to mitigate security risks (you can define allowed-signup-email-domains to restrict users so that only email addresses from your company’s domain can sign up). Use both ipv4-ranges and ipv6-ranges for IP address restrictions, and disable self-signup by using disable-self-register when executing ./bin. **Please refer to the above optional parameters for more details.**
 
 ## Architecture
 
