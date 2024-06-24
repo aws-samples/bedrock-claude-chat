@@ -5,6 +5,7 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+import Bowser from 'bowser';
 import InputChatContent from '../components/InputChatContent';
 import useChat from '../hooks/useChat';
 import ChatMessage from '../components/ChatMessage';
@@ -245,14 +246,30 @@ const ChatPage: React.FC = () => {
     const activeCodes: { [key in KeyboardEvent['code']]: boolean } = {};
     const handleKeyDown = (event: KeyboardEvent) => {
       activeCodes[event.code] = true;
-      if (
-        activeCodes['MetaLeft'] &&
-        activeCodes['ShiftLeft'] &&
-        activeCodes['KeyO']
-      ) {
-        event.preventDefault();
-        navigate('/');
-      }
+
+      const browser = Bowser.getParser(window.navigator.userAgent);
+      const os = browser.getOSName();
+      const hasKeyDownCommand = (() => {
+        switch (os) {
+          case 'macOS':
+            return (
+              (activeCodes['MetaLeft'] || activeCodes['MetaRight']) &&
+              (activeCodes['ShiftLeft'] || activeCodes['ShiftRight']) &&
+              activeCodes['KeyO']
+            );
+
+          case 'Windows':
+            return (
+              (activeCodes['ControlLeft'] || activeCodes['ControlRight']) &&
+              (activeCodes['ShiftLeft'] || activeCodes['ShiftRight']) &&
+              activeCodes['KeyO']
+            );
+        }
+      })();
+
+      if (!hasKeyDownCommand) return;
+      event.preventDefault();
+      navigate('/');
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
