@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { PiQuestionFill } from 'react-icons/pi';
+import { PiQuestion } from 'react-icons/pi';
 import ModalDialog from '../../../components/ModalDialog';
 import { useTranslation } from 'react-i18next';
 export const BottomHelper = () => {
@@ -8,7 +8,7 @@ export const BottomHelper = () => {
   return (
     <>
       <div className="fixed bottom-3 right-3">
-        <PiQuestionFill
+        <PiQuestion
           className="cursor-pointer"
           onClick={() => setIsOpen(() => true)}
           size={24}
