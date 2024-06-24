@@ -68,8 +68,8 @@ chmod +x bin.sh
 ./bin.sh
 ```
 
-- You will be asked if a previously used version v0.x. If not so, enter `n`.
-- If you are a previously used version v0 user, please follow the [migration guide](./docs/migration/V0_TO_V1.md).
+- You will be asked if a previously used version v0.x. If not so, enter `n` and deploy.
+  - If you are a previously used version v0 user, enter `Y` to abort the deployment. please follow the [migration guide](./docs/migration/V0_TO_V1.md).
 
 ### Optional Parameters
 
