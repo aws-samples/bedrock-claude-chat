@@ -73,7 +73,7 @@ chmod +x bin.sh
 
 ### Optional Parameters
 
-You can now specify the following parameters during deployment to enhance security and customization:
+You will be able to specify the following parameters during deployment to enhance security and customization:
 
 - **--disable-self-register**: Disable self-registration (default: enabled). If this flag is set, you will need to create all users on cognito and it will not allow users to self register their accounts.
 - **--ipv4-ranges**: Comma-separated list of allowed IPv4 ranges. (default: allow all ipv4 addresses)
