@@ -309,7 +309,6 @@ Las categorías de clasificación son:
       signOut: 'Cerrar sesión',
       close: 'Cerrar',
       add: 'Agregar',
-      continue: 'Seguir generando',
     },
     input: {
       hint: {

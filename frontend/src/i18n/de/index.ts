@@ -172,7 +172,6 @@ Wie würden Sie diese E-Mail kategorisieren?`,
       signOut: 'Abmelden',
       close: 'Schließen',
       add: 'Hinzufügen',
-      continue: 'Weiter generieren',
     },
     input: {
       hint: {
