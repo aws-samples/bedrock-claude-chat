@@ -78,7 +78,8 @@ const InputChatContent: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const { postingMessage, hasError, messages, getShouldContinue } = useChat();
   const { disabledImageUpload, model, acceptMediaType } = useModel();
-
+  const [shouldContinue, setShouldContinue] = useState(false);
+  
   const [content, setContent] = useState('');
   const {
     base64EncodedImages,
@@ -95,6 +96,14 @@ const InputChatContent: React.FC<Props> = (props) => {
     clearBase64EncodedImages();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    const checkShouldContinue = async () => {
+      const result = await getShouldContinue();
+      setShouldContinue(result);
+    };
+    checkShouldContinue();
+  }, [getShouldContinue, postingMessage, content, props, hasError]);
 
   const disabledSend = useMemo(() => {
     return content === '' || props.disabledSend || hasError;
@@ -326,9 +335,9 @@ const InputChatContent: React.FC<Props> = (props) => {
             </ModalDialog>
           </div>
         )}
-        {(getShouldContinue() || messages.length > 1) && (
+        {(shouldContinue || messages.length > 1) && (
           <div className="absolute -top-14 right-0 flex space-x-2">
-            {getShouldContinue() && (
+            {shouldContinue && (
               <Button
                 className="bg-aws-paper p-2 text-sm"
                 outlined

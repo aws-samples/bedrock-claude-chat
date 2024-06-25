@@ -50,6 +50,7 @@ export type PostMessageRequest = {
     parentMessageId: null | string;
   };
   botId?: string;
+  continueGenerate?: bool;
 };
 
 export type PostMessageResponse = {

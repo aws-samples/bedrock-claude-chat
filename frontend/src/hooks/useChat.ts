@@ -531,6 +531,7 @@ const useChat = () => {
         parentMessageId: messages[messages.length - 1].id,
       },
       botId: params?.bot?.botId,
+      continueGenerate: true,
     };
 
     const currentContentBody = messages[messages.length - 1].content[0].body;

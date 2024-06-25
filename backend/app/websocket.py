@@ -181,17 +181,14 @@ def process_chat_input(
         node_id=chat_input.message.parent_message_id,
         message_map=message_map,
     )
-    should_continue = False
 
-    # TODO: 空メッセージだと続けて生成するとしているが、見直しが必要
-    if chat_input.message.content[0].body != "":
+    if not chat_input.continue_generate:
         messages.append(chat_input.message)  # type: ignore
-    else:
-        if messages[-1].role == "assistant":
-            messages[-1].content[0].body = (
-                messages[-1].content[0].body.strip()
-            )  # TODO: ここでstripをすることで、最終的なメッセージに影響が出ないか確認
-        should_continue = True
+    # else:
+    #     if messages[-1].role == "assistant":
+    #         messages[-1].content[0].body = (
+    #             messages[-1].content[0].body.strip()
+    #         )  # TODO: ここでstripをすることで、最終的なメッセージに影響が出ないか確認
 
     args = compose_args(
         messages,
@@ -213,7 +210,7 @@ def process_chat_input(
         gatewayapi.post_to_connection(ConnectionId=connection_id, Data=data_to_send)
 
     def on_stop(arg: OnStopInput, **kwargs) -> None:
-        if should_continue:
+        if chat_input.continue_generate:
             # For continue generate
             conversation.message_map[conversation.last_message_id].content[
                 0
