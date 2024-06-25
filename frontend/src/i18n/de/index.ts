@@ -125,8 +125,7 @@ Wie würden Sie diese E-Mail kategorisieren?`,
       },
       deleteDialog: {
         title: 'Löschen?',
-        content:
-          'Sind Sie sicher, dass Sie <Bold>{{Titel}}</Bold> löschen wollen?',
+        content: 'Sind Sie sicher, dass Sie <Bold>{{Titel}}</Bold> löschen wollen?',
       },
       shareDialog: {
         title: 'Teilen',
@@ -146,8 +145,7 @@ Wie würden Sie diese E-Mail kategorisieren?`,
     },
     deleteDialog: {
       title: 'Löschen?',
-      content:
-        'Sind Sie sicher, dass Sie <Bold>{{Titel}}</Bold> löschen wollen?',
+      content: 'Sind Sie sicher, dass Sie <Bold>{{Titel}}</Bold> löschen wollen?',
     },
     clearDialog: {
       title: 'ALLE Löschen?',
