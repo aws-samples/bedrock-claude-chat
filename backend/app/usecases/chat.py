@@ -189,7 +189,7 @@ def prepare_conversation(
     else:
         message_id = str(ULID())
     # If the "Generate continue" button is pressed, a new_message is not generated.
-    if chat_input.continue_generate != True:
+    if not chat_input.continue_generate:
         new_message = MessageModel(
             role=chat_input.message.role,
             content=[
