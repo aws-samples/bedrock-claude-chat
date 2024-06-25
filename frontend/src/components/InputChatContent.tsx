@@ -9,7 +9,7 @@ import ButtonSend from './ButtonSend';
 import Textarea from './Textarea';
 import useChat from '../hooks/useChat';
 import Button from './Button';
-import { PiArrowsCounterClockwise, PiX, PiFileTextThin, PiArrowFatLineRight } from 'react-icons/pi';
+import { PiArrowsCounterClockwise, PiX, PiFileTextThin } from 'react-icons/pi';
 import { TbPhotoPlus } from 'react-icons/tb';
 import { useTranslation } from 'react-i18next';
 import ButtonIcon from './ButtonIcon';
