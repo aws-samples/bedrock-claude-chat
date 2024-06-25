@@ -48,6 +48,7 @@ def store_conversation(
         # Ref: https://stackoverflow.com/questions/63026648/errormessage-class-decimal-inexact-class-decimal-rounded-while
         "TotalPrice": decimal(str(conversation.total_price)),
         "LastMessageId": conversation.last_message_id,
+        "ShouldContinue": conversation.should_continue,
     }
 
     if conversation.bot_id:
@@ -236,6 +237,7 @@ def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationM
         },
         last_message_id=item["LastMessageId"],
         bot_id=item["BotId"] if "BotId" in item else None,
+        should_continue=item.get("ShouldContinue", False),
     )
     logger.info(f"Found conversation: {conv}")
     return conv

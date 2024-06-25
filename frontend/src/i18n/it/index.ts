@@ -152,7 +152,8 @@ Come classificheresti questa email?`,
           endpoint: 'Il client può utilizzare il Bot da questo endpoint.',
           usagePlan:
             "I piani di utilizzo specificano il numero o la frequenza di richieste che la tua API accetta da un client. Associa un'API a un piano di utilizzo per tenere traccia delle richieste ricevute dalla tua API.",
-          throttling: 'Limita la frequenza con cui gli utenti possono chiamare la tua API.',
+          throttling:
+            'Limita la frequenza con cui gli utenti possono chiamare la tua API.',
           rateLimit:
             'Inserisci la velocità, in richieste al secondo, con cui i client possono chiamare la tua API.',
           burstLimit:
@@ -332,6 +333,7 @@ Come classificheresti questa email?`,
       signOut: 'Disconnessione',
       close: 'Chiudi',
       add: 'Aggiungi',
+      continue: 'Continuare a generare',
     },
     input: {
       hint: {
@@ -387,7 +389,8 @@ Come classificheresti questa email?`,
         message: 'Il valore massimo che può essere impostato è {{size}}',
       },
       chunkOverlapLessThanChunkSize: {
-        message: 'La sovrapposizione dei blocchi deve essere impostata su un valore inferiore alla dimensione del blocco',
+        message:
+          'La sovrapposizione dei blocchi deve essere impostata su un valore inferiore alla dimensione del blocco',
       },
     },
   },

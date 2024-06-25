@@ -409,6 +409,7 @@ const translation = {
       signOut: 'サインアウト',
       close: '閉じる',
       add: '追加',
+      continue: '生成を続ける',
     },
     input: {
       hint: {

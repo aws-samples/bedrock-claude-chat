@@ -86,6 +86,7 @@ export type MessageMap = {
 
 export type Conversation = ConversationMeta & {
   messageMap: MessageMap;
+  shouldContinue: boolean;
 };
 
 export type PutFeedbackRequest = {
