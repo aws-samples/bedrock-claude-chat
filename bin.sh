@@ -19,7 +19,7 @@ echo "!!! !!!"
 echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
 echo ""
 while true; do
-read -p "Are you a new user or already using v1.x of Bedrock Claude Chat? (y/N):  " answer
+read -p "Are you a new user starting with v1.x or later? (y/N): " answer
 case ${answer:0:1} in
 y|Y )
 echo "Starting deployment..."
