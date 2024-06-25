@@ -184,11 +184,6 @@ def process_chat_input(
 
     if not chat_input.continue_generate:
         messages.append(chat_input.message)  # type: ignore
-    # else:
-    #     if messages[-1].role == "assistant":
-    #         messages[-1].content[0].body = (
-    #             messages[-1].content[0].body.strip()
-    #         )  # TODO: ここでstripをすることで、最終的なメッセージに影響が出ないか確認
 
     args = compose_args(
         messages,
