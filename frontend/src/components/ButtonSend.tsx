@@ -1,5 +1,5 @@
 import React from 'react';
-import { PiPaperPlaneRight, PiSpinnerGap } from 'react-icons/pi';
+import { PiPaperPlaneRightFill, PiSpinnerGap } from 'react-icons/pi';
 import { BaseProps } from '../@types/common';
 import { twMerge } from 'tailwind-merge';
 
@@ -22,7 +22,7 @@ const ButtonSend: React.FC<Props> = (props) => {
       {props.loading ? (
         <PiSpinnerGap className="animate-spin" />
       ) : (
-        <PiPaperPlaneRight />
+        <PiPaperPlaneRightFill />
       )}
     </button>
   );
