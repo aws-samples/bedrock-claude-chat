@@ -346,16 +346,14 @@ const InputChatContent: React.FC<Props> = (props) => {
                 {t('button.continue')}
               </Button>
             )}
-            {messages.length > 1 && (
-              <Button
-                className="bg-aws-paper p-2 text-sm"
-                outlined
-                disabled={disabledRegenerate || props.disabled}
-                onClick={props.onRegenerate}>
-                <PiArrowsCounterClockwise className="mr-2" />
-                {t('button.regenerate')}
-              </Button>
-            )}
+            <Button
+              className="bg-aws-paper p-2 text-sm"
+              outlined
+              disabled={disabledRegenerate || props.disabled}
+              onClick={props.onRegenerate}>
+              <PiArrowsCounterClockwise className="mr-2" />
+              {t('button.regenerate')}
+            </Button>
           </div>
         )}
       </div>
