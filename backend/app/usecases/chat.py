@@ -338,7 +338,9 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         messages = trace_to_root(
             node_id=chat_input.message.parent_message_id, message_map=message_map
         )
-        messages.append(chat_input.message)  # type: ignore
+
+        if not chat_input.continue_generate:
+            messages.append(chat_input.message)  # type: ignore
 
         # Create payload to invoke Bedrock
         args = compose_args(
@@ -359,6 +361,8 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         else:
             response = get_bedrock_response(args)  # type: ignore
             reply_txt = response["outputs"][0]["text"]  # type: ignore
+
+        reply_txt = reply_txt.rstrip()
 
         # Used chunks for RAG generation
         if bot and bot.display_retrieved_chunks and is_running_on_lambda():
@@ -398,13 +402,22 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         used_chunks=used_chunks,
         thinking_log=thinking_log,
     )
-    conversation.message_map[assistant_msg_id] = message
 
-    # Append children to parent
-    conversation.message_map[user_msg_id].children.append(assistant_msg_id)
-    conversation.last_message_id = assistant_msg_id
+    if chat_input.continue_generate:
+        conversation.message_map[conversation.last_message_id].content[
+            0
+        ].body += reply_txt
+    else:
+        conversation.message_map[assistant_msg_id] = message
+
+        # Append children to parent
+        conversation.message_map[user_msg_id].children.append(assistant_msg_id)
+        conversation.last_message_id = assistant_msg_id
 
     conversation.total_price += price
+
+    # If continued, save the state
+    conversation.should_continue = response.stop_reason == "max_tokens"
 
     # Store updated conversation
     store_conversation(user_id, conversation)
