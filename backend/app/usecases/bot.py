@@ -31,11 +31,11 @@ from app.repositories.models.custom_bot import (
     BotAliasModel,
     BotMeta,
     BotModel,
+    ConversationQuickStarterModel,
     EmbeddingParamsModel,
     GenerationParamsModel,
     KnowledgeModel,
     SearchParamsModel,
-    ConversationQuickStarterModel,
 )
 from app.routes.schemas.bot import (
     Agent,
@@ -45,12 +45,12 @@ from app.routes.schemas.bot import (
     BotModifyOutput,
     BotOutput,
     BotSummaryOutput,
+    ConversationQuickStarter,
     EmbeddingParams,
     GenerationParams,
     Knowledge,
     SearchParams,
     type_sync_status,
-    ConversationQuickStarter,
 )
 from app.utils import (
     compose_upload_document_s3_path,
@@ -495,7 +495,11 @@ def fetch_all_bots_by_user_id(
                 or bot.description != item["Description"]
                 or bot.sync_status != item["SyncStatus"]
                 or bot.has_knowledge() != item["HasKnowledge"]
-                or bot.conversation_quick_starters != item["ConversationQuickStarters"]
+                or bot.conversation_quick_starters
+                != [
+                    ConversationQuickStarter(**starter)
+                    for starter in item.get("ConversationQuickStarters", [])
+                ]
             ):
                 # Update alias to the latest original bot
                 store_alias(
@@ -512,7 +516,7 @@ def fetch_all_bots_by_user_id(
                         sync_status=bot.sync_status,
                         has_knowledge=bot.has_knowledge(),
                         has_agent=bot.is_agent_enabled(),
-                        conversation_quick_starters=item["ConversationQuickStarters"],
+                        conversation_quick_starters=bot.conversation_quick_starters,
                     ),
                 )
 

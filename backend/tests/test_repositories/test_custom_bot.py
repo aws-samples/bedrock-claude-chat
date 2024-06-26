@@ -25,11 +25,11 @@ from app.repositories.models.custom_bot import (
     AgentToolModel,
     BotAliasModel,
     BotModel,
+    ConversationQuickStarterModel,
     EmbeddingParamsModel,
     GenerationParamsModel,
     KnowledgeModel,
     SearchParamsModel,
-    ConversationQuickStarterModel,
 )
 from app.usecases.bot import fetch_all_bots_by_user_id
 from tests.test_repositories.utils.bot_factory import (
@@ -48,6 +48,9 @@ class TestCustomBotRepository(unittest.TestCase):
             published_api_datetime=1627984879,
             published_api_codebuild_id="TestCodeBuildId",
             display_retrieved_chunks=True,
+            conversation_quick_starters=[
+                ConversationQuickStarterModel(title="QS title", example="QS example")
+            ],
         )
         store_bot("user1", bot)
 
@@ -85,6 +88,9 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(bot.sync_last_exec_id, "")
         self.assertEqual(bot.published_api_stack_name, "TestApiStack")
         self.assertEqual(bot.published_api_datetime, 1627984879)
+        self.assertEqual(len(bot.conversation_quick_starters), 1)
+        self.assertEqual(bot.conversation_quick_starters[0].title, "QS title")
+        self.assertEqual(bot.conversation_quick_starters[0].example, "QS example")
 
         # Assert bot is stored in user1's bot list
         bot = find_private_bots_by_user_id("user1")
@@ -171,6 +177,9 @@ class TestCustomBotRepository(unittest.TestCase):
             sync_status="RUNNING",
             sync_status_reason="reason",
             display_retrieved_chunks=False,
+            conversation_quick_starters=[
+                ConversationQuickStarterModel(title="QS title", example="QS example")
+            ],
         )
 
         bot = find_private_bot_by_id("user1", "1")
@@ -196,6 +205,9 @@ class TestCustomBotRepository(unittest.TestCase):
         self.assertEqual(bot.sync_status, "RUNNING")
         self.assertEqual(bot.sync_status_reason, "reason")
         self.assertEqual(bot.display_retrieved_chunks, False)
+        self.assertEqual(len(bot.conversation_quick_starters), 1)
+        self.assertEqual(bot.conversation_quick_starters[0].title, "QS title")
+        self.assertEqual(bot.conversation_quick_starters[0].example, "QS example")
 
         delete_bot_by_id("user1", "1")
 
@@ -353,6 +365,7 @@ class TestUpdateBotVisibility(unittest.TestCase):
             sync_status="RUNNING",
             sync_status_reason="",
             display_retrieved_chunks=True,
+            conversation_quick_starters=[],
         )
         bots = fetch_all_bots_by_user_id("user1", limit=3)
         self.assertEqual(len(bots), 3)
