@@ -335,7 +335,7 @@ const InputChatContent: React.FC<Props> = (props) => {
             </ModalDialog>
           </div>
         )}
-        {(shouldContinue || messages.length > 1) && (
+        {messages.length > 1 && (
           <div className="absolute -top-14 right-0 flex space-x-2">
             {shouldContinue && !disableContinue && !props.disabled && (
               <Button
