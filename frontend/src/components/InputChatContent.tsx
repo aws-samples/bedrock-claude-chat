@@ -337,11 +337,10 @@ const InputChatContent: React.FC<Props> = (props) => {
         )}
         {(shouldContinue || messages.length > 1) && (
           <div className="absolute -top-14 right-0 flex space-x-2">
-            {shouldContinue && (
+            {shouldContinue && !disableContinue && !props.disabled && (
               <Button
                 className="bg-aws-paper p-2 text-sm"
                 outlined
-                disabled={disableContinue || props.disabled}
                 onClick={props.continueGenerate}>
                 <PiArrowFatLineRight className="mr-2" />
                 {t('button.continue')}
