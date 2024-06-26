@@ -513,12 +513,7 @@ const useChat = () => {
     setPostingMessage(true);
 
     const messageContent: MessageContent = {
-      content: [
-        {
-          body: '',
-          contentType: 'text',
-        },
-      ],
+      content: [],
       model: getPostedModel(),
       role: 'user',
       feedback: null,

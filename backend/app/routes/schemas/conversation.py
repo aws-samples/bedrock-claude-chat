@@ -82,7 +82,7 @@ class ChatInput(BaseSchema):
     conversation_id: str
     message: MessageInput
     bot_id: str | None = Field(None)
-    continue_generate: bool | None = Field(False)
+    continue_generate: bool = Field(False)
 
 
 class ChatOutput(BaseSchema):
