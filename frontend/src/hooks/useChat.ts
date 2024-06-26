@@ -504,7 +504,7 @@ const useChat = () => {
   };
 
   /**
-   * 生成を続ける
+   * Continue to generate
    */
   const continueGenerate = (params?: {
     messageId?: string;
@@ -532,6 +532,7 @@ const useChat = () => {
     const currentContentBody = messages[messages.length - 1].content[0].body;
     const currentMessage = messages[messages.length - 1];
 
+    // WARNING: Non-streaming is not supported from the UI side as it is planned to be DEPRICATED.
     postStreaming({
       input,
       dispatch: (c: string) => {
@@ -546,8 +547,6 @@ const useChat = () => {
       })
       .catch((e) => {
         console.error(e);
-        // setCurrentMessageId(NEW_MESSAGE_ID.USER);
-        // removeMessage(conversationId, NEW_MESSAGE_ID.ASSISTANT);
       })
       .finally(() => {
         setPostingMessage(false);
