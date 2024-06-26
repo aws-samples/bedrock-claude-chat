@@ -34,7 +34,7 @@
 
 ## 🚀 まずはお試し
 
-- us-east-1 リージョンにて、[Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > `Anthropic / Claude 3 Haiku`, `Anthropic / Claude 3 Sonnet` `Cohere / Embed Multilingual`をチェックし、`Save changes`をクリックします
+- us-east-1 リージョンにて、[Bedrock Model access](https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess) > `Manage model access` > `Anthropic / Claude 3 Haiku`, `Anthropic / Claude 3 Sonnet`, `Anthropic / Claude 3.5 Sonnet` `Cohere / Embed Multilingual`をチェックし、`Save changes`をクリックします
 
 <details>
 <summary>スクリーンショット</summary>
@@ -45,7 +45,7 @@
 
 - [CloudShell](https://console.aws.amazon.com/cloudshell/home)をデプロイしたいリージョン (ap-northeast-1 など) で開きます
 
-- 下記のコマンドでデプロイ実行します
+- 下記のコマンドでデプロイ実行します。もし何らかのセキュリティポリシーがある場合は[オプションのパラメータ](#オプションのパラメータ)もご覧ください。
 
 ```sh
 git clone https://github.com/aws-samples/bedrock-claude-chat.git
@@ -58,7 +58,7 @@ chmod +x bin.sh
 
 ### オプションのパラメータ
 
-デプロイ時に以下のパラメータを指定することで、セキュリティとカスタマイズを強化できるようになりました。
+デプロイ時に以下のパラメータを指定することで、セキュリティとカスタマイズを強化できます。
 
 - --disable-self-register: セルフ登録を無効にします（デフォルト: 有効）。このフラグを設定すると、Cognito 上で全てのユーザーを作成する必要があり、ユーザーが自分でアカウントを登録することはできなくなります。
 - --ipv4-ranges: 許可する IPv4 範囲のカンマ区切りリスト。（デフォルト: 全ての IPv4 アドレスを許可）

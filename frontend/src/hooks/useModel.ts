@@ -19,6 +19,11 @@ const availableModels: {
     supportMediaType: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
   },
   {
+    modelId: 'claude-v3.5-sonnet',
+    label: 'Claude 3.5 (Sonnet)',
+    supportMediaType: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+  },
+  {
     modelId: 'claude-v3-opus',
     label: 'Claude 3 (Opus)',
     supportMediaType: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
