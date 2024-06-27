@@ -189,6 +189,7 @@ def find_conversation_by_id(user_id: str, conversation_id: str) -> ConversationM
                             content_type=c["content_type"],
                             body=c["body"],
                             media_type=c["media_type"],
+                            file_name=c["file_name"],
                         )
                         for c in v["content"]
                     ]

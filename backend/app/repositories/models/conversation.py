@@ -5,9 +5,10 @@ from pydantic import BaseModel, Field
 
 
 class ContentModel(BaseModel):
-    content_type: Literal["text", "image"]
+    content_type: Literal["text", "image", "textAttachment"]
     media_type: str | None
     body: str
+    file_name: str | None = Field(None)
 
 
 class FeedbackModel(BaseModel):

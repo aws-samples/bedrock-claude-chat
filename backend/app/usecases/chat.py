@@ -194,6 +194,7 @@ def prepare_conversation(
                 content_type=c.content_type,
                 media_type=c.media_type,
                 body=c.body,
+                file_name=c.file_name,
             )
             for c in chat_input.message.content
         ],
@@ -524,6 +525,7 @@ def fetch_conversation(user_id: str, conversation_id: str) -> Conversation:
                     content_type=c.content_type,
                     body=c.body,
                     media_type=c.media_type,
+                    file_name=c.file_name,
                 )
                 for c in message.content
             ],
