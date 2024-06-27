@@ -180,6 +180,7 @@ def prepare_conversation(
             message_map=initial_message_map,
             last_message_id="",
             bot_id=chat_input.bot_id,
+            should_continue=False,
         )
 
     # Append user chat input to the conversation
@@ -187,26 +188,28 @@ def prepare_conversation(
         message_id = chat_input.message.message_id
     else:
         message_id = str(ULID())
-    new_message = MessageModel(
-        role=chat_input.message.role,
-        content=[
-            ContentModel(
-                content_type=c.content_type,
-                media_type=c.media_type,
-                body=c.body,
-            )
-            for c in chat_input.message.content
-        ],
-        model=chat_input.message.model,
-        children=[],
-        parent=parent_id,
-        create_time=current_time,
-        feedback=None,
-        used_chunks=None,
-        thinking_log=None,
-    )
-    conversation.message_map[message_id] = new_message
-    conversation.message_map[parent_id].children.append(message_id)  # type: ignore
+    # If the "Generate continue" button is pressed, a new_message is not generated.
+    if not chat_input.continue_generate:
+        new_message = MessageModel(
+            role=chat_input.message.role,
+            content=[
+                ContentModel(
+                    content_type=c.content_type,
+                    media_type=c.media_type,
+                    body=c.body,
+                )
+                for c in chat_input.message.content
+            ],
+            model=chat_input.message.model,
+            children=[],
+            parent=parent_id,
+            create_time=current_time,
+            feedback=None,
+            used_chunks=None,
+            thinking_log=None,
+        )
+        conversation.message_map[message_id] = new_message
+        conversation.message_map[parent_id].children.append(message_id)  # type: ignore
 
     return (message_id, conversation, bot)
 
@@ -335,7 +338,9 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         messages = trace_to_root(
             node_id=chat_input.message.parent_message_id, message_map=message_map
         )
-        messages.append(chat_input.message)  # type: ignore
+
+        if not chat_input.continue_generate:
+            messages.append(chat_input.message)  # type: ignore
 
         # Create payload to invoke Bedrock
         args = compose_args(
@@ -356,6 +361,8 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         else:
             response = get_bedrock_response(args)  # type: ignore
             reply_txt = response["outputs"][0]["text"]  # type: ignore
+
+        reply_txt = reply_txt.rstrip()
 
         # Used chunks for RAG generation
         if bot and bot.display_retrieved_chunks and is_running_on_lambda():
@@ -395,13 +402,22 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
         used_chunks=used_chunks,
         thinking_log=thinking_log,
     )
-    conversation.message_map[assistant_msg_id] = message
 
-    # Append children to parent
-    conversation.message_map[user_msg_id].children.append(assistant_msg_id)
-    conversation.last_message_id = assistant_msg_id
+    if chat_input.continue_generate:
+        conversation.message_map[conversation.last_message_id].content[
+            0
+        ].body += reply_txt
+    else:
+        conversation.message_map[assistant_msg_id] = message
+
+        # Append children to parent
+        conversation.message_map[user_msg_id].children.append(assistant_msg_id)
+        conversation.last_message_id = assistant_msg_id
 
     conversation.total_price += price
+
+    # If continued, save the state
+    conversation.should_continue = response.stop_reason == "max_tokens"
 
     # Store updated conversation
     store_conversation(user_id, conversation)
@@ -570,6 +586,7 @@ def fetch_conversation(user_id: str, conversation_id: str) -> Conversation:
         last_message_id=conversation.last_message_id,
         message_map=message_map,
         bot_id=conversation.bot_id,
+        should_continue=conversation.should_continue,
     )
     return output
 

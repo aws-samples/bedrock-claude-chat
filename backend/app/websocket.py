@@ -181,7 +181,9 @@ def process_chat_input(
         node_id=chat_input.message.parent_message_id,
         message_map=message_map,
     )
-    messages.append(chat_input.message)  # type: ignore
+
+    if not chat_input.continue_generate:
+        messages.append(chat_input.message)  # type: ignore
 
     args = compose_args(
         messages,
@@ -203,42 +205,53 @@ def process_chat_input(
         gatewayapi.post_to_connection(ConnectionId=connection_id, Data=data_to_send)
 
     def on_stop(arg: OnStopInput, **kwargs) -> None:
-        used_chunks = None
-        if bot and bot.display_retrieved_chunks:
-            if len(search_results) > 0:
-                used_chunks = []
-                for r in filter_used_results(arg.full_token, search_results):
-                    content_type, source_link = get_source_link(r.source)
-                    used_chunks.append(
-                        ChunkModel(
-                            content=r.content,
-                            content_type=content_type,
-                            source=source_link,
-                            rank=r.rank,
+        if chat_input.continue_generate:
+            # For continue generate
+            conversation.message_map[conversation.last_message_id].content[
+                0
+            ].body += arg.full_token
+        else:
+            used_chunks = None
+            if bot and bot.display_retrieved_chunks:
+                if len(search_results) > 0:
+                    used_chunks = []
+                    for r in filter_used_results(arg.full_token, search_results):
+                        content_type, source_link = get_source_link(r.source)
+                        used_chunks.append(
+                            ChunkModel(
+                                content=r.content,
+                                content_type=content_type,
+                                source=source_link,
+                                rank=r.rank,
+                            )
                         )
-                    )
 
-        # Append entire completion as the last message
-        assistant_msg_id = str(ULID())
-        message = MessageModel(
-            role="assistant",
-            content=[
-                ContentModel(content_type="text", body=arg.full_token, media_type=None)
-            ],
-            model=chat_input.message.model,
-            children=[],
-            parent=user_msg_id,
-            create_time=get_current_time(),
-            feedback=None,
-            used_chunks=used_chunks,
-            thinking_log=None,
-        )
-        conversation.message_map[assistant_msg_id] = message
-        # Append children to parent
-        conversation.message_map[user_msg_id].children.append(assistant_msg_id)
-        conversation.last_message_id = assistant_msg_id
+            # Append entire completion as the last message
+            assistant_msg_id = str(ULID())
+            message = MessageModel(
+                role="assistant",
+                content=[
+                    ContentModel(
+                        content_type="text", body=arg.full_token, media_type=None
+                    )
+                ],
+                model=chat_input.message.model,
+                children=[],
+                parent=user_msg_id,
+                create_time=get_current_time(),
+                feedback=None,
+                used_chunks=used_chunks,
+                thinking_log=None,
+            )
+            conversation.message_map[assistant_msg_id] = message
+            # Append children to parent
+            conversation.message_map[user_msg_id].children.append(assistant_msg_id)
+            conversation.last_message_id = assistant_msg_id
 
         conversation.total_price += arg.price
+
+        # If continued, save the state
+        conversation.should_continue = arg.stop_reason == "max_tokens"
 
         # Store conversation before finish streaming so that front-end can avoid 404 issue
         store_conversation(user_id, conversation)

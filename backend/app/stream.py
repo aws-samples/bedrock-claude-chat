@@ -95,7 +95,7 @@ class AnthropicStreamHandler(BaseStreamHandler):
                 )
                 response = self.on_stop(
                     OnStopInput(
-                        full_token=concatenated,
+                        full_token=concatenated.rstrip(),
                         stop_reason=stop_reason,
                         input_token_count=input_token_count,
                         output_token_count=output_token_count,
@@ -134,7 +134,7 @@ class BedrockStreamHandler(BaseStreamHandler):
                     )
                     res = self.on_stop(
                         OnStopInput(
-                            full_token=concatenated,
+                            full_token=concatenated.rstrip(),
                             stop_reason=stop_reason,
                             input_token_count=input_token_count,
                             output_token_count=output_token_count,

@@ -325,6 +325,7 @@ class TestContinueChat(unittest.TestCase):
                     ),
                 },
                 bot_id=None,
+                should_continue=False,
             ),
         )
 
@@ -345,6 +346,7 @@ class TestContinueChat(unittest.TestCase):
                 message_id=None,
             ),
             bot_id=None,
+            continue_generate=False,
         )
         output: ChatOutput = chat(user_id=self.user_id, chat_input=chat_input)
         self.output = output
@@ -449,6 +451,7 @@ class TestRegenerateChat(unittest.TestCase):
                     ),
                 },
                 bot_id=None,
+                should_continue=False,
             ),
         )
 
@@ -471,6 +474,7 @@ class TestRegenerateChat(unittest.TestCase):
                 message_id=None,
             ),
             bot_id=None,
+            continue_generate=False,
         )
         output: ChatOutput = chat(user_id=self.user_id, chat_input=chat_input)
         self.output = output
@@ -497,6 +501,7 @@ class TestRegenerateChat(unittest.TestCase):
                 message_id=None,
             ),
             bot_id=None,
+            continue_generate=False,
         )
         output: ChatOutput = chat(user_id=self.user_id, chat_input=chat_input)
         self.output = output
@@ -528,6 +533,7 @@ class TestProposeTitle(unittest.TestCase):
                 message_id=None,
             ),
             bot_id=None,
+            continue_generate=False,
         )
         output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
         print(output)
@@ -599,6 +605,7 @@ class TestChatWithCustomizedBot(unittest.TestCase):
                 message_id=None,
             ),
             bot_id="private1",
+            continue_generate=False,
         )
         output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
         print(output)
@@ -625,6 +632,7 @@ class TestChatWithCustomizedBot(unittest.TestCase):
                 message_id=None,
             ),
             bot_id="private1",
+            continue_generate=False,
         )
         output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
         print(output)
@@ -646,6 +654,7 @@ class TestChatWithCustomizedBot(unittest.TestCase):
                 message_id=None,
             ),
             bot_id="private1",
+            continue_generate=False,
         )
         output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
 
@@ -671,6 +680,7 @@ class TestChatWithCustomizedBot(unittest.TestCase):
                 message_id=None,
             ),
             bot_id="public1",
+            continue_generate=False,
         )
         output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
 
@@ -693,6 +703,7 @@ class TestChatWithCustomizedBot(unittest.TestCase):
                 message_id=None,
             ),
             bot_id="private1",
+            continue_generate=False,
         )
         output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
         print(output)
@@ -717,6 +728,7 @@ class TestChatWithCustomizedBot(unittest.TestCase):
                 message_id=None,
             ),
             bot_id="private1",
+            continue_generate=False,
         )
         output: ChatOutput = chat(user_id="user1", chat_input=chat_input)
 
@@ -767,6 +779,7 @@ class TestAgentChat(unittest.TestCase):
                 message_id=None,
             ),
             bot_id=self.bot_id,
+            continue_generate=False,
         )
         output: ChatOutput = chat(user_id=self.user_name, chat_input=chat_input)
         print(output.message.content[0].body)
@@ -846,6 +859,7 @@ class TestInsertKnowledge(unittest.TestCase):
             },
             bot_id="bot1",
             last_message_id="1-user",
+            continue_generate=False,
         )
         conversation_with_context = insert_knowledge(
             conversation, results, display_citation=True
@@ -872,6 +886,7 @@ class TestStreamingApi(unittest.TestCase):
                 message_id=None,
             ),
             bot_id=None,
+            continue_generate=False,
         )
         user_msg_id, conversation, bot = prepare_conversation("user1", chat_input)
         messages = trace_to_root(

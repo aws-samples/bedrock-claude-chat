@@ -81,6 +81,9 @@ const useChatState = create<{
   setIsGeneratedTitle: (b: boolean) => void;
   getPostedModel: () => Model;
   shouldUpdateMessages: (currentConversation: Conversation) => boolean;
+  shouldCotinue: boolean;
+  setShouldContinue: (b: boolean) => void;
+  getShouldContinue: () => boolean;
 }>((set, get) => {
   return {
     conversationId: '',
@@ -224,6 +227,15 @@ const useChatState = create<{
         get().currentMessageId !== currentConversation.lastMessageId
       );
     },
+    getShouldContinue: () => {
+      return get().shouldCotinue;
+    },
+    setShouldContinue: (b) => {
+      set(() => ({
+        shouldCotinue: b,
+      }));
+    },
+    shouldCotinue: false,
   };
 });
 
@@ -252,6 +264,8 @@ const useChat = () => {
     setRelatedDocuments,
     moveRelatedDocuments,
     shouldUpdateMessages,
+    getShouldContinue,
+    setShouldContinue,
   } = useChatState();
   const { open: openSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -299,6 +313,9 @@ const useChat = () => {
       if ((relatedDocuments[NEW_MESSAGE_ID.ASSISTANT]?.length ?? 0) > 0) {
         moveRelatedDocuments(NEW_MESSAGE_ID.ASSISTANT, data.lastMessageId);
       }
+    }
+    if (data && data.shouldContinue !== getShouldContinue()) {
+      setShouldContinue(data.shouldContinue);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId, data]);
@@ -487,6 +504,56 @@ const useChat = () => {
   };
 
   /**
+   * Continue to generate
+   */
+  const continueGenerate = (params?: {
+    messageId?: string;
+    bot?: BotInputType;
+  }) => {
+    setPostingMessage(true);
+
+    const messageContent: MessageContent = {
+      content: [],
+      model: getPostedModel(),
+      role: 'user',
+      feedback: null,
+      usedChunks: null,
+    };
+    const input: PostMessageRequest = {
+      conversationId: conversationId,
+      message: {
+        ...messageContent,
+        parentMessageId: messages[messages.length - 1].id,
+      },
+      botId: params?.bot?.botId,
+      continueGenerate: true,
+    };
+
+    const currentContentBody = messages[messages.length - 1].content[0].body;
+    const currentMessage = messages[messages.length - 1];
+
+    // WARNING: Non-streaming is not supported from the UI side as it is planned to be DEPRICATED.
+    postStreaming({
+      input,
+      dispatch: (c: string) => {
+        editMessage(conversationId, currentMessage.id, currentContentBody + c);
+      },
+      thinkingDispatch: (event) => {
+        send({ type: event });
+      },
+    })
+      .then(() => {
+        mutate();
+      })
+      .catch((e) => {
+        console.error(e);
+      })
+      .finally(() => {
+        setPostingMessage(false);
+      });
+  };
+
+  /**
    * 再生成
    * @param props content: 内容を上書きしたい場合に設定  messageId: 再生成対象のmessageId  botId: ボットの場合は設定する
    */
@@ -620,6 +687,8 @@ const useChat = () => {
     postChat,
     regenerate,
     getPostedModel,
+    getShouldContinue,
+    continueGenerate,
     // エラーのリトライ
     retryPostChat: (params: { content?: string; bot?: BotInputType }) => {
       const length_ = messages.length;

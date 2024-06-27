@@ -9,7 +9,7 @@ import ButtonSend from './ButtonSend';
 import Textarea from './Textarea';
 import useChat from '../hooks/useChat';
 import Button from './Button';
-import { PiArrowsCounterClockwise, PiX } from 'react-icons/pi';
+import { PiArrowsCounterClockwise, PiX, PiArrowFatLineRight } from 'react-icons/pi';
 import { TbPhotoPlus } from 'react-icons/tb';
 import { useTranslation } from 'react-i18next';
 import ButtonIcon from './ButtonIcon';
@@ -28,6 +28,7 @@ type Props = BaseProps & {
   dndMode?: boolean;
   onSend: (content: string, base64EncodedImages?: string[]) => void;
   onRegenerate: () => void;
+  continueGenerate: () => void;
 };
 
 const MAX_IMAGE_WIDTH = 800;
@@ -75,9 +76,10 @@ const useInputChatContentState = create<{
 
 const InputChatContent: React.FC<Props> = (props) => {
   const { t } = useTranslation();
-  const { postingMessage, hasError, messages } = useChat();
+  const { postingMessage, hasError, messages, getShouldContinue } = useChat();
   const { disabledImageUpload, model, acceptMediaType } = useModel();
-
+  const [shouldContinue, setShouldContinue] = useState(false);
+  
   const [content, setContent] = useState('');
   const {
     base64EncodedImages,
@@ -95,6 +97,14 @@ const InputChatContent: React.FC<Props> = (props) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    const checkShouldContinue = async () => {
+      const result = await getShouldContinue();
+      setShouldContinue(result);
+    };
+    checkShouldContinue();
+  }, [getShouldContinue, postingMessage, content, props, hasError]);
+
   const disabledSend = useMemo(() => {
     return content === '' || props.disabledSend || hasError;
   }, [hasError, content, props.disabledSend]);
@@ -102,6 +112,10 @@ const InputChatContent: React.FC<Props> = (props) => {
   const disabledRegenerate = useMemo(() => {
     return postingMessage || hasError;
   }, [hasError, postingMessage]);
+  
+  const disableContinue = useMemo(() => {
+    return postingMessage || hasError;
+  }, [hasError, postingMessage])
 
   const inputRef = useRef<HTMLDivElement>(null);
 
@@ -322,14 +336,25 @@ const InputChatContent: React.FC<Props> = (props) => {
           </div>
         )}
         {messages.length > 1 && (
-          <Button
-            className="absolute -top-14 right-0 bg-aws-paper p-2 text-sm"
-            outlined
-            disabled={disabledRegenerate || props.disabled}
-            onClick={props.onRegenerate}>
-            <PiArrowsCounterClockwise className="mr-2" />
-            {t('button.regenerate')}
-          </Button>
+          <div className="absolute -top-14 right-0 flex space-x-2">
+            {shouldContinue && !disableContinue && !props.disabled && (
+              <Button
+                className="bg-aws-paper p-2 text-sm"
+                outlined
+                onClick={props.continueGenerate}>
+                <PiArrowFatLineRight className="mr-2" />
+                {t('button.continue')}
+              </Button>
+            )}
+            <Button
+              className="bg-aws-paper p-2 text-sm"
+              outlined
+              disabled={disabledRegenerate || props.disabled}
+              onClick={props.onRegenerate}>
+              <PiArrowsCounterClockwise className="mr-2" />
+              {t('button.regenerate')}
+            </Button>
+          </div>
         )}
       </div>
     </>
