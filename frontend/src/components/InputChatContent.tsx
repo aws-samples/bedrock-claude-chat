@@ -34,6 +34,7 @@ type Props = BaseProps & {
 
 const MAX_IMAGE_WIDTH = 800;
 const MAX_IMAGE_HEIGHT = 800;
+const TEXT_FILE_EXTENSIONS = [".txt", ".md", ".ts", ".tsx", ".js", ".html", ".htm"]
 
 const useInputChatContentState = create<{
   base64EncodedImages: string[];
@@ -292,7 +293,7 @@ const InputChatContent: React.FC<Props> = (props) => {
       for (let i = 0; i < fileList.length; i++) {
         const file = fileList.item(i);
         if (file) {
-          if (file.type.startsWith('text/') || file.name.endsWith('.md') || file.name.endsWith('.ts')) {
+          if (file.type.startsWith('text/') || TEXT_FILE_EXTENSIONS.some(extension => file.name.endsWith(extension))) {
             handleFileRead(file);
           } else {
             encodeAndPushImage(file);
