@@ -411,7 +411,7 @@ const InputChatContent: React.FC<Props> = (props) => {
           <div className="relative m-2 mr-24 flex flex-wrap gap-3">
             {textFiles.map((file, idx) => (
               <div key={idx} className="relative flex flex-col items-center">
-                <PiFileTextThin className="h-16 w-16 text-gray-500" />
+                <PiFileTextThin className="h-16 w-16 text-dark-gray" />
                 <div className="file-name">{truncateFileName(file.name)}</div>
                 <ButtonIcon
                   className="absolute right-0 top-0 -m-2 border border-aws-sea-blue bg-white p-1 text-xs text-aws-sea-blue"

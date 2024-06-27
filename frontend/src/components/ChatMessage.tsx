@@ -184,13 +184,13 @@ const ChatMessage: React.FC<Props> = (props) => {
               </div>
               )}
               {chatContent.content.some(content => content.contentType === 'textAttachment') && (
-              <div key="files" className="flex mt-2 mb-2">
+              <div key="files" className="flex my-2">
               {
                 chatContent.content.map((content, idx) => {
                   if (content.contentType === 'textAttachment') {
                     return (
                       <div key={idx} className="relative flex flex-col items-center mx-2" onClick={() => handleFileClick(content.fileName, content.body)}>
-                        <PiFileTextThin className="h-16 w-16 text-gray-500" />
+                        <PiFileTextThin className="h-16 w-16 text-dark-gray" />
                         <div className="file-name">{truncateFileName(content.fileName)}</div>
                       </div>
                     );
@@ -226,7 +226,7 @@ const ChatMessage: React.FC<Props> = (props) => {
                 widthFromContent={true}
               >
               <div className="relative max-h-[80vh] h-auto max-w-[80vh] w-auto flex flex-col">
-                <div className="flex items-center justify-between bg-gray-100 p-4 sticky top-0 z-10">
+                <div className="flex items-center justify-between p-4 sticky top-0 z-10">
                   <div className="font-bold">{fileName}</div>
                   <ButtonCopy
                     text={fileContent}
