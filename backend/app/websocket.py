@@ -120,7 +120,10 @@ def process_chat_input(
             role="assistant",
             content=[
                 ContentModel(
-                    content_type="text", body=response["output"], media_type=None
+                    content_type="text",
+                    body=response["output"],
+                    media_type=None,
+                    file_name=None,
                 )
             ],
             model=chat_input.message.model,
@@ -223,7 +226,12 @@ def process_chat_input(
         message = MessageModel(
             role="assistant",
             content=[
-                ContentModel(content_type="text", body=arg.full_token, media_type=None)
+                ContentModel(
+                    content_type="text",
+                    body=arg.full_token,
+                    media_type=None,
+                    file_name=None,
+                )
             ],
             model=chat_input.message.model,
             children=[],

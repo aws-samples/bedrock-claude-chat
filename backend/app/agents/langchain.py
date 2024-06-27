@@ -68,6 +68,7 @@ class BedrockLLM(LLM):
                     content_type="text",
                     media_type=None,
                     body=prompt,
+                    file_name=None,
                 )
             ],
             model=self.model,

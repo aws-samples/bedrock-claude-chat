@@ -316,12 +316,16 @@ class TestConversationBotRepository(unittest.TestCase):
                     role="user",
                     content=[
                         ContentModel(
-                            content_type="text", body="Hello", media_type=None
+                            content_type="text",
+                            body="Hello",
+                            media_type=None,
+                            file_name=None,
                         ),
                         ContentModel(
                             content_type="image",
                             body="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
                             media_type="image/png",
+                            file_name=None,
                         ),
                     ],
                     model="claude-instant-v1",
@@ -346,12 +350,16 @@ class TestConversationBotRepository(unittest.TestCase):
                     role="user",
                     content=[
                         ContentModel(
-                            content_type="text", body="Hello", media_type=None
+                            content_type="text",
+                            body="Hello",
+                            media_type=None,
+                            file_name=None,
                         ),
                         ContentModel(
                             content_type="image",
                             body="iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
                             media_type="image/png",
+                            file_name=None,
                         ),
                     ],
                     model="claude-instant-v1",

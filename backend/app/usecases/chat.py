@@ -99,6 +99,7 @@ def prepare_conversation(
                         content_type="text",
                         media_type=None,
                         body="",
+                        file_name=None,
                     )
                 ],
                 model=chat_input.message.model,
@@ -123,6 +124,7 @@ def prepare_conversation(
                         content_type="text",
                         media_type=None,
                         body=bot.instruction,
+                        file_name=None,
                     )
                 ],
                 model=chat_input.message.model,
@@ -387,7 +389,11 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
     # Append bedrock output to the existing conversation
     message = MessageModel(
         role="assistant",
-        content=[ContentModel(content_type="text", body=reply_txt, media_type=None)],
+        content=[
+            ContentModel(
+                content_type="text", body=reply_txt, media_type=None, file_name=None
+            )
+        ],
         model=chat_input.message.model,
         children=[],
         parent=user_msg_id,
@@ -422,6 +428,7 @@ def chat(user_id: str, chat_input: ChatInput) -> ChatOutput:
                     content_type=c.content_type,
                     body=c.body,
                     media_type=c.media_type,
+                    file_name=None,
                 )
                 for c in message.content
             ],
@@ -488,6 +495,7 @@ def propose_conversation_title(
                 content_type="text",
                 body=PROMPT,
                 media_type=None,
+                file_name=None,
             )
         ],
         model=model,
