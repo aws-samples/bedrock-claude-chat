@@ -51,6 +51,7 @@ export type PostMessageRequest = {
     parentMessageId: null | string;
   };
   botId?: string;
+  continueGenerate?: bool;
 };
 
 export type PostMessageResponse = {
@@ -87,6 +88,7 @@ export type MessageMap = {
 
 export type Conversation = ConversationMeta & {
   messageMap: MessageMap;
+  shouldContinue: boolean;
 };
 
 export type PutFeedbackRequest = {

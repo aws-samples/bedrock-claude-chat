@@ -332,6 +332,7 @@ Come classificheresti questa email?`,
       signOut: 'Disconnessione',
       close: 'Chiudi',
       add: 'Aggiungi',
+      continue: 'Continuare a generare',
     },
     input: {
       hint: {

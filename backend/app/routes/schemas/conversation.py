@@ -86,6 +86,7 @@ class ChatInput(BaseSchema):
     conversation_id: str
     message: MessageInput
     bot_id: str | None = Field(None)
+    continue_generate: bool = Field(False)
 
 
 class ChatOutput(BaseSchema):
@@ -117,6 +118,7 @@ class Conversation(BaseSchema):
     message_map: dict[str, MessageOutput]
     last_message_id: str
     bot_id: str | None
+    should_continue: bool
 
 
 class NewTitleInput(BaseSchema):

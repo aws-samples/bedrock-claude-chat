@@ -329,6 +329,7 @@
         signOut: '退出登录',
         close: '关闭',
         add: '新增',
+        continue: '继续生成',
       },
       input: {
         hint: {

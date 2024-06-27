@@ -149,6 +149,7 @@ export class BedrockChatStack extends cdk.Stack {
       auth,
       bedrockRegion: props.bedrockRegion,
       largeMessageBucket,
+      documentBucket,
     });
     frontend.buildViteApp({
       backendApiEndpoint: backendApi.api.apiEndpoint,
