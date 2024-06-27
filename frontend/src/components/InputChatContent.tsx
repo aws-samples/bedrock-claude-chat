@@ -8,6 +8,7 @@ import React, {
 import ButtonSend from './ButtonSend';
 import Textarea from './Textarea';
 import useChat from '../hooks/useChat';
+import { TextAttachmentType } from '../hooks/useChat'
 import Button from './Button';
 import { PiArrowsCounterClockwise, PiX, PiFileTextThin } from 'react-icons/pi';
 import { TbPhotoPlus } from 'react-icons/tb';
@@ -26,7 +27,7 @@ type Props = BaseProps & {
   disabled?: boolean;
   placeholder?: string;
   dndMode?: boolean;
-  onSend: (content: string, base64EncodedImages?: string[]) => void;
+  onSend: (content: string, base64EncodedImages?: string[], textAttachments?: TextAttachmentType[]) => void;
   onRegenerate: () => void;
 };
 
@@ -38,8 +39,8 @@ const useInputChatContentState = create<{
   pushBase64EncodedImage: (encodedImage: string) => void;
   removeBase64EncodedImage: (index: number) => void;
   clearBase64EncodedImages: () => void;
-  textFiles: { name: string, content: string }[];
-  pushTextFile: (file: { name: string, content: string }) => void;
+  textFiles: { name: string, type: string, size: number, content: string }[];
+  pushTextFile: (file: { name: string, type: string, size: number, content: string }) => void;
   removeTextFile: (index: number) => void;
   clearTextFiles: () => void;
   previewImageUrl: string | null;
@@ -146,41 +147,20 @@ const InputChatContent: React.FC<Props> = (props) => {
     return `${name.slice(0, halfLength)}...${name.slice(-halfLength)}`;
   };
   
-  const extensionToLanguageMap: { [key: string]: string } = {
-    'js': 'javascript',
-    'ts': 'typescript',
-    'md': 'markdown',
-    'txt': 'plaintext',
-    // 必要に応じて他の拡張子と言語のマッピングを追加
-  };
-  
-  const getFileLanguage = (filename: string) => {
-    const lastDotIndex = filename.lastIndexOf('.');
-    if (lastDotIndex === -1) {
-      return '';
-    }
-
-    const ext = filename.slice(lastDotIndex + 1).toLowerCase();
-    const lang = extensionToLanguageMap[ext];
-
-    return lang === undefined ? ext : lang;
-  };
-
   const sendContent = useCallback(() => {
-    const filesString = textFiles.length > 0 ? textFiles.map(file => `\`\`\`${getFileLanguage(file.name)}:${file.name}\n${file.content}\n\`\`\`\n\n`).join('') : undefined;
-    let message = ""
-    if (filesString !== undefined){
-      message = content + `\n\n` + filesString
-    }else{
-      message = content
-    }
+    const textAttachments = textFiles.map(file => ({
+      file_name: file.name,
+      file_type: file.type,
+      file_size: file.size,
+      extracted_content: file.content
+    }));
 
     props.onSend(
-      // content,
-      message,
+      content,
       !disabledImageUpload && base64EncodedImages.length > 0
         ? base64EncodedImages
-        : undefined
+        : undefined,
+        textAttachments.length > 0 ? textAttachments : undefined
     );
     setContent('');
     clearBase64EncodedImages();
@@ -247,7 +227,7 @@ const InputChatContent: React.FC<Props> = (props) => {
       const reader = new FileReader();
       reader.onload = () => {
         if (typeof reader.result === 'string') {
-          pushTextFile({ name: file.name, content: reader.result });
+          pushTextFile({ name: file.name, type: file.type, size: file.size, content: reader.result });
         }
       };
       reader.readAsText(file);

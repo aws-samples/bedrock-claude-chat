@@ -34,6 +34,13 @@ type BotInputType = {
   hasAgent: boolean;
 };
 
+export type TextAttachmentType = {
+  file_name: string;
+  file_type: string;
+  file_size: number;
+  extracted_content: string;
+};
+
 export type ThinkingAction =
   | {
       type: 'doing';
@@ -341,9 +348,10 @@ const useChat = () => {
   const postChat = (params: {
     content: string;
     base64EncodedImages?: string[];
+    textAttachments?: TextAttachmentType[];
     bot?: BotInputType;
   }) => {
-    const { content, bot, base64EncodedImages } = params;
+    const { content, bot, base64EncodedImages, textAttachments } = params;
     const isNewChat = conversationId ? false : true;
     const newConversationId = ulid();
 
@@ -372,8 +380,21 @@ const useChat = () => {
         mediaType: result!.groups!.mediaType,
       };
     });
+
+    const textAttachContents: MessageContent['content'] = (
+      textAttachments ?? []
+    ).map((attachment) => {
+      return {
+        body: attachment.extracted_content,
+        contentType: 'textAttachment',
+        mediaType: attachment.file_type,
+        fileName: attachment.file_name,
+      };
+    });
+
     const messageContent: MessageContent = {
       content: [
+        ...textAttachContents,
         ...imageContents,
         {
           body: content,
@@ -418,6 +439,8 @@ const useChat = () => {
     const postPromise: Promise<string> = new Promise((resolve, reject) => {
       if (USE_STREAMING) {
         if (bot?.hasAgent) send({ type: 'wakeup' });
+
+        console.log(input);
 
         postStreaming({
           input,

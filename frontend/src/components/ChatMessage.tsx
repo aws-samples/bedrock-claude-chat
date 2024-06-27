@@ -7,6 +7,7 @@ import {
   PiUserFill,
   PiThumbsDown,
   PiThumbsDownFill,
+  PiFileTextThin,
 } from 'react-icons/pi';
 import { BaseProps } from '../@types/common';
 import {
@@ -26,6 +27,17 @@ type Props = BaseProps & {
   chatContent?: DisplayMessageContent;
   onChangeMessageId?: (messageId: string) => void;
   onSubmit?: (messageId: string, content: string) => void;
+};
+
+const truncateFileName = (name: string | undefined, maxLength = 30) => {
+  if (name === undefined){
+    return '';
+  }
+  if (name.length <= maxLength) {
+    return name;
+  }
+  const halfLength = Math.floor((maxLength - 3) / 2);
+  return `${name.slice(0, halfLength)}...${name.slice(-halfLength)}`;
 };
 
 const ChatMessage: React.FC<Props> = (props) => {
@@ -64,6 +76,10 @@ const ChatMessage: React.FC<Props> = (props) => {
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [isOpenPreviewImage, setIsOpenPreviewImage] = useState(false);
 
+  const [isFileModalOpen, setIsFileModalOpen] = useState(false);
+  const [fileContent, setFileContent] = useState<string>('');
+  const [fileName, setFileName] = useState<string>('');
+
   const chatContent = useMemo<DisplayMessageContent | undefined>(() => {
     return props.chatContent;
   }, [props]);
@@ -97,6 +113,12 @@ const ChatMessage: React.FC<Props> = (props) => {
     },
     [chatContent, conversationId, giveFeedback]
   );
+
+  const handleFileClick = useCallback((fileName:string|undefined, content: string) => {
+    setFileName(fileName ? fileName : '');
+    setFileContent(content);
+    setIsFileModalOpen(true);
+  }, []);
 
   return (
     <div className={`${props.className ?? ''} grid grid-cols-12 gap-2 p-3 `}>
@@ -141,36 +163,50 @@ const ChatMessage: React.FC<Props> = (props) => {
         <div className="ml-5 grow ">
           {chatContent?.role === 'user' && !isEdit && (
             <div>
-              {chatContent.content.map((content, idx) => {
-                if (content.contentType === 'image') {
-                  const imageUrl = `data:${content.mediaType};base64,${content.body}`;
-                  return (
-                    <img
-                      key={idx}
-                      src={imageUrl}
-                      className="mb-2 h-48 cursor-pointer"
-                      onClick={() => {
-                        setPreviewImageUrl(imageUrl);
-                        setIsOpenPreviewImage(true);
-                      }}
-                    />
+              {chatContent.content.some(content => content.contentType === 'image') && (
+              <div key="images">
+              {
+                chatContent.content.map((content, idx) => {
+                  if (content.contentType === 'image') {
+                    const imageUrl = `data:${content.mediaType};base64,${content.body}`;
+                    return (
+                      <img
+                        key={idx}
+                        src={imageUrl}
+                        className="mb-2 h-48 cursor-pointer"
+                        onClick={() => {
+                          setPreviewImageUrl(imageUrl);
+                          setIsOpenPreviewImage(true);
+                        }}
+                      />
                   );
-                } else {
+              }})}
+              </div>
+              )}
+              {chatContent.content.some(content => content.contentType === 'textAttachment') && (
+              <div key="files" className="flex mt-2 mb-2">
+              {
+                chatContent.content.map((content, idx) => {
+                  if (content.contentType === 'textAttachment') {
+                    return (
+                      <div key={idx} className="relative flex flex-col items-center mx-2" onClick={() => handleFileClick(content.fileName, content.body)}>
+                        <PiFileTextThin className="h-16 w-16 text-gray-500" />
+                        <div className="file-name">{truncateFileName(content.fileName)}</div>
+                      </div>
+                    );
+              }})}
+              </div>
+              )}
+              {chatContent.content.some(content => content.contentType === 'text') && chatContent.content.map((content, idx) => {
+                if (content.contentType === 'text') {
                   return (
-                    // <React.Fragment key={idx}>
-                    //   {content.body.split('\n').map((c, idxBody) => (
-                    //     <div key={idxBody}>{c}</div>
-                    //   ))}
-                    // </React.Fragment>
-                    //// [Customize]インプットメッセージもMarkdown書式で整形表示できるよう修正(ファイルアイコンにする場合は、ここは見直し)
-                    <ChatMessageMarkdown
-                      key={idx}
-                      messageId={String(idx)}>
-                      {content.body}
-                    </ChatMessageMarkdown>    
+                    <React.Fragment key={idx}>
+                      {content.body.split('\n').map((c, idxBody) => (
+                        <div key={idxBody}>{c}</div>
+                      ))}
+                    </React.Fragment>
                   );
-                }
-              })}
+              }})}
               <ModalDialog
                 isOpen={isOpenPreviewImage}
                 onClose={() => setIsOpenPreviewImage(false)}
@@ -183,6 +219,24 @@ const ChatMessage: React.FC<Props> = (props) => {
                     className="mx-auto max-h-[80vh] max-w-full rounded-md"
                   />
                 )}
+              </ModalDialog>
+              <ModalDialog
+                isOpen={isFileModalOpen}
+                onClose={() => setIsFileModalOpen(false)}
+                widthFromContent={true}
+              >
+              <div className="relative max-h-[80vh] h-auto max-w-[80vh] w-auto flex flex-col">
+                <div className="flex items-center justify-between bg-gray-100 p-4 sticky top-0 z-10">
+                  <div className="font-bold">{fileName}</div>
+                  <ButtonCopy
+                    text={fileContent}
+                    className="text-dark-gray"
+                  />
+                </div>
+                <div className="p-4 overflow-auto">
+                  <pre className="whitespace-pre-wrap break-all">{fileContent}</pre>
+                </div>
+              </div>
               </ModalDialog>
             </div>
           )}
