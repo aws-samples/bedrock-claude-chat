@@ -5,7 +5,6 @@ import React, {
   useMemo,
   useState,
 } from 'react';
-import Bowser from 'bowser';
 import InputChatContent from '../components/InputChatContent';
 import useChat from '../hooks/useChat';
 import ChatMessage from '../components/ChatMessage';
