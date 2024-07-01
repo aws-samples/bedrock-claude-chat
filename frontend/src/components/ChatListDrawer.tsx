@@ -35,6 +35,7 @@ import useBot from '../hooks/useBot';
 import DrawerItem from './DrawerItem';
 import ExpandableDrawerGroup from './ExpandableDrawerGroup';
 import useUser from '../hooks/useUser';
+import { usePageLabel } from '../routes';
 
 type Props = BaseProps & {
   onSignOut: () => void;
@@ -182,6 +183,7 @@ const Item: React.FC<ItemProps> = (props) => {
 
 const ChatListDrawer: React.FC<Props> = (props) => {
   const { t } = useTranslation();
+  const { getPageLabel } = usePageLabel();
   const { opened, switchOpen } = useDrawer();
   const { conversations } = useConversation();
   const { starredBots, recentlyUsedUnsterredBots } = useBot();
@@ -310,7 +312,8 @@ const ChatListDrawer: React.FC<Props> = (props) => {
               isActive={false}
               icon={<PiCompass />}
               to="bot/explore"
-              labelComponent={t('button.botConsole')}
+              labelComponent={getPageLabel('/bot/explore')}
+              onClick={closeSamllDrawer}
             />
             {isAdmin && (
               <ExpandableDrawerGroup
@@ -320,20 +323,16 @@ const ChatListDrawer: React.FC<Props> = (props) => {
                   isActive={false}
                   icon={<PiShareNetwork />}
                   to="admin/shared-bot-analytics"
-                  labelComponent={t('button.sharedBotAnalytics')}
+                  labelComponent={getPageLabel('/admin/shared-bot-analytics')}
+                  onClick={closeSamllDrawer}
                 />
                 <DrawerItem
                   isActive={false}
                   icon={<PiGlobe />}
                   to="admin/api-management"
-                  labelComponent={t('button.apiManagement')}
+                  labelComponent={getPageLabel('/admin/api-management')}
+                  onClick={closeSamllDrawer}
                 />
-                {/* <DrawerItem
-                  isActive={false}
-                  icon={<PiUsersThree />}
-                  to="admin/user-usages"
-                  labelComponent={t('button.userUsages')}
-                /> */}
               </ExpandableDrawerGroup>
             )}
 
