@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import Alert from '.';
+import Alert from './Alert';
 
 export const Warning = () => {
   const { t } = useTranslation();

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { BaseProps } from '../../@types/common';
+import { BaseProps } from '../@types/common';
 import { PiInfo, PiWarningCircleFill, PiWarningFill } from 'react-icons/pi';
 import { twMerge } from 'tailwind-merge';
 
