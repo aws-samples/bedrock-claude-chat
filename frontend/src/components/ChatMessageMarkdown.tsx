@@ -14,7 +14,7 @@ import { produce } from 'immer';
 import rehypeExternalLinks, { Options } from 'rehype-external-links';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
-import "katex/dist/katex.min.css"
+import 'katex/dist/katex.min.css';
 import { onlyText } from 'react-children-utilities';
 
 type Props = BaseProps & {
@@ -124,19 +124,19 @@ const ChatMessageMarkdown: React.FC<Props> = ({
   }, [children]);
 
   const remarkPlugins = useMemo(() => {
-    return [remarkGfm, remarkBreaks, remarkMath]
-  }, [])
+    return [remarkGfm, remarkBreaks, remarkMath];
+  }, []);
   const rehypePlugins = useMemo(() => {
     const rehypeExternalLinksOptions: Options = {
       target: '_blank',
-      properties: { style: "word-break: break-all;", }
-    }
-    return [rehypeKatex, [rehypeExternalLinks, rehypeExternalLinksOptions]]
-  }, [])
+      properties: { style: 'word-break: break-all;' },
+    };
+    return [rehypeKatex, [rehypeExternalLinks, rehypeExternalLinksOptions]];
+  }, []);
 
   return (
     <ReactMarkdown
-      className={`${className ?? ''} prose max-w-full`}
+      className={`${className ?? ''} prose max-w-full break-all`}
       children={text}
       remarkPlugins={remarkPlugins}
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -206,7 +206,8 @@ const ChatMessageMarkdown: React.FC<Props> = ({
                     }
                   }
                   return child;
-                })}
+                })
+              }
             </sup>
           );
         },
