@@ -513,7 +513,7 @@ How would you categorize this email?`,
     },
     heler: {
       shortcuts: {
-        title: 'shortcut keys',
+        title: 'Shortcut Keys',
         items: {
           focusInput: 'Shift focus to chat input',
           newChat: 'Open new chat',
