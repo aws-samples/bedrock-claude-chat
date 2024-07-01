@@ -39,6 +39,7 @@ import { TextInputChatContent } from '../features/agent/components/TextInputChat
 import { AgentProcessingIndicator } from '../features/agent/components/AgentProcessingIndicator';
 import { AgentState } from '../features/agent/xstates/agentThinkProgress';
 import { BottomHelper } from '../features/heler/components/BottomHelper';
+import { useIsWindows } from '../hooks/useIsWindows';
 const MISTRAL_ENABLED: boolean =
   import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
 
@@ -60,6 +61,8 @@ const ChatPage: React.FC = () => {
     getPostedModel,
     loadingConversation,
   } = useChat();
+
+  const { isWindows } = useIsWindows();
 
   const { getBotId } = useConversation();
 
@@ -247,24 +250,14 @@ const ChatPage: React.FC = () => {
     const handleKeyDown = (event: KeyboardEvent) => {
       activeCodes[event.code] = true;
 
-      const browser = Bowser.getParser(window.navigator.userAgent);
-      const os = browser.getOSName();
       const hasKeyDownCommand = (() => {
-        switch (os) {
-          case 'macOS':
-            return (
-              (activeCodes['MetaLeft'] || activeCodes['MetaRight']) &&
+        return isWindows
+          ? (activeCodes['ControlLeft'] || activeCodes['ControlRight']) &&
               (activeCodes['ShiftLeft'] || activeCodes['ShiftRight']) &&
               activeCodes['KeyO']
-            );
-
-          case 'Windows':
-            return (
-              (activeCodes['ControlLeft'] || activeCodes['ControlRight']) &&
+          : (activeCodes['MetaLeft'] || activeCodes['MetaRight']) &&
               (activeCodes['ShiftLeft'] || activeCodes['ShiftRight']) &&
-              activeCodes['KeyO']
-            );
-        }
+              activeCodes['KeyO'];
       })();
 
       if (!hasKeyDownCommand) return;

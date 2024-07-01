@@ -2,13 +2,12 @@ import { useState } from 'react';
 import { PiQuestion } from 'react-icons/pi';
 import ModalDialog from '../../../components/ModalDialog';
 import { useTranslation } from 'react-i18next';
-import Bowser from 'bowser';
+import { useIsWindows } from '../../../hooks/useIsWindows';
 export const BottomHelper = () => {
   const { t } = useTranslation();
+  const { isWindows } = useIsWindows();
   const [isOpen, setIsOpen] = useState(false);
-  const browser = Bowser.getParser(window.navigator.userAgent);
-  const os = browser.getOSName();
-  const isWindows = os === 'Windows';
+
   return (
     <>
       <div className="fixed bottom-3 right-3">
