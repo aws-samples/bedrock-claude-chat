@@ -37,7 +37,7 @@ import useModel from '../hooks/useModel';
 import { TextInputChatContent } from '../features/agent/components/TextInputChatContent';
 import { AgentProcessingIndicator } from '../features/agent/components/AgentProcessingIndicator';
 import { AgentState } from '../features/agent/xstates/agentThinkProgress';
-import { BottomHelper } from '../features/heler/components/BottomHelper';
+import { BottomHelper } from '../features/helper/components/BottomHelper';
 import { useIsWindows } from '../hooks/useIsWindows';
 const MISTRAL_ENABLED: boolean =
   import.meta.env.VITE_APP_ENABLE_MISTRAL === 'true';
