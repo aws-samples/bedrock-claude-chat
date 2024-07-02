@@ -45,7 +45,7 @@ type Props = BaseProps & {
 const MAX_IMAGE_WIDTH = 800;
 const MAX_IMAGE_HEIGHT = 800;
 // To change the supported text format files, change the extension list below.
-const ADDITIONAL_TEXT_FILE_EXTENSIONS = [
+const TEXT_FILE_EXTENSIONS = [
   '.txt',
   '.py',
   '.ipynb',
@@ -175,7 +175,7 @@ const InputChatContent: React.FC<Props> = (props) => {
   const { disabledImageUpload, model, acceptMediaType } = useModel();
 
   const extendedAcceptMediaType = useMemo(() => {
-    return [...acceptMediaType, ...ADDITIONAL_TEXT_FILE_EXTENSIONS];
+    return [...acceptMediaType, ...TEXT_FILE_EXTENSIONS];
   }, [acceptMediaType]);
 
   const [shouldContinue, setShouldContinue] = useState(false);
@@ -361,7 +361,7 @@ const InputChatContent: React.FC<Props> = (props) => {
         const file = fileList.item(i);
         if (file) {
           if (
-            ADDITIONAL_TEXT_FILE_EXTENSIONS.some((extension) =>
+            TEXT_FILE_EXTENSIONS.some((extension) =>
               file.name.endsWith(extension)
             )
           ) {
