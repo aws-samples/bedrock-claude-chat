@@ -11,7 +11,7 @@ import useChat from '../hooks/useChat';
 import { TextAttachmentType } from '../hooks/useChat'
 import Button from './Button';
 import { PiArrowsCounterClockwise, PiX, PiArrowFatLineRight, PiFileTextThin } from 'react-icons/pi';
-import { TbPhotoPlus } from 'react-icons/tb';
+import { LuFilePlus2 } from "react-icons/lu";
 import { useTranslation } from 'react-i18next';
 import ButtonIcon from './ButtonIcon';
 import useModel from '../hooks/useModel';
@@ -21,6 +21,7 @@ import { create } from 'zustand';
 import ButtonFileChoose from './ButtonFileChoose';
 import { BaseProps } from '../@types/common';
 import ModalDialog from './ModalDialog';
+import Alert from '../components/Alert';
 
 type Props = BaseProps & {
   disabledSend?: boolean;
@@ -34,7 +35,8 @@ type Props = BaseProps & {
 
 const MAX_IMAGE_WIDTH = 800;
 const MAX_IMAGE_HEIGHT = 800;
-const TEXT_FILE_EXTENSIONS = [".txt", ".md", ".ts", ".tsx", ".js", ".html", ".htm"]
+// To change the supported text format files, change the extension list below.
+const ADDITIONAL_TEXT_FILE_EXTENSIONS = [".txt",".py",".ipynb",".js",".jsx",".html",".css",".java",".cs",".php",".c",".cpp",".cxx",".h",".hpp",".rs",".R",".Rmd",".swift",".go",".rb",".kt",".kts",".ts",".tsx",".m",".scala",".rs",".dart",".lua",".pl",".pm",".t",".sh",".bash",".zsh",".csv",".log",".ini",".config",".json",".proto",".yaml",".yml",".toml",".lua",".sql",".bat",".md",".coffee",".tex",".latex"]
 
 const useInputChatContentState = create<{
   base64EncodedImages: string[];
@@ -49,6 +51,8 @@ const useInputChatContentState = create<{
   setPreviewImageUrl: (url: string | null) => void;
   isOpenPreviewImage: boolean;
   setIsOpenPreviewImage: (isOpen: boolean) => void;
+  isAttachmentFailed: boolean;
+  setAttachmentFailed: () => void;
 }>((set, get) => ({
   base64EncodedImages: [],
   pushBase64EncodedImage: (encodedImage) => {
@@ -98,6 +102,13 @@ const useInputChatContentState = create<{
       textFiles: [],
     });
   },
+  isAttachmentFailed: false,
+  setAttachmentFailed: () => {
+    set({isAttachmentFailed: true })
+    setTimeout(() => {
+      set({isAttachmentFailed: false })
+    }, 3000);
+  },
 }));
 
 const InputChatContent: React.FC<Props> = (props) => {
@@ -106,7 +117,7 @@ const InputChatContent: React.FC<Props> = (props) => {
   const { disabledImageUpload, model, acceptMediaType } = useModel();
 
   const extendedAcceptMediaType = useMemo(() => {
-    return [...acceptMediaType, '.md', '.ts', '.js']; // 追加のメディアタイプをここに追加
+    return [...acceptMediaType, ...ADDITIONAL_TEXT_FILE_EXTENSIONS];
   }, [acceptMediaType]);    
 
   const [shouldContinue, setShouldContinue] = useState(false);
@@ -125,6 +136,8 @@ const InputChatContent: React.FC<Props> = (props) => {
     pushTextFile,
     removeTextFile,
     clearTextFiles,
+    isAttachmentFailed,
+    setAttachmentFailed,
   } = useInputChatContentState();
 
   useEffect(() => {
@@ -288,15 +301,17 @@ const InputChatContent: React.FC<Props> = (props) => {
     };
   });
 
-  const onChangeImageFile = useCallback(
+  const onChangeFile = useCallback(
     (fileList: FileList) => {
       for (let i = 0; i < fileList.length; i++) {
         const file = fileList.item(i);
         if (file) {
-          if (file.type.startsWith('text/') || TEXT_FILE_EXTENSIONS.some(extension => file.name.endsWith(extension))) {
+          if (ADDITIONAL_TEXT_FILE_EXTENSIONS.some(extension => file.name.endsWith(extension))) {
             handleFileRead(file);
-          } else {
+          } else if(acceptMediaType.some(extension => file.name.endsWith(extension))) {
             encodeAndPushImage(file);
+          }else{
+            setAttachmentFailed();
           }
         }
       }
@@ -314,13 +329,22 @@ const InputChatContent: React.FC<Props> = (props) => {
   const onDrop: React.DragEventHandler<HTMLDivElement> = useCallback(
     (e) => {
       e.preventDefault();
-      onChangeImageFile(e.dataTransfer.files);
+      onChangeFile(e.dataTransfer.files);
     },
-    [onChangeImageFile]
+    [onChangeFile]
   );
 
   return (
     <>
+      {isAttachmentFailed && (
+        <Alert
+          className="mt-1 z-50"
+          severity="warning"
+          title={t('error.unsupportedFileFormat.title')}
+          >
+          {t('error.unsupportedFileFormat.message')}
+        </Alert>
+      )}
       {props.dndMode && (
         <div
           className="fixed left-0 top-0 h-full w-full bg-black/40"
@@ -336,10 +360,7 @@ const InputChatContent: React.FC<Props> = (props) => {
         )}>
         <div className="flex w-full">
           <Textarea
-            className={twMerge(
-              'm-1  bg-transparent scrollbar-thin scrollbar-thumb-light-gray',
-              disabledImageUpload ? 'pr-6' : 'pr-12'
-            )}
+            className="m-1  bg-transparent scrollbar-thin scrollbar-thumb-light-gray pr-12"
             placeholder={props.placeholder ?? t('app.inputMessage')}
             disabled={props.disabled}
             noBorder
@@ -348,15 +369,13 @@ const InputChatContent: React.FC<Props> = (props) => {
           />
         </div>
         <div className="absolute bottom-0 right-0 flex items-center">
-          {!disabledImageUpload && (
-            <ButtonFileChoose
-              disabled={postingMessage}
-              icon
-              accept={extendedAcceptMediaType.join(',')}
-              onChange={onChangeImageFile}>
-              <TbPhotoPlus />
-            </ButtonFileChoose>
-          )}
+          <ButtonFileChoose
+            disabled={postingMessage}
+            icon
+            accept={extendedAcceptMediaType.join(',')}
+            onChange={onChangeFile}>
+            <LuFilePlus2 />
+          </ButtonFileChoose>
           <ButtonSend
             className="m-2 align-bottom"
             disabled={disabledSend || props.disabled}
@@ -385,13 +404,6 @@ const InputChatContent: React.FC<Props> = (props) => {
                 </ButtonIcon>
               </div>
             ))}
-            {disabledImageUpload && (
-              <div className="absolute -m-2 flex h-[120%] w-[110%] items-center justify-center bg-black/30">
-                <div className="rounded bg-light-red p-3 text-sm text-aws-font-color">
-                  {t('error.notSupportedImage')}
-                </div>
-              </div>
-            )}
             <ModalDialog
               isOpen={isOpenPreviewImage}
               onClose={() => setIsOpenPreviewImage(false)}
