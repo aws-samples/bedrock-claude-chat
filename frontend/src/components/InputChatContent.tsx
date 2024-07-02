@@ -385,7 +385,7 @@ const InputChatContent: React.FC<Props> = (props) => {
         }
       }
     },
-    [encodeAndPushImage, handleFileRead]
+    [encodeAndPushImage, handleFileRead, setAttachmentFailed, acceptMediaType]
   );
 
   const onDragOver: React.DragEventHandler<HTMLDivElement> = useCallback(
