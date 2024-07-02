@@ -235,14 +235,6 @@ const InputChatContent: React.FC<Props> = (props) => {
 
   const inputRef = useRef<HTMLDivElement>(null);
 
-  const truncateFileName = (name: string, maxLength = 30) => {
-    if (name.length <= maxLength) {
-      return name;
-    }
-    const halfLength = Math.floor((maxLength - 3) / 2);
-    return `${name.slice(0, halfLength)}...${name.slice(-halfLength)}`;
-  };
-
   const sendContent = useCallback(() => {
     const textAttachments = textFiles.map((file) => ({
       fileName: file.name,
