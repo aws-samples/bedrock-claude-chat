@@ -10,8 +10,9 @@ export type Model =
   | 'mixtral-8x7b-instruct'
   | 'mistral-large';
 export type Content = {
-  contentType: 'text' | 'image';
+  contentType: 'text' | 'image' | 'textAttachment';
   mediaType?: string;
+  fileName?: string;
   body: string;
 };
 

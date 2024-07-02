@@ -69,6 +69,13 @@ def compose_args_for_other_client(
                             "text": c.body,
                         }
                     )
+                elif c.content_type == "textAttachment":
+                    content.append(
+                        {
+                            "type": "text",
+                            "text": f"<attachment:{c.file_name}>{c.body}</attachment:{c.file_name}>",
+                        }
+                    )
             m = {"role": message.role, "content": content}
             arg_messages.append(m)
 
@@ -125,6 +132,13 @@ def compose_args_for_anthropic_client(
                                 "media_type": c.media_type,
                                 "data": c.body,
                             },
+                        }
+                    )
+                elif c.content_type == "textAttachment":
+                    content.append(
+                        {
+                            "type": "text",
+                            "text": f"<attachment:{c.file_name}>{c.body}</attachment:{c.file_name}>",
                         }
                     )
             m = {"role": message.role, "content": content}

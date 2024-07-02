@@ -7,6 +7,7 @@ import React, {
 } from 'react';
 import InputChatContent from '../components/InputChatContent';
 import useChat from '../hooks/useChat';
+import { TextAttachmentType } from '../hooks/useChat';
 import ChatMessage from '../components/ChatMessage';
 import useScroll from '../hooks/useScroll';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -130,10 +131,11 @@ const ChatPage: React.FC = () => {
   }, [bot?.hasKnowledge, botId, bot?.hasAgent]);
 
   const onSend = useCallback(
-    (content: string, base64EncodedImages?: string[]) => {
+    (content: string, base64EncodedImages?: string[], textAttachments?: TextAttachmentType[]) => {
       postChat({
         content,
         base64EncodedImages,
+        textAttachments,
         bot: inputBotParams,
       });
     },

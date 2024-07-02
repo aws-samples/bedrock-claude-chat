@@ -34,6 +34,12 @@ type BotInputType = {
   hasAgent: boolean;
 };
 
+export type TextAttachmentType = {
+  fileName: string;
+  fileType: string;
+  extractedContent: string;
+};
+
 export type ThinkingAction =
   | {
       type: 'doing';
@@ -358,9 +364,10 @@ const useChat = () => {
   const postChat = (params: {
     content: string;
     base64EncodedImages?: string[];
+    textAttachments?: TextAttachmentType[];
     bot?: BotInputType;
   }) => {
-    const { content, bot, base64EncodedImages } = params;
+    const { content, bot, base64EncodedImages, textAttachments } = params;
     const isNewChat = conversationId ? false : true;
     const newConversationId = ulid();
 
@@ -389,8 +396,21 @@ const useChat = () => {
         mediaType: result!.groups!.mediaType,
       };
     });
+
+    const textAttachContents: MessageContent['content'] = (
+      textAttachments ?? []
+    ).map((attachment) => {
+      return {
+        body: attachment.extractedContent,
+        contentType: 'textAttachment',
+        mediaType: attachment.fileType,
+        fileName: attachment.fileName,
+      };
+    });
+
     const messageContent: MessageContent = {
       content: [
+        ...textAttachContents,
         ...imageContents,
         {
           body: content,
@@ -577,7 +597,10 @@ const useChat = () => {
 
     const parentMessage = produce(messages[index], (draft) => {
       if (props?.content) {
-        draft.content[0].body = props.content;
+        const textIndex = draft.content.findIndex(
+          (content) => content.contentType === 'text'
+        );
+        draft.content[textIndex].body = props.content;
       }
     });
 

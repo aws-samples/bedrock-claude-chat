@@ -296,6 +296,7 @@ class TestContinueChat(unittest.TestCase):
                                 content_type="text",
                                 body="こんにちは",
                                 media_type=None,
+                                file_name=None,
                             )
                         ],
                         model=MODEL,
@@ -313,6 +314,7 @@ class TestContinueChat(unittest.TestCase):
                                 content_type="text",
                                 body="はい、こんにちは。どうしましたか?",
                                 media_type=None,
+                                file_name=None,
                             )
                         ],
                         model=MODEL,
@@ -388,6 +390,7 @@ class TestRegenerateChat(unittest.TestCase):
                                 content_type="text",
                                 body="こんにちはを英語で",
                                 media_type=None,
+                                file_name=None,
                             )
                         ],
                         model=MODEL,
@@ -405,6 +408,7 @@ class TestRegenerateChat(unittest.TestCase):
                                 content_type="text",
                                 body="Hello!",
                                 media_type=None,
+                                file_name=None,
                             )
                         ],
                         model=MODEL,
@@ -422,6 +426,7 @@ class TestRegenerateChat(unittest.TestCase):
                                 content_type="text",
                                 body="こんにちはを中国語で",
                                 media_type=None,
+                                file_name=None,
                             )
                         ],
                         model=MODEL,
@@ -439,6 +444,7 @@ class TestRegenerateChat(unittest.TestCase):
                                 content_type="text",
                                 body="你好!",
                                 media_type=None,
+                                file_name=None,
                             )
                         ],
                         model=MODEL,
@@ -526,6 +532,7 @@ class TestProposeTitle(unittest.TestCase):
                         # body="Australian famous site seeing place",
                         body="日本の有名な料理を3つ教えて",
                         media_type=None,
+                        file_name=None,
                     )
                 ],
                 model=MODEL,

@@ -8,9 +8,14 @@ import React, {
 import ButtonSend from './ButtonSend';
 import Textarea from './Textarea';
 import useChat from '../hooks/useChat';
+import { TextAttachmentType } from '../hooks/useChat';
 import Button from './Button';
-import { PiArrowsCounterClockwise, PiX, PiArrowFatLineRight } from 'react-icons/pi';
-import { TbPhotoPlus } from 'react-icons/tb';
+import {
+  PiArrowsCounterClockwise,
+  PiX,
+  PiArrowFatLineRight,
+} from 'react-icons/pi';
+import { LuFilePlus2 } from 'react-icons/lu';
 import { useTranslation } from 'react-i18next';
 import ButtonIcon from './ButtonIcon';
 import useModel from '../hooks/useModel';
@@ -20,25 +25,95 @@ import { create } from 'zustand';
 import ButtonFileChoose from './ButtonFileChoose';
 import { BaseProps } from '../@types/common';
 import ModalDialog from './ModalDialog';
+import UploadedFileText from './UploadedFileText';
+import useSnackbar from '../hooks/useSnackbar';
 
 type Props = BaseProps & {
   disabledSend?: boolean;
   disabled?: boolean;
   placeholder?: string;
   dndMode?: boolean;
-  onSend: (content: string, base64EncodedImages?: string[]) => void;
+  onSend: (
+    content: string,
+    base64EncodedImages?: string[],
+    textAttachments?: TextAttachmentType[]
+  ) => void;
   onRegenerate: () => void;
   continueGenerate: () => void;
 };
 
 const MAX_IMAGE_WIDTH = 800;
 const MAX_IMAGE_HEIGHT = 800;
+// To change the supported text format files, change the extension list below.
+const TEXT_FILE_EXTENSIONS = [
+  '.txt',
+  '.py',
+  '.ipynb',
+  '.js',
+  '.jsx',
+  '.html',
+  '.css',
+  '.java',
+  '.cs',
+  '.php',
+  '.c',
+  '.cpp',
+  '.cxx',
+  '.h',
+  '.hpp',
+  '.rs',
+  '.R',
+  '.Rmd',
+  '.swift',
+  '.go',
+  '.rb',
+  '.kt',
+  '.kts',
+  '.ts',
+  '.tsx',
+  '.m',
+  '.scala',
+  '.rs',
+  '.dart',
+  '.lua',
+  '.pl',
+  '.pm',
+  '.t',
+  '.sh',
+  '.bash',
+  '.zsh',
+  '.csv',
+  '.log',
+  '.ini',
+  '.config',
+  '.json',
+  '.proto',
+  '.yaml',
+  '.yml',
+  '.toml',
+  '.lua',
+  '.sql',
+  '.bat',
+  '.md',
+  '.coffee',
+  '.tex',
+  '.latex',
+];
 
 const useInputChatContentState = create<{
   base64EncodedImages: string[];
   pushBase64EncodedImage: (encodedImage: string) => void;
   removeBase64EncodedImage: (index: number) => void;
   clearBase64EncodedImages: () => void;
+  textFiles: { name: string; type: string; size: number; content: string }[];
+  pushTextFile: (file: {
+    name: string;
+    type: string;
+    size: number;
+    content: string;
+  }) => void;
+  removeTextFile: (index: number) => void;
+  clearTextFiles: () => void;
   previewImageUrl: string | null;
   setPreviewImageUrl: (url: string | null) => void;
   isOpenPreviewImage: boolean;
@@ -72,14 +147,39 @@ const useInputChatContentState = create<{
   setIsOpenPreviewImage: (isOpen) => {
     set({ isOpenPreviewImage: isOpen });
   },
+  textFiles: [],
+  pushTextFile: (file) => {
+    set({
+      textFiles: produce(get().textFiles, (draft) => {
+        draft.push(file);
+      }),
+    });
+  },
+  removeTextFile: (index) => {
+    set({
+      textFiles: produce(get().textFiles, (draft) => {
+        draft.splice(index, 1);
+      }),
+    });
+  },
+  clearTextFiles: () => {
+    set({
+      textFiles: [],
+    });
+  },
 }));
 
 const InputChatContent: React.FC<Props> = (props) => {
   const { t } = useTranslation();
   const { postingMessage, hasError, messages, getShouldContinue } = useChat();
   const { disabledImageUpload, model, acceptMediaType } = useModel();
+
+  const extendedAcceptMediaType = useMemo(() => {
+    return [...acceptMediaType, ...TEXT_FILE_EXTENSIONS];
+  }, [acceptMediaType]);
+
   const [shouldContinue, setShouldContinue] = useState(false);
-  
+
   const [content, setContent] = useState('');
   const {
     base64EncodedImages,
@@ -90,10 +190,15 @@ const InputChatContent: React.FC<Props> = (props) => {
     setPreviewImageUrl,
     isOpenPreviewImage,
     setIsOpenPreviewImage,
+    textFiles,
+    pushTextFile,
+    removeTextFile,
+    clearTextFiles,
   } = useInputChatContentState();
 
   useEffect(() => {
     clearBase64EncodedImages();
+    clearTextFiles();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -105,6 +210,8 @@ const InputChatContent: React.FC<Props> = (props) => {
     checkShouldContinue();
   }, [getShouldContinue, postingMessage, content, props, hasError]);
 
+  const { open } = useSnackbar();
+
   const disabledSend = useMemo(() => {
     return content === '' || props.disabledSend || hasError;
   }, [hasError, content, props.disabledSend]);
@@ -112,25 +219,35 @@ const InputChatContent: React.FC<Props> = (props) => {
   const disabledRegenerate = useMemo(() => {
     return postingMessage || hasError;
   }, [hasError, postingMessage]);
-  
+
   const disableContinue = useMemo(() => {
     return postingMessage || hasError;
-  }, [hasError, postingMessage])
+  }, [hasError, postingMessage]);
 
   const inputRef = useRef<HTMLDivElement>(null);
 
   const sendContent = useCallback(() => {
+    const textAttachments = textFiles.map((file) => ({
+      fileName: file.name,
+      fileType: file.type,
+      extractedContent: file.content,
+    }));
+
     props.onSend(
       content,
       !disabledImageUpload && base64EncodedImages.length > 0
         ? base64EncodedImages
-        : undefined
+        : undefined,
+      textAttachments.length > 0 ? textAttachments : undefined
     );
     setContent('');
     clearBase64EncodedImages();
+    clearTextFiles();
   }, [
     base64EncodedImages,
+    textFiles,
     clearBase64EncodedImages,
+    clearTextFiles,
     content,
     disabledImageUpload,
     props,
@@ -183,6 +300,24 @@ const InputChatContent: React.FC<Props> = (props) => {
     [pushBase64EncodedImage]
   );
 
+  const handleFileRead = useCallback(
+    (file: File) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          pushTextFile({
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            content: reader.result,
+          });
+        }
+      };
+      reader.readAsText(file);
+    },
+    [pushTextFile]
+  );
+
   useEffect(() => {
     const currentElem = inputRef?.current;
     const keypressListener = (e: DocumentEventMap['keypress']) => {
@@ -220,16 +355,28 @@ const InputChatContent: React.FC<Props> = (props) => {
     };
   });
 
-  const onChangeImageFile = useCallback(
+  const onChangeFile = useCallback(
     (fileList: FileList) => {
       for (let i = 0; i < fileList.length; i++) {
         const file = fileList.item(i);
         if (file) {
-          encodeAndPushImage(file);
+          if (
+            TEXT_FILE_EXTENSIONS.some((extension) =>
+              file.name.endsWith(extension)
+            )
+          ) {
+            handleFileRead(file);
+          } else if (
+            acceptMediaType.some((extension) => file.name.endsWith(extension))
+          ) {
+            encodeAndPushImage(file);
+          } else {
+            open(t('error.unsupportedFileFormat'));
+          }
         }
       }
     },
-    [encodeAndPushImage]
+    [encodeAndPushImage, handleFileRead, open, t, acceptMediaType]
   );
 
   const onDragOver: React.DragEventHandler<HTMLDivElement> = useCallback(
@@ -242,9 +389,9 @@ const InputChatContent: React.FC<Props> = (props) => {
   const onDrop: React.DragEventHandler<HTMLDivElement> = useCallback(
     (e) => {
       e.preventDefault();
-      onChangeImageFile(e.dataTransfer.files);
+      onChangeFile(e.dataTransfer.files);
     },
-    [onChangeImageFile]
+    [onChangeFile]
   );
 
   return (
@@ -264,10 +411,7 @@ const InputChatContent: React.FC<Props> = (props) => {
         )}>
         <div className="flex w-full">
           <Textarea
-            className={twMerge(
-              'm-1  bg-transparent scrollbar-thin scrollbar-thumb-light-gray',
-              disabledImageUpload ? 'pr-6' : 'pr-12'
-            )}
+            className="m-1  bg-transparent pr-12 scrollbar-thin scrollbar-thumb-light-gray"
             placeholder={props.placeholder ?? t('app.inputMessage')}
             disabled={props.disabled}
             noBorder
@@ -276,15 +420,13 @@ const InputChatContent: React.FC<Props> = (props) => {
           />
         </div>
         <div className="absolute bottom-0 right-0 flex items-center">
-          {!disabledImageUpload && (
-            <ButtonFileChoose
-              disabled={postingMessage}
-              icon
-              accept={acceptMediaType.join(',')}
-              onChange={onChangeImageFile}>
-              <TbPhotoPlus />
-            </ButtonFileChoose>
-          )}
+          <ButtonFileChoose
+            disabled={postingMessage}
+            icon
+            accept={extendedAcceptMediaType.join(',')}
+            onChange={onChangeFile}>
+            <LuFilePlus2 />
+          </ButtonFileChoose>
           <ButtonSend
             className="m-2 align-bottom"
             disabled={disabledSend || props.disabled}
@@ -305,7 +447,7 @@ const InputChatContent: React.FC<Props> = (props) => {
                   }}
                 />
                 <ButtonIcon
-                  className="absolute right-0 top-0 -m-2 border border-aws-sea-blue bg-white p-1 text-xs text-aws-sea-blue"
+                  className="absolute left-0 top-0 -m-2 border border-aws-sea-blue bg-white p-1 text-xs text-aws-sea-blue"
                   onClick={() => {
                     removeBase64EncodedImage(idx);
                   }}>
@@ -313,13 +455,6 @@ const InputChatContent: React.FC<Props> = (props) => {
                 </ButtonIcon>
               </div>
             ))}
-            {disabledImageUpload && (
-              <div className="absolute -m-2 flex h-[120%] w-[110%] items-center justify-center bg-black/30">
-                <div className="rounded bg-light-red p-3 text-sm text-aws-font-color">
-                  {t('error.notSupportedImage')}
-                </div>
-              </div>
-            )}
             <ModalDialog
               isOpen={isOpenPreviewImage}
               onClose={() => setIsOpenPreviewImage(false)}
@@ -333,6 +468,22 @@ const InputChatContent: React.FC<Props> = (props) => {
                 />
               )}
             </ModalDialog>
+          </div>
+        )}
+        {textFiles.length > 0 && (
+          <div className="relative m-2 mr-24 flex flex-wrap gap-3">
+            {textFiles.map((file, idx) => (
+              <div key={idx} className="relative flex flex-col items-center">
+                <UploadedFileText fileName={file.name} />
+                <ButtonIcon
+                  className="absolute left-2 top-1 -m-2 border border-aws-sea-blue bg-white p-1 text-xs text-aws-sea-blue"
+                  onClick={() => {
+                    removeTextFile(idx);
+                  }}>
+                  <PiX />
+                </ButtonIcon>
+              </div>
+            ))}
           </div>
         )}
         {messages.length > 1 && (

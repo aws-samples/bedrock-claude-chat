@@ -500,6 +500,7 @@ How would you categorize this email?`,
           'Unexpected response received. The response format does not match the expected format.',
       },
       notSupportedImage: 'The selected model does not support images.',
+      unsupportedFileFormat: 'The selected file format is not supported.',
     },
     validation: {
       title: 'Validation Error',

@@ -21,6 +21,7 @@ import ModalDialog from './ModalDialog';
 import { useTranslation } from 'react-i18next';
 import useChat from '../hooks/useChat';
 import DialogFeedback from './DialogFeedback';
+import UploadedFileText from './UploadedFileText';
 
 type Props = BaseProps & {
   chatContent?: DisplayMessageContent;
@@ -38,6 +39,8 @@ const ChatMessage: React.FC<Props> = (props) => {
   const [relatedDocuments, setRelatedDocuments] = useState<RelatedDocument[]>(
     []
   );
+
+  const [firstTextContent, setFirstTextContent] = useState(0);
 
   useEffect(() => {
     if (props.chatContent) {
@@ -57,12 +60,22 @@ const ChatMessage: React.FC<Props> = (props) => {
         // For new messages, get related documents from the api
         setRelatedDocuments(getRelatedDocuments(props.chatContent.id));
       }
+      setFirstTextContent(
+        props.chatContent.content.findIndex(
+          (content) => content.contentType === 'text'
+        )
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.chatContent]);
 
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [isOpenPreviewImage, setIsOpenPreviewImage] = useState(false);
+  const [isFileModalOpen, setIsFileModalOpen] = useState(false);
+  const [dialogFileName, setDialogFileName] = useState<string>('');
+  const [dialogFileContent, setDialogFileContent] = useState<string | null>(
+    null
+  );
 
   const chatContent = useMemo<DisplayMessageContent | undefined>(() => {
     return props.chatContent;
@@ -141,30 +154,63 @@ const ChatMessage: React.FC<Props> = (props) => {
         <div className="ml-5 grow ">
           {chatContent?.role === 'user' && !isEdit && (
             <div>
-              {chatContent.content.map((content, idx) => {
-                if (content.contentType === 'image') {
-                  const imageUrl = `data:${content.mediaType};base64,${content.body}`;
-                  return (
-                    <img
-                      key={idx}
-                      src={imageUrl}
-                      className="mb-2 h-48 cursor-pointer"
-                      onClick={() => {
-                        setPreviewImageUrl(imageUrl);
-                        setIsOpenPreviewImage(true);
-                      }}
-                    />
-                  );
-                } else {
-                  return (
-                    <React.Fragment key={idx}>
-                      {content.body.split('\n').map((c, idxBody) => (
-                        <div key={idxBody}>{c}</div>
-                      ))}
-                    </React.Fragment>
-                  );
-                }
-              })}
+              {chatContent.content.some(
+                (content) => content.contentType === 'image'
+              ) && (
+                <div key="images">
+                  {chatContent.content.map((content, idx) => {
+                    if (content.contentType === 'image') {
+                      const imageUrl = `data:${content.mediaType};base64,${content.body}`;
+                      return (
+                        <img
+                          key={idx}
+                          src={imageUrl}
+                          className="mb-2 h-48 cursor-pointer"
+                          onClick={() => {
+                            setPreviewImageUrl(imageUrl);
+                            setIsOpenPreviewImage(true);
+                          }}
+                        />
+                      );
+                    }
+                  })}
+                </div>
+              )}
+              {chatContent.content.some(
+                (content) => content.contentType === 'textAttachment'
+              ) && (
+                <div key="files" className="my-2 flex">
+                  {chatContent.content.map((content, idx) => {
+                    if (content.contentType === 'textAttachment') {
+                      return (
+                        <UploadedFileText
+                          key={idx}
+                          fileName={content.fileName ?? ''}
+                          onClick={() => {
+                            setDialogFileName(content.fileName ?? '');
+                            setDialogFileContent(content.body);
+                            setIsFileModalOpen(true);
+                          }}
+                        />
+                      );
+                    }
+                  })}
+                </div>
+              )}
+              {chatContent.content.some(
+                (content) => content.contentType === 'text'
+              ) &&
+                chatContent.content.map((content, idx) => {
+                  if (content.contentType === 'text') {
+                    return (
+                      <React.Fragment key={idx}>
+                        {content.body.split('\n').map((c, idxBody) => (
+                          <div key={idxBody}>{c}</div>
+                        ))}
+                      </React.Fragment>
+                    );
+                  }
+                })}
               <ModalDialog
                 isOpen={isOpenPreviewImage}
                 onClose={() => setIsOpenPreviewImage(false)}
@@ -177,6 +223,19 @@ const ChatMessage: React.FC<Props> = (props) => {
                     className="mx-auto max-h-[80vh] max-w-full rounded-md"
                   />
                 )}
+              </ModalDialog>
+              <ModalDialog
+                isOpen={isFileModalOpen}
+                onClose={() => setIsFileModalOpen(false)}
+                widthFromContent={true}
+                title={dialogFileName ?? ''}>
+                <div className="relative flex h-auto max-h-[80vh] w-auto max-w-[80vh] flex-col">
+                  <div className="overflow-auto px-4">
+                    <pre className="whitespace-pre-wrap break-all">
+                      {dialogFileContent}
+                    </pre>
+                  </div>
+                </div>
               </ModalDialog>
             </div>
           )}
@@ -216,7 +275,7 @@ const ChatMessage: React.FC<Props> = (props) => {
             <ButtonIcon
               className="text-dark-gray"
               onClick={() => {
-                setChangedContent(chatContent.content[0].body);
+                setChangedContent(chatContent.content[firstTextContent].body);
                 setIsEdit(true);
               }}>
               <PiNotePencil />

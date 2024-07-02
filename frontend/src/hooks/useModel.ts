@@ -71,9 +71,10 @@ const useModel = () => {
     model,
     disabledImageUpload: (model?.supportMediaType.length ?? 0) === 0,
     acceptMediaType:
-      model?.supportMediaType.map(
-        (mediaType) => `.${mediaType.split('/')[1]}`
-      ) ?? [],
+      model?.supportMediaType.flatMap((mediaType) => {
+        const ext = mediaType.split('/')[1];
+        return ext === 'jpeg' ? ['.jpg', '.jpeg'] : [`.${ext}`];
+      }) ?? [],
     availableModels,
   };
 };
