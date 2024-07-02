@@ -13,7 +13,7 @@ const ButtonSend: React.FC<Props> = (props) => {
   return (
     <button
       className={twMerge(
-        'flex items-center justify-center rounded-xl border border-aws-sea-blue bg-white p-2 text-xl text-aws-sea-blue',
+        'flex items-center justify-center rounded-xl bg-aws-sea-blue  p-2 text-xl  text-white hover:bg-aws-sea-blue-hover',
         props.disabled ? 'opacity-30' : '',
         props.className
       )}

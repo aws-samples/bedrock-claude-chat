@@ -520,6 +520,15 @@ const translation = {
         message: 'タイトルと入力例は、どちらも入力してください。',
       },
     },
+    heler: {
+      shortcuts: {
+        title: 'ショートカットキー',
+        items: {
+          focusInput: 'チャット入力にフォーカスを移す',
+          newChat: '新しいチャットを開く',
+        },
+      },
+    },
   },
 };
 

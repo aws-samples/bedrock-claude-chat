@@ -516,6 +516,15 @@ How would you categorize this email?`,
         message: 'Please input both Title and Conversation Example.',
       },
     },
+    heler: {
+      shortcuts: {
+        title: 'Shortcut Keys',
+        items: {
+          focusInput: 'Shift focus to chat input',
+          newChat: 'Open new chat',
+        },
+      },
+    },
   },
 };
 

@@ -35,6 +35,22 @@ const Textarea: React.FC<Props> = (props) => {
     }
   }, [props.value]);
 
+  useEffect(() => {
+    const activeCodes: { [key in KeyboardEvent['code']]: boolean } = {};
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      activeCodes[event.code] = true;
+      if (
+        activeCodes['Escape'] &&
+        (activeCodes['ShiftLeft'] || activeCodes['ShiftRight'])
+      ) {
+        ref.current?.focus();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  });
+
   return (
     <div className={`${props.className ?? ''} flex w-full flex-col`}>
       <textarea
