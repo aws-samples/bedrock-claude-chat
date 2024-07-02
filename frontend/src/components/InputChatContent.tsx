@@ -25,9 +25,8 @@ import { create } from 'zustand';
 import ButtonFileChoose from './ButtonFileChoose';
 import { BaseProps } from '../@types/common';
 import ModalDialog from './ModalDialog';
-import Alert from '../components/Alert';
 import UploadedFileText from './UploadedFileText';
-import { Transition } from '@headlessui/react';
+import useSnackbar from '../hooks/useSnackbar';
 
 type Props = BaseProps & {
   disabledSend?: boolean;
@@ -119,8 +118,6 @@ const useInputChatContentState = create<{
   setPreviewImageUrl: (url: string | null) => void;
   isOpenPreviewImage: boolean;
   setIsOpenPreviewImage: (isOpen: boolean) => void;
-  isAttachmentFailed: boolean;
-  setAttachmentFailed: () => void;
 }>((set, get) => ({
   base64EncodedImages: [],
   pushBase64EncodedImage: (encodedImage) => {
@@ -170,13 +167,6 @@ const useInputChatContentState = create<{
       textFiles: [],
     });
   },
-  isAttachmentFailed: false,
-  setAttachmentFailed: () => {
-    set({ isAttachmentFailed: true });
-    setTimeout(() => {
-      set({ isAttachmentFailed: false });
-    }, 3000);
-  },
 }));
 
 const InputChatContent: React.FC<Props> = (props) => {
@@ -204,8 +194,6 @@ const InputChatContent: React.FC<Props> = (props) => {
     pushTextFile,
     removeTextFile,
     clearTextFiles,
-    isAttachmentFailed,
-    setAttachmentFailed,
   } = useInputChatContentState();
 
   useEffect(() => {
@@ -221,6 +209,8 @@ const InputChatContent: React.FC<Props> = (props) => {
     };
     checkShouldContinue();
   }, [getShouldContinue, postingMessage, content, props, hasError]);
+
+  const { open } = useSnackbar();
 
   const disabledSend = useMemo(() => {
     return content === '' || props.disabledSend || hasError;
@@ -381,12 +371,12 @@ const InputChatContent: React.FC<Props> = (props) => {
           ) {
             encodeAndPushImage(file);
           } else {
-            setAttachmentFailed();
+            open(t('error.unsupportedFileFormat'));
           }
         }
       }
     },
-    [encodeAndPushImage, handleFileRead, setAttachmentFailed, acceptMediaType]
+    [encodeAndPushImage, handleFileRead, acceptMediaType]
   );
 
   const onDragOver: React.DragEventHandler<HTMLDivElement> = useCallback(
@@ -406,22 +396,6 @@ const InputChatContent: React.FC<Props> = (props) => {
 
   return (
     <>
-      <Transition
-        className="z-50"
-        show={isAttachmentFailed}
-        enter="transition-opacity ease-in-out duration-250"
-        enterFrom="opacity-0"
-        enterTo="opacity-100"
-        leave="transition-opacity ease-in-out duration-300"
-        leaveFrom="opacity-100"
-        leaveTo="opacity-0">
-        <Alert
-          className="mt-1"
-          severity="warning"
-          title={t('error.unsupportedFileFormat.title')}>
-          {t('error.unsupportedFileFormat.message')}
-        </Alert>
-      </Transition>
       {props.dndMode && (
         <div
           className="fixed left-0 top-0 h-full w-full bg-black/40"

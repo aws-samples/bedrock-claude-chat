@@ -503,10 +503,7 @@ const translation = {
         invalidResponse: '想定外のResponseが返ってきました。',
       },
       notSupportedImage: '選択しているモデルは、画像を利用できません。',
-      unsupportedFileFormat: {
-        title: '添付エラー',
-        message: '選択したファイル形式はサポートされていません。',
-      },
+      unsupportedFileFormat: '選択したファイル形式はサポートされていません。',
     },
     validation: {
       title: 'バリデーションエラー',
