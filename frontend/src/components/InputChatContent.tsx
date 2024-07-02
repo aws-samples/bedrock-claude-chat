@@ -27,6 +27,7 @@ import { BaseProps } from '../@types/common';
 import ModalDialog from './ModalDialog';
 import Alert from '../components/Alert';
 import UploadedFileText from './UploadedFileText';
+import { Transition } from '@headlessui/react';
 
 type Props = BaseProps & {
   disabledSend?: boolean;
@@ -405,14 +406,22 @@ const InputChatContent: React.FC<Props> = (props) => {
 
   return (
     <>
-      {isAttachmentFailed && (
+      <Transition
+        className="z-50"
+        show={isAttachmentFailed}
+        enter="transition-opacity ease-in-out duration-250"
+        enterFrom="opacity-0"
+        enterTo="opacity-100"
+        leave="transition-opacity ease-in-out duration-300"
+        leaveFrom="opacity-100"
+        leaveTo="opacity-0">
         <Alert
-          className="z-50 mt-1"
+          className="mt-1"
           severity="warning"
           title={t('error.unsupportedFileFormat.title')}>
           {t('error.unsupportedFileFormat.message')}
         </Alert>
-      )}
+      </Transition>
       {props.dndMode && (
         <div
           className="fixed left-0 top-0 h-full w-full bg-black/40"
