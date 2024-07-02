@@ -8,6 +8,7 @@ import {
   PiXCircleBold,
 } from 'react-icons/pi';
 import { twMerge } from 'tailwind-merge';
+import { SyncStatus } from '../constants';
 
 type Props = BaseProps & {
   syncStatus: BotSyncStatus;
@@ -19,28 +20,29 @@ const StatusSyncBot: React.FC<Props> = (props) => {
   return (
     <div className={twMerge('flex items-center gap-1', props.className)}>
       <div>
-        {(props.syncStatus === 'QUEUED' || props.syncStatus === 'RUNNING') && (
+        {(props.syncStatus === SyncStatus.QUEUED ||
+          props.syncStatus === SyncStatus.RUNNING) && (
           <PiSpinnerBold className="animate-spin text-aws-squid-ink" />
         )}
-        {props.syncStatus === 'SUCCEEDED' && (
+        {props.syncStatus === SyncStatus.SUCCEEDED && (
           <PiCheckCircleBold className="text-aws-aqua" />
         )}
-        {props.syncStatus === 'FAILED' && (
+        {props.syncStatus === SyncStatus.FAILED && (
           <PiXCircleBold className="text-red" />
         )}
       </div>
 
       <div className="whitespace-nowrap text-sm text-dark-gray">
-        {props.syncStatus === 'QUEUED' && (
+        {props.syncStatus === SyncStatus.QUEUED && (
           <>{t('bot.label.syncStatus.queue')}</>
         )}
-        {props.syncStatus === 'RUNNING' && (
+        {props.syncStatus === SyncStatus.RUNNING && (
           <>{t('bot.label.syncStatus.running')}</>
         )}
-        {props.syncStatus === 'SUCCEEDED' && (
+        {props.syncStatus === SyncStatus.SUCCEEDED && (
           <>{t('bot.label.syncStatus.success')}</>
         )}
-        {props.syncStatus === 'FAILED' && (
+        {props.syncStatus === SyncStatus.FAILED && (
           <>
             {props.onClickError ? (
               <a
