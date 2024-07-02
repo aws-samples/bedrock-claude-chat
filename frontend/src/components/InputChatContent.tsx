@@ -8,10 +8,14 @@ import React, {
 import ButtonSend from './ButtonSend';
 import Textarea from './Textarea';
 import useChat from '../hooks/useChat';
-import { TextAttachmentType } from '../hooks/useChat'
+import { TextAttachmentType } from '../hooks/useChat';
 import Button from './Button';
-import { PiArrowsCounterClockwise, PiX, PiArrowFatLineRight, PiFileTextThin } from 'react-icons/pi';
-import { LuFilePlus2 } from "react-icons/lu";
+import {
+  PiArrowsCounterClockwise,
+  PiX,
+  PiArrowFatLineRight,
+} from 'react-icons/pi';
+import { LuFilePlus2 } from 'react-icons/lu';
 import { useTranslation } from 'react-i18next';
 import ButtonIcon from './ButtonIcon';
 import useModel from '../hooks/useModel';
@@ -22,13 +26,18 @@ import ButtonFileChoose from './ButtonFileChoose';
 import { BaseProps } from '../@types/common';
 import ModalDialog from './ModalDialog';
 import Alert from '../components/Alert';
+import UploadedFileText from './UploadedFileText';
 
 type Props = BaseProps & {
   disabledSend?: boolean;
   disabled?: boolean;
   placeholder?: string;
   dndMode?: boolean;
-  onSend: (content: string, base64EncodedImages?: string[], textAttachments?: TextAttachmentType[]) => void;
+  onSend: (
+    content: string,
+    base64EncodedImages?: string[],
+    textAttachments?: TextAttachmentType[]
+  ) => void;
   onRegenerate: () => void;
   continueGenerate: () => void;
 };
@@ -36,15 +45,73 @@ type Props = BaseProps & {
 const MAX_IMAGE_WIDTH = 800;
 const MAX_IMAGE_HEIGHT = 800;
 // To change the supported text format files, change the extension list below.
-const ADDITIONAL_TEXT_FILE_EXTENSIONS = [".txt",".py",".ipynb",".js",".jsx",".html",".css",".java",".cs",".php",".c",".cpp",".cxx",".h",".hpp",".rs",".R",".Rmd",".swift",".go",".rb",".kt",".kts",".ts",".tsx",".m",".scala",".rs",".dart",".lua",".pl",".pm",".t",".sh",".bash",".zsh",".csv",".log",".ini",".config",".json",".proto",".yaml",".yml",".toml",".lua",".sql",".bat",".md",".coffee",".tex",".latex"]
+const ADDITIONAL_TEXT_FILE_EXTENSIONS = [
+  '.txt',
+  '.py',
+  '.ipynb',
+  '.js',
+  '.jsx',
+  '.html',
+  '.css',
+  '.java',
+  '.cs',
+  '.php',
+  '.c',
+  '.cpp',
+  '.cxx',
+  '.h',
+  '.hpp',
+  '.rs',
+  '.R',
+  '.Rmd',
+  '.swift',
+  '.go',
+  '.rb',
+  '.kt',
+  '.kts',
+  '.ts',
+  '.tsx',
+  '.m',
+  '.scala',
+  '.rs',
+  '.dart',
+  '.lua',
+  '.pl',
+  '.pm',
+  '.t',
+  '.sh',
+  '.bash',
+  '.zsh',
+  '.csv',
+  '.log',
+  '.ini',
+  '.config',
+  '.json',
+  '.proto',
+  '.yaml',
+  '.yml',
+  '.toml',
+  '.lua',
+  '.sql',
+  '.bat',
+  '.md',
+  '.coffee',
+  '.tex',
+  '.latex',
+];
 
 const useInputChatContentState = create<{
   base64EncodedImages: string[];
   pushBase64EncodedImage: (encodedImage: string) => void;
   removeBase64EncodedImage: (index: number) => void;
   clearBase64EncodedImages: () => void;
-  textFiles: { name: string, type: string, size: number, content: string }[];
-  pushTextFile: (file: { name: string, type: string, size: number, content: string }) => void;
+  textFiles: { name: string; type: string; size: number; content: string }[];
+  pushTextFile: (file: {
+    name: string;
+    type: string;
+    size: number;
+    content: string;
+  }) => void;
   removeTextFile: (index: number) => void;
   clearTextFiles: () => void;
   previewImageUrl: string | null;
@@ -104,9 +171,9 @@ const useInputChatContentState = create<{
   },
   isAttachmentFailed: false,
   setAttachmentFailed: () => {
-    set({isAttachmentFailed: true })
+    set({ isAttachmentFailed: true });
     setTimeout(() => {
-      set({isAttachmentFailed: false })
+      set({ isAttachmentFailed: false });
     }, 3000);
   },
 }));
@@ -118,10 +185,10 @@ const InputChatContent: React.FC<Props> = (props) => {
 
   const extendedAcceptMediaType = useMemo(() => {
     return [...acceptMediaType, ...ADDITIONAL_TEXT_FILE_EXTENSIONS];
-  }, [acceptMediaType]);    
+  }, [acceptMediaType]);
 
   const [shouldContinue, setShouldContinue] = useState(false);
-  
+
   const [content, setContent] = useState('');
   const {
     base64EncodedImages,
@@ -161,10 +228,10 @@ const InputChatContent: React.FC<Props> = (props) => {
   const disabledRegenerate = useMemo(() => {
     return postingMessage || hasError;
   }, [hasError, postingMessage]);
-  
+
   const disableContinue = useMemo(() => {
     return postingMessage || hasError;
-  }, [hasError, postingMessage])
+  }, [hasError, postingMessage]);
 
   const inputRef = useRef<HTMLDivElement>(null);
 
@@ -175,13 +242,12 @@ const InputChatContent: React.FC<Props> = (props) => {
     const halfLength = Math.floor((maxLength - 3) / 2);
     return `${name.slice(0, halfLength)}...${name.slice(-halfLength)}`;
   };
-  
+
   const sendContent = useCallback(() => {
-    const textAttachments = textFiles.map(file => ({
-      file_name: file.name,
-      file_type: file.type,
-      file_size: file.size,
-      extracted_content: file.content
+    const textAttachments = textFiles.map((file) => ({
+      fileName: file.name,
+      fileType: file.type,
+      extractedContent: file.content,
     }));
 
     props.onSend(
@@ -189,7 +255,7 @@ const InputChatContent: React.FC<Props> = (props) => {
       !disabledImageUpload && base64EncodedImages.length > 0
         ? base64EncodedImages
         : undefined,
-        textAttachments.length > 0 ? textAttachments : undefined
+      textAttachments.length > 0 ? textAttachments : undefined
     );
     setContent('');
     clearBase64EncodedImages();
@@ -256,7 +322,12 @@ const InputChatContent: React.FC<Props> = (props) => {
       const reader = new FileReader();
       reader.onload = () => {
         if (typeof reader.result === 'string') {
-          pushTextFile({ name: file.name, type: file.type, size: file.size, content: reader.result });
+          pushTextFile({
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            content: reader.result,
+          });
         }
       };
       reader.readAsText(file);
@@ -306,11 +377,17 @@ const InputChatContent: React.FC<Props> = (props) => {
       for (let i = 0; i < fileList.length; i++) {
         const file = fileList.item(i);
         if (file) {
-          if (ADDITIONAL_TEXT_FILE_EXTENSIONS.some(extension => file.name.endsWith(extension))) {
+          if (
+            ADDITIONAL_TEXT_FILE_EXTENSIONS.some((extension) =>
+              file.name.endsWith(extension)
+            )
+          ) {
             handleFileRead(file);
-          } else if(acceptMediaType.some(extension => file.name.endsWith(extension))) {
+          } else if (
+            acceptMediaType.some((extension) => file.name.endsWith(extension))
+          ) {
             encodeAndPushImage(file);
-          }else{
+          } else {
             setAttachmentFailed();
           }
         }
@@ -338,10 +415,9 @@ const InputChatContent: React.FC<Props> = (props) => {
     <>
       {isAttachmentFailed && (
         <Alert
-          className="mt-1 z-50"
+          className="z-50 mt-1"
           severity="warning"
-          title={t('error.unsupportedFileFormat.title')}
-          >
+          title={t('error.unsupportedFileFormat.title')}>
           {t('error.unsupportedFileFormat.message')}
         </Alert>
       )}
@@ -360,7 +436,7 @@ const InputChatContent: React.FC<Props> = (props) => {
         )}>
         <div className="flex w-full">
           <Textarea
-            className="m-1  bg-transparent scrollbar-thin scrollbar-thumb-light-gray pr-12"
+            className="m-1  bg-transparent pr-12 scrollbar-thin scrollbar-thumb-light-gray"
             placeholder={props.placeholder ?? t('app.inputMessage')}
             disabled={props.disabled}
             noBorder
@@ -396,7 +472,7 @@ const InputChatContent: React.FC<Props> = (props) => {
                   }}
                 />
                 <ButtonIcon
-                  className="absolute right-0 top-0 -m-2 border border-aws-sea-blue bg-white p-1 text-xs text-aws-sea-blue"
+                  className="absolute left-0 top-0 -m-2 border border-aws-sea-blue bg-white p-1 text-xs text-aws-sea-blue"
                   onClick={() => {
                     removeBase64EncodedImage(idx);
                   }}>
@@ -423,21 +499,19 @@ const InputChatContent: React.FC<Props> = (props) => {
           <div className="relative m-2 mr-24 flex flex-wrap gap-3">
             {textFiles.map((file, idx) => (
               <div key={idx} className="relative flex flex-col items-center">
-                <PiFileTextThin className="h-16 w-16 text-dark-gray" />
-                <div className="file-name">{truncateFileName(file.name)}</div>
+                <UploadedFileText fileName={file.name} />
                 <ButtonIcon
-                  className="absolute right-0 top-0 -m-2 border border-aws-sea-blue bg-white p-1 text-xs text-aws-sea-blue"
+                  className="absolute left-2 top-1 -m-2 border border-aws-sea-blue bg-white p-1 text-xs text-aws-sea-blue"
                   onClick={() => {
                     removeTextFile(idx);
-                  }}
-                >
+                  }}>
                   <PiX />
                 </ButtonIcon>
               </div>
             ))}
           </div>
         )}
-        {(messages.length > 1) && (
+        {messages.length > 1 && (
           <div className="absolute -top-14 right-0 flex space-x-2">
             {shouldContinue && !disableContinue && !props.disabled && (
               <Button
@@ -448,14 +522,14 @@ const InputChatContent: React.FC<Props> = (props) => {
                 {t('button.continue')}
               </Button>
             )}
-              <Button
-                className="bg-aws-paper p-2 text-sm"
-                outlined
-                disabled={disabledRegenerate || props.disabled}
-                onClick={props.onRegenerate}>
-                <PiArrowsCounterClockwise className="mr-2" />
-                {t('button.regenerate')}
-              </Button>
+            <Button
+              className="bg-aws-paper p-2 text-sm"
+              outlined
+              disabled={disabledRegenerate || props.disabled}
+              onClick={props.onRegenerate}>
+              <PiArrowsCounterClockwise className="mr-2" />
+              {t('button.regenerate')}
+            </Button>
           </div>
         )}
       </div>

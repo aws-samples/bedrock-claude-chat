@@ -8,18 +8,3 @@
     --amplify-components-button-primary-background-color
   ) !important;
 }
-
-.file-name {
-  text-align: center;
-  max-width: 8rem; /* ファイル名の幅 */
-  white-space: pre-wrap; /* 折り返しを有効にする */
-  word-wrap: break-word; /* 長い単語の途中で折り返す */
-}
-
-.code-container {
-  padding: 3px;
-}
-.code-header {
-  margin-left: 18px;
-  margin-top: 5px;
-}

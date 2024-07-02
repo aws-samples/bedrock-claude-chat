@@ -35,10 +35,9 @@ type BotInputType = {
 };
 
 export type TextAttachmentType = {
-  file_name: string;
-  file_type: string;
-  file_size: number;
-  extracted_content: string;
+  fileName: string;
+  fileType: string;
+  extractedContent: string;
 };
 
 export type ThinkingAction =
@@ -402,10 +401,10 @@ const useChat = () => {
       textAttachments ?? []
     ).map((attachment) => {
       return {
-        body: attachment.extracted_content,
+        body: attachment.extractedContent,
         contentType: 'textAttachment',
-        mediaType: attachment.file_type,
-        fileName: attachment.file_name,
+        mediaType: attachment.fileType,
+        fileName: attachment.fileName,
       };
     });
 
@@ -456,8 +455,6 @@ const useChat = () => {
     const postPromise: Promise<string> = new Promise((resolve, reject) => {
       if (USE_STREAMING) {
         if (bot?.hasAgent) send({ type: 'wakeup' });
-
-        console.log(input);
 
         postStreaming({
           input,
@@ -600,7 +597,10 @@ const useChat = () => {
 
     const parentMessage = produce(messages[index], (draft) => {
       if (props?.content) {
-        draft.content[0].body = props.content;
+        const textIndex = draft.content.findIndex(
+          (content) => content.contentType === 'text'
+        );
+        draft.content[textIndex].body = props.content;
       }
     });
 

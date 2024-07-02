@@ -7,7 +7,6 @@ import {
   PiUserFill,
   PiThumbsDown,
   PiThumbsDownFill,
-  PiFileTextThin,
 } from 'react-icons/pi';
 import { BaseProps } from '../@types/common';
 import {
@@ -22,22 +21,12 @@ import ModalDialog from './ModalDialog';
 import { useTranslation } from 'react-i18next';
 import useChat from '../hooks/useChat';
 import DialogFeedback from './DialogFeedback';
+import UploadedFileText from './UploadedFileText';
 
 type Props = BaseProps & {
   chatContent?: DisplayMessageContent;
   onChangeMessageId?: (messageId: string) => void;
   onSubmit?: (messageId: string, content: string) => void;
-};
-
-const truncateFileName = (name: string | undefined, maxLength = 30) => {
-  if (name === undefined){
-    return '';
-  }
-  if (name.length <= maxLength) {
-    return name;
-  }
-  const halfLength = Math.floor((maxLength - 3) / 2);
-  return `${name.slice(0, halfLength)}...${name.slice(-halfLength)}`;
 };
 
 const ChatMessage: React.FC<Props> = (props) => {
@@ -50,6 +39,8 @@ const ChatMessage: React.FC<Props> = (props) => {
   const [relatedDocuments, setRelatedDocuments] = useState<RelatedDocument[]>(
     []
   );
+
+  const [firstTextContent, setFirstTextContent] = useState(0);
 
   useEffect(() => {
     if (props.chatContent) {
@@ -69,16 +60,22 @@ const ChatMessage: React.FC<Props> = (props) => {
         // For new messages, get related documents from the api
         setRelatedDocuments(getRelatedDocuments(props.chatContent.id));
       }
+      setFirstTextContent(
+        props.chatContent.content.findIndex(
+          (content) => content.contentType === 'text'
+        )
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.chatContent]);
 
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const [isOpenPreviewImage, setIsOpenPreviewImage] = useState(false);
-
   const [isFileModalOpen, setIsFileModalOpen] = useState(false);
-  const [fileContent, setFileContent] = useState<string>('');
-  const [fileName, setFileName] = useState<string>('');
+  const [dialogFileName, setDialogFileName] = useState<string>('');
+  const [dialogFileContent, setDialogFileContent] = useState<string | null>(
+    null
+  );
 
   const chatContent = useMemo<DisplayMessageContent | undefined>(() => {
     return props.chatContent;
@@ -113,12 +110,6 @@ const ChatMessage: React.FC<Props> = (props) => {
     },
     [chatContent, conversationId, giveFeedback]
   );
-
-  const handleFileClick = useCallback((fileName:string|undefined, content: string) => {
-    setFileName(fileName ? fileName : '');
-    setFileContent(content);
-    setIsFileModalOpen(true);
-  }, []);
 
   return (
     <div className={`${props.className ?? ''} grid grid-cols-12 gap-2 p-3 `}>
@@ -163,50 +154,63 @@ const ChatMessage: React.FC<Props> = (props) => {
         <div className="ml-5 grow ">
           {chatContent?.role === 'user' && !isEdit && (
             <div>
-              {chatContent.content.some(content => content.contentType === 'image') && (
-              <div key="images">
-              {
-                chatContent.content.map((content, idx) => {
-                  if (content.contentType === 'image') {
-                    const imageUrl = `data:${content.mediaType};base64,${content.body}`;
-                    return (
-                      <img
-                        key={idx}
-                        src={imageUrl}
-                        className="mb-2 h-48 cursor-pointer"
-                        onClick={() => {
-                          setPreviewImageUrl(imageUrl);
-                          setIsOpenPreviewImage(true);
-                        }}
-                      />
-                  );
-              }})}
-              </div>
+              {chatContent.content.some(
+                (content) => content.contentType === 'image'
+              ) && (
+                <div key="images">
+                  {chatContent.content.map((content, idx) => {
+                    if (content.contentType === 'image') {
+                      const imageUrl = `data:${content.mediaType};base64,${content.body}`;
+                      return (
+                        <img
+                          key={idx}
+                          src={imageUrl}
+                          className="mb-2 h-48 cursor-pointer"
+                          onClick={() => {
+                            setPreviewImageUrl(imageUrl);
+                            setIsOpenPreviewImage(true);
+                          }}
+                        />
+                      );
+                    }
+                  })}
+                </div>
               )}
-              {chatContent.content.some(content => content.contentType === 'textAttachment') && (
-              <div key="files" className="flex my-2">
-              {
+              {chatContent.content.some(
+                (content) => content.contentType === 'textAttachment'
+              ) && (
+                <div key="files" className="my-2 flex">
+                  {chatContent.content.map((content, idx) => {
+                    if (content.contentType === 'textAttachment') {
+                      return (
+                        <UploadedFileText
+                          key={idx}
+                          fileName={content.fileName ?? ''}
+                          onClick={() => {
+                            setDialogFileName(content.fileName ?? '');
+                            setDialogFileContent(content.body);
+                            setIsFileModalOpen(true);
+                          }}
+                        />
+                      );
+                    }
+                  })}
+                </div>
+              )}
+              {chatContent.content.some(
+                (content) => content.contentType === 'text'
+              ) &&
                 chatContent.content.map((content, idx) => {
-                  if (content.contentType === 'textAttachment') {
+                  if (content.contentType === 'text') {
                     return (
-                      <div key={idx} className="relative flex flex-col items-center mx-2" onClick={() => handleFileClick(content.fileName, content.body)}>
-                        <PiFileTextThin className="h-16 w-16 text-dark-gray" />
-                        <div className="file-name">{truncateFileName(content.fileName)}</div>
-                      </div>
+                      <React.Fragment key={idx}>
+                        {content.body.split('\n').map((c, idxBody) => (
+                          <div key={idxBody}>{c}</div>
+                        ))}
+                      </React.Fragment>
                     );
-              }})}
-              </div>
-              )}
-              {chatContent.content.some(content => content.contentType === 'text') && chatContent.content.map((content, idx) => {
-                if (content.contentType === 'text') {
-                  return (
-                    <React.Fragment key={idx}>
-                      {content.body.split('\n').map((c, idxBody) => (
-                        <div key={idxBody}>{c}</div>
-                      ))}
-                    </React.Fragment>
-                  );
-              }})}
+                  }
+                })}
               <ModalDialog
                 isOpen={isOpenPreviewImage}
                 onClose={() => setIsOpenPreviewImage(false)}
@@ -224,19 +228,14 @@ const ChatMessage: React.FC<Props> = (props) => {
                 isOpen={isFileModalOpen}
                 onClose={() => setIsFileModalOpen(false)}
                 widthFromContent={true}
-              >
-              <div className="relative max-h-[80vh] h-auto max-w-[80vh] w-auto flex flex-col">
-                <div className="flex items-center justify-between p-4 sticky top-0 z-10">
-                  <div className="font-bold">{fileName}</div>
-                  <ButtonCopy
-                    text={fileContent}
-                    className="text-dark-gray"
-                  />
+                title={dialogFileName ?? ''}>
+                <div className="relative flex h-auto max-h-[80vh] w-auto max-w-[80vh] flex-col">
+                  <div className="overflow-auto px-4">
+                    <pre className="whitespace-pre-wrap break-all">
+                      {dialogFileContent}
+                    </pre>
+                  </div>
                 </div>
-                <div className="p-4 overflow-auto">
-                  <pre className="whitespace-pre-wrap break-all">{fileContent}</pre>
-                </div>
-              </div>
               </ModalDialog>
             </div>
           )}
@@ -276,7 +275,7 @@ const ChatMessage: React.FC<Props> = (props) => {
             <ButtonIcon
               className="text-dark-gray"
               onClick={() => {
-                setChangedContent(chatContent.content[0].body);
+                setChangedContent(chatContent.content[firstTextContent].body);
                 setIsEdit(true);
               }}>
               <PiNotePencil />
