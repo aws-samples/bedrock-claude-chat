@@ -133,6 +133,11 @@ const translation = {
         description:
           'Modelo multimodal grande com capacidades avançadas de compreensão de imagens e raciocínio visual para aplicações sofisticadas de inteligência visual.',
       },
+      'qwen3-235b-a22b-2507': {
+        label: 'Qwen3 235B A22B',
+        description:
+          'Modelo Mixture-of-Experts de 235B parâmetros com 22B parâmetros ativos, janela de contexto de 256K e capacidades de raciocínio para geração de texto e código.',
+      },
     },
     agent: {
       label: 'Agente',

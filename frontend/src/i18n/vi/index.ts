@@ -90,6 +90,11 @@ const translation = {
         description:
           'Mô hình chỉ văn bản, cho độ trễ phản hồi thấp nhất trong họ Nova với chi phí rất thấp.',
       },
+      'qwen3-235b-a22b-2507': {
+        label: 'Qwen3 235B A22B',
+        description:
+          'Mô hình Mixture-of-Experts 235B tham số với 22B tham số hoạt động, cửa sổ ngữ cảnh 256K và khả năng suy luận để tạo văn bản và mã.',
+      },
     },
     agent: {
       label: 'Tác tử',

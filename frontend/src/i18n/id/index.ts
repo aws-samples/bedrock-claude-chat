@@ -90,6 +90,11 @@ const translation = {
         description:
           'Model teks saja yang memberikan respons dengan latensi terendah dalam keluarga model Amazon Nova dengan biaya sangat rendah.',
       },
+      'qwen3-235b-a22b-2507': {
+        label: 'Qwen3 235B A22B',
+        description:
+          'Model Mixture-of-Experts 235B parameter dengan 22B parameter aktif, jendela konteks 256K, dan kemampuan penalaran untuk pembuatan teks dan kode.',
+      },
     },
     agent: {
       label: 'Agen',
