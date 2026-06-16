@@ -170,6 +170,11 @@ const translation = {
         description:
           'Open-weight 120B parameter model with 128K context window and advanced reasoning capabilities.',
       },
+      'qwen3-235b-a22b-2507': {
+        label: 'Qwen3 235B A22B',
+        description:
+          '235B parameter Mixture-of-Experts model with 22B active parameters, 256K context window, and reasoning capabilities for text and code generation.',
+      },
     },
     agent: {
       label: 'Agent',

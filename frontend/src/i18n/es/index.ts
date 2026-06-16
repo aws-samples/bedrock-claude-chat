@@ -79,6 +79,11 @@ const translation = {
         description:
           'Modelo de peso abierto de 120B parámetros con ventana de contexto de 128K y capacidades avanzadas de razonamiento.',
       },
+      'qwen3-235b-a22b-2507': {
+        label: 'Qwen3 235B A22B',
+        description:
+          'Modelo Mixture-of-Experts de 235B parámetros con 22B parámetros activos, ventana de contexto de 256K y capacidades de razonamiento para generación de texto y código.',
+      },
     },
     agent: {
       label: 'Agente',

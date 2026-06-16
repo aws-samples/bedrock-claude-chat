@@ -18,6 +18,7 @@ from app.config import (
     DEFAULT_GENERATION_CONFIG,
     DEFAULT_LLAMA_GENERATION_CONFIG,
     DEFAULT_MISTRAL_GENERATION_CONFIG,
+    DEFAULT_QWEN_GENERATION_CONFIG,
 )
 from app.repositories.models.custom_bot import GenerationParamsModel
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
@@ -88,6 +89,8 @@ BASE_MODEL_IDS = {
     # OpenAI GPT-OSS models
     "gpt-oss-20b": "openai.gpt-oss-20b-1:0",
     "gpt-oss-120b": "openai.gpt-oss-120b-1:0",
+    # Qwen3 models
+    "qwen3-235b-a22b-2507": "qwen.qwen3-235b-a22b-2507-v1:0",
 }
 
 # Global inference profiles
@@ -555,6 +558,11 @@ def is_gpt_oss_model(model: type_model_name) -> bool:
     return "gpt-oss" in model
 
 
+def is_qwen_model(model: type_model_name) -> bool:
+    """Check if the model is a Qwen3 model"""
+    return "qwen3" in model
+
+
 def is_tooluse_supported(model: type_model_name) -> bool:
     """Check if the model is supported for tool use"""
     return model not in [
@@ -662,6 +670,7 @@ def is_multiple_system_prompt_content_supported(model: type_model_name):
         or is_llama_model(model)
         or is_mistral(model)
         or is_gpt_oss_model(model)
+        or is_qwen_model(model)
     )
 
 
@@ -810,6 +819,46 @@ def _prepare_gpt_oss_model_params(
     # Note: GPT-OSS models don't support stopSequences, so we don't add it
 
     # No additional fields for GPT-OSS models
+
+    return {
+        "inferenceConfig": inference_config,
+    }
+
+
+def _prepare_qwen_model_params(
+    model: type_model_name, generation_params: Optional[GenerationParamsModel] = None
+) -> ConverseConfiguration:
+    """
+    Prepare inference configuration for Qwen3 models
+    Qwen3 uses standard inferenceConfig (temperature, topP, maxTokens, stopSequences)
+    """
+    inference_config: InferenceConfiguration = {
+        "maxTokens": (
+            generation_params.max_tokens
+            if generation_params
+            else DEFAULT_QWEN_GENERATION_CONFIG["max_tokens"]
+        ),
+        "temperature": (
+            generation_params.temperature
+            if generation_params
+            else DEFAULT_QWEN_GENERATION_CONFIG["temperature"]
+        ),
+        "topP": (
+            generation_params.top_p
+            if generation_params
+            else DEFAULT_QWEN_GENERATION_CONFIG["top_p"]
+        ),
+    }
+
+    inference_config["stopSequences"] = (
+        generation_params.stop_sequences
+        if (
+            generation_params
+            and generation_params.stop_sequences
+            and any(generation_params.stop_sequences)
+        )
+        else DEFAULT_QWEN_GENERATION_CONFIG.get("stop_sequences", [])
+    )
 
     return {
         "inferenceConfig": inference_config,
@@ -1024,6 +1073,10 @@ def generation_params_to_converse_configuration(
     elif is_gpt_oss_model(model):
         # Special handling for GPT-OSS models
         converse_configuration = _prepare_gpt_oss_model_params(model, generation_params)
+
+    elif is_qwen_model(model):
+        # Special handling for Qwen3 models
+        converse_configuration = _prepare_qwen_model_params(model, generation_params)
 
     else:
         # Standard handling for non-Nova models

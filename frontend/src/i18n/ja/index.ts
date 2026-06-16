@@ -171,6 +171,11 @@ const translation: typeof en = {
         description:
           '128Kコンテキストウィンドウと高度な推論機能を持つオープンウェイト120Bパラメータモデル',
       },
+      'qwen3-235b-a22b-2507': {
+        label: 'Qwen3 235B A22B',
+        description:
+          '235BパラメータのMixture-of-Expertsモデル、22Bのアクティブパラメータ、256Kコンテキストウィンドウ、テキストとコード生成のための推論機能を備えています。',
+      },
     },
     agent: {
       label: 'エージェント',

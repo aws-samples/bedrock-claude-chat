@@ -57,6 +57,15 @@ DEFAULT_LLAMA_GENERATION_CONFIG: GenerationParams = {
     "stop_sequences": [],
 }
 
+# Qwen3 235B A22B - text-only, 256K context, 8K max output
+# Ref: https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-qwen-qwen3-235b-a22b-2507.html
+DEFAULT_QWEN_GENERATION_CONFIG: GenerationParams = {
+    "max_tokens": 4096,
+    "top_p": 0.8,
+    "temperature": 0.7,
+    "stop_sequences": [],
+}
+
 
 # Used for price estimation.
 # NOTE: The following is based on 2024-03-07
@@ -164,6 +173,8 @@ BEDROCK_PRICING = {
         "llama3-2-3b-instruct": {"input": 0.00015, "output": 0.00015},
         "llama3-2-11b-instruct": {"input": 0.00016, "output": 0.00016},
         "llama3-2-90b-instruct": {"input": 0.00072, "output": 0.00072},
+        # Qwen3 models
+        "qwen3-235b-a22b-2507": {"input": 0.00022, "output": 0.00088},
     },
     "us-west-2": {
         "claude-v4-opus": {
@@ -250,6 +261,8 @@ BEDROCK_PRICING = {
         "llama3-2-3b-instruct": {"input": 0.00015, "output": 0.00015},
         "llama3-2-11b-instruct": {"input": 0.00016, "output": 0.00016},
         "llama3-2-90b-instruct": {"input": 0.00072, "output": 0.00072},
+        # Qwen3 models
+        "qwen3-235b-a22b-2507": {"input": 0.00022, "output": 0.00088},
         # OpenAI GPT-OSS models
         "gpt-oss-20b": {"input": 0.00015, "output": 0.00030},
         "gpt-oss-120b": {"input": 0.00030, "output": 0.00060},
@@ -365,6 +378,8 @@ BEDROCK_PRICING = {
         "llama3-2-3b-instruct": {"input": 0.00015, "output": 0.00015},
         "llama3-2-11b-instruct": {"input": 0.00016, "output": 0.00016},
         "llama3-2-90b-instruct": {"input": 0.00072, "output": 0.00072},
+        # Qwen3 models
+        "qwen3-235b-a22b-2507": {"input": 0.00022, "output": 0.00088},
         # OpenAI GPT-OSS models
         "gpt-oss-20b": {"input": 0.00015, "output": 0.00030},
         "gpt-oss-120b": {"input": 0.00030, "output": 0.00060},

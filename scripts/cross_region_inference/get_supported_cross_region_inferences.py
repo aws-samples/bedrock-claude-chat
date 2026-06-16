@@ -29,6 +29,8 @@ supported_base_models = {
     "meta.llama3-2-3b-instruct-v1:0": "llama3-2-3b-instruct",
     "meta.llama3-2-11b-instruct-v1:0": "llama3-2-11b-instruct",
     "meta.llama3-2-90b-instruct-v1:0": "llama3-2-90b-instruct",
+    # Qwen3 models
+    "qwen.qwen3-235b-a22b-2507-v1:0": "qwen3-235b-a22b-2507",
 }
 
 # Region definitions
