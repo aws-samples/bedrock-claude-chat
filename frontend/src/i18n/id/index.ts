@@ -95,6 +95,11 @@ const translation = {
         description:
           'Model Mixture-of-Experts 235B parameter dengan 22B parameter aktif, jendela konteks 256K, dan kemampuan penalaran untuk pembuatan teks dan kode.',
       },
+      'qwen3-coder-30b-a3b': {
+        label: 'Qwen3 Coder 30B A3B',
+        description:
+          'Model Mixture-of-Experts 30B parameter untuk koding dengan 3B parameter aktif, jendela konteks 256K, maksimal output 16K, dan penalaran untuk pembuatan kode.',
+      },
     },
     agent: {
       label: 'Agen',

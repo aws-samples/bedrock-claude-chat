@@ -95,6 +95,11 @@ const translation = {
         description:
           'Mô hình Mixture-of-Experts 235B tham số với 22B tham số hoạt động, cửa sổ ngữ cảnh 256K và khả năng suy luận để tạo văn bản và mã.',
       },
+      'qwen3-coder-30b-a3b': {
+        label: 'Qwen3 Coder 30B A3B',
+        description:
+          'Mô hình Mixture-of-Experts 30B tham số cho viết mã với 3B tham số hoạt động, cửa sổ ngữ cảnh 256K, đầu ra tối đa 16K và khả năng suy luận để tạo mã.',
+      },
     },
     agent: {
       label: 'Tác tử',

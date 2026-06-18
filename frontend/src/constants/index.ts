@@ -113,4 +113,5 @@ export const AVAILABLE_MODEL_KEYS = [
   'gpt-oss-20b',
   'gpt-oss-120b',
   'qwen3-235b-a22b-2507',
+  'qwen3-coder-30b-a3b',
 ] as const;

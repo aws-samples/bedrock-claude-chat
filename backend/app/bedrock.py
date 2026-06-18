@@ -91,6 +91,7 @@ BASE_MODEL_IDS = {
     "gpt-oss-120b": "openai.gpt-oss-120b-1:0",
     # Qwen3 models
     "qwen3-235b-a22b-2507": "qwen.qwen3-235b-a22b-2507-v1:0",
+    "qwen3-coder-30b-a3b": "qwen.qwen3-coder-30b-a3b-v1:0",
 }
 
 # Global inference profiles

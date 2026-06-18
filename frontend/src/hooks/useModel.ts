@@ -273,6 +273,13 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
         supportMediaType: [],
         supportReasoning: true,
       },
+      {
+        modelId: 'qwen3-coder-30b-a3b',
+        label: t('model.qwen3-coder-30b-a3b.label'),
+        description: t('model.qwen3-coder-30b-a3b.description'),
+        supportMediaType: [],
+        supportReasoning: true,
+      },
       // Mistral
       {
         modelId: 'mistral-7b-instruct',
