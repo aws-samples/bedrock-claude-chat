@@ -850,15 +850,9 @@ def _prepare_qwen_model_params(
         ),
     }
 
-    inference_config["stopSequences"] = (
-        generation_params.stop_sequences
-        if (
-            generation_params
-            and generation_params.stop_sequences
-            and any(generation_params.stop_sequences)
-        )
-        else DEFAULT_QWEN_GENERATION_CONFIG.get("stop_sequences", [])
-    )
+    # Note: Qwen models don't support stopSequences, so we don't add it
+
+    # No additional fields for Qwen models
 
     return {
         "inferenceConfig": inference_config,
