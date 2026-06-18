@@ -176,6 +176,7 @@ BEDROCK_PRICING = {
         # Qwen3 models
         "qwen3-235b-a22b-2507": {"input": 0.00022, "output": 0.00088},
         "qwen3-coder-30b-a3b": {"input": 0.00015, "output": 0.00060},
+        "qwen3-32b": {"input": 0.00015, "output": 0.00060},
     },
     "us-west-2": {
         "claude-v4-opus": {
@@ -265,6 +266,7 @@ BEDROCK_PRICING = {
         # Qwen3 models
         "qwen3-235b-a22b-2507": {"input": 0.00022, "output": 0.00088},
         "qwen3-coder-30b-a3b": {"input": 0.00015, "output": 0.00060},
+        "qwen3-32b": {"input": 0.00015, "output": 0.00060},
         # OpenAI GPT-OSS models
         "gpt-oss-20b": {"input": 0.00015, "output": 0.00030},
         "gpt-oss-120b": {"input": 0.00030, "output": 0.00060},
@@ -383,6 +385,7 @@ BEDROCK_PRICING = {
         # Qwen3 models
         "qwen3-235b-a22b-2507": {"input": 0.00022, "output": 0.00088},
         "qwen3-coder-30b-a3b": {"input": 0.00015, "output": 0.00060},
+        "qwen3-32b": {"input": 0.00015, "output": 0.00060},
         # OpenAI GPT-OSS models
         "gpt-oss-20b": {"input": 0.00015, "output": 0.00030},
         "gpt-oss-120b": {"input": 0.00030, "output": 0.00060},

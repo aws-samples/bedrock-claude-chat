@@ -253,7 +253,7 @@ npm ci
 - **Mistral Models:** `mistral-7b-instruct`, `mixtral-8x7b-instruct`, `mistral-large`, `mistral-large-2`
 - **DeepSeek Models:** `deepseek-r1`
 - **Meta Llama Models:** `llama3-3-70b-instruct`, `llama3-2-1b-instruct`, `llama3-2-3b-instruct`, `llama3-2-11b-instruct`, `llama3-2-90b-instruct`
-- **Qwen3 Models:** `qwen3-235b-a22b-2507`, `qwen3-coder-30b-a3b`
+- **Qwen3 Models:** `qwen3-235b-a22b-2507`, `qwen3-coder-30b-a3b`, `qwen3-32b`
 
 The full list can be found in [index.ts](./frontend/src/constants/index.ts).
 

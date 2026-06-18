@@ -92,6 +92,7 @@ BASE_MODEL_IDS = {
     # Qwen3 models
     "qwen3-235b-a22b-2507": "qwen.qwen3-235b-a22b-2507-v1:0",
     "qwen3-coder-30b-a3b": "qwen.qwen3-coder-30b-a3b-v1:0",
+    "qwen3-32b": "qwen.qwen3-32b-v1:0",
 }
 
 # Global inference profiles

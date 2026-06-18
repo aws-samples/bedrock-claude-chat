@@ -180,6 +180,11 @@ const translation = {
         description:
           '30B parameter Mixture-of-Experts coding model with 3B active parameters, 256K context window, 16K max output, and reasoning for code generation.',
       },
+      'qwen3-32b': {
+        label: 'Qwen3 32B',
+        description:
+          '32B parameter dense model with 32K context window, 8K max output, and hybrid thinking modes for fast responses and deep reasoning.',
+      },
     },
     agent: {
       label: 'Agent',

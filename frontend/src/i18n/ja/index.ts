@@ -181,6 +181,11 @@ const translation: typeof en = {
         description:
           '30BパラメータのMixture-of-Expertsコード生成モデル、3Bのアクティブパラメータ、256Kコンテキストウィンドウ、16K最大出力、コード生成のための推論機能を備えています。',
       },
+      'qwen3-32b': {
+        label: 'Qwen3 32B',
+        description:
+          '32Bパラメータの高密度モデル、32Kコンテキストウィンドウ、8K最大出力、高速応答と深い推論のためのハイブリッド思考モードを備えています。',
+      },
     },
     agent: {
       label: 'エージェント',
