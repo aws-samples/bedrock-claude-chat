@@ -69,7 +69,13 @@ export const getParsingModel = (
   }
   switch (parsingModel) {
     case "anthropic.claude-3-5-sonnet-v1":
-      return BedrockFoundationModel.ANTHROPIC_CLAUDE_3_5_SONNET_V1_0;
+    case "anthropic.claude-3-sonnet-v1":
+      // End of life on Bedrock (ingestion fails with 404). Fall back to the
+      // remaining live parsing model so existing bots keep syncing.
+      console.warn(
+        `Parsing model ${parsingModel} reached end of life on Bedrock, falling back to Claude 3 Haiku.`
+      );
+      return BedrockFoundationModel.ANTHROPIC_CLAUDE_HAIKU_V1_0;
     case "anthropic.claude-3-haiku-v1":
       return BedrockFoundationModel.ANTHROPIC_CLAUDE_HAIKU_V1_0;
     case "disabled":
