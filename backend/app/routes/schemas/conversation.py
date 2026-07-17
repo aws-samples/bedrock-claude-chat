@@ -11,6 +11,7 @@ type_model_name = Literal[
     "claude-v4.5-opus",
     "claude-v4.6-opus",
     "claude-v4.7-opus",
+    "claude-v4.8-opus",
     "claude-v4-sonnet",
     "claude-v4.5-sonnet",
     "claude-v4.6-sonnet",

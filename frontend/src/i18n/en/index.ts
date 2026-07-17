@@ -45,6 +45,11 @@ const translation = {
         description:
           'High-capability Opus model built for coding, enterprise workflows, and long-running agentic tasks.',
       },
+      'claude-v4.8-opus': {
+        label: 'Claude 4.8 (Opus)',
+        description:
+          'Most capable Opus model, built for long-running agentic tasks, coding, and enterprise workflows.',
+      },
       'claude-v4-sonnet': {
         label: 'Claude 4 (Sonnet)',
         description:
