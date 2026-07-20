@@ -273,7 +273,7 @@ export function resolveBedrockChatParameters(
     alternateDomainName: app.node.tryGetContext("alternateDomainName"),
     hostedZoneId: app.node.tryGetContext("hostedZoneId"),
     enableBotStore: app.node.tryGetContext("enableBotStore"),
-    enableBotStoreReplicas: app.node.tryGetContext("EnableBotStoreReplicas"),
+    enableBotStoreReplicas: app.node.tryGetContext("enableBotStoreReplicas"),
     botStoreLanguage: app.node.tryGetContext("botStoreLanguage"),
     globalAvailableModels: app.node.tryGetContext("globalAvailableModels"),
     defaultModel: app.node.tryGetContext("defaultModel"),
