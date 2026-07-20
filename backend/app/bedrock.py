@@ -376,6 +376,7 @@ REGIONAL_INFERENCE_PROFILES = {
             "ap-northeast-1": "jp",
             "ap-northeast-3": "jp",
             "eu-central-1": "eu",
+            "eu-central-2": "eu",
             "eu-north-1": "eu",
             "eu-west-1": "eu",
             "eu-west-3": "eu",
