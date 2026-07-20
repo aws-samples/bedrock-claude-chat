@@ -194,7 +194,7 @@ export class Frontend extends Construct {
     idp: Idp;
   }) {
     const region = Stack.of(auth.userPool).region;
-    const cognitoDomain = `${userPoolDomainPrefix}.auth.${region}.amazoncognito.com/`;
+    const cognitoDomain = `${userPoolDomainPrefix}.auth.${region}.amazoncognito.com`;
     const buildEnvProps = (() => {
       const defaultProps = {
         VITE_APP_API_ENDPOINT: backendApiEndpoint,
