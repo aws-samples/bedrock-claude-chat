@@ -133,9 +133,9 @@ export class Auth extends Construct {
               clientSecret: clientSecret.unsafeUnwrap().toString(),
               issuerUrl,
               attributeMapping: {
-                // This is an example of mapping the email attribute.
-                // Replace this with the actual idp attribute key.
-                email: ProviderAttribute.other("EMAIL"),
+                // Standard OIDC claim name. Adjust if your IdP emits
+                // the email under a non-standard attribute key.
+                email: ProviderAttribute.other("email"),
               },
               scopes: ["openid", "email"],
             }
