@@ -297,6 +297,9 @@ const translation: typeof en = {
         },
         citeRetrievedContexts: '取得したコンテキストの引用',
         unsupported: '非対応、読み取り専用',
+        loadingKnowledgeBases: 'ナレッジベースを読み込み中...',
+        failedToLoadKnowledgeBases:
+          'ナレッジベースの読み込みに失敗しました。後でもう一度お試しください。',
       },
       titleSubmenu: {
         edit: 'ボットを編集',
@@ -976,6 +979,8 @@ const translation: typeof en = {
           label: '既存のAmazon Bedrock Knowledge BaseのID',
           description:
             '既存のAmazon Bedrock Knowledge Baseを利用できます',
+          noKnowledgeBasesFound:
+            'アカウントにナレッジベースが見つかりません。最初にナレッジベースを作成してください。',
         },
         createDedicatedKnowledgeBase: {
           label: '専用のKnowledge Baseを作成する',

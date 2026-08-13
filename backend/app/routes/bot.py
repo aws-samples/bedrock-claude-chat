@@ -3,6 +3,7 @@ from typing import Any, Dict, Literal
 
 from app.dependencies import check_creating_bot_allowed
 from app.repositories.custom_bot import find_bot_by_id
+from app.repositories.knowledge_base import list_knowledge_bases
 from app.routes.schemas.bot import (
     BotInput,
     BotMetaOutput,
@@ -14,6 +15,7 @@ from app.routes.schemas.bot import (
     BotSwitchVisibilityInput,
     Tool,
 )
+from app.routes.schemas.knowledge_base import ListKnowledgeBasesResponse
 from app.routes.schemas.conversation import type_model_name
 from app.usecases.bot import (
     create_new_bot,
@@ -165,3 +167,10 @@ def get_bot_available_tools(request: Request, bot_id: str):
     """Get available tools for bot"""
     tools = fetch_available_agent_tools()
     return tools
+
+
+@router.get("/knowledge-bases", response_model=ListKnowledgeBasesResponse)
+def get_knowledge_bases():
+    """List all available knowledge bases in the account."""
+    knowledge_bases = list_knowledge_bases()
+    return ListKnowledgeBasesResponse(knowledge_bases=knowledge_bases)
