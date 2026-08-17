@@ -40,6 +40,9 @@ type_model_name = Literal[
     "llama3-2-90b-instruct",
     "gpt-oss-20b",
     "gpt-oss-120b",
+    "qwen3-235b-a22b-2507",
+    "qwen3-coder-30b-a3b",
+    "qwen3-32b",
 ]
 
 

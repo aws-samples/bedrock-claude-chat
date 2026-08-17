@@ -265,6 +265,28 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
         supportReasoning: true,
         forceReasoningEnabled: true, // GPT-OSS always return reasoning contents.
       },
+      // Qwen3 models
+      {
+        modelId: 'qwen3-235b-a22b-2507',
+        label: t('model.qwen3-235b-a22b-2507.label'),
+        description: t('model.qwen3-235b-a22b-2507.description'),
+        supportMediaType: [],
+        supportReasoning: true,
+      },
+      {
+        modelId: 'qwen3-coder-30b-a3b',
+        label: t('model.qwen3-coder-30b-a3b.label'),
+        description: t('model.qwen3-coder-30b-a3b.description'),
+        supportMediaType: [],
+        supportReasoning: true,
+      },
+      {
+        modelId: 'qwen3-32b',
+        label: t('model.qwen3-32b.label'),
+        description: t('model.qwen3-32b.description'),
+        supportMediaType: [],
+        supportReasoning: true,
+      },
       // Mistral
       {
         modelId: 'mistral-7b-instruct',

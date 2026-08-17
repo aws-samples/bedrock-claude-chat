@@ -170,6 +170,21 @@ const translation = {
         description:
           'Open-weight 120B parameter model with 128K context window and advanced reasoning capabilities.',
       },
+      'qwen3-235b-a22b-2507': {
+        label: 'Qwen3 235B A22B',
+        description:
+          '235B parameter Mixture-of-Experts model with 22B active parameters, 256K context window, and reasoning capabilities for text and code generation.',
+      },
+      'qwen3-coder-30b-a3b': {
+        label: 'Qwen3 Coder 30B A3B',
+        description:
+          '30B parameter Mixture-of-Experts coding model with 3B active parameters, 256K context window, 16K max output, and reasoning for code generation.',
+      },
+      'qwen3-32b': {
+        label: 'Qwen3 32B',
+        description:
+          '32B parameter dense model with 32K context window, 8K max output, and hybrid thinking modes for fast responses and deep reasoning.',
+      },
     },
     agent: {
       label: 'Agent',

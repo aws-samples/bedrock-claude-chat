@@ -89,6 +89,21 @@ const translation = {
         description:
           'Model tylko tekstowy, który zapewnia najniższe opóźnienia odpowiedzi w rodzinie modeli Amazon Nova przy bardzo niskim koszcie.',
       },
+      'qwen3-235b-a22b-2507': {
+        label: 'Qwen3 235B A22B',
+        description:
+          'Model Mixture-of-Experts o 235B parametrach z 22B aktywnymi parametrami, oknem kontekstowym 256K i zdolnościami rozumowania do generowania tekstu i kodu.',
+      },
+      'qwen3-coder-30b-a3b': {
+        label: 'Qwen3 Coder 30B A3B',
+        description:
+          'Model Mixture-of-Experts o 30B parametrach do kodowania z 3B aktywnymi parametrami, oknem kontekstowym 256K, maksymalnym wyjściem 16K i zdolnościami rozumowania do generowania kodu.',
+      },
+      'qwen3-32b': {
+        label: 'Qwen3 32B',
+        description:
+          'Gęsty model o 32B parametrach z oknem kontekstowym 32K, maksymalnym wyjściem 8K i hybrydowymi trybami myślenia do szybkich odpowiedzi i głębokiego rozumowania.',
+      },
     },
     agent: {
       label: 'Agent',

@@ -68,6 +68,21 @@ const translation = {
         description:
           'Model teks sahaja yang memberikan respons dengan latensi terendah dalam keluarga model Amazon Nova dengan kos yang sangat rendah.',
       },
+      'qwen3-235b-a22b-2507': {
+        label: 'Qwen3 235B A22B',
+        description:
+          'Model Mixture-of-Experts 235B parameter dengan 22B parameter aktif, tetingkap konteks 256K, dan keupayaan penaakulan untuk penjanaan teks dan kod.',
+      },
+      'qwen3-coder-30b-a3b': {
+        label: 'Qwen3 Coder 30B A3B',
+        description:
+          'Model Mixture-of-Experts 30B parameter untuk pengekodan dengan 3B parameter aktif, tetingkap konteks 256K, output maksimum 16K, dan penaakulan untuk penjanaan kod.',
+      },
+      'qwen3-32b': {
+        label: 'Qwen3 32B',
+        description:
+          'Model padat 32B parameter dengan tetingkap konteks 32K, output maksimum 8K, dan mod pemikiran hibrid untuk respons pantas dan penaakulan mendalam.',
+      },
     },
     agent: {
       label: 'Ejen',
