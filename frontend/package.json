@@ -72,7 +72,7 @@
     "typescript": "^5.0.2",
     "vite": "^6.4.3",
     "vite-plugin-pwa": "^0.21.1",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.11"
   },
   "overrides": {
     "@aws-amplify/ui": {
