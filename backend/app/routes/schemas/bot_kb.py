@@ -13,7 +13,15 @@ type_kb_chunking_strategy = Literal[
 ]
 type_kb_embeddings_model = Literal["titan_v2", "cohere_multilingual_v3"]
 type_kb_search_type = Literal["hybrid", "semantic"]
+# Only models that are still invocable on Bedrock are selectable.
+# claude-3-5-sonnet-v1 and claude-3-sonnet-v1 reached end of life and every
+# ingestion using them fails with a 404 from IngestKnowledgeBaseDocuments.
 type_kb_parsing_model = Literal[
+    "anthropic.claude-3-haiku-v1",
+    "disabled",
+]
+# Superset kept so bots created before the end-of-life cut still deserialize.
+type_kb_parsing_model_stored = Literal[
     "anthropic.claude-3-5-sonnet-v1",
     "anthropic.claude-3-haiku-v1",
     "anthropic.claude-3-sonnet-v1",
@@ -125,7 +133,7 @@ class BedrockKnowledgeBaseOutput(BaseSchema):
     knowledge_base_id: str | None = None
     exist_knowledge_base_id: str | None = None
     data_source_ids: list[str] | None = None
-    parsing_model: type_kb_parsing_model = "disabled"
+    parsing_model: type_kb_parsing_model_stored = "disabled"
     web_crawling_scope: type_kb_web_crawling_scope = "DEFAULT"
     web_crawling_filters: WebCrawlingFilters = WebCrawlingFilters(
         exclude_patterns=[], include_patterns=[]
