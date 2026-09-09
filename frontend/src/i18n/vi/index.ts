@@ -56,6 +56,11 @@ const translation = {
         description:
           'Mô hình Opus hiệu suất cao được xây dựng cho việc lập trình, quy trình doanh nghiệp và các tác vụ agent dài hạn.',
       },
+      'claude-v4.8-opus': {
+        label: 'Claude 4.8 (Opus)',
+        description:
+          'Mô hình Opus mạnh nhất, được xây dựng cho các tác vụ agent dài hạn, lập trình và quy trình doanh nghiệp.',
+      },
       'claude-v3-opus': {
         label: 'Claude 3 (Opus)',
         description: 'Mô hình mạnh mẽ cho các tác vụ cực kỳ phức tạp.',

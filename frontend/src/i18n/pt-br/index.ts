@@ -63,6 +63,11 @@ const translation = {
         description:
           'Modelo Opus de alta capacidade criado para codificação, fluxos de trabalho empresariais e tarefas de agente de longa duração.',
       },
+      'claude-v4.8-opus': {
+        label: 'Claude 4.8 (Opus)',
+        description:
+          'O modelo Opus mais capaz, criado para tarefas de agente de longa duração, codificação e fluxos de trabalho empresariais.',
+      },
       'claude-v3-opus': {
         label: 'Claude 3 (Opus)',
         description: 'Modelo poderoso para tarefas altamente complexas.',
