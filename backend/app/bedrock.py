@@ -724,6 +724,17 @@ def is_temperature_supported(model: type_model_name) -> bool:
     ]
 
 
+def is_reasoning_summary_supported(model: type_model_name) -> bool:
+    """OpenAI GPT-6 returns readable reasoning only when `reasoning.summary` is set,
+    and rejects the summary (reasoningText) when it is sent back in an assistant message.
+    """
+    return model in [
+        "gpt-6-sol",
+        "gpt-6-luna",
+        "gpt-6-astra",
+    ]
+
+
 def is_prompt_caching_supported(
     model: type_model_name, target: Literal["system", "message", "tool"]
 ) -> bool:
@@ -1135,6 +1146,10 @@ def generation_params_to_converse_configuration(
     elif is_openai_gpt_model(model):
         # Special handling for OpenAI GPT models (GPT-OSS, GPT-6)
         converse_configuration = _prepare_gpt_oss_model_params(model, generation_params)
+        if enable_reasoning and is_reasoning_summary_supported(model):
+            converse_configuration["additionalModelRequestFields"] = {
+                "reasoning": {"summary": "auto"}
+            }
 
     else:
         # Standard handling for non-Nova models

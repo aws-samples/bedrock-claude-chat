@@ -278,21 +278,21 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
         label: t('model.gpt-6-sol.label'),
         description: t('model.gpt-6-sol.description'),
         supportMediaType: OPENAI_GPT_6_SUPPORTED_MEDIA_TYPES,
-        supportReasoning: false, // GPT-6 returns reasoning only as redacted content.
+        supportReasoning: true, // Shows the reasoning summary (reasoning.summary).
       },
       {
         modelId: 'gpt-6-luna',
         label: t('model.gpt-6-luna.label'),
         description: t('model.gpt-6-luna.description'),
         supportMediaType: OPENAI_GPT_6_SUPPORTED_MEDIA_TYPES,
-        supportReasoning: false, // GPT-6 returns reasoning only as redacted content.
+        supportReasoning: true, // Shows the reasoning summary (reasoning.summary).
       },
       {
         modelId: 'gpt-6-astra',
         label: t('model.gpt-6-astra.label'),
         description: t('model.gpt-6-astra.description'),
         supportMediaType: OPENAI_GPT_6_SUPPORTED_MEDIA_TYPES,
-        supportReasoning: false, // GPT-6 returns reasoning only as redacted content.
+        supportReasoning: true, // Shows the reasoning summary (reasoning.summary).
       },
       // Mistral
       {
