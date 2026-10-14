@@ -592,6 +592,7 @@ REGIONAL_INFERENCE_PROFILES = {
             "us-west-1": "us",
             "us-west-2": "us",
             "ca-central-1": "us",
+            "ca-west-1": "us",
         }
     },
     "gpt-6-luna": {
@@ -601,6 +602,7 @@ REGIONAL_INFERENCE_PROFILES = {
             "us-west-1": "us",
             "us-west-2": "us",
             "ca-central-1": "us",
+            "ca-west-1": "us",
         }
     },
     "gpt-6-astra": {
@@ -610,6 +612,7 @@ REGIONAL_INFERENCE_PROFILES = {
             "us-west-1": "us",
             "us-west-2": "us",
             "ca-central-1": "us",
+            "ca-west-1": "us",
         }
     },
 }

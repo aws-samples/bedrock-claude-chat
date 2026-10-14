@@ -152,6 +152,15 @@ class TestGetModelId(unittest.TestCase):
                     ),
                     f"us.openai.{model}",
                 )
+                self.assertEqual(
+                    get_model_id(
+                        model,
+                        enable_global=True,
+                        enable_cross_region=True,
+                        bedrock_region="ca-west-1",
+                    ),
+                    f"us.openai.{model}",
+                )
 
 
 class TestOpenAIGpt6Params(unittest.TestCase):
