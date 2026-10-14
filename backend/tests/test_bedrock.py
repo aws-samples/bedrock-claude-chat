@@ -133,6 +133,10 @@ class TestGetModelId(unittest.TestCase):
             ("ap-northeast-1", False, "jp.anthropic.claude-opus-5-5"),
             ("ap-southeast-2", False, "au.anthropic.claude-opus-5-5"),
             ("sa-east-1", True, "global.anthropic.claude-opus-5-5"),
+            ("ca-west-1", False, "us.anthropic.claude-opus-5-5"),
+            ("eu-south-2", False, "eu.anthropic.claude-opus-5-5"),
+            ("ap-southeast-4", False, "au.anthropic.claude-opus-5-5"),
+            ("ap-south-2", True, "global.anthropic.claude-opus-5-5"),
         ]:
             with self.subTest(region=region, enable_global=enable_global):
                 self.assertEqual(
