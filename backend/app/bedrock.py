@@ -62,6 +62,7 @@ BASE_MODEL_IDS = {
     "claude-v4.5-opus": "anthropic.claude-opus-4-5-20251101-v1:0",
     "claude-v4.6-opus": "anthropic.claude-opus-4-6-v1",
     "claude-v4.7-opus": "anthropic.claude-opus-4-7",
+    "claude-v4.8-opus": "anthropic.claude-opus-4-8",
     "claude-v4-sonnet": "anthropic.claude-sonnet-4-20250514-v1:0",
     "claude-v4.5-sonnet": "anthropic.claude-sonnet-4-5-20250929-v1:0",
     "claude-v4.6-sonnet": "anthropic.claude-sonnet-4-6",
@@ -201,6 +202,12 @@ GLOBAL_INFERENCE_PROFILES = {
             "ap-northeast-1",
         ]
     },
+    "claude-v4.8-opus": {
+        "supported_regions": [
+            "eu-central-2",
+            "eu-central-1",
+        ]
+    },
     "claude-v4-sonnet": {
         "supported_regions": [
             "us-west-2",
@@ -295,6 +302,17 @@ REGIONAL_INFERENCE_PROFILES = {
             "ap-northeast-3": "jp",
             "ap-southeast-2": "au",
             "ap-southeast-4": "au",
+        }
+    },
+    "claude-v4.8-opus": {
+        "supported_regions": {
+            "eu-central-1": "eu",
+            "eu-central-2": "eu",
+            "eu-north-1": "eu",
+            "eu-south-1": "eu",
+            "eu-south-2": "eu",
+            "eu-west-1": "eu",
+            "eu-west-3": "eu",
         }
     },
     "claude-v4.6-opus": {
@@ -571,6 +589,7 @@ def is_adaptive_thinking_model(model: type_model_name) -> bool:
         "claude-v4.6-opus",
         "claude-v4.6-sonnet",
         "claude-v4.7-opus",
+        "claude-v4.8-opus",
     ]
 
 
@@ -580,6 +599,7 @@ def is_prefill_supported(model: type_model_name) -> bool:
         "claude-v4.6-opus",
         "claude-v4.6-sonnet",
         "claude-v4.7-opus",
+        "claude-v4.8-opus",
     ]
 
 
@@ -589,6 +609,7 @@ def is_specify_both_temperature_and_top_p_supported(model: type_model_name) -> b
         "claude-v4.5-opus",
         "claude-v4.6-opus",
         "claude-v4.7-opus",
+        "claude-v4.8-opus",
         "claude-v4.5-sonnet",
         "claude-v4.6-sonnet",
         "claude-v4.5-haiku",
@@ -599,6 +620,7 @@ def is_top_k_supported(model: type_model_name) -> bool:
     """Claude Opus 4.7+ deprecates top_k parameter."""
     return model not in [
         "claude-v4.7-opus",
+        "claude-v4.8-opus",
     ]
 
 
@@ -606,6 +628,7 @@ def is_top_p_supported(model: type_model_name) -> bool:
     """Claude Opus 4.7+ deprecates top_p parameter."""
     return model not in [
         "claude-v4.7-opus",
+        "claude-v4.8-opus",
     ]
 
 
@@ -613,6 +636,7 @@ def is_temperature_supported(model: type_model_name) -> bool:
     """Claude Opus 4.7+ deprecates temperature parameter."""
     return model not in [
         "claude-v4.7-opus",
+        "claude-v4.8-opus",
     ]
 
 
@@ -626,6 +650,7 @@ def is_prompt_caching_supported(
             "claude-v4.5-opus",
             "claude-v4.6-opus",
             "claude-v4.7-opus",
+            "claude-v4.8-opus",
             "claude-v4-sonnet",
             "claude-v4.5-sonnet",
             "claude-v4.6-sonnet",
@@ -642,6 +667,7 @@ def is_prompt_caching_supported(
             "claude-v4.5-opus",
             "claude-v4.6-opus",
             "claude-v4.7-opus",
+            "claude-v4.8-opus",
             "claude-v4-sonnet",
             "claude-v4.5-sonnet",
             "claude-v4.6-sonnet",

@@ -48,6 +48,11 @@ const translation: typeof en = {
         description:
           'コーディング、エンタープライズワークフロー、長時間のエージェントタスク向けに構築された高性能Opusモデル。',
       },
+      'claude-v4.8-opus': {
+        label: 'Claude 4.8 (Opus)',
+        description:
+          '長時間のエージェントタスク、コーディング、エンタープライズワークフロー向けに構築された最も高性能なOpusモデル。',
+      },
       'claude-v4-sonnet': {
         label: 'Claude 4 (Sonnet)',
         description:
