@@ -50,7 +50,8 @@ const translation: typeof en = {
       },
       'claude-v5.5-opus': {
         label: 'Claude 5.5 (Opus)',
-        description: '適応型思考に対応したOpusモデル。',
+        description:
+          'エージェント型コーディング、ナレッジワーク、長時間のタスクに適した最高性能のOpusモデル。',
       },
       'claude-v4-sonnet': {
         label: 'Claude 4 (Sonnet)',

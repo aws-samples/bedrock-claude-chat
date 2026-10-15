@@ -47,7 +47,8 @@ const translation = {
       },
       'claude-v5.5-opus': {
         label: 'Claude 5.5 (Opus)',
-        description: 'Opus model with adaptive thinking.',
+        description:
+          'Most capable Opus model suitable for agentic coding, knowledge work, and long-running tasks.',
       },
       'claude-v4-sonnet': {
         label: 'Claude 4 (Sonnet)',

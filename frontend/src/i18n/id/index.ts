@@ -58,7 +58,8 @@ const translation = {
       },
       'claude-v5.5-opus': {
         label: 'Claude 5.5 (Opus)',
-        description: 'Model Opus dengan pemikiran adaptif.',
+        description:
+          'Model Opus dengan kemampuan tertinggi, cocok untuk coding agentik, pekerjaan berbasis pengetahuan, dan tugas jangka panjang.',
       },
       'claude-v3-opus': {
         label: 'Claude 3 (Opus)',

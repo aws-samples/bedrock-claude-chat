@@ -58,7 +58,8 @@ const translation = {
       },
       'claude-v5.5-opus': {
         label: 'Claude 5.5 (Opus)',
-        description: 'Model Opus z adaptacyjnym myśleniem.',
+        description:
+          'Model Opus o największych możliwościach, odpowiedni do kodowania agentowego, pracy opartej na wiedzy i długotrwałych zadań.',
       },
       'claude-v3-opus': {
         label: 'Claude 3 (Opus)',

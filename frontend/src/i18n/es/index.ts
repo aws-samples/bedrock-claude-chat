@@ -58,7 +58,8 @@ const translation = {
       },
       'claude-v5.5-opus': {
         label: 'Claude 5.5 (Opus)',
-        description: 'Modelo Opus con pensamiento adaptativo.',
+        description:
+          'El modelo Opus más capaz, adecuado para codificación agéntica, trabajo del conocimiento y tareas de larga duración.',
       },
       'claude-v3-opus': {
         label: 'Claude 3 (Opus)',

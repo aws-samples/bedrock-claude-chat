@@ -58,7 +58,8 @@ const translation = {
       },
       'claude-v5.5-opus': {
         label: 'Claude 5.5 (Opus)',
-        description: 'Mô hình Opus với tư duy thích ứng.',
+        description:
+          'Mô hình Opus có năng lực cao nhất, phù hợp cho lập trình agentic, công việc tri thức và các tác vụ dài hạn.',
       },
       'claude-v3-opus': {
         label: 'Claude 3 (Opus)',
