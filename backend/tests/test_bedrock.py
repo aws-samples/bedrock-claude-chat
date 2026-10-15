@@ -124,6 +124,54 @@ class TestGetModelId(unittest.TestCase):
             expected_model_id,
         )
 
+    def test_get_model_id_claude_opus_5_5(self):
+        """Claude Opus 5.5 is inference-profile only, so every mapped region needs a prefix"""
+        for region, enable_global, expected_model_id in [
+            ("us-east-1", True, "global.anthropic.claude-opus-5-5"),
+            ("us-east-1", False, "us.anthropic.claude-opus-5-5"),
+            ("eu-west-2", False, "eu.anthropic.claude-opus-5-5"),
+            ("ap-northeast-1", False, "jp.anthropic.claude-opus-5-5"),
+            ("ap-southeast-2", False, "au.anthropic.claude-opus-5-5"),
+            ("sa-east-1", True, "global.anthropic.claude-opus-5-5"),
+            ("ca-west-1", False, "us.anthropic.claude-opus-5-5"),
+            ("eu-south-2", False, "eu.anthropic.claude-opus-5-5"),
+            ("ap-southeast-4", False, "au.anthropic.claude-opus-5-5"),
+            ("ap-south-2", True, "global.anthropic.claude-opus-5-5"),
+        ]:
+            with self.subTest(region=region, enable_global=enable_global):
+                self.assertEqual(
+                    get_model_id(
+                        "claude-v5.5-opus",
+                        enable_global=enable_global,
+                        enable_cross_region=True,
+                        bedrock_region=region,
+                    ),
+                    expected_model_id,
+                )
+
+    def test_compose_args_claude_opus_5_5_omits_sampling_params(self):
+        """Claude Opus 5.5 rejects temperature, top_p and top_k like Opus 4.7"""
+        for enable_reasoning in [False, True]:
+            with self.subTest(enable_reasoning=enable_reasoning):
+                args = compose_args_for_converse_api(
+                    messages=[
+                        SimpleMessageModel(
+                            role="user",
+                            content=[TextContentModel(content_type="text", body="Hi")],
+                        )
+                    ],
+                    model="claude-v5.5-opus",
+                    enable_reasoning=enable_reasoning,
+                )
+                self.assertNotIn("temperature", args["inferenceConfig"])
+                self.assertNotIn("topP", args["inferenceConfig"])
+                self.assertNotIn("top_k", args["additionalModelRequestFields"])
+                if enable_reasoning:
+                    self.assertEqual(
+                        args["additionalModelRequestFields"]["thinking"],
+                        {"type": "adaptive"},
+                    )
+
 
 class TestCallConverseApi(unittest.TestCase):
     def test_call_converse_api_with_global_inference(self):

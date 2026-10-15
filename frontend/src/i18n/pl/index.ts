@@ -56,6 +56,11 @@ const translation = {
         description:
           'Wysoko wydajny model Opus stworzony do kodowania, przepływów pracy w przedsiębiorstwach i długotrwałych zadań agentowych.',
       },
+      'claude-v5.5-opus': {
+        label: 'Claude 5.5 (Opus)',
+        description:
+          'Model Opus o największych możliwościach, odpowiedni do kodowania agentowego, pracy opartej na wiedzy i długotrwałych zadań.',
+      },
       'claude-v3-opus': {
         label: 'Claude 3 (Opus)',
         description: 'Potężny model do wysoce złożonych zadań.',
