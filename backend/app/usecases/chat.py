@@ -685,11 +685,17 @@ def propose_conversation_title(
         stream=False,
     )
     response = call_converse_api(args)
+    # Reasoning models (e.g. GPT-OSS) put a reasoningContent block before the text
     reply_txt = (
-        response["output"]["message"]["content"][0]["text"]
+        next(
+            (
+                c["text"]
+                for c in response["output"]["message"]["content"]
+                if "text" in c
+            ),
+            "",
+        )
         if "message" in response["output"]
-        and len(response["output"]["message"]["content"]) > 0
-        and "text" in response["output"]["message"]["content"][0]
         else ""
     )
 
