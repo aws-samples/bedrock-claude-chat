@@ -11,8 +11,12 @@ from app.repositories.models.custom_bot import BotModel, GenerationParamsModel
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.strands_integration.utils import get_strands_tools
 from strands import Agent
-from strands.experimental.hooks import BeforeModelInvocationEvent
-from strands.hooks import HookProvider, HookRegistry
+from strands.hooks import (
+    BeforeModelCallEvent,
+    HookCallback,
+    HookProvider,
+    HookRegistry,
+)
 from strands.models import BedrockModel
 
 from app.strands_integration.agent.config import get_bedrock_model_config
@@ -28,9 +32,9 @@ class DropReasoningSummaries(HookProvider):
     conversation still has the summaries for display."""
 
     def register_hooks(self, registry: HookRegistry, **kwargs) -> None:
-        registry.add_callback(BeforeModelInvocationEvent, self.drop_reasoning_text)
+        registry.add_callback(BeforeModelCallEvent, self.drop_reasoning_text)
 
-    def drop_reasoning_text(self, event: BeforeModelInvocationEvent) -> None:
+    def drop_reasoning_text(self, event: BeforeModelCallEvent) -> None:
         for message in event.agent.messages:
             if message["role"] == "assistant":
                 message["content"] = [
@@ -49,7 +53,7 @@ def create_strands_agent(
     enable_reasoning: bool = False,
     prompt_caching_enabled: bool = False,
     has_tools: bool = False,
-    hooks: list[HookProvider] | None = None,
+    hooks: list[HookProvider | HookCallback] | None = None,
 ) -> Agent:
     model_config = get_bedrock_model_config(
         model_name=model_name,

@@ -172,7 +172,9 @@ def converse_with_strands(
 
     return OnStopInput(
         message=message,
-        stop_reason=stop_reason,
+        # Strands also has cancel/interrupt/checkpoint/limit_* stop reasons, which
+        # only come from agent features this app does not use.
+        stop_reason=stop_reason,  # type: ignore[typeddict-item]
         input_token_count=input_tokens,
         output_token_count=output_tokens,
         cache_read_input_count=cache_read_input_tokens,

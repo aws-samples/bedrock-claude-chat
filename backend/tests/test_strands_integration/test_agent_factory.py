@@ -7,7 +7,7 @@ sys.path.append(".")
 import unittest
 
 from app.strands_integration.agent.factory import create_strands_agent
-from strands.experimental.hooks import BeforeModelInvocationEvent
+from strands.hooks import BeforeModelCallEvent
 
 # Blocks as ConverseStream returns them for GPT-6 with reasoning.summary=auto
 SUMMARY = {"reasoningContent": {"reasoningText": {"text": "**Planning**\n\n..."}}}
@@ -47,7 +47,7 @@ class TestReasoningSummaryReplay(unittest.TestCase):
                     bot=None, instructions=[], model_name=model
                 )
                 agent.messages = self.messages()
-                agent.hooks.invoke_callbacks(BeforeModelInvocationEvent(agent=agent))
+                agent.hooks.invoke_callbacks(BeforeModelCallEvent(agent=agent))
                 self.assertEqual(agent.messages[1]["content"], expected)
                 self.assertEqual(agent.messages[0], self.messages()[0])
                 self.assertEqual(agent.messages[2], self.messages()[2])
