@@ -7,7 +7,6 @@ from typing import TypeGuard
 
 from app.bedrock import (
     is_prompt_caching_supported,
-    is_reasoning_summary_supported,
     is_unsigned_reasoning_content_supported,
 )
 from app.repositories.models.conversation import (
@@ -74,14 +73,6 @@ def simple_message_models_to_strands_messages(
             not is_unsigned_reasoning_content_supported(model)
             and c.content_type == "reasoning"
             and not getattr(c, "signature", None)
-        ):
-            return []
-
-        # Drop reasoning summaries for GPT-6 models (redactedContent is kept)
-        if (
-            is_reasoning_summary_supported(model)
-            and c.content_type == "reasoning"
-            and getattr(c, "text", None)
         ):
             return []
 

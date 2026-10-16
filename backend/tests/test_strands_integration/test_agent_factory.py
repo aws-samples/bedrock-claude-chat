@@ -6,15 +6,7 @@ sys.path.append(".")
 
 import unittest
 
-from app.bedrock import simple_message_models_to_bedrock_messages
-from app.repositories.models.conversation import SimpleMessageModel
 from app.strands_integration.agent.factory import create_strands_agent
-from app.strands_integration.converters.content_converter import (
-    strands_content_block_to_content_model,
-)
-from app.strands_integration.converters.message_converter import (
-    simple_message_models_to_strands_messages,
-)
 from strands.hooks import BeforeModelCallEvent
 
 # Blocks as ConverseStream returns them for GPT-6 with reasoning.summary=auto
@@ -47,8 +39,9 @@ class TestReasoningSummaryReplay(unittest.TestCase):
         for model, enable_reasoning, expected in [
             ("gpt-6-sol", True, [REDACTED, TEXT, TOOL_USE]),
             ("gpt-6-astra", True, [REDACTED, TEXT, TOOL_USE]),
-            # Summaries are requested only with the toggle on, so no hook without it
-            ("gpt-6-sol", False, [SUMMARY, REDACTED, TEXT, TOOL_USE]),
+            # Summaries stored on an earlier turn also come back with the toggle off
+            # and on Continue
+            ("gpt-6-sol", False, [REDACTED, TEXT, TOOL_USE]),
             ("gpt-oss-120b", True, [SUMMARY, REDACTED, TEXT, TOOL_USE]),
             ("claude-v4.7-opus", True, [SUMMARY, REDACTED, TEXT, TOOL_USE]),
         ]:
@@ -64,36 +57,6 @@ class TestReasoningSummaryReplay(unittest.TestCase):
                 self.assertEqual(agent.messages[1]["content"], expected)
                 self.assertEqual(agent.messages[0], self.messages()[0])
                 self.assertEqual(agent.messages[2], self.messages()[2])
-
-    def test_stored_summaries_dropped_from_history(self):
-        """Summaries stored on an earlier turn are not sent back to GPT-6, also when
-        the toggle is off on the next turn or on Continue"""
-        history = [
-            SimpleMessageModel(
-                role=m["role"],
-                content=[
-                    strands_content_block_to_content_model(c) for c in m["content"]
-                ],
-            )
-            for m in self.messages()[:2]
-        ]
-        for model, expected in [
-            ("gpt-6-sol", [REDACTED, TEXT, TOOL_USE]),
-            ("gpt-6-astra", [REDACTED, TEXT, TOOL_USE]),
-            ("gpt-oss-120b", [TEXT, TOOL_USE]),
-            ("claude-v4.7-opus", [SUMMARY, REDACTED, TEXT, TOOL_USE]),
-        ]:
-            for convert in (
-                simple_message_models_to_strands_messages,
-                simple_message_models_to_bedrock_messages,
-            ):
-                with self.subTest(model=model, convert=convert.__name__):
-                    messages = convert(
-                        simple_messages=history,
-                        model=model,
-                        prompt_caching_enabled=False,
-                    )
-                    self.assertEqual(messages[1]["content"], expected)
 
 
 if __name__ == "__main__":

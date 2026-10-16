@@ -29,9 +29,7 @@ BEDROCK_REGION = os.environ.get("BEDROCK_REGION", "us-east-1")
 class DropReasoningSummaries(HookProvider):
     """Remove reasoning summaries (reasoningText) from assistant messages before each
     model call, for models that reject them. redactedContent is kept, and the stored
-    conversation still has the summaries for display. Summaries from earlier turns are
-    already dropped by simple_message_models_to_strands_messages, so this covers the
-    ones the agent loop adds during tool use."""
+    conversation still has the summaries for display."""
 
     def register_hooks(self, registry: HookRegistry, **kwargs) -> None:
         registry.add_callback(BeforeModelCallEvent, self.drop_reasoning_text)
@@ -76,7 +74,7 @@ def create_strands_agent(
     system_prompt = "\n\n".join(instructions).strip() if instructions else None
 
     hooks = hooks or []
-    if enable_reasoning and is_reasoning_summary_supported(model_name):
+    if is_reasoning_summary_supported(model_name):
         hooks = [*hooks, DropReasoningSummaries()]
 
     agent = Agent(
