@@ -959,7 +959,7 @@ def _prepare_mistral_model_params(
     return converse_config
 
 
-def _prepare_gpt_oss_model_params(
+def _prepare_openai_gpt_model_params(
     model: type_model_name, generation_params: Optional[GenerationParamsModel] = None
 ) -> ConverseConfiguration:
     """
@@ -1212,7 +1212,9 @@ def generation_params_to_converse_configuration(
 
     elif is_openai_gpt_model(model):
         # Special handling for OpenAI GPT models (GPT-OSS, GPT-6)
-        converse_configuration = _prepare_gpt_oss_model_params(model, generation_params)
+        converse_configuration = _prepare_openai_gpt_model_params(
+            model, generation_params
+        )
         if enable_reasoning and is_reasoning_summary_supported(model):
             converse_configuration["additionalModelRequestFields"] = {
                 "reasoning": {"summary": "auto"}
