@@ -3,7 +3,7 @@ from app.user import User
 from fastapi import Depends, HTTPException, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from jose import JWTError
+from jwt import PyJWTError
 
 security = HTTPBearer()
 
@@ -18,7 +18,7 @@ def get_current_user(token: HTTPAuthorizationCredentials = Depends(security)):
             email=decoded["email"],
             groups=decoded.get("cognito:groups", []),
         )
-    except (IndexError, JWTError):
+    except PyJWTError:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials",
