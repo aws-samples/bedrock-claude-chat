@@ -4,7 +4,7 @@ from hashlib import md5
 from app.routes.schemas.bot_kb import (
     type_kb_chunking_strategy,
     type_kb_embeddings_model,
-    type_kb_parsing_model,
+    type_kb_parsing_model_stored,
     type_kb_search_type,
     type_kb_web_crawling_scope,
     type_os_character_filter,
@@ -92,7 +92,7 @@ class BedrockKnowledgeBaseModel(BaseModel):
     knowledge_base_id: str | None = None
     exist_knowledge_base_id: str | None = None
     data_source_ids: list[str] | None = None
-    parsing_model: type_kb_parsing_model = "disabled"
+    parsing_model: type_kb_parsing_model_stored = "disabled"
     web_crawling_scope: type_kb_web_crawling_scope = "DEFAULT"
     web_crawling_filters: WebCrawlingFiltersModel = WebCrawlingFiltersModel(
         exclude_patterns=[], include_patterns=[]
