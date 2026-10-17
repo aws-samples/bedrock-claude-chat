@@ -84,6 +84,18 @@ const translation = {
         description:
           'Modelo de peso abierto de 120B parámetros con ventana de contexto de 128K y capacidades avanzadas de razonamiento.',
       },
+      'gpt-6-sol': {
+        label: 'GPT-6 Sol',
+        description: 'OpenAI GPT-6 Sol. Admite entrada de texto e imágenes.',
+      },
+      'gpt-6-luna': {
+        label: 'GPT-6 Luna',
+        description: 'OpenAI GPT-6 Luna. Admite entrada de texto e imágenes.',
+      },
+      'gpt-6-astra': {
+        label: 'GPT-6 Astra',
+        description: 'OpenAI GPT-6 Astra. Admite entrada de texto e imágenes.',
+      },
     },
     agent: {
       label: 'Agente',

@@ -12,11 +12,12 @@ from app.strands_integration.converters.tool_converter import (
     tool_run_result_to_strands_tool_result,
 )
 
-from strands.experimental.hooks import (
-    AfterToolInvocationEvent,
-    BeforeToolInvocationEvent,
+from strands.hooks import (
+    AfterToolCallEvent,
+    BeforeToolCallEvent,
+    HookProvider,
+    HookRegistry,
 )
-from strands.hooks import HookProvider, HookRegistry
 
 logger = logging.getLogger(__name__)
 
@@ -33,10 +34,10 @@ class ToolResultCapture(HookProvider):
         self.on_tool_result = on_tool_result
 
     def register_hooks(self, registry: HookRegistry, **kwargs) -> None:
-        registry.add_callback(BeforeToolInvocationEvent, self.before_tool_execution)
-        registry.add_callback(AfterToolInvocationEvent, self.after_tool_execution)
+        registry.add_callback(BeforeToolCallEvent, self.before_tool_execution)
+        registry.add_callback(AfterToolCallEvent, self.after_tool_execution)
 
-    def before_tool_execution(self, event: BeforeToolInvocationEvent) -> None:
+    def before_tool_execution(self, event: BeforeToolCallEvent) -> None:
         """Handler called before a tool is executed."""
         logger.debug("Before tool execution: %r", event)
 
@@ -50,7 +51,7 @@ class ToolResultCapture(HookProvider):
                 }
             )
 
-    def after_tool_execution(self, event: AfterToolInvocationEvent) -> None:
+    def after_tool_execution(self, event: AfterToolCallEvent) -> None:
         """Handler called after a tool is executed."""
         logger.debug("After tool execution: %r", event)
 

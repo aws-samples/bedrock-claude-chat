@@ -176,6 +176,18 @@ const translation: typeof en = {
         description:
           '128Kコンテキストウィンドウと高度な推論機能を持つオープンウェイト120Bパラメータモデル',
       },
+      'gpt-6-sol': {
+        label: 'GPT-6 Sol',
+        description: 'OpenAI GPT-6 Sol。テキストと画像の入力に対応',
+      },
+      'gpt-6-luna': {
+        label: 'GPT-6 Luna',
+        description: 'OpenAI GPT-6 Luna。テキストと画像の入力に対応',
+      },
+      'gpt-6-astra': {
+        label: 'GPT-6 Astra',
+        description: 'OpenAI GPT-6 Astra。テキストと画像の入力に対応',
+      },
     },
     agent: {
       label: 'エージェント',

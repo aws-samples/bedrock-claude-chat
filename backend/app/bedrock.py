@@ -89,6 +89,10 @@ BASE_MODEL_IDS = {
     # OpenAI GPT-OSS models
     "gpt-oss-20b": "openai.gpt-oss-20b-1:0",
     "gpt-oss-120b": "openai.gpt-oss-120b-1:0",
+    # OpenAI GPT-6 models (inference profile only)
+    "gpt-6-sol": "openai.gpt-6-sol",
+    "gpt-6-luna": "openai.gpt-6-luna",
+    "gpt-6-astra": "openai.gpt-6-astra",
 }
 
 # Global inference profiles
@@ -287,6 +291,69 @@ GLOBAL_INFERENCE_PROFILES = {
             "ap-southeast-2",
             "ap-southeast-1",
             "ap-south-2",
+            "ap-south-1",
+            "ap-northeast-3",
+            "ap-northeast-2",
+            "ap-northeast-1",
+        ]
+    },
+    "gpt-6-sol": {
+        "supported_regions": [
+            "us-west-2",
+            "us-west-1",
+            "us-east-2",
+            "us-east-1",
+            "sa-east-1",
+            "eu-west-3",
+            "eu-west-2",
+            "eu-west-1",
+            "eu-north-1",
+            "eu-central-1",
+            "ca-central-1",
+            "ap-southeast-2",
+            "ap-southeast-1",
+            "ap-south-1",
+            "ap-northeast-3",
+            "ap-northeast-2",
+            "ap-northeast-1",
+        ]
+    },
+    "gpt-6-luna": {
+        "supported_regions": [
+            "us-west-2",
+            "us-west-1",
+            "us-east-2",
+            "us-east-1",
+            "sa-east-1",
+            "eu-west-3",
+            "eu-west-2",
+            "eu-west-1",
+            "eu-north-1",
+            "eu-central-1",
+            "ca-central-1",
+            "ap-southeast-2",
+            "ap-southeast-1",
+            "ap-south-1",
+            "ap-northeast-3",
+            "ap-northeast-2",
+            "ap-northeast-1",
+        ]
+    },
+    "gpt-6-astra": {
+        "supported_regions": [
+            "us-west-2",
+            "us-west-1",
+            "us-east-2",
+            "us-east-1",
+            "sa-east-1",
+            "eu-west-3",
+            "eu-west-2",
+            "eu-west-1",
+            "eu-north-1",
+            "eu-central-1",
+            "ca-central-1",
+            "ap-southeast-2",
+            "ap-southeast-1",
             "ap-south-1",
             "ap-northeast-3",
             "ap-northeast-2",
@@ -569,6 +636,36 @@ REGIONAL_INFERENCE_PROFILES = {
     "llama3-2-90b-instruct": {
         "supported_regions": {"us-east-1": "us", "us-east-2": "us", "us-west-2": "us"}
     },
+    "gpt-6-sol": {
+        "supported_regions": {
+            "us-east-1": "us",
+            "us-east-2": "us",
+            "us-west-1": "us",
+            "us-west-2": "us",
+            "ca-central-1": "us",
+            "ca-west-1": "us",
+        }
+    },
+    "gpt-6-luna": {
+        "supported_regions": {
+            "us-east-1": "us",
+            "us-east-2": "us",
+            "us-west-1": "us",
+            "us-west-2": "us",
+            "ca-central-1": "us",
+            "ca-west-1": "us",
+        }
+    },
+    "gpt-6-astra": {
+        "supported_regions": {
+            "us-east-1": "us",
+            "us-east-2": "us",
+            "us-west-1": "us",
+            "us-west-2": "us",
+            "ca-central-1": "us",
+            "ca-west-1": "us",
+        }
+    },
 }
 
 client = get_bedrock_runtime_client()
@@ -604,6 +701,11 @@ def is_mistral(model: type_model_name) -> bool:
 def is_gpt_oss_model(model: type_model_name) -> bool:
     """Check if the model is an OpenAI GPT-OSS model"""
     return "gpt-oss" in model
+
+
+def is_openai_gpt_model(model: type_model_name) -> bool:
+    """Check if the model is an OpenAI GPT model (GPT-OSS or GPT-6)"""
+    return model.startswith("gpt-")
 
 
 def is_tooluse_supported(model: type_model_name) -> bool:
@@ -658,18 +760,35 @@ def is_top_k_supported(model: type_model_name) -> bool:
 
 
 def is_top_p_supported(model: type_model_name) -> bool:
-    """Claude Opus 4.7+ deprecates top_p parameter."""
+    """Claude Opus 4.7+ deprecates top_p parameter. OpenAI GPT-6 rejects it."""
     return model not in [
         "claude-v4.7-opus",
         "claude-v5.5-opus",
+        "gpt-6-sol",
+        "gpt-6-luna",
+        "gpt-6-astra",
     ]
 
 
 def is_temperature_supported(model: type_model_name) -> bool:
-    """Claude Opus 4.7+ deprecates temperature parameter."""
+    """Claude Opus 4.7+ deprecates temperature parameter. OpenAI GPT-6 rejects it."""
     return model not in [
         "claude-v4.7-opus",
         "claude-v5.5-opus",
+        "gpt-6-sol",
+        "gpt-6-luna",
+        "gpt-6-astra",
+    ]
+
+
+def is_reasoning_summary_supported(model: type_model_name) -> bool:
+    """OpenAI GPT-6 returns readable reasoning only when `reasoning.summary` is set,
+    and rejects the summary (reasoningText) when it is sent back in an assistant message.
+    """
+    return model in [
+        "gpt-6-sol",
+        "gpt-6-luna",
+        "gpt-6-astra",
     ]
 
 
@@ -840,12 +959,12 @@ def _prepare_mistral_model_params(
     return converse_config
 
 
-def _prepare_gpt_oss_model_params(
+def _prepare_openai_gpt_model_params(
     model: type_model_name, generation_params: Optional[GenerationParamsModel] = None
 ) -> ConverseConfiguration:
     """
-    Prepare inference configuration for OpenAI GPT-OSS models
-    Note: GPT-OSS models don't support stopSequences
+    Prepare inference configuration for OpenAI GPT-OSS and GPT-6 models
+    Note: GPT-OSS and GPT-6 models don't support stopSequences
     """
     # Base inference configuration
     inference_config: InferenceConfiguration = {
@@ -854,17 +973,20 @@ def _prepare_gpt_oss_model_params(
             if generation_params
             else DEFAULT_GENERATION_CONFIG["max_tokens"]
         ),
-        "temperature": (
+    }
+    if is_temperature_supported(model):
+        inference_config["temperature"] = (
             generation_params.temperature
             if generation_params
             else DEFAULT_GENERATION_CONFIG["temperature"]
-        ),
-        "topP": (
+        )
+
+    if is_top_p_supported(model):
+        inference_config["topP"] = (
             generation_params.top_p
             if generation_params
             else DEFAULT_GENERATION_CONFIG["top_p"]
-        ),
-    }
+        )
 
     # Note: GPT-OSS models don't support stopSequences, so we don't add it
 
@@ -1005,6 +1127,14 @@ def simple_message_models_to_bedrock_messages(
         ):
             return []
 
+        # Drop reasoning summaries for GPT-6 models (redactedContent is kept)
+        if (
+            is_reasoning_summary_supported(model)
+            and c.content_type == "reasoning"
+            and getattr(c, "text", None)
+        ):
+            return []
+
         if c.content_type == "text":
             if (
                 role == "user"
@@ -1080,9 +1210,15 @@ def generation_params_to_converse_configuration(
         # Special handling for Mistral models
         converse_configuration = _prepare_mistral_model_params(model, generation_params)
 
-    elif is_gpt_oss_model(model):
-        # Special handling for GPT-OSS models
-        converse_configuration = _prepare_gpt_oss_model_params(model, generation_params)
+    elif is_openai_gpt_model(model):
+        # Special handling for OpenAI GPT models (GPT-OSS, GPT-6)
+        converse_configuration = _prepare_openai_gpt_model_params(
+            model, generation_params
+        )
+        if enable_reasoning and is_reasoning_summary_supported(model):
+            converse_configuration["additionalModelRequestFields"] = {
+                "reasoning": {"summary": "auto"}
+            }
 
     else:
         # Standard handling for non-Nova models
@@ -1390,6 +1526,11 @@ def calculate_price(
     cache_write_input_tokens: int,
     region: str = BEDROCK_REGION,
 ) -> float:
+    if model not in BEDROCK_PRICING["default"]:
+        # e.g. models added before AWS publishes their on-demand price
+        logger.warning(f"No pricing defined for model '{model}'. Recording price 0.")
+        return 0.0
+
     input_price = (
         BEDROCK_PRICING.get(region, {})
         .get(model, {})

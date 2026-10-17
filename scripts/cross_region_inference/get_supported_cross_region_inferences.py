@@ -30,6 +30,10 @@ supported_base_models = {
     "meta.llama3-2-3b-instruct-v1:0": "llama3-2-3b-instruct",
     "meta.llama3-2-11b-instruct-v1:0": "llama3-2-11b-instruct",
     "meta.llama3-2-90b-instruct-v1:0": "llama3-2-90b-instruct",
+    # OpenAI GPT-6 models
+    "openai.gpt-6-sol": "gpt-6-sol",
+    "openai.gpt-6-luna": "gpt-6-luna",
+    "openai.gpt-6-astra": "gpt-6-astra",
 }
 
 # Region definitions

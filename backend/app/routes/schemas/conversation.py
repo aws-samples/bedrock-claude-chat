@@ -41,6 +41,9 @@ type_model_name = Literal[
     "llama3-2-90b-instruct",
     "gpt-oss-20b",
     "gpt-oss-120b",
+    "gpt-6-sol",
+    "gpt-6-luna",
+    "gpt-6-astra",
 ]
 
 
