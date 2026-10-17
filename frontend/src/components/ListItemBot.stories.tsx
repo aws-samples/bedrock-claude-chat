@@ -78,7 +78,7 @@ export const MyBots = () => {
   const { t } = useTranslation();
   const [myBots, setMyBots] = useState(bots);
   return (
-    <div className="h-4/5 overflow-x-hidden overflow-y-scroll border-b border-gray pr-1 scrollbar-thin scrollbar-thumb-aws-font-color-light/20 dark:scrollbar-thumb-aws-font-color-dark/20">
+    <div className="h-4/5 overflow-x-hidden overflow-y-scroll border-b border-gray pr-1 scrollbar-thin">
       {myBots.length === 0 && (
         <div className="flex size-full items-center justify-center italic text-dark-gray dark:text-light-gray">
           {t('bot.label.noBots')}
@@ -165,7 +165,7 @@ export const RecentlyUsedSharedBots = () => {
   const { t } = useTranslation();
   const [recentlyUsedSharedBots, setRecentlyUsedSharedBots] = useState(bots);
   return (
-    <div className="h-4/5 overflow-y-scroll border-b border-gray  pr-1 scrollbar-thin scrollbar-thumb-aws-font-color-light/20 dark:scrollbar-thumb-aws-font-color-dark/20">
+    <div className="h-4/5 overflow-y-scroll border-b border-gray  pr-1 scrollbar-thin">
       {recentlyUsedSharedBots.length === 0 && (
         <div className="flex size-full items-center justify-center italic text-dark-gray dark:text-light-gray">
           {t('bot.label.noBotsRecentlyUsed')}
@@ -228,7 +228,7 @@ export const ApiManagement = () => {
     },
   ];
   return (
-    <div className="h-4/5 overflow-x-hidden overflow-y-scroll border-b border-gray pr-1 scrollbar-thin scrollbar-thumb-aws-font-color-light/20 dark:scrollbar-thumb-aws-font-color-dark/20">
+    <div className="h-4/5 overflow-x-hidden overflow-y-scroll border-b border-gray pr-1 scrollbar-thin">
       {botApis?.map((api, idx) => (
         <ListItemBot key={idx} bot={api} onClick={() => {}}>
           <div className="flex flex-col items-end gap-2">
@@ -299,7 +299,7 @@ export const Analytics = () => {
     },
   ];
   return (
-    <div className="h-4/5 overflow-x-hidden overflow-y-scroll border-b border-gray pr-1 scrollbar-thin scrollbar-thumb-aws-font-color-light/20 dark:scrollbar-thumb-aws-font-color-dark/20">
+    <div className="h-4/5 overflow-x-hidden overflow-y-scroll border-b border-gray pr-1 scrollbar-thin">
       {sortedBots?.map((bot, idx) => (
         <ListItemBot key={idx} bot={bot} onClick={() => {}}>
           <div className="relative flex h-full items-center">

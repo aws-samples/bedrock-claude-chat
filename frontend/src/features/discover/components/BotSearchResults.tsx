@@ -7,7 +7,7 @@ import Button from '../../../components/Button';
 import CardBotForDiscover from './CardBotForDiscover';
 
 export const SkeletonBot: React.FC = () => {
-  return <Skeleton className="h-[120px] w-full rounded-xl" />;
+  return <Skeleton className="h-30 w-full rounded-xl" />;
 };
 
 type BotSearchResultsProps = {

@@ -242,7 +242,7 @@ const AdminBotManagementPage: React.FC = () => {
                         {bot?.knowledge.filenames.map((filename, idx) => (
                           <div
                             key={idx}
-                            className="rounded border border-gray p-1 py-1.5">
+                            className="rounded-sm border border-gray p-1 py-1.5">
                             <div className="flex items-center justify-between gap-2">
                               <div className="flex items-center gap-2 break-all px-1">
                                 <PiFile className="w-5" />
@@ -372,7 +372,7 @@ const AdminBotManagementPage: React.FC = () => {
                         {t('bot.apiSettings.help.usagePlan')}
                       </div>
 
-                      <div className="mt-1 rounded border border-aws-font-color-light/50 p-2 dark:border-aws-font-color-dark/50">
+                      <div className="mt-1 rounded-sm border border-aws-font-color-light/50 p-2 dark:border-aws-font-color-dark/50">
                         <div className="flex text-sm">
                           {t('bot.apiSettings.item.throttling')}:
                           <div className="ml-1 font-bold">

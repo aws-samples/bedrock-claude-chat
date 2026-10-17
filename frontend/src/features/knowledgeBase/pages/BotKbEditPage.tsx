@@ -1956,7 +1956,7 @@ const BotKbEditPage: React.FC = () => {
                     {conversationQuickStarters.map(
                       (conversationQuickStarter, idx) => (
                         <div
-                          className="flex w-full flex-col gap-2 rounded border border-aws-font-color-light/50 p-2 dark:border-aws-font-color-dark/50"
+                          className="flex w-full flex-col gap-2 rounded-sm border border-aws-font-color-light/50 p-2 dark:border-aws-font-color-dark/50"
                           key={idx}>
                           <InputText
                             className="w-full"
@@ -2410,7 +2410,7 @@ const BotKbEditPage: React.FC = () => {
                       {t('knowledgeBaseSettings.opensearchAnalyzer.hint')}
                     </div>
                     <div
-                      className="grid grid-cols-[auto_1fr] gap-2 rounded 
+                      className="grid grid-cols-[auto_1fr] gap-2 rounded-sm 
                       border border-aws-font-color-light/50 p-4 text-sm dark:border-aws-font-color-dark/50">
                       <div>
                         {t(

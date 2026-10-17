@@ -24,7 +24,7 @@ const Alert: React.FC<Props> = (props) => {
   return (
     <div
       className={twMerge(
-        'flex flex-col rounded border border-aws-squid-ink-light shadow-lg dark:border-aws-squid-ink-dark',
+        'flex flex-col rounded-sm border border-aws-squid-ink-light shadow-lg dark:border-aws-squid-ink-dark',
         props.severity === 'info' && 'bg-aws-aqua',
         props.severity === 'warning' && 'bg-yellow',
         props.severity === 'error' && 'bg-red',

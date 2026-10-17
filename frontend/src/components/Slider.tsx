@@ -60,7 +60,7 @@ export const Slider: FC<Props> = (props) => {
         />
         <input
           className={twMerge(
-            'peer h-9 w-16 rounded border p-1 text-center',
+            'peer h-9 w-16 rounded-sm border p-1 text-center',
             props.errorMessage
               ? 'dark:bg-aws-ui-color-dark border-2 border-red dark:text-aws-font-color-dark'
               : 'dark:bg-aws-ui-color-dark border-aws-font-color-light/50 dark:border-aws-font-color-dark dark:text-aws-font-color-dark'

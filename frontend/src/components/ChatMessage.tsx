@@ -173,15 +173,15 @@ const ChatMessage: React.FC<Props> = (props) => {
         )}
       </div>
 
-      <div className="order-first col-span-12 flex lg:order-none lg:col-span-8 lg:col-start-3">
+      <div className="order-first col-span-12 flex lg:order-0 lg:col-span-8 lg:col-start-3">
         {chatContent?.role === 'user' && (
-          <div className="h-min rounded bg-aws-sea-blue-light p-2 text-xl text-white dark:bg-aws-sea-blue-dark">
+          <div className="h-min rounded-sm bg-aws-sea-blue-light p-2 text-xl text-white dark:bg-aws-sea-blue-dark">
             <PiUserFill />
           </div>
         )}
         {chatContent?.role === 'assistant' && (
           <div className="min-w-[2.3rem] max-w-[2.3rem]">
-            <img src="/images/bedrock_icon_64.png" className="rounded" />
+            <img src="/images/bedrock_icon_64.png" className="rounded-sm" />
           </div>
         )}
 
@@ -206,7 +206,7 @@ const ChatMessage: React.FC<Props> = (props) => {
             // ReasoningCard for ReasoningContent in assistant message itself.
             <ReasoningCard
               content={reasoning}
-              className="mx-auto mb-3 mt-0 flex w-full max-w-5xl flex-col rounded border border-gray bg-aws-paper-light text-aws-font-color-light/80 dark:bg-aws-paper-dark dark:text-aws-font-color-dark/80"
+              className="mx-auto mb-3 mt-0 flex w-full max-w-5xl flex-col rounded-sm border border-gray bg-aws-paper-light text-aws-font-color-light/80 dark:bg-aws-paper-dark dark:text-aws-font-color-dark/80"
             />
           )}
           {chatContent?.role === 'user' && !isEdit && (

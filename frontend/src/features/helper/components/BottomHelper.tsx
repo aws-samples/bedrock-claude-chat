@@ -28,13 +28,13 @@ export const BottomHelper = () => {
             </div>
           </div>
           <div className="ml-3 flex flex-row gap-2">
-            <div className="my-2 flex h-8 min-w-[32px] items-center justify-center rounded-md border capitalize">
+            <div className="my-2 flex h-8 min-w-8 items-center justify-center rounded-md border capitalize">
               <span className="text-sm">{isWindows ? 'Ctrl' : '⌘'}</span>
             </div>
             <div className="my-2 flex h-8 min-w-[50px] items-center justify-center rounded-md border capitalize">
               <span className="text-xs">Shift</span>
             </div>
-            <div className="my-2 flex h-8 min-w-[32px] items-center justify-center rounded-md border capitalize">
+            <div className="my-2 flex h-8 min-w-8 items-center justify-center rounded-md border capitalize">
               <span className="text-sm">o</span>
             </div>
           </div>
@@ -49,7 +49,7 @@ export const BottomHelper = () => {
             <div className="my-2 flex h-8 min-w-[50px] items-center justify-center rounded-md border capitalize">
               <span className="text-xs">Shift</span>
             </div>
-            <div className="my-2 flex h-8 min-w-[32px] items-center justify-center rounded-md border capitalize">
+            <div className="my-2 flex h-8 min-w-8 items-center justify-center rounded-md border capitalize">
               <span className="text-xs">Esc</span>
             </div>
           </div>

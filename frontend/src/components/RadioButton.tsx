@@ -58,8 +58,8 @@ const RadioButton: React.FC<Props> = ({
           />
           <div
             className={twMerge(
-              'h-5 w-5 rounded-full border',
-              'after:absolute after:left-1/2 after:top-1/2 after:h-3 after:w-3 after:rounded-full after:-translate-x-1/2 after:-translate-y-1/2',
+              'rounded-full border size-5',
+              'after:absolute after:left-1/2 after:top-1/2 after:rounded-full after:size-3 after:-translate-1/2',
               'after:transition-all after:content-[""]',
               variantStyles[variant],
               'dark:bg-aws-ui-color-dark peer-checked:border-aws-sea-blue-light dark:after:bg-white dark:peer-checked:border-white peer-checked:after:opacity-100',

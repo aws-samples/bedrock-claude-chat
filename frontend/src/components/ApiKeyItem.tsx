@@ -64,7 +64,7 @@ const ApiKeyItem: React.FC<Props> = (props) => {
         {isLoading ? (
           <Skeleton className="h-8 w-full" />
         ) : (
-          <div className="flex flex-col gap-1 rounded border border-aws-font-color-light/50 dark:border-aws-font-color-dark p-1 text-sm">
+          <div className="flex flex-col gap-1 rounded-sm border border-aws-font-color-light/50 dark:border-aws-font-color-dark p-1 text-sm">
             <div className="text-base font-semibold">
               {botApiKey?.description}
             </div>

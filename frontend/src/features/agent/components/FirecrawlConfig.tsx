@@ -47,7 +47,7 @@ export const FirecrawlConfig = ({ config, onChange }: Props) => {
         />
         <button
           type="button"
-          className="size-9 rounded border border-aws-font-color-light/50 p-2 text-sm dark:border-aws-font-color-dark/50"
+          className="size-9 rounded-sm border border-aws-font-color-light/50 p-2 text-sm dark:border-aws-font-color-dark/50"
           onClick={() => setShowPassword(!showPassword)}>
           {showPassword ? (
             <PiEyeLight className="size-5" />

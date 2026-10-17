@@ -60,7 +60,7 @@ const AdminSharedBotAnalyticsPage: React.FC = () => {
       pageTitleHelp={t('admin.botAnalytics.help.overview')}
       searchCondition={
         <div>
-          <div className="rounded border p-2">
+          <div className="rounded-sm border p-2">
             <div className="flex items-center gap-1 text-sm font-bold">
               {t('admin.botAnalytics.label.SearchCondition.title')}
               <Help message={t('admin.botAnalytics.help.calculationPeriod')} />

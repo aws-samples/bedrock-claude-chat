@@ -27,7 +27,7 @@ const InputText = React.forwardRef<HTMLInputElement, Props>((props, ref) => {
         ref={ref}
         type={props.type ?? 'text'}
         className={twMerge(
-          'peer h-9 rounded border p-1 dark:[color-scheme:dark]',
+          'peer h-9 rounded-sm border bg-white p-1 dark:scheme-dark',
           'dark:bg-aws-ui-color-dark dark:text-aws-font-color-dark dark:placeholder-aws-font-color-gray',
           props.errorMessage
             ? 'border-2 border-red'

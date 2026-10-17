@@ -75,7 +75,7 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
               <div
                 key={fragmentIndex}
                 className="mt-1 line-clamp-2 border-l-2 border-gray p-1 text-sm text-dark-gray dark:text-gray">
-                <span className="[&_em]:bg-light-yellow [&_em]:dark:bg-yellow">
+                <span className="[&_em]:bg-light-yellow dark:[&_em]:bg-yellow">
                   {`...`}
                   {renderEmphasizedText(fragment)}
                   {`...`}
@@ -97,7 +97,7 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
       <div className="flex items-center justify-between">
         <div className="flex flex-col">
           <div className="text-base font-medium">
-            <span className="[&_em]:bg-light-yellow [&_em]:dark:bg-yellow">
+            <span className="[&_em]:bg-light-yellow dark:[&_em]:bg-yellow">
               {highlightSearchTerms(conversation.title, searchQuery)}
             </span>
           </div>
@@ -113,7 +113,7 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
 };
 
 export const SkeletonConversation: React.FC = () => {
-  return <Skeleton className="h-16 w-full rounded" />;
+  return <Skeleton className="h-16 w-full rounded-sm" />;
 };
 
 type ConversationSearchResultsProps = {

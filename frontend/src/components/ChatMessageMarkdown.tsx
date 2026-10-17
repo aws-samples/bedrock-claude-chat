@@ -193,7 +193,7 @@ const ChatMessageMarkdown: React.FC<Props> = ({
                 type: "element",
                 tagName: "div",
                 properties: {
-                  className: "p-2 border text-sm rounded text-red/80",
+                  className: "p-2 border text-sm rounded-sm text-red/80",
                 },
                 children: [
                   {
@@ -295,7 +295,7 @@ const ChatMessageMarkdown: React.FC<Props> = ({
   }), [Code, Sup, Section]);
 
   return (
-    <div className={twMerge(className, 'prose dark:prose-invert w-full break-words')}>
+    <div className={twMerge(className, 'prose dark:prose-invert w-full wrap-break-word')}>
       {isStreaming ? (
         <Markdown
           children={text}
