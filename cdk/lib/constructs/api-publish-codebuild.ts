@@ -42,7 +42,7 @@ export class ApiPublishCodebuild extends Construct {
         phases: {
           install: {
             "runtime-versions": {
-              nodejs: 22,
+              nodejs: 24,
             },
             "on-failure": "ABORT",
           },

@@ -178,7 +178,7 @@ export class Api extends Construct {
         actions: ["glue:GetDatabase", "glue:GetDatabases"],
         resources: [
           props.usageAnalysis?.database.databaseArn || "",
-          props.usageAnalysis?.database.catalogArn || "",
+          props.usageAnalysis?.database.catalog.catalogArn || "",
         ],
       })
     );
@@ -194,7 +194,7 @@ export class Api extends Construct {
         ],
         resources: [
           props.usageAnalysis?.database.databaseArn || "",
-          props.usageAnalysis?.database.catalogArn || "",
+          props.usageAnalysis?.database.catalog.catalogArn || "",
           props.usageAnalysis?.ddbExportTable.tableArn || "",
         ],
       })
