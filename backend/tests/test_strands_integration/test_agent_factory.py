@@ -6,7 +6,12 @@ sys.path.append(".")
 
 import unittest
 
+from app.bedrock import simple_message_models_to_bedrock_messages
+from app.repositories.models.conversation import SimpleMessageModel
 from app.strands_integration.agent.factory import create_strands_agent
+from app.strands_integration.converters.content_converter import (
+    strands_content_block_to_content_model,
+)
 from strands.hooks import BeforeModelCallEvent
 
 # Blocks as ConverseStream returns them for GPT-6 with reasoning.summary=auto
@@ -57,6 +62,32 @@ class TestReasoningSummaryReplay(unittest.TestCase):
                 self.assertEqual(agent.messages[1]["content"], expected)
                 self.assertEqual(agent.messages[0], self.messages()[0])
                 self.assertEqual(agent.messages[2], self.messages()[2])
+
+    def test_stored_summaries_dropped_from_legacy_history(self):
+        """The legacy path (USE_STRANDS=false) has no hook, so its history converter
+        does not send GPT-6 summaries from an earlier turn back"""
+        history = [
+            SimpleMessageModel(
+                role=m["role"],
+                content=[
+                    strands_content_block_to_content_model(c) for c in m["content"]
+                ],
+            )
+            for m in self.messages()[:2]
+        ]
+        for model, expected in [
+            ("gpt-6-sol", [REDACTED, TEXT, TOOL_USE]),
+            ("gpt-6-astra", [REDACTED, TEXT, TOOL_USE]),
+            ("gpt-oss-120b", [TEXT, TOOL_USE]),
+            ("claude-v4.7-opus", [SUMMARY, REDACTED, TEXT, TOOL_USE]),
+        ]:
+            with self.subTest(model=model):
+                messages = simple_message_models_to_bedrock_messages(
+                    simple_messages=history,
+                    model=model,
+                    prompt_caching_enabled=False,
+                )
+                self.assertEqual(messages[1]["content"], expected)
 
 
 if __name__ == "__main__":

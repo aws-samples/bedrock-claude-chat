@@ -1127,6 +1127,14 @@ def simple_message_models_to_bedrock_messages(
         ):
             return []
 
+        # Drop reasoning summaries for GPT-6 models (redactedContent is kept)
+        if (
+            is_reasoning_summary_supported(model)
+            and c.content_type == "reasoning"
+            and getattr(c, "text", None)
+        ):
+            return []
+
         if c.content_type == "text":
             if (
                 role == "user"
