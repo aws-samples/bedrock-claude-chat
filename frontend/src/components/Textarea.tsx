@@ -49,7 +49,7 @@ const Textarea = forwardRef<HTMLElement, Props>((props, focusInputRef) => {
           }
         }}
         className={twMerge(
-          'peer w-full resize-none rounded p-1.5 outline-none dark:bg-aws-ui-color-dark dark:placeholder-aws-font-color-gray',
+          'peer w-full resize-none rounded-sm bg-white p-1.5 outline-hidden dark:bg-aws-ui-color-dark dark:placeholder-aws-font-color-gray',
           isMax ? 'overflow-y-auto' : 'overflow-hidden',
           props.noBorder ? '' : 'border border-aws-font-color-light/50 dark:border-aws-font-color-dark/50',
           props.className

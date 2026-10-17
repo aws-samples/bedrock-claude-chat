@@ -17,7 +17,7 @@ const Progress: React.FC<Props> = (props) => {
       <div
         className={twMerge(
           `rounded-full bg-aws-aqua`,
-          !props.progress && 'origin-left-right animate-liner-progress',
+          !props.progress && 'animate-liner-progress',
           props.thin ? 'h-1' : 'h-2.5'
         )}
         style={props.progress ? { width: `${props.progress}%` } : {}}

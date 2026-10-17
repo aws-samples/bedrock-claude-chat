@@ -40,7 +40,7 @@ const PopoverMenu: React.FC<Props> = (props) => {
             leaveTo="opacity-0 translate-y-1">
             <Popover.Panel className={`absolute z-10 ${origin}`}>
               <div className="mt-0.5 overflow-hidden shadow-lg">
-                <div className="flex flex-col whitespace-nowrap rounded border border-aws-font-color-light/50 bg-aws-paper-light text-sm dark:border-aws-font-color-dark/50 dark:bg-aws-paper-dark">
+                <div className="flex flex-col whitespace-nowrap rounded-sm border border-aws-font-color-light/50 bg-aws-paper-light text-sm dark:border-aws-font-color-dark/50 dark:bg-aws-paper-dark">
                   {props.children}
                 </div>
               </div>

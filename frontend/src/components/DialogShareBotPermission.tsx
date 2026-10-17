@@ -177,11 +177,11 @@ const DialogShareBotPermission: React.FC<Props> = (props) => {
       />
 
       {props.searchUsersPrefix && (
-        <div className="relative mt-0.5 flex max-h-[30vh] w-full flex-col gap-1 overflow-y-auto rounded border">
+        <div className="relative mt-0.5 flex max-h-[30vh] w-full flex-col gap-1 overflow-y-auto rounded-sm border">
           {displaySearchedUsers.map((user, idx) => (
             <div
               key={idx}
-              className="flex cursor-pointer items-center gap-2 rounded p-2 hover:bg-light-gray dark:hover:bg-dark-gray"
+              className="flex cursor-pointer items-center gap-2 rounded-sm p-2 hover:bg-light-gray dark:hover:bg-dark-gray"
               onClick={() => {
                 if (user.type === 'user') {
                   setAddedTargetUsers((prev) => {

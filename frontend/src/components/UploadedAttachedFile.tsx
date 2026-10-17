@@ -45,7 +45,7 @@ const UploadedFileText: React.FC<Props> = (props) => {
         <svg
           viewBox="0 0 16 16"
           xmlns="http://www.w3.org/2000/svg"
-          className="block size-4 shrink-0 drop-shadow">
+          className="block size-4 shrink-0 drop-shadow-sm">
           <path
             d="M0 0L16 16H0V0Z"
             className="fill-aws-paper-light dark:fill-aws-paper-dark stroke-gray"
@@ -53,7 +53,7 @@ const UploadedFileText: React.FC<Props> = (props) => {
         </svg>
       </div>
       <div className="flex h-20 items-center justify-center rounded-b-lg border-x border-b border-gray bg-aws-paper-light dark:bg-aws-paper-dark p-2 ">
-        <div className="w-16 break-words text-center text-xs font-bold text-dark-gray dark:text-light-gray">
+        <div className="w-16 wrap-break-word text-center text-xs font-bold text-dark-gray dark:text-light-gray">
           {shortFileName}
         </div>
       </div>

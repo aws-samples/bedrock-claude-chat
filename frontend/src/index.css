@@ -1,6 +1,101 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/*
+  Amplify UI の CSS をカスケードレイヤーに入れ、Tailwind のユーティリティより前に置く。
+  レイヤー外の CSS は詳細度に関係なくレイヤー内の CSS に勝つため、そのまま読み込むと
+  Amplify の `input, button, textarea, select { font: inherit; }` によって
+  ボタンや入力欄に付けた text-* などのユーティリティが効かなくなる。
+  base の後に置くことで、v3 と同様に Amplify のスタイルは Preflight には勝つ。
+*/
+@layer theme, base, amplify, components, utilities;
+
+@import 'tailwindcss';
+@import '@aws-amplify/ui-react/styles.css' layer(amplify);
+
+@plugin '@tailwindcss/typography';
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+  Tailwind CSS v4 の hover はホバー可能なデバイスでのみ有効になる。
+  スマホのタップで group-hover により操作ボタンを表示している箇所
+  (ConversationHistoryPage など)があるため、v3 の挙動を維持する。
+*/
+@custom-variant hover (&:hover);
+
+@theme {
+  --font-*: initial;
+
+  /* v3 では red / gray / yellow をパレットごと単色で上書きしていたため、既定のパレットを無効化する */
+  --color-red-*: initial;
+  --color-gray-*: initial;
+  --color-yellow-*: initial;
+
+  --transition-property-width: width;
+  --transition-property-height: height;
+
+  --animate-fastPulse: pulse 0.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-liner-progress: liner-progress 1s linear infinite;
+
+  @keyframes liner-progress {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  --color-aws-squid-ink-light: #232f3e;
+  --color-aws-squid-ink-dark: #171717;
+
+  --color-aws-sea-blue-light: #005276;
+  --color-aws-sea-blue-dark: #757575;
+
+  --color-aws-sea-blue-hover-light: #003550;
+  --color-aws-sea-blue-hover-dark: #5b5b5b;
+
+  --color-aws-aqua: #007faa;
+  --color-aws-lab: #38ef7d;
+  --color-aws-mist: #9ffcea;
+
+  --color-aws-font-color-light: #232f3e;
+  --color-aws-font-color-dark: #cacaca;
+  --color-aws-font-color-gray: #909193;
+  --color-aws-font-color-blue: #276cc6;
+
+  --color-aws-font-color-white-light: #ffffff;
+  --color-aws-font-color-white-dark: #ececec;
+
+  --color-aws-ui-color-dark: #151515;
+
+  --color-aws-paper-light: #f1f3f3;
+  --color-aws-paper-dark: #212121;
+
+  --color-red: #dc2626;
+  --color-light-red: #fee2e2;
+  --color-yellow: #f59e0b;
+  --color-light-yellow: #fef9c3;
+  --color-dark-gray: #6b7280;
+  --color-gray: #9ca3af;
+  --color-light-gray: #e5e7eb;
+}
+
+/*
+  Tailwind CSS v3 と同じ見た目を維持するためのベーススタイル。
+  枠線の既定色は、v3 でも gray-200 が未定義で currentColor だったため対応不要。
+*/
+@layer base {
+  /* v4 ではボタンのカーソルが default になる */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+
+  /* v4 ではプレースホルダーが「文字色の 50%」になる。v3 では #9ca3af だった */
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-gray);
+  }
+}
 
 /* tailwindの設定で上書きされてしまうので、importantを設定する */
 .amplify-button--primary {
@@ -9,19 +104,6 @@
   ) !important;
 }
 
-/* styles/globals.css もしくは該当コンポーネントのCSS */
-@keyframes liner-progress {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-.animate-liner-progress {
-  animation: liner-progress 1s linear infinite;
-}
 /* Forcing line breaks in code blocks */
 .prose pre {
   white-space: pre-wrap !important;

@@ -17,7 +17,7 @@ type Props = {
 const ListPageLayout: React.FC<Props> = (props) => {
   return (
     <div className="flex h-full justify-center">
-      <div className="w-full max-w-screen-xl px-4 lg:w-4/5">
+      <div className="w-full max-w-(--breakpoint-xl) px-4 lg:w-4/5">
         <div className="size-full pt-8">
           <div className="flex justify-between">
             <div className="flex items-center gap-2">
@@ -36,7 +36,7 @@ const ListPageLayout: React.FC<Props> = (props) => {
           )}
           <div className="mt-2 border-b border-gray"></div>
 
-          <div className="-mr-2 h-[calc(100%-3rem)] overflow-x-auto overflow-y-scroll border-gray scrollbar-thin scrollbar-thumb-aws-font-color-light/20 dark:scrollbar-thumb-aws-font-color-dark/20">
+          <div className="-mr-2 h-[calc(100%-3rem)] overflow-x-auto overflow-y-scroll border-gray scrollbar-thin">
             <div className="mr-2 h-full pb-8">
               {props.isLoading && (
                 <div className="mt-2 flex flex-col gap-2">

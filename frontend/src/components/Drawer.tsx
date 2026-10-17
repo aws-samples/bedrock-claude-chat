@@ -291,7 +291,7 @@ const Drawer: React.FC<Props> = (props) => {
 
   return (
     <>
-      <div className="relative h-full overflow-y-auto bg-aws-squid-ink-light scrollbar-thin scrollbar-track-white scrollbar-thumb-aws-squid-ink-light/30 dark:bg-aws-ui-color-dark dark:scrollbar-thumb-aws-ui-color-dark/30">
+      <div className="relative h-full overflow-y-auto bg-aws-squid-ink-light scrollbar-thin dark:bg-aws-ui-color-dark">
         <nav
           className={`lg:visible lg:w-64 ${
             opened ? 'visible w-64' : 'invisible w-0'
@@ -301,7 +301,7 @@ const Drawer: React.FC<Props> = (props) => {
               <button
                 type="button"
                 onClick={onClickLogo}
-                className="flex w-full items-center justify-center focus:outline-none focus:ring-2 focus:ring-white/60 focus:ring-offset-2 focus:ring-offset-transparent">
+                className="flex w-full items-center justify-center focus:outline-hidden focus:ring-2 focus:ring-white/60 focus:ring-offset-2 focus:ring-offset-transparent">
                 <img
                   src={logoSrc}
                   alt={t('app.name')}

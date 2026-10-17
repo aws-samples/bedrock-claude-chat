@@ -100,7 +100,7 @@ const SearchTextBox: React.FC<Props> = (props) => {
     <div className="relative">
       <div
         className={twMerge(
-          'flex items-center rounded border bg-white dark:bg-aws-ui-color-dark',
+          'flex items-center rounded-sm border bg-white dark:bg-aws-ui-color-dark',
           props.disabled
             ? 'border-aws-font-color-light/30 dark:border-aws-font-color-dark/30'
             : 'border-aws-font-color-light/50 dark:border-aws-font-color-dark/50'
@@ -114,7 +114,7 @@ const SearchTextBox: React.FC<Props> = (props) => {
           ref={inputRef}
           type="text"
           className={twMerge(
-            'w-full bg-transparent p-2 outline-none dark:text-aws-font-color-dark dark:placeholder-aws-font-color-gray',
+            'w-full bg-transparent p-2 outline-hidden dark:text-aws-font-color-dark dark:placeholder-aws-font-color-gray',
             props.disabled && 'cursor-not-allowed'
           )}
           value={inputValue}
@@ -141,7 +141,7 @@ const SearchTextBox: React.FC<Props> = (props) => {
       {isFocused && suggestions && suggestions.length > 0 && (
         <div
           ref={suggestionsRef}
-          className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded border border-aws-font-color-light/50 bg-white shadow-lg dark:border-aws-font-color-dark/50 dark:bg-aws-ui-color-dark">
+          className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-sm border border-aws-font-color-light/50 bg-white shadow-lg dark:border-aws-font-color-dark/50 dark:bg-aws-ui-color-dark">
           {suggestions.map((suggestion, index) => (
             <div
               id={`suggestion-${index}`}

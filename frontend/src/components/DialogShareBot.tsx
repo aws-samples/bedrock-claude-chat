@@ -239,7 +239,7 @@ const DialogShareBot: React.FC<Props> = (props) => {
               <div className="text-xs">
                 {t('bot.shareDialog.on.linkDescription')}
               </div>
-              <div className="mt-1 flex justify-between rounded border border-aws-squid-ink-light/50 bg-aws-paper-light dark:border-dark-gray dark:bg-aws-paper-dark">
+              <div className="mt-1 flex justify-between rounded-sm border border-aws-squid-ink-light/50 bg-aws-paper-light dark:border-dark-gray dark:bg-aws-paper-dark">
                 <input
                   type="text"
                   className="my-2 ml-2 w-full bg-aws-paper-light dark:bg-aws-paper-dark"
@@ -248,7 +248,7 @@ const DialogShareBot: React.FC<Props> = (props) => {
                 />
                 <Button
                   outlined
-                  className="rounded-none rounded-r border-0 border-l bg-white dark:bg-aws-squid-ink-dark"
+                  className="rounded-none rounded-r-sm border-0 border-l bg-white dark:bg-aws-squid-ink-dark"
                   onClick={onClickCopy}>
                   {labelCopy}
                 </Button>

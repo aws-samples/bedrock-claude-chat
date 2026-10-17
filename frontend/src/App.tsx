@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { translations } from '@aws-amplify/ui-react';
 import { Amplify } from 'aws-amplify';
 import { I18n } from 'aws-amplify/utils';
-import '@aws-amplify/ui-react/styles.css';
 import AuthAmplify from './components/AuthAmplify';
 import AuthCustom from './components/AuthCustom';
 import { Authenticator } from '@aws-amplify/ui-react';
