@@ -1,30 +1,27 @@
 import os
 
-import requests
-from jose import jwt
+import jwt
 
 REGION = os.environ.get("REGION", "ap-northeast-1")
 USER_POOL_ID = os.environ.get("USER_POOL_ID", "")
 CLIENT_ID = os.environ.get("CLIENT_ID", "")
 
+ISSUER = f"https://cognito-idp.{REGION}.amazonaws.com/{USER_POOL_ID}"
+# PyJWKClient caches the fetched signing keys, so JWKS is not fetched on every request.
+_jwks_client = jwt.PyJWKClient(f"{ISSUER}/.well-known/jwks.json", lifespan=3600)
+
 
 def verify_token(token: str) -> dict:
     # Verify JWT token
-    url = f"https://cognito-idp.{REGION}.amazonaws.com/{USER_POOL_ID}/.well-known/jwks.json"
-    response = requests.get(url)
-    keys = response.json()["keys"]
-    header = jwt.get_unverified_header(token)
-    key = [k for k in keys if k["kid"] == header["kid"]][0]
-    # The JWT returned from the Identity Provider may contain an at_hash
-    # jose jwt.decode verifies id_token with access_token by default if it contains at_hash
-    # See : https://github.com/mpdavis/python-jose/blob/4b0701b46a8d00988afcc5168c2b3a1fd60d15d8/jose/jwt.py#L59
-    # Since we are not using an access token in the app, skipping the verification of the at_hash.
-    # so we will disable the verify_at_hash check.
+    signing_key = _jwks_client.get_signing_key_from_jwt(token)
     decoded = jwt.decode(
         token,
-        key,
+        signing_key.key,
         algorithms=["RS256"],
-        options={"verify_at_hash": False},
         audience=CLIENT_ID,
+        issuer=ISSUER,
     )
+    # Only accept ID tokens. Cognito access tokens have token_use="access".
+    if decoded.get("token_use") != "id":
+        raise jwt.InvalidTokenError("Invalid token_use")
     return decoded

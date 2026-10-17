@@ -2,7 +2,7 @@ import { Construct } from "constructs";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as athena from "aws-cdk-lib/aws-athena";
 import { CfnOutput, RemovalPolicy, Stack } from "aws-cdk-lib";
-import * as glue from "@aws-cdk/aws-glue-alpha";
+import * as glue from "aws-cdk-lib/aws-glue";
 import * as events from "aws-cdk-lib/aws-events";
 import * as targets from "aws-cdk-lib/aws-events-targets";
 import * as python from "@aws-cdk/aws-lambda-python-alpha";
@@ -173,7 +173,7 @@ export class UsageAnalysis extends Construct {
 
     const ddbExportTable = new glue.S3Table(this, "DdbExportTable", {
       database,
-      bucket: ddbBucket,
+      storage: glue.S3TableStorage.fromBucket(ddbBucket),
       tableName: DDB_EXPORT_TABLE_NAME,
       partitionKeys: [
         {

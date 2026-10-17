@@ -19,14 +19,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: "22.x"
-      - name: Use npm 11
-        # Dependabot regenerates package-lock.json with npm 11, which prunes
-        # the optional/peer-flagged xstate@4.38.3 nodes that @aws-amplify deps
-        # rely on. The npm 10 bundled with Node 22 then fails `npm ci` with
-        # "Missing: xstate@4.38.3 from lock file". Pin CI to npm 11 so the
-        # lockfile is read with the same resolver that produced it.
-        run: npm install -g npm@11
+          node-version: "24.x"
       - name: Install dependencies
         run: |
           cd frontend
