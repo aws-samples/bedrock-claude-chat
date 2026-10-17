@@ -15,7 +15,13 @@ import unittest
 from pprint import pprint
 from unittest.mock import patch
 
-from app.bedrock import call_converse_api, compose_args_for_converse_api, get_model_id
+from app.bedrock import (
+    calculate_price,
+    call_converse_api,
+    compose_args_for_converse_api,
+    generation_params_to_converse_configuration,
+    get_model_id,
+)
 from app.repositories.models.conversation import SimpleMessageModel, TextContentModel
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
 from app.routes.schemas.conversation import type_model_name
@@ -123,6 +129,110 @@ class TestGetModelId(unittest.TestCase):
             ),
             expected_model_id,
         )
+
+    def test_get_model_id_claude_opus_5_5(self):
+        """Claude Opus 5.5 is inference-profile only, so every mapped region needs a prefix"""
+        for region, enable_global, expected_model_id in [
+            ("us-east-1", True, "global.anthropic.claude-opus-5-5"),
+            ("us-east-1", False, "us.anthropic.claude-opus-5-5"),
+            ("eu-west-2", False, "eu.anthropic.claude-opus-5-5"),
+            ("ap-northeast-1", False, "jp.anthropic.claude-opus-5-5"),
+            ("ap-southeast-2", False, "au.anthropic.claude-opus-5-5"),
+            ("sa-east-1", True, "global.anthropic.claude-opus-5-5"),
+            ("ca-west-1", False, "us.anthropic.claude-opus-5-5"),
+            ("eu-south-2", False, "eu.anthropic.claude-opus-5-5"),
+            ("ap-southeast-4", False, "au.anthropic.claude-opus-5-5"),
+            ("ap-south-2", True, "global.anthropic.claude-opus-5-5"),
+        ]:
+            with self.subTest(region=region, enable_global=enable_global):
+                self.assertEqual(
+                    get_model_id(
+                        "claude-v5.5-opus",
+                        enable_global=enable_global,
+                        enable_cross_region=True,
+                        bedrock_region=region,
+                    ),
+                    expected_model_id,
+                )
+
+    def test_compose_args_claude_opus_5_5_omits_sampling_params(self):
+        """Claude Opus 5.5 rejects temperature, top_p and top_k like Opus 4.7"""
+        for enable_reasoning in [False, True]:
+            with self.subTest(enable_reasoning=enable_reasoning):
+                args = compose_args_for_converse_api(
+                    messages=[
+                        SimpleMessageModel(
+                            role="user",
+                            content=[TextContentModel(content_type="text", body="Hi")],
+                        )
+                    ],
+                    model="claude-v5.5-opus",
+                    enable_reasoning=enable_reasoning,
+                )
+                self.assertNotIn("temperature", args["inferenceConfig"])
+                self.assertNotIn("topP", args["inferenceConfig"])
+                self.assertNotIn("top_k", args["additionalModelRequestFields"])
+                if enable_reasoning:
+                    self.assertEqual(
+                        args["additionalModelRequestFields"]["thinking"],
+                        {"type": "adaptive"},
+                    )
+
+    def test_get_model_id_openai_gpt_6(self):
+        """GPT-6 is inference-profile only: global. everywhere, us. in North America"""
+        for model in ["gpt-6-sol", "gpt-6-luna", "gpt-6-astra"]:
+            with self.subTest(model=model):
+                self.assertEqual(
+                    get_model_id(
+                        model,
+                        enable_global=True,
+                        enable_cross_region=True,
+                        bedrock_region="eu-west-1",
+                    ),
+                    f"global.openai.{model}",
+                )
+                self.assertEqual(
+                    get_model_id(
+                        model,
+                        enable_global=False,
+                        enable_cross_region=True,
+                        bedrock_region="us-east-1",
+                    ),
+                    f"us.openai.{model}",
+                )
+                self.assertEqual(
+                    get_model_id(
+                        model,
+                        enable_global=True,
+                        enable_cross_region=True,
+                        bedrock_region="ca-west-1",
+                    ),
+                    f"us.openai.{model}",
+                )
+
+
+class TestOpenAIGpt6Params(unittest.TestCase):
+    def test_no_temperature_top_p_or_stop_sequences(self):
+        """GPT-6 returns 400 for temperature, topP and stopSequences.
+        The reasoning toggle asks for a reasoning summary instead of redacted content.
+        """
+        summary = {"additionalModelRequestFields": {"reasoning": {"summary": "auto"}}}
+        for model in ["gpt-6-sol", "gpt-6-luna", "gpt-6-astra"]:
+            for enable_reasoning in [False, True]:
+                with self.subTest(model=model, enable_reasoning=enable_reasoning):
+                    config = generation_params_to_converse_configuration(
+                        model, enable_reasoning=enable_reasoning
+                    )
+                    self.assertEqual(
+                        config,
+                        {
+                            "inferenceConfig": {"maxTokens": 4096},
+                            **(summary if enable_reasoning else {}),
+                        },
+                    )
+
+    def test_calculate_price_without_pricing_entry(self):
+        self.assertEqual(calculate_price("gpt-6-sol", 1000, 1000, 0, 0), 0.0)
 
 
 class TestCallConverseApi(unittest.TestCase):

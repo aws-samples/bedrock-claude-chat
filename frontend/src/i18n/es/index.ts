@@ -56,6 +56,11 @@ const translation = {
         description:
           'Modelo Opus de alta capacidad diseñado para codificación, flujos de trabajo empresariales y tareas de agente de larga duración.',
       },
+      'claude-v5.5-opus': {
+        label: 'Claude 5.5 (Opus)',
+        description:
+          'El modelo Opus más capaz, adecuado para codificación agéntica, trabajo del conocimiento y tareas de larga duración.',
+      },
       'claude-v3-opus': {
         label: 'Claude 3 (Opus)',
         description: 'Modelo potente para tareas altamente complejas.',
@@ -78,6 +83,18 @@ const translation = {
         label: 'GPT-OSS 120B',
         description:
           'Modelo de peso abierto de 120B parámetros con ventana de contexto de 128K y capacidades avanzadas de razonamiento.',
+      },
+      'gpt-6-sol': {
+        label: 'GPT-6 Sol',
+        description: 'OpenAI GPT-6 Sol. Admite entrada de texto e imágenes.',
+      },
+      'gpt-6-luna': {
+        label: 'GPT-6 Luna',
+        description: 'OpenAI GPT-6 Luna. Admite entrada de texto e imágenes.',
+      },
+      'gpt-6-astra': {
+        label: 'GPT-6 Astra',
+        description: 'OpenAI GPT-6 Astra. Admite entrada de texto e imágenes.',
       },
       'qwen3-235b-a22b-2507': {
         label: 'Qwen3 235B A22B',

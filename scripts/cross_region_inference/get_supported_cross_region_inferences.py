@@ -7,6 +7,7 @@ supported_base_models = {
     "anthropic.claude-opus-4-20250514-v1:0": "claude-v4-opus",
     "anthropic.claude-opus-4-6-v1": "claude-v4.6-opus",
     "anthropic.claude-opus-4-7": "claude-v4.7-opus",
+    "anthropic.claude-opus-5-5": "claude-v5.5-opus",
     "anthropic.claude-sonnet-4-20250514-v1:0": "claude-v4-sonnet",
     "anthropic.claude-sonnet-4-6": "claude-v4.6-sonnet",
     "anthropic.claude-3-haiku-20240307-v1:0": "claude-v3-haiku",
@@ -29,6 +30,10 @@ supported_base_models = {
     "meta.llama3-2-3b-instruct-v1:0": "llama3-2-3b-instruct",
     "meta.llama3-2-11b-instruct-v1:0": "llama3-2-11b-instruct",
     "meta.llama3-2-90b-instruct-v1:0": "llama3-2-90b-instruct",
+    # OpenAI GPT-6 models
+    "openai.gpt-6-sol": "gpt-6-sol",
+    "openai.gpt-6-luna": "gpt-6-luna",
+    "openai.gpt-6-astra": "gpt-6-astra",
 }
 
 # Region definitions

@@ -30,6 +30,13 @@ const LLAMA_SUPPORTED_MEDIA_TYPES = [
   'image/webp',
 ];
 
+const OPENAI_GPT_6_SUPPORTED_MEDIA_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+];
+
 const useModelState = create<{
   modelId: Model | undefined;
   setModelId: (m: Model) => void;
@@ -108,6 +115,13 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
         modelId: 'claude-v4.7-opus',
         label: t('model.claude-v4.7-opus.label'),
         description: t('model.claude-v4.7-opus.description'),
+        supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
+        supportReasoning: true,
+      },
+      {
+        modelId: 'claude-v5.5-opus',
+        label: t('model.claude-v5.5-opus.label'),
+        description: t('model.claude-v5.5-opus.description'),
         supportMediaType: CLAUDE_SUPPORTED_MEDIA_TYPES,
         supportReasoning: true,
       },
@@ -264,6 +278,28 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
         supportMediaType: [],
         supportReasoning: true,
         forceReasoningEnabled: true, // GPT-OSS always return reasoning contents.
+      },
+      // OpenAI GPT-6 models
+      {
+        modelId: 'gpt-6-sol',
+        label: t('model.gpt-6-sol.label'),
+        description: t('model.gpt-6-sol.description'),
+        supportMediaType: OPENAI_GPT_6_SUPPORTED_MEDIA_TYPES,
+        supportReasoning: true, // Shows the reasoning summary (reasoning.summary).
+      },
+      {
+        modelId: 'gpt-6-luna',
+        label: t('model.gpt-6-luna.label'),
+        description: t('model.gpt-6-luna.description'),
+        supportMediaType: OPENAI_GPT_6_SUPPORTED_MEDIA_TYPES,
+        supportReasoning: true, // Shows the reasoning summary (reasoning.summary).
+      },
+      {
+        modelId: 'gpt-6-astra',
+        label: t('model.gpt-6-astra.label'),
+        description: t('model.gpt-6-astra.description'),
+        supportMediaType: OPENAI_GPT_6_SUPPORTED_MEDIA_TYPES,
+        supportReasoning: true, // Shows the reasoning summary (reasoning.summary).
       },
       // Qwen3 models
       {

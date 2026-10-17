@@ -45,6 +45,11 @@ const translation = {
         description:
           'High-capability Opus model built for coding, enterprise workflows, and long-running agentic tasks.',
       },
+      'claude-v5.5-opus': {
+        label: 'Claude 5.5 (Opus)',
+        description:
+          'Most capable Opus model suitable for agentic coding, knowledge work, and long-running tasks.',
+      },
       'claude-v4-sonnet': {
         label: 'Claude 4 (Sonnet)',
         description:
@@ -169,6 +174,18 @@ const translation = {
         label: 'GPT-OSS 120B',
         description:
           'Open-weight 120B parameter model with 128K context window and advanced reasoning capabilities.',
+      },
+      'gpt-6-sol': {
+        label: 'GPT-6 Sol',
+        description: 'OpenAI GPT-6 Sol. Accepts text and image input.',
+      },
+      'gpt-6-luna': {
+        label: 'GPT-6 Luna',
+        description: 'OpenAI GPT-6 Luna. Accepts text and image input.',
+      },
+      'gpt-6-astra': {
+        label: 'GPT-6 Astra',
+        description: 'OpenAI GPT-6 Astra. Accepts text and image input.',
       },
       'qwen3-235b-a22b-2507': {
         label: 'Qwen3 235B A22B',
