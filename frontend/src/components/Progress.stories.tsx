@@ -1,4 +1,7 @@
+import type { Meta } from '@storybook/react-vite';
 import Progress from './Progress';
+
+export default { component: Progress } satisfies Meta<typeof Progress>;
 
 export const Ideal = () => <Progress />;
 

@@ -1,7 +1,9 @@
+import type { Meta } from '@storybook/react-vite';
 import { useTranslation } from 'react-i18next';
 
 import ChatMessage from './ChatMessage';
 import { DisplayMessageContent } from '../@types/conversation';
+export default { component: ChatMessage } satisfies Meta<typeof ChatMessage>;
 
 export const Conversation = () => {
   const messages: DisplayMessageContent[] = [

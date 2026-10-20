@@ -1,5 +1,19 @@
+import type { Meta } from '@storybook/react-vite';
 import InputChatContent from './InputChatContent';
 import { useState } from 'react';
+
+export default {
+  component: InputChatContent,
+  decorators: [
+    (Story) => (
+      // The regenerate/continue buttons are positioned 56px above the input
+      // (`-top-14`), so leave room for them.
+      <div className="pt-16">
+        <Story />
+      </div>
+    ),
+  ],
+} satisfies Meta<typeof InputChatContent>;
 
 const defaultProps = {
   reasoningEnabled: false,

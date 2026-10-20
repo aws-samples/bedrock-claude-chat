@@ -1,4 +1,7 @@
+import type { Meta } from '@storybook/react-vite';
 import ButtonSend from './ButtonSend';
+
+export default { component: ButtonSend } satisfies Meta<typeof ButtonSend>;
 
 export const Ideal = () => <ButtonSend onClick={() => {}} />;
 

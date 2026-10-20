@@ -1,3 +1,4 @@
+import type { Meta } from '@storybook/react-vite';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import ListItemBot from './ListItemBot';
@@ -18,6 +19,7 @@ import Button from './Button';
 import PopoverMenu from './PopoverMenu';
 import PopoverItem from './PopoverItem';
 import { formatDatetime } from '../utils/DateUtils';
+export default { component: ListItemBot } satisfies Meta<typeof ListItemBot>;
 
 const bots: BotListItem[] = [
   {

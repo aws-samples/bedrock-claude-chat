@@ -1,3 +1,4 @@
+import type { Meta } from '@storybook/react-vite';
 import { useReducer } from 'react';
 import { useTranslation } from 'react-i18next';
 import ButtonPopover from './PopoverMenu';
@@ -5,6 +6,10 @@ import PopoverItem from './PopoverItem';
 import { PiPencilLine, PiLink, PiStarFill, PiStar } from 'react-icons/pi';
 import ButtonIcon from './ButtonIcon';
 import StatusSyncBot from './StatusSyncBot';
+
+export default { component: ButtonPopover } satisfies Meta<
+  typeof ButtonPopover
+>;
 
 export const ChatHeader = () => {
   const { t } = useTranslation();

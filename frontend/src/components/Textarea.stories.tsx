@@ -1,5 +1,8 @@
+import type { Meta } from '@storybook/react-vite';
 import { useTranslation } from 'react-i18next';
 import Textarea from './Textarea';
+
+export default { component: Textarea } satisfies Meta<typeof Textarea>;
 
 export const Ideal = () => {
   const { t } = useTranslation();

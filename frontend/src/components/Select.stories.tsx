@@ -1,6 +1,9 @@
+import type { Meta } from '@storybook/react-vite';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Select from './Select';
+
+export default { component: Select } satisfies Meta<typeof Select>;
 
 export const Ideal = () => {
   const { t } = useTranslation();

@@ -1,3 +1,4 @@
+import type { Meta } from '@storybook/react-vite';
 import { useTranslation } from 'react-i18next';
 import {
   DEFAULT_SEARCH_CONFIG,
@@ -6,6 +7,8 @@ import {
 import { Slider } from './Slider';
 import { useState } from 'react';
 import { SearchParams } from '../features/knowledgeBase/types';
+
+export default { component: Slider } satisfies Meta<typeof Slider>;
 
 export const Ideal = () => {
   const { t } = useTranslation();
