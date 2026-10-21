@@ -301,6 +301,28 @@ const useModel = (botId?: string | null, activeModels?: ActiveModels) => {
         supportMediaType: OPENAI_GPT_6_SUPPORTED_MEDIA_TYPES,
         supportReasoning: true, // Shows the reasoning summary (reasoning.summary).
       },
+      // Qwen3 models
+      {
+        modelId: 'qwen3-235b-a22b-2507',
+        label: t('model.qwen3-235b-a22b-2507.label'),
+        description: t('model.qwen3-235b-a22b-2507.description'),
+        supportMediaType: [],
+        supportReasoning: true,
+      },
+      {
+        modelId: 'qwen3-coder-30b-a3b',
+        label: t('model.qwen3-coder-30b-a3b.label'),
+        description: t('model.qwen3-coder-30b-a3b.description'),
+        supportMediaType: [],
+        supportReasoning: true,
+      },
+      {
+        modelId: 'qwen3-32b',
+        label: t('model.qwen3-32b.label'),
+        description: t('model.qwen3-32b.description'),
+        supportMediaType: [],
+        supportReasoning: true,
+      },
       // Mistral
       {
         modelId: 'mistral-7b-instruct',

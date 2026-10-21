@@ -96,6 +96,21 @@ const translation = {
         label: 'GPT-6 Astra',
         description: 'OpenAI GPT-6 Astra. Admite entrada de texto e imágenes.',
       },
+      'qwen3-235b-a22b-2507': {
+        label: 'Qwen3 235B A22B',
+        description:
+          'Modelo Mixture-of-Experts de 235B parámetros con 22B parámetros activos, ventana de contexto de 256K y capacidades de razonamiento para generación de texto y código.',
+      },
+      'qwen3-coder-30b-a3b': {
+        label: 'Qwen3 Coder 30B A3B',
+        description:
+          'Modelo Mixture-of-Experts de 30B parámetros para codificación con 3B parámetros activos, ventana de contexto de 256K, salida máxima de 16K y razonamiento para generación de código.',
+      },
+      'qwen3-32b': {
+        label: 'Qwen3 32B',
+        description:
+          'Modelo denso de 32B parámetros con ventana de contexto de 32K, salida máxima de 8K y modos de pensamiento híbridos para respuestas rápidas y razonamiento profundo.',
+      },
     },
     agent: {
       label: 'Agente',

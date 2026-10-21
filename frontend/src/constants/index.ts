@@ -116,4 +116,7 @@ export const AVAILABLE_MODEL_KEYS = [
   'gpt-6-sol',
   'gpt-6-luna',
   'gpt-6-astra',
+  'qwen3-235b-a22b-2507',
+  'qwen3-coder-30b-a3b',
+  'qwen3-32b',
 ] as const;

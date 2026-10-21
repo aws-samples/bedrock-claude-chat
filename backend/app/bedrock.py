@@ -18,6 +18,7 @@ from app.config import (
     DEFAULT_GENERATION_CONFIG,
     DEFAULT_LLAMA_GENERATION_CONFIG,
     DEFAULT_MISTRAL_GENERATION_CONFIG,
+    DEFAULT_QWEN_GENERATION_CONFIG,
 )
 from app.repositories.models.custom_bot import GenerationParamsModel
 from app.repositories.models.custom_bot_guardrails import BedrockGuardrailsModel
@@ -93,6 +94,10 @@ BASE_MODEL_IDS = {
     "gpt-6-sol": "openai.gpt-6-sol",
     "gpt-6-luna": "openai.gpt-6-luna",
     "gpt-6-astra": "openai.gpt-6-astra",
+    # Qwen3 models
+    "qwen3-235b-a22b-2507": "qwen.qwen3-235b-a22b-2507-v1:0",
+    "qwen3-coder-30b-a3b": "qwen.qwen3-coder-30b-a3b-v1:0",
+    "qwen3-32b": "qwen.qwen3-32b-v1:0",
 }
 
 # Global inference profiles
@@ -708,6 +713,11 @@ def is_openai_gpt_model(model: type_model_name) -> bool:
     return model.startswith("gpt-")
 
 
+def is_qwen_model(model: type_model_name) -> bool:
+    """Check if the model is a Qwen3 model"""
+    return "qwen3" in model
+
+
 def is_tooluse_supported(model: type_model_name) -> bool:
     """Check if the model is supported for tool use"""
     return model not in [
@@ -771,7 +781,7 @@ def is_top_p_supported(model: type_model_name) -> bool:
 
 
 def is_temperature_supported(model: type_model_name) -> bool:
-    """Claude Opus 4.7+ deprecates temperature parameter. OpenAI GPT-6 rejects it."""
+    """Claude Opus 4.7+ deprecates temperature parameter."""
     return model not in [
         "claude-v4.7-opus",
         "claude-v5.5-opus",
@@ -840,6 +850,7 @@ def is_multiple_system_prompt_content_supported(model: type_model_name):
         or is_llama_model(model)
         or is_mistral(model)
         or is_gpt_oss_model(model)
+        or is_qwen_model(model)
     )
 
 
@@ -991,6 +1002,40 @@ def _prepare_openai_gpt_model_params(
     # Note: GPT-OSS models don't support stopSequences, so we don't add it
 
     # No additional fields for GPT-OSS models
+
+    return {
+        "inferenceConfig": inference_config,
+    }
+
+
+def _prepare_qwen_model_params(
+    model: type_model_name, generation_params: Optional[GenerationParamsModel] = None
+) -> ConverseConfiguration:
+    """
+    Prepare inference configuration for Qwen3 models
+    Qwen3 uses standard inferenceConfig (temperature, topP, maxTokens, stopSequences)
+    """
+    inference_config: InferenceConfiguration = {
+        "maxTokens": (
+            generation_params.max_tokens
+            if generation_params
+            else DEFAULT_QWEN_GENERATION_CONFIG["max_tokens"]
+        ),
+        "temperature": (
+            generation_params.temperature
+            if generation_params
+            else DEFAULT_QWEN_GENERATION_CONFIG["temperature"]
+        ),
+        "topP": (
+            generation_params.top_p
+            if generation_params
+            else DEFAULT_QWEN_GENERATION_CONFIG["top_p"]
+        ),
+    }
+
+    # Note: Qwen models don't support stopSequences, so we don't add it
+
+    # No additional fields for Qwen models
 
     return {
         "inferenceConfig": inference_config,
@@ -1219,6 +1264,10 @@ def generation_params_to_converse_configuration(
             converse_configuration["additionalModelRequestFields"] = {
                 "reasoning": {"summary": "auto"}
             }
+
+    elif is_qwen_model(model):
+        # Special handling for Qwen3 models
+        converse_configuration = _prepare_qwen_model_params(model, generation_params)
 
     else:
         # Standard handling for non-Nova models
