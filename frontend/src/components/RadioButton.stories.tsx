@@ -1,4 +1,7 @@
+import type { Meta } from '@storybook/react-vite';
 import RadioButton from './RadioButton';
+
+export default { component: RadioButton } satisfies Meta<typeof RadioButton>;
 
 export const Default = () => (
   <RadioButton

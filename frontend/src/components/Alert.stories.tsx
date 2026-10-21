@@ -1,5 +1,8 @@
+import type { Meta } from '@storybook/react-vite';
 import { useTranslation } from 'react-i18next';
 import Alert from './Alert';
+
+export default { component: Alert } satisfies Meta<typeof Alert>;
 
 export const Warning = () => {
   const { t } = useTranslation();

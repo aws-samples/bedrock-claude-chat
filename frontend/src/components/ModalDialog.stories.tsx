@@ -15,7 +15,8 @@ import {
   SearchUserGroupsResponse,
   SearchUsersResponse,
 } from '../@types/user';
-import { msw } from '@ladle/react';
+import type { Meta } from '@storybook/react-vite';
+import { http, HttpResponse } from 'msw';
 
 export const AddApiKey = () => {
   const [isOpenAddApiKeyDialog, setIsOpenAddApiKeyDialog] = useState(true);
@@ -173,65 +174,70 @@ export const SelectLanguage = () => {
 };
 
 export default {
-  msw: [
-    msw.http.get(
-      new URL('user/search', import.meta.env.VITE_APP_API_ENDPOINT).toString(),
-      () => {
-        const res: SearchUsersResponse = [
-          {
-            id: 'user3',
-            name: 'Tom Morello',
-            email: 'tom@ratm.com',
-          },
-          {
-            id: 'user4',
-            name: 'Zack de la Rocha',
-            email: 'zack@ratm.com',
-          },
-        ];
-        return msw.HttpResponse.json(res);
-      }
-    ),
-    msw.http.get(
-      new URL(
-        'user/group/search',
-        import.meta.env.VITE_APP_API_ENDPOINT
-      ).toString(),
-      () => {
-        const res: SearchUserGroupsResponse = [
-          {
-            type: 'group',
-            name: 'HR all',
-            description: 'All member of the HR department.',
-          },
-        ];
-        return msw.HttpResponse.json(res);
-      }
-    ),
-    msw.http.get(
-      new URL('user/user1', import.meta.env.VITE_APP_API_ENDPOINT).toString(),
-      () => {
-        const res: GetUserResponse = {
-          id: 'user1',
-          name: 'Anthony Kiedis',
-          email: 'anthony@rhcp.com',
-        };
-        return msw.HttpResponse.json(res);
-      }
-    ),
-    msw.http.get(
-      new URL('user/user2', import.meta.env.VITE_APP_API_ENDPOINT).toString(),
-      () => {
-        const res: GetUserResponse = {
-          id: 'user2',
-          name: 'John Frusciante',
-          email: 'jotn@rhcp.com',
-        };
-        return msw.HttpResponse.json(res);
-      }
-    ),
-  ],
-};
+  beforeEach({ msw }) {
+    msw.use(
+      http.get(
+        new URL(
+          'user/search',
+          import.meta.env.VITE_APP_API_ENDPOINT
+        ).toString(),
+        () => {
+          const res: SearchUsersResponse = [
+            {
+              id: 'user3',
+              name: 'Tom Morello',
+              email: 'tom@ratm.com',
+            },
+            {
+              id: 'user4',
+              name: 'Zack de la Rocha',
+              email: 'zack@ratm.com',
+            },
+          ];
+          return HttpResponse.json(res);
+        }
+      ),
+      http.get(
+        new URL(
+          'user/group/search',
+          import.meta.env.VITE_APP_API_ENDPOINT
+        ).toString(),
+        () => {
+          const res: SearchUserGroupsResponse = [
+            {
+              type: 'group',
+              name: 'HR all',
+              description: 'All member of the HR department.',
+            },
+          ];
+          return HttpResponse.json(res);
+        }
+      ),
+      http.get(
+        new URL('user/user1', import.meta.env.VITE_APP_API_ENDPOINT).toString(),
+        () => {
+          const res: GetUserResponse = {
+            id: 'user1',
+            name: 'Anthony Kiedis',
+            email: 'anthony@rhcp.com',
+          };
+          return HttpResponse.json(res);
+        }
+      ),
+      http.get(
+        new URL('user/user2', import.meta.env.VITE_APP_API_ENDPOINT).toString(),
+        () => {
+          const res: GetUserResponse = {
+            id: 'user2',
+            name: 'John Frusciante',
+            email: 'jotn@rhcp.com',
+          };
+          return HttpResponse.json(res);
+        }
+      )
+    );
+  },
+} satisfies Meta;
 
 export const ShareBot = () => {
   const [isOpen, setIsOpen] = useState(true);

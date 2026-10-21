@@ -1,5 +1,10 @@
+import type { Meta } from '@storybook/react-vite';
 import { SyncStatus } from '../constants';
 import StatusSyncBot from './StatusSyncBot';
+
+export default { component: StatusSyncBot } satisfies Meta<
+  typeof StatusSyncBot
+>;
 
 export const QUEUED = () => <StatusSyncBot syncStatus={SyncStatus.QUEUED} />;
 

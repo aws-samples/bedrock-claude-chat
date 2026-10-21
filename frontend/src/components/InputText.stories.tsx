@@ -1,8 +1,11 @@
+import type { Meta } from '@storybook/react-vite';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatDate } from '../utils/DateUtils';
 import InputText from './InputText';
 import { PiMagnifyingGlass } from 'react-icons/pi';
+
+export default { component: InputText } satisfies Meta<typeof InputText>;
 
 export const TextInput = () => {
   const { t } = useTranslation();

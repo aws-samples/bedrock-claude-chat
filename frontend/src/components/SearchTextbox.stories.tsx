@@ -1,5 +1,10 @@
+import type { Meta } from '@storybook/react-vite';
 import { useState } from 'react';
 import SearchTextBox from './SearchTextBox';
+
+export default { component: SearchTextBox } satisfies Meta<
+  typeof SearchTextBox
+>;
 
 const suggestions = [
   'Amazon Bedrock',

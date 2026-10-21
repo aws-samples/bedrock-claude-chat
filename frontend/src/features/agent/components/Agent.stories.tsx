@@ -1,8 +1,10 @@
+import type { Meta } from '@storybook/react-vite';
 import { useState } from 'react';
 import { AvailableTools } from './AvailableTools';
 import { AgentTool } from '../types';
 import ToolCard from './ToolCard';
 import AgentToolList from './AgentToolList';
+export default {} satisfies Meta;
 
 export const Tools = () => {
   const availableTools: AgentTool[] = [

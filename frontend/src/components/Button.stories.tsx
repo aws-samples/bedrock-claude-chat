@@ -1,5 +1,8 @@
+import type { Meta } from '@storybook/react-vite';
 import { PiList } from 'react-icons/pi';
 import Button from './Button';
+
+export default { component: Button } satisfies Meta<typeof Button>;
 
 export const Ideal = () => (
   <Button onClick={() => {}} className="px-20 text-xl">

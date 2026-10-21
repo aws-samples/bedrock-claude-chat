@@ -1,4 +1,5 @@
 /// <reference types="vite/client" />
+/// <reference types="msw-storybook-addon/types" />
 
 interface ImportMetaEnv {
   readonly VITE_APP_API_ENDPOINT: string;

@@ -1,4 +1,4 @@
-import type { Story, StoryDefault } from '@ladle/react';
+import type { Meta, StoryFn } from '@storybook/react-vite';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import ChatListDrawer from './Drawer';
 import { BotListItem } from '../@types/bot';
@@ -44,23 +44,32 @@ const bots: BotListItem[] = [
 ];
 
 export default {
+  // AppContent fills the whole window, so render without Storybook's padding.
+  parameters: { layout: 'fullscreen' },
+  // The Drawer is shown only when the viewport is at least 1024px wide (lg),
+  // so open the stories with the 1280px "desktop" viewport.
+  globals: { viewport: { value: 'desktop' } },
   decorators: [
     (Story) => (
       <MemoryRouter initialEntries={['/']}>
-        <Routes>
-          <Route path="/" element={<Story />} />
-          <Route path="/bot/:botId" element={<Story />} />
-          <Route path="/bot/explore" element={<Story />} />
-          <Route path="/:conversationId" element={<Story />} />
-          <Route path="/admin/shared-bot-analytics" element={<Story />} />
-          <Route path="/admin/api-management" element={<Story />} />
-        </Routes>
+        {/* Reproduce the layout in which AppContent places the Drawer. */}
+        <div className="relative flex h-dvh w-screen bg-aws-paper-light dark:bg-aws-paper-dark">
+          <Routes>
+            <Route path="/" element={<Story />} />
+            <Route path="/bot/:botId" element={<Story />} />
+            <Route path="/bot/explore" element={<Story />} />
+            <Route path="/:conversationId" element={<Story />} />
+            <Route path="/admin/shared-bot-analytics" element={<Story />} />
+            <Route path="/admin/api-management" element={<Story />} />
+          </Routes>
+          <main className="flex-1" />
+        </div>
       </MemoryRouter>
     ),
   ],
-} satisfies StoryDefault;
+} satisfies Meta;
 
-export const Admin: Story = () => {
+export const Admin: StoryFn = () => {
   return (
     <ChatListDrawer
       isAdmin={true}
@@ -77,7 +86,7 @@ export const Admin: Story = () => {
   );
 };
 
-export const NonAdmin: Story = () => {
+export const NonAdmin: StoryFn = () => {
   return (
     <ChatListDrawer
       isAdmin={false}
