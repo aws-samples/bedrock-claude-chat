@@ -69,6 +69,7 @@ import {
 } from '../types';
 import { toCamelCase } from '../../../utils/StringUtils';
 import useGlobalConfig from '../../../hooks/useGlobalConfig';
+import useKnowledgeBaseApi from '../../../hooks/useKnowledgeBaseApi';
 
 const edgeGenerationParams = EDGE_GENERATION_PARAMS;
 
@@ -82,6 +83,12 @@ const BotKbEditPage: React.FC = () => {
   const { availableTools } = useAgent();
   const { getGlobalConfig } = useGlobalConfig();
   const { data: globalConfig } = getGlobalConfig();
+  const { listKnowledgeBases } = useKnowledgeBaseApi();
+  const {
+    data: knowledgeBasesData,
+    isLoading: isLoadingKnowledgeBases,
+    error: knowledgeBasesError,
+  } = listKnowledgeBases();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -1604,7 +1611,10 @@ const BotKbEditPage: React.FC = () => {
                     label={t(
                       'knowledgeBaseSettings.advancedConfigration.createDedicatedKnowledgeBase.label'
                     )}
-                    onChange={() => setKnowledgeBaseType('new')}
+                    onChange={() => {
+                      setKnowledgeBaseType('new');
+                      setExistKnowledgeBaseId(null);
+                    }}
                   />
                   <RadioButton
                     name="knowledgeBaseType"
@@ -1613,7 +1623,10 @@ const BotKbEditPage: React.FC = () => {
                     label={t(
                       'knowledgeBaseSettings.advancedConfigration.createTenantInSharedKnowledgeBase.label'
                     )}
-                    onChange={() => setKnowledgeBaseType('shared')}
+                    onChange={() => {
+                      setKnowledgeBaseType('shared');
+                      setExistKnowledgeBaseId(null);
+                    }}
                   />
                   <RadioButton
                     name="knowledgeBaseType"
@@ -1622,6 +1635,7 @@ const BotKbEditPage: React.FC = () => {
                     label={t(
                       'knowledgeBaseSettings.advancedConfigration.useExistingKnowledgeBase.label'
                     )}
+                    disabled={!!knowledgeBasesError}
                     onChange={() => setKnowledgeBaseType('existing')}
                   />
                 </div>
@@ -1644,18 +1658,49 @@ const BotKbEditPage: React.FC = () => {
 
                 {(() => {
                   if (knowledgeBaseType === 'existing') {
+                    // Prepare knowledge base options for the dropdown
+                    const knowledgeBaseOptions = (
+                      knowledgeBasesData?.knowledgeBases || []
+                    ).map((kb) => ({
+                      value: kb.knowledgeBaseId,
+                      label: `${kb.name} (${kb.knowledgeBaseId})`,
+                      description: kb.description || kb.status,
+                    }));
+
                     return (
                       <div className="mt-3 rounded-lg border border-aws-font-color-light/30 p-4 dark:border-aws-font-color-dark/30">
-                        <InputText
+                        <Select
                           label={t(
                             'knowledgeBaseSettings.advancedConfigration.existingKnowledgeBaseId.label'
                           )}
                           value={existKnowledgeBaseId ?? ''}
+                          options={knowledgeBaseOptions}
                           onChange={setExistKnowledgeBaseId}
-                          disabled={!isNewBot}
-                          placeholder="ABCDEFGHIJ"
+                          disabled={
+                            isLoadingKnowledgeBases ||
+                            !!knowledgeBasesError
+                          }
                         />
-                        <div className="text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
+                        {isLoadingKnowledgeBases && (
+                          <div className="mt-2 text-sm text-aws-font-color-light dark:text-aws-font-color-dark">
+                            {t('bot.label.loadingKnowledgeBases')}
+                          </div>
+                        )}
+                        {knowledgeBasesError && (
+                          <div className="mt-2 text-sm text-red">
+                            {t('bot.label.failedToLoadKnowledgeBases')}
+                          </div>
+                        )}
+                        {!isLoadingKnowledgeBases &&
+                          !knowledgeBasesError &&
+                          knowledgeBaseOptions.length === 0 && (
+                            <div className="mt-2 text-sm text-red">
+                              {t(
+                                'knowledgeBaseSettings.advancedConfigration.existingKnowledgeBaseId.noKnowledgeBasesFound'
+                              )}
+                            </div>
+                          )}
+                        <div className="mt-2 text-sm text-aws-font-color-light/50 dark:text-aws-font-color-dark">
                           {t(
                             'knowledgeBaseSettings.advancedConfigration.existingKnowledgeBaseId.description'
                           )}
