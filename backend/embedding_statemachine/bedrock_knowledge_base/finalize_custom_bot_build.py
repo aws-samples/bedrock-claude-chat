@@ -3,6 +3,7 @@ from typing import List, TypedDict
 
 import boto3
 from app.repositories.custom_bot import (
+    find_bot_by_id,
     update_knowledge_base_id,
     update_guardrails_params,
 )
@@ -100,6 +101,26 @@ def handler(event, context):
             for data_source_id in data_source_ids
         )
         update_knowledge_base_id(user_id, bot_id, knowledge_base_id, data_source_ids)
+
+    # Shared-KB bots updated outside the SharedKnowledgeBases flow carry no
+    # DataSources in the event, and their per-bot stack exposes no
+    # KnowledgeBaseId output, so their file diffs would silently never be
+    # ingested. Fall back to the Knowledge Base already recorded on the bot.
+    if not data_sources and bot_files_diffs:
+        knowledge_base = find_bot_by_id(bot_id).bedrock_knowledge_base
+        if (
+            knowledge_base
+            and knowledge_base.knowledge_base_id
+            and knowledge_base.data_source_ids
+        ):
+            data_sources.extend(
+                {
+                    "KnowledgeBaseId": knowledge_base.knowledge_base_id,
+                    "DataSourceId": data_source_id,
+                    "FilesDiffs": bot_files_diffs,
+                }
+                for data_source_id in knowledge_base.data_source_ids
+            )
 
     # Update `guardrail_arn` of the bot using dedicated Guardrail.
     guardrail_arn = stack_outputs.get("GuardrailArn")
